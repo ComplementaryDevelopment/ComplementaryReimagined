@@ -1,0 +1,132 @@
+////////////////////////////////////////
+// Complementary Reimagined by EminGT //
+////////////////////////////////////////
+
+//Common//
+#include "/lib/common.glsl"
+
+//////////Fragment Shader//////////Fragment Shader//////////Fragment Shader//////////
+#ifdef FRAGMENT_SHADER
+
+in vec2 texCoord;
+
+flat in vec4 glColor;
+
+#ifdef OVERWORLD
+	flat in vec3 upVec, sunVec;
+#endif
+
+//Uniforms//
+uniform int isEyeInWater;
+
+uniform float viewWidth, viewHeight;
+
+uniform vec3 skyColor;
+uniform vec3 fogColor;
+
+uniform mat4 gbufferProjectionInverse;
+
+uniform sampler2D texture;
+
+//Pipeline Constants//
+
+//Common Variables//
+#ifdef OVERWORLD
+	float SdotU = dot(sunVec, upVec);
+	float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+	float sunVisibility2 = sunVisibility * sunVisibility;
+#endif
+
+//Common Functions//
+
+//Includes//
+#include "/lib/colors/lightAndAmbientColors.glsl"
+
+//Program//
+void main() {
+	#ifdef OVERWORLD
+		vec4 color = texture2D(texture, texCoord);
+		color.rgb *= glColor.rgb;
+	
+		vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
+		vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+		viewPos /= viewPos.w;
+		vec3 nViewPos = normalize(viewPos.xyz);
+		
+		float VdotS = dot(nViewPos, sunVec);
+		float VdotU = dot(nViewPos, upVec);
+
+		if (VdotS > 0.0) {
+			color.rgb *= float(color.b > 0.1775); // 0.065 to 0.290 // disable with compatibility mode
+
+			if (color.b > 0.48) { // 0.295 to 0.665 // disable with compatibility mode
+				color.rgb *= 12.0;
+			} else {
+				color.rgb *= 8.0;
+			}
+
+			color.rgb *= normalize(lightColor);
+		} else {
+			color.rgb *= sqrt2(max0(color.r - 0.115)); // 0.065 to 0.165 // disable with compatibility mode
+			color.rgb *= 1.5;
+		}
+
+		#ifdef SUN_MOON_HORIZON
+			color.rgb *= pow2(clamp((VdotU + 0.005) * 30.0, 0.0, 1.0));
+		#else
+			color.rgb *= pow2(pow2(pow2(min1(VdotU + 1.0))));
+		#endif
+
+		if (isEyeInWater == 1) color.rgb *= 0.25;
+		color.a *= invRainFactor * invRainFactor;
+	#endif
+
+	#ifdef NETHER
+		vec4 color = vec4(0.0);
+	#endif
+
+	#ifdef END
+		vec4 color = vec4(endSkyColor, 1.0);
+	#endif
+
+	/* DRAWBUFFERS:0 */
+	gl_FragData[0] = color;
+}
+
+#endif
+
+//////////Vertex Shader//////////Vertex Shader//////////Vertex Shader//////////
+#ifdef VERTEX_SHADER
+
+out vec2 texCoord;
+
+flat out vec4 glColor;
+
+#ifdef OVERWORLD
+	flat out vec3 upVec, sunVec;
+#endif
+
+//Uniforms//
+
+//Attributes//
+
+//Common Variables//
+
+//Common Functions//
+
+//Includes//
+
+//Program//
+void main() {
+	gl_Position = ftransform();
+	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+	
+	glColor = gl_Color;
+
+	#ifdef OVERWORLD
+		upVec = normalize(gbufferModelView[1].xyz);
+		sunVec = GetSunVector();
+	#endif
+}
+
+#endif

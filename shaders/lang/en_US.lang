@@ -1,0 +1,248 @@
+#shaders/lang/en_us.lang
+
+#Profiles
+profile.LOW=§eLow
+profile.MEDIUM=§aMedium
+profile.HIGH=§bHigh (Default)
+profile.VERYHIGH=§9Very High
+profile.ULTRA=§dUltra
+profile.comment=Shader profiles change performance settings with the most optimised visual fidelity to performance ratio. It's recommended to use one of these profiles for your performance settings unless you know what you are doing.
+
+#CMPR
+option.CMPR=Complementary
+value.CMPR.0=§cReimagined
+value.CMPR.1=§eReimagined
+value.CMPR.2=§aReimagined
+value.CMPR.3=§bReimagined
+value.CMPR.4=§9Reimagined
+value.CMPR.5=§dReimagined
+option.CMPR.comment=Complementary Reimagined is a creation of love and care, meant to complement the unique Minecraft experience in the best way possible. I hope you enjoy your time with Reimagined as much as I enjoyed developing it. Please feel free to join the Complementary community here: www.complementary.dev/discord
+
+#Screens
+screen.PERFORMANCE_SETTINGS=Performance Settings
+screen.PERFORMANCE_SETTINGS.comment=Settings that directly relate to the performance, and get changed by the different shader profiles.
+
+screen.PREFERENCE_SETTINGS=Preference Settings
+screen.PREFERENCE_SETTINGS.comment=Settings that are optional, and not changed by the different shader profiles.
+    screen.CLOUD_SETTINGS=Clouds
+    screen.CLOUD_SETTINGS.comment=Settings that relate to the clouds.
+    screen.CAMERA_SETTINGS=Camera
+    screen.CAMERA_SETTINGS.comment=Settings that determine how the final image is tweaked.
+    screen.IPBR_SETTINGS=IntegratedPBR
+    screen.IPBR_SETTINGS.comment=Settings that are related to the features of IntegratedPBR.
+
+#Settings
+option.RP_MODE=RP Support
+option.RP_MODE.comment=Changes many internal calculations to determine how different blocks and materials will be rendered. §bIntegrated PBR+§r: Assumption-based PBR materials and extra effects; recommended if you aren't using resource packs. §aBasic§r: No PBR or extra effects; recommended if you are using resource packs that change things quite a bit.
+value.RP_MODE.1=§bIntegrated PBR+
+value.RP_MODE.0=§aBasic
+
+option.CLOUD_QUALITY=Cloud Quality
+option.CLOUD_QUALITY.comment=Adjusts the quality of clouds. §9Very High§r: Better fidelity than High. §bHigh§r: Default. §aMedium§r: Disables cloud lighting over High. §eLow§r: Disables indoors detection over Medium. §cOFF§r: No clouds.
+value.CLOUD_QUALITY.4=§9Very High
+value.CLOUD_QUALITY.3=§bHigh
+value.CLOUD_QUALITY.2=§aMedium
+value.CLOUD_QUALITY.1=§eLow
+value.CLOUD_QUALITY.0=§cOFF
+
+option.WATER_QUALITY=Water Quality
+option.WATER_QUALITY.comment=Adjusts the visual quality of water. §aMedium§r: Default. §eLow§r: Disables edge foaming, no fancy alpha and no varying color intensity over Medium.
+value.WATER_QUALITY.2=§aMedium
+value.WATER_QUALITY.1=§eLow
+
+option.REFLECTION_QUALITY=Reflection Quality
+option.REFLECTION_QUALITY.comment=Adjusts the visual quality of reflections. §bHigh§r: Material-tailored reflections on all blocks (RP Support option must be set to Integrated PBR+). §aMedium§r: Reflections on water and translucents. §cOFF§r: No reflections.
+value.REFLECTION_QUALITY.3=§bHigh
+value.REFLECTION_QUALITY.2=§aMedium
+value.REFLECTION_QUALITY.0=§cOFF
+
+option.SHADOW_QUALITY=Shadow Quality
+option.SHADOW_QUALITY.comment=Adjusts the quality of shadow filtering. Every tier further reduces the shadow noise artifacts. §aMedium§r and §eLow§r enable optimised shadows on leaves.
+value.SHADOW_QUALITY.4=§9Very High
+value.SHADOW_QUALITY.3=§bHigh
+value.SHADOW_QUALITY.2=§aMedium
+value.SHADOW_QUALITY.1=§eLow
+
+option.LIGHTSHAFT_QUALITY=Light Shaft Quality
+option.LIGHTSHAFT_QUALITY.comment=Adjusts the quality of light shafts. Every tier further reduces the light shaft noise artifacts.
+value.LIGHTSHAFT_QUALITY.4=§9Very High
+value.LIGHTSHAFT_QUALITY.3=§bHigh
+value.LIGHTSHAFT_QUALITY.2=§aMedium
+value.LIGHTSHAFT_QUALITY.1=§eLow
+value.LIGHTSHAFT_QUALITY.0=§cOFF
+
+option.shadowDistance=Shadow Distance
+option.shadowDistance.comment=Adjusts the distance from the player which real-time shadows are rendered. §e[*]§r The value is internally capped at Render Distance. §e[*]§r This also affects the correctness of Light Shafts.
+value.shadowDistance.1024.0=§d64 Chunks
+value.shadowDistance.768.0=§d48 Chunks
+value.shadowDistance.512.0=§d32 Chunks
+value.shadowDistance.384.0=§d24 Chunks
+value.shadowDistance.320.0=§d20 Chunks
+value.shadowDistance.256.0=§b16 Chunks
+value.shadowDistance.224.0=§b14 Chunks
+value.shadowDistance.192.0=§b12 Chunks
+value.shadowDistance.160.0=§a10 Chunks
+value.shadowDistance.128.0=§a8 Chunks
+value.shadowDistance.112.0=§a7 Chunks
+value.shadowDistance.96.0=§e6 Chunks
+value.shadowDistance.80.0=§e5 Chunks
+value.shadowDistance.64.0=§e4 Chunks
+
+option.ENTITY_SHADOWS=Entity Shadows
+option.ENTITY_SHADOWS.comment=Enables the ability for entities and block entities to cast shadows.
+value.ENTITY_SHADOWS.true=§dON
+value.ENTITY_SHADOWS.false=§eOFF
+
+option.SSAO=SSAO
+option.SSAO.comment=Enables Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene.
+value.SSAO.true=§dON
+value.SSAO.false=§aOFF
+
+option.GENERATED_NORMALS=Generated Normals
+option.GENERATED_NORMALS.comment=Adds auto-generated bumps to textures. §e[*]§r RP Support option must be set to Integrated PBR+.
+value.GENERATED_NORMALS.true=§dON
+value.GENERATED_NORMALS.false=§aOFF
+
+option.COATED_TEXTURES=Coated Textures
+option.COATED_TEXTURES.comment=Adds auto-generated noise to textures. §e[*]§r RP Support option must be set to Integrated PBR+.
+value.COATED_TEXTURES.true=§dON
+value.COATED_TEXTURES.false=§aOFF
+
+option.BORDER_FOG=Border Fog
+option.BORDER_FOG.comment=Intense fog on the edges of the loaded world to hide chunk borders.
+value.BORDER_FOG.true=§aON
+value.BORDER_FOG.false=§aOFF
+
+option.CLOUD_SHADOWS=Cloud Shadows
+option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds.
+value.CLOUD_SHADOWS.true=§bON
+value.CLOUD_SHADOWS.false=§aOFF
+
+option.SECOND_CLOUD_LAYER=Second Cloud Layer
+option.SECOND_CLOUD_LAYER.comment=Enables a second layer of clouds. §c[-]§r Enabling this can impact performance.
+value.SECOND_CLOUD_LAYER.true=§dON
+value.SECOND_CLOUD_LAYER.false=§aOFF
+
+option.CLOUD_ALT1=Cloud Layer Altitude
+option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at.
+
+option.CLOUD_ALT2=Second Cloud Layer Altitude
+option.CLOUD_ALT2.comment=Determines the world height which the second layer clouds will appear at. §e[*]§r This setting won't do anything if the "Second Cloud Layer" option isn't enabled.
+
+option.T_EXPOSURE=Tonemap Exposure
+option.T_EXPOSURE.comment=Adjusts the overall brightness of the image.
+
+option.T_WHITE_CURVE=Tonemap White Curve
+option.T_WHITE_CURVE.comment=Adjusts how easily the colors reach to full white.
+
+option.T_LOWER_CURVE=Tonemap Lower Curve
+option.T_LOWER_CURVE.comment=Adjusts contrast of darker colors.
+
+option.T_UPPER_CURVE=Tonemap Upper Curve
+option.T_UPPER_CURVE.comment=Adjusts contrast of brighter colors.
+
+option.T_SATURATION=Saturation
+option.T_SATURATION.comment=Adjusts overall colorfulness of the image.
+
+option.T_VIBRANCE=Vibrance
+option.T_VIBRANCE.comment=Adjusts the colorfulness of the image, but already colorful pixels are less affected.
+
+option.WATER_STYLE=Water Style
+option.WATER_STYLE.comment=Determines the style of water. §c[-]§r Setting this to "Realistic-ish" can severely impact performance.
+value.WATER_STYLE.1=§aReimagined
+value.WATER_STYLE.2=§aReimagined + Waves
+value.WATER_STYLE.3=§dRealistic-ish
+
+option.SUN_MOON_HORIZON=Sun/Moon Horizon
+option.SUN_MOON_HORIZON.comment=Prevents the sun/moon from appearing below the horizon line.
+value.SUN_MOON_HORIZON.true=§aON
+value.SUN_MOON_HORIZON.false=§aOFF
+
+option.NIGHT_STAR_AMOUNT=Night Star Amount
+option.NIGHT_STAR_AMOUNT.comment=Determines the amount of stars in the night sky.
+value.NIGHT_STAR_AMOUNT.2=§aMedium
+value.NIGHT_STAR_AMOUNT.3=§aHigh
+
+option.PIXEL_SHADOW=Pixelated Shadows
+option.PIXEL_SHADOW.comment=Modifies the world coordinates on a grid to make shadows pixelated. §e[*]§r This does not affect performance.
+value.PIXEL_SHADOW.0=§aOFF
+value.PIXEL_SHADOW.8=§a8x8
+value.PIXEL_SHADOW.16=§a16x16
+value.PIXEL_SHADOW.32=§a32x32
+value.PIXEL_SHADOW.64=§a64x64
+value.PIXEL_SHADOW.128=§a128x128
+
+option.BLOOM_STRENGTH=Bloom Strength
+option.BLOOM_STRENGTH.comment=Determines the intensity of glow on bright things, and the bloom from rain/cave humidity.
+value.BLOOM_STRENGTH.0.027=§a15%
+value.BLOOM_STRENGTH.0.036=§a20%
+value.BLOOM_STRENGTH.0.045=§a25%
+value.BLOOM_STRENGTH.0.054=§a30%
+value.BLOOM_STRENGTH.0.063=§a35%
+value.BLOOM_STRENGTH.0.072=§a40%
+value.BLOOM_STRENGTH.0.081=§a45%
+value.BLOOM_STRENGTH.0.09=§a50%
+value.BLOOM_STRENGTH.0.10=§a55%
+value.BLOOM_STRENGTH.0.11=§a60%
+value.BLOOM_STRENGTH.0.12=§a65%
+value.BLOOM_STRENGTH.0.13=§a70%
+value.BLOOM_STRENGTH.0.14=§a75%
+
+option.FXAA=FXAA
+option.FXAA.comment=Enables Fast Approximate Anti-Aliasing, which is basically an effect that produces smoother image.
+value.FXAA.true=§aON
+value.FXAA.false=§aOFF
+
+option.FANCY_GLASS=Improved Glass
+option.FANCY_GLASS.comment=Improves the regular glass by adding a translucent layer to it. §c[-]§r Currently causes blending problems on Iris because of a Sodium bug. §e[*]§r RP Support option must be set to Integrated PBR+.
+value.FANCY_GLASS.true=§aON
+value.FANCY_GLASS.false=§aOFF
+
+option.HAND_SWAYING=Hand Sway
+option.HAND_SWAYING.comment=Adds slow movement to the player hand to simulate a breathing animation.
+value.HAND_SWAYING.0=§aOFF
+value.HAND_SWAYING.1=§aSubtle
+value.HAND_SWAYING.2=§aNormal
+value.HAND_SWAYING.3=§aIntense
+
+option.LESS_LAVA_FOG=Better Visibility Inside Lava
+option.LESS_LAVA_FOG.comment=Reduces the lava fog to improve visibility inside lava.
+value.LESS_LAVA_FOG.true=§aON
+value.LESS_LAVA_FOG.false=§aOFF
+
+option.SHOW_LIGHT_LEVEL=Show Light Levels
+option.SHOW_LIGHT_LEVEL.comment=In Overworld: Yellow means mobs can spawn during night time, red means mobs can spawn anytime. In The Nether and The End: Yellow means some mobs can spawn, red means all mobs can spawn. §e[*]§r Disable Smooth Lighting for precise results.
+value.SHOW_LIGHT_LEVEL.0=§aOFF
+value.SHOW_LIGHT_LEVEL.1=§aHold Spider Eye
+value.SHOW_LIGHT_LEVEL.2=§aHold Light Source
+value.SHOW_LIGHT_LEVEL.3=§aAlways ON
+
+option.MINIMUM_LIGHT_MODE=Cave Lighting
+option.MINIMUM_LIGHT_MODE.comment=Improves visibility in closed areas by adding some lighting. §e[*]§r "Vanilla Brightness" option mean the cave lighting will be determined by the "Brightness" slider in Video Settings.
+value.MINIMUM_LIGHT_MODE.0=§aVery Dark
+value.MINIMUM_LIGHT_MODE.1=§aDark
+value.MINIMUM_LIGHT_MODE.2=§aVanilla Brightness
+value.MINIMUM_LIGHT_MODE.3=§aBright
+value.MINIMUM_LIGHT_MODE.4=§aVery Bright
+
+option.GLOWING_ORES=Glowing Ores
+option.GLOWING_ORES.comment=Adds emission to ores. §e[*]§r RP Support option must be set to Integrated PBR+.
+value.GLOWING_ORES.0=§aOFF
+value.GLOWING_ORES.1=§aOverworld
+value.GLOWING_ORES.2=§aOverworld + Nether
+
+option.GENERATED_WATER_NORMALS=Generated Normals on Water
+option.GENERATED_WATER_NORMALS.comment=Allows Generated Normals to appear on water. §e[*]§r RP Support option must be set to Integrated PBR+. §e[*]§r Generated Normals option must be enabled.
+value.GENERATED_WATER_NORMALS.true=§aON
+value.GENERATED_WATER_NORMALS.false=§aOFF
+
+option.HELD_LIGHTING=Dynamic Handheld Lighting
+option.HELD_LIGHTING.comment=Allows handheld light sources to cast light onto the scene.
+value.HELD_LIGHTING.true=§aON
+value.HELD_LIGHTING.false=§aOFF
+
+option.WAVING_BLOCKS=Waving Blocks
+option.WAVING_BLOCKS.comment=Adds movement to some blocks to simulate wind.
+value.WAVING_BLOCKS.0=§aOFF
+value.WAVING_BLOCKS.1=§aFoliage
+value.WAVING_BLOCKS.2=§bFoliage + Leaves
