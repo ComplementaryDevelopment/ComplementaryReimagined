@@ -32,8 +32,6 @@
 
     #define WATER_STYLE 1 //[1 2 3]
     #define BORDER_FOG
-    #define SUN_MOON_HORIZON
-    #define NIGHT_STAR_AMOUNT 2 //[2 3]
     #define PIXEL_SHADOW 0 //[0 8 16 32 64 128]
     #define HAND_SWAYING 0 //[0 1 2 3]
     //#define LESS_LAVA_FOG
@@ -41,7 +39,12 @@
     #define MINIMUM_LIGHT_MODE 2 //[0 1 2 3 4]
     #define HELD_LIGHTING
     #define WAVING_BLOCKS 1 //[0 1 2]
+    //#define WORLD_OUTLINE
 
+    #define AURORA_BOREALIS
+    #define AURORA_CONDITION 3 //[0 1 2 3]
+    #define SUN_MOON_HORIZON
+    #define NIGHT_STAR_AMOUNT 2 //[2 3]
     //#define CLOUD_SHADOWS
     //#define SECOND_CLOUD_LAYER
     #define CLOUD_ALT1 192.0 //[64.0 68.0 72.0 76.0 80.0 84.0 88.0 92.0 96.0 100.0 104.0 108.0 112.0 116.0 120.0 124.0 128.0 132.0 136.0 140.0 144.0 148.0 152.0 156.0 160.0 164.0 168.0 172.0 176.0 180.0 184.0 188.0 192.0 196.0 200.0 204.0 208.0 212.0 216.0 220.0 224.0 228.0 232.0 236.0 240.0 244.0 248.0 252.0 254.0 256.0]
@@ -61,6 +64,7 @@
     //#define GENERATED_WATER_NORMALS
 
 //Internal Settings//
+
     #define PBR_REFLECTIONS
 
     #define GLASS_OPACITY 0.25
@@ -93,12 +97,14 @@
     //#define SAFER_GENERATED_NORMALS
 
     #define BLOOM
+    #define UNDERWATER_DISTORTION
 
 //Define Handling//
     #ifndef OVERWORLD
         #undef LIGHT_HIGHLIGHT
         #undef CAVE_FOG
         #undef CLOUD_SHADOWS
+        #undef AURORA_BOREALIS
     #endif
     #ifdef NETHER
         #undef ATMOSPHERIC_FOG
@@ -174,11 +180,11 @@
     float syncedTime = (worldTime + modifiedWorldDay * 24000) * 0.05;
 
     const float pi = 3.14159265359;
-    const float OSIEBB = 1.0 / 255.0;
+    const float OSIEBCA = 1.0 / 255.0; // One Step In Eight Bit Color Attachment
 
     const vec3 blocklightCol = vec3(0.43, 0.32, 0.26) * 0.85;
     vec3 caveFogColor = vec3(0.13, 0.13, 0.15) * (0.7 + 0.3 * vsBrightness);
-    vec3 waterFogColor = vec3(0.1 + 0.1 * vsBrightness);
+    vec3 waterFogColor = vec3(0.07, 0.08, 0.13) * vec3(1.0 + vsBrightness);
     vec3 endSkyColor = vec3(0.095, 0.07, 0.15) * 1.5;
 
     #ifdef FRAGMENT_SHADER

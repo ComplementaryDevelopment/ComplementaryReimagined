@@ -37,7 +37,7 @@ for(int i = 0; i < 30; i++) {
 float border = clamp(1.0 - pow(cdist(pos.xy), 50.0), 0.0, 1.0);
 
 vec4 reflection = vec4(0.0);
-if (pos.z < 0.99998) {
+if (pos.z < 0.99997) {
     reflection.a = border;
     if (reflection.a > 0.001) {
         reflection.rgb = texture2D(gaux2, pos.xy).rgb;

@@ -4,11 +4,11 @@
 #ifdef OVERWORLD
     vec3 skyColorSqrt = sqrt(skyColor);
 
-    vec3 noonUpSkyColor     = pow(skyColor, vec3(1.32)) * 0.7;
+    vec3 noonUpSkyColor     = pow(skyColor, vec3(1.32)) * 0.8;
     vec3 noonMiddleSkyColor = skyColorSqrt * 1.2;
     vec3 noonDownSkyColor   = noonUpSkyColor;
 
-    vec3 sunsetUpSkyColor     = pow(skyColor, vec3(1.12)) * vec3(0.65, 0.45, 0.5);
+    vec3 sunsetUpSkyColor     = pow(skyColor, vec3(1.12)) * vec3(0.78, 0.54, 0.6);
     vec3 sunsetMiddleSkyColor = skyColorSqrt * 1.1;
     vec3 sunsetDownSkyColor   = vec3(0.92, 0.56, 0.44);
 

@@ -1,21 +1,22 @@
 #include "/lib/util/reprojection.glsl"
 
 ivec2 neighbourhoodOffsets[8] = ivec2[8](
-								ivec2(-1, -1),
-								ivec2( 0, -1),
-								ivec2( 1, -1),
-								ivec2(-1,  0),
-								ivec2( 1,  0),
-								ivec2(-1,  1),
-								ivec2( 0,  1),
-								ivec2( 1,  1));
+	ivec2(-1, -1),
+	ivec2( 0, -1),
+	ivec2( 1, -1),
+	ivec2(-1,  0),
+	ivec2( 1,  0),
+	ivec2(-1,  1),
+	ivec2( 0,  1),
+	ivec2( 1,  1)
+);
 
 void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float depth, inout float edge) {
 	vec3 minclr = color, maxclr = color;
 
 	for (int i = 0; i < 8; i++) {
 		float depthCheck = texelFetch(depthtex1, texelCoord + neighbourhoodOffsets[i], 0).r;
-		if (abs(GetLinearDepth(depthCheck) - GetLinearDepth(depth)) > 0.09) edge = 20.0;
+		if (abs(GetLinearDepth(depthCheck) - GetLinearDepth(depth)) > 0.09) edge = 0.25;
 		vec3 clr = texelFetch(colortex3, texelCoord + neighbourhoodOffsets[i], 0).rgb;
 		minclr = min(minclr, clr); maxclr = max(maxclr, clr);
 	}

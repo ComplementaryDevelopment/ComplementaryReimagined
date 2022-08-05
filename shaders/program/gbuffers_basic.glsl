@@ -82,6 +82,11 @@ void main() {
 
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = color;
+
+	#ifdef TEMPORAL_FILTER
+		/* DRAWBUFFERS:06 */
+		gl_FragData[1] = vec4(0.0, 0.0, 0.0, 0.0);
+	#endif
 }
 
 #endif

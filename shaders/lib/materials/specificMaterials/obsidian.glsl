@@ -1,4 +1,4 @@
-materialMask = OSIEBB; // Intense Fresnel
+materialMask = OSIEBCA; // Intense Fresnel
 
 float factor = color.r * 1.5;
 

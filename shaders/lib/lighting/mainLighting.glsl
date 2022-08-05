@@ -198,12 +198,12 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         float heldLight = max(heldBlockLightValue, heldBlockLightValue2) - lViewPos;
         lightmap.x = max(lightmap.x, heldLight * 0.066666);
     #endif
-    float lightmapXMFinal;
+    float lightmapXM;
     if (!noSmoothLighting) {
         float lightmapXMSteep = pow2(pow2(lightmap.x * lightmap.x))  * (2.30 - 0.25 * vsBrightness);
         float lightmapXMCalm = max((lightmap.x - 0.05) * 0.925, 0.0) * (2.00 + 0.25 * vsBrightness);
-        lightmapXMFinal = pow(lightmapXMSteep + lightmapXMCalm, 1.5);
-    } else lightmapXMFinal = lightmap.x * lightmap.x * 3.0;
+        lightmapXM = pow(lightmapXMSteep + lightmapXMCalm, 1.5);
+    } else lightmapXM = lightmap.x * lightmap.x * 3.0;
 
     // Minimum Light
     #if !defined END && MINIMUM_LIGHT_MODE > 0
@@ -227,11 +227,13 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         ambientMult = vec3(mix(lightmapYM, pow2(lightmapYM) * lightmapYM, rainFactor));
 
         if (isEyeInWater != 1) {
-            float dayFactor = (sunVisibility2 * 0.4 + (0.6 - 0.6 * pow2(invNoonFactor))) * (6.0 - 5.0 * rainFactor);
-            lightmapXMFinal *= pow(max(lightmap.x, 0.001), dayFactor * lightmapY2);
+            float dayFactor = lightmapY2 * (sunVisibility2 * 0.4 + (0.6 - 0.6 * pow2(invNoonFactor))) * (6.0 - 5.0 * rainFactor);
+            dayFactor = max0(dayFactor - emission * 1000000.0);
+            lightmapXM *= pow(max(lightmap.x, 0.001), dayFactor);
+
             shadowLighting *= 0.5 + 0.5 * lightmapYM;
         } else {
-            lightmapXMFinal *= 1.8;
+            lightmapXM *= 1.8;
             shadowLighting *= 0.25 + 0.75 * lightmapYM;
             minLighting *= 1.4;
         }
@@ -268,7 +270,7 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #endif
 
     // Combine Lighting
-    vec3 blockLighting = lightmapXMFinal * blocklightCol;
+    vec3 blockLighting = lightmapXM * blocklightCol;
     vec3 sceneLighting = shadowLighting * shadowMult + ambientColor * ambientMult;
     float dotSceneLighting = dot(sceneLighting, sceneLighting);
     

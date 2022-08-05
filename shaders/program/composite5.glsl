@@ -20,6 +20,8 @@ uniform int frameCounter;
 uniform float viewWidth, viewHeight;
 uniform float darknessFactor;
 
+uniform float frameTimeCounter;
+
 uniform sampler2D colortex0;
 uniform sampler2D noisetex;
 
@@ -29,7 +31,9 @@ uniform sampler2D noisetex;
 
 #ifdef BLOOM_FOG
 	uniform int isEyeInWater;
-	
+#endif
+
+#ifdef BLOOM_FOG
 	uniform vec3 cameraPosition;
 
 	uniform mat4 gbufferProjectionInverse;
@@ -70,36 +74,38 @@ void BSLColorSaturation(inout vec3 color) {
 	color = color * T_SATURATION - graySaturation * (T_SATURATION - 1.0);
 }
 
-vec3 GetBloomTile(float lod, vec2 coord, vec2 offset, vec2 ditherAdd, sampler2D colortex) {
+vec3 GetBloomTile(float lod, vec2 coord, vec2 offset, vec2 ditherAdd) {
 	float scale = exp2(lod);
 	vec2 bloomCoord = coord / scale + offset;
 	bloomCoord += ditherAdd;
 	bloomCoord = clamp(bloomCoord, offset, 1.0 / scale + offset);
 
-	vec3 bloom = texture2D(colortex, bloomCoord).rgb;
+	vec3 bloom = texture2D(colortex3, bloomCoord).rgb;
 	bloom *= bloom;
 	bloom *= bloom;
 	return bloom * 128.0;
 }
 
-void GetBloom(inout vec3 color, vec2 coord, float dither, sampler2D colortex) {
+void GetBloom(inout vec3 color, vec2 coord, float dither) {
 	vec2 rescale = 1.0 / vec2(1920.0, 1080.0);
 	vec2 ditherAdd = vec2(0.0);
 	float ditherM = dither - 0.5;
 	if (rescale.x > pw) ditherAdd.x += ditherM * pw;
 	if (rescale.y > ph) ditherAdd.y += ditherM * ph;
 
-	vec3 blur1 = GetBloomTile(2.0, coord, vec2(0.0      , 0.0   ), ditherAdd, colortex);
-	vec3 blur2 = GetBloomTile(3.0, coord, vec2(0.0      , 0.26  ), ditherAdd, colortex);
-	vec3 blur3 = GetBloomTile(4.0, coord, vec2(0.135    , 0.26  ), ditherAdd, colortex);
-	vec3 blur4 = GetBloomTile(5.0, coord, vec2(0.2075   , 0.26  ), ditherAdd, colortex);
-	vec3 blur5 = GetBloomTile(6.0, coord, vec2(0.135    , 0.3325), ditherAdd, colortex);
-	vec3 blur6 = GetBloomTile(7.0, coord, vec2(0.160625 , 0.3325), ditherAdd, colortex);
-	vec3 blur7 = GetBloomTile(8.0, coord, vec2(0.1784375, 0.3325), ditherAdd, colortex);
+	vec3 blur1 = GetBloomTile(2.0, coord, vec2(0.0      , 0.0   ), ditherAdd);
+	vec3 blur2 = GetBloomTile(3.0, coord, vec2(0.0      , 0.26  ), ditherAdd);
+	vec3 blur3 = GetBloomTile(4.0, coord, vec2(0.135    , 0.26  ), ditherAdd);
+	vec3 blur4 = GetBloomTile(5.0, coord, vec2(0.2075   , 0.26  ), ditherAdd);
+	vec3 blur5 = GetBloomTile(6.0, coord, vec2(0.135    , 0.3325), ditherAdd);
+	vec3 blur6 = GetBloomTile(7.0, coord, vec2(0.160625 , 0.3325), ditherAdd);
+	vec3 blur7 = GetBloomTile(8.0, coord, vec2(0.1784375, 0.3325), ditherAdd);
 
 	vec3 blur = (blur1 + blur2 + blur3 + blur4 + blur5 + blur6 + blur7) * 0.14;
 
-	color = mix(color, blur, BLOOM_STRENGTH + 0.2 * darknessFactor);
+	float bloomStrength = BLOOM_STRENGTH + 0.2 * darknessFactor;
+
+	color = mix(color, blur, bloomStrength);
 }
 
 //Includes//
@@ -113,17 +119,20 @@ void GetBloom(inout vec3 color, vec2 coord, float dither, sampler2D colortex) {
 
 //Program//
 void main() {
-	vec3 color = texelFetch(colortex0, texelCoord, 0).rgb;
+	vec2 texCoordM = texCoord;
+
+	vec3 color = texture2D(colortex0, texCoordM).rgb;
 
 	#ifdef BLOOM_FOG
-		float z0 = texelFetch(depthtex0, texelCoord, 0).r;
+		float z0 = texture2D(depthtex0, texCoordM).r;
 
-		vec4 screenPos = vec4(texCoord, z0, 1.0);
+		vec4 screenPos = vec4(texCoordM, z0, 1.0);
 		vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
 		viewPos /= viewPos.w;
 		float lViewPos = length(viewPos.xyz);
 
-		color /= GetBloomFog(lViewPos);
+		float bloomFog = GetBloomFog(lViewPos);
+		color /= bloomFog;
 	#endif
 
 	float dither = texture2D(noisetex, texCoord * vec2(viewWidth, viewHeight) / 128.0).b;
@@ -132,7 +141,7 @@ void main() {
 	#endif
 
 	#ifdef BLOOM
-		GetBloom(color, texCoord, dither, colortex3);
+		GetBloom(color, texCoordM, dither);
 	#endif
 
 	BSLTonemap(color);

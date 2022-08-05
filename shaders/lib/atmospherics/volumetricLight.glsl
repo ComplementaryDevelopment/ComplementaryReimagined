@@ -18,7 +18,7 @@ vec4 DistortShadow(vec4 shadowpos, float distortFactor) {
 	return shadowpos;
 }
 
-vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewPos, float VdotL, float VdotU, vec2 texCoord, float z0, float z1, float dither) {
+vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewPos, vec3 nViewPos, float VdotL, float VdotU, vec2 texCoord, float z0, float z1, float dither) {
 	if (max(blindness, darknessFactor) > 0.1) return vec4(0.0);
 	vec4 volumetricLight = vec4(0.0);
 
@@ -57,7 +57,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 		int sampleCount = 16;
 	#endif
 	float addition = 1.0;
-	float maxDist = mix(max(far, 96.0) * 0.6, 80.0, vlSceneIntensity);
+	float maxDist = mix(max(far, 96.0) * 0.55, 80.0, vlSceneIntensity);
 	float distMult = maxDist / (sampleCount + addition);
 	float sampleMultIntense = isEyeInWater != 1 ? 1.0 : 0.85;
 
@@ -69,33 +69,29 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 	#endif
 
 	// Fast but inaccurate perspective distortion approximation
-	float fovFactor = gbufferProjection[1][1] / 1.37;
-	float x = abs(texCoord.x - 0.5);
-	x = 1.0 - x*x;
-	x = pow(x, max(3.0 - fovFactor, 0.0));
-	maxDist *= x;
-	distMult *= x;
+	float viewFactor = 1.0 - 0.7 * pow2(dot(nViewPos.xy, nViewPos.xy));
+	maxDist *= viewFactor;
+	distMult *= viewFactor;
+	
+	#ifdef OVERWORLD
+		float maxCurrentDist = min(depth1, maxDist);
+	#else
+		float maxCurrentDist = min(depth1, far);
+	#endif
 
 	for (int i = 0; i < sampleCount; i++) {
 		float currentDist = (i + dither) * distMult + addition;
 
-		if (currentDist > depth1) break;
-		#ifdef OVERWORLD
-			if (currentDist > maxDist) break;
-			//if (volumetricLight.a >= 1.0) break;
-		#else
-			if (currentDist > far) break;
-		#endif
+		if (currentDist > maxCurrentDist) break;
+		//if (volumetricLight.a >= 1.0) break;
 
 		vec4 viewPos = gbufferProjectionInverse * (vec4(texCoord, GetDistX(currentDist), 1.0) * 2.0 - 1.0);
 		viewPos /= viewPos.w;
 		vec4 wpos = gbufferModelViewInverse * viewPos;
-
 		#ifdef END
 			vec3 playerPos = wpos.xyz / wpos.w;
 			vec4 enderBeamSample = vec4(DrawEnderBeams(VdotU, playerPos), 1.0) / sampleCount;
 		#endif
-
 		wpos = shadowModelView * wpos;
 		wpos = shadowProjection * wpos;
 		wpos /= wpos.w;
@@ -145,8 +141,8 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 				vec4 shadowPosition = DistortShadow(wpos, 1.0 - shadowMapBias);
 				shadowPosition.z -= 0.0005;
 				float shadowSample = shadow2D(shadowtex0, shadowPosition.xyz).z;
-				if (shadowSample > 0.5 || eyeBrightness.y > 180) vlFactor = max(vlFactor - OSIEBB*3, 0.0);
-				else                                             vlFactor = min(vlFactor + OSIEBB*2, 1.0);
+				if (shadowSample > 0.5 || eyeBrightness.y > 180) vlFactor = max(vlFactor - OSIEBCA*3, 0.0);
+				else                                             vlFactor = min(vlFactor + OSIEBCA*2, 1.0);
 			}
 		} else vlFactor = 0.0;
 	#endif

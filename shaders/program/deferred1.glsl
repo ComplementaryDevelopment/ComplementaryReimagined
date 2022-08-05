@@ -45,7 +45,7 @@ uniform sampler2D noisetex;
 	uniform mat4 gbufferProjection;
 #endif
 
-#ifdef SSAO
+#if defined SSAO || defined WORLD_OUTLINE
 	uniform float aspectRatio;
 #endif
 
@@ -55,12 +55,19 @@ uniform sampler2D noisetex;
 	uniform sampler2D colortex5;
 #endif
 
+#ifdef AURORA_BOREALIS
+	uniform int moonPhase;
+
+	uniform float isSnowy;
+#endif
+
 #if CLOUD_QUALITY >= 0
 	uniform sampler2D colortex3;
 #endif
 #if CLOUD_QUALITY >= 2
+	uniform ivec2 eyeBrightness;
+	
 	uniform sampler2DShadow shadowtex0;
-	uniform sampler2D shadowcolor0;
 #endif
 
 #ifdef TEMPORAL_FILTER
@@ -88,10 +95,23 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	vec3 lightVec = sunVec;
 #endif
 
-#ifdef SSAO
+#if defined SSAO || defined WORLD_OUTLINE
     float farMinusNear = far - near;
 
     vec2 view = vec2(viewWidth, viewHeight);
+#endif
+
+#ifdef TEMPORAL_FILTER
+	ivec2 neighbourhoodOffsets[8] = ivec2[8](
+		ivec2(-1, -1),
+		ivec2( 0, -1),
+		ivec2( 1, -1),
+		ivec2(-1,  0),
+		ivec2( 1,  0),
+		ivec2(-1,  1),
+		ivec2( 0,  1),
+		ivec2( 1,  1)
+	);
 #endif
 
 #ifndef SCENE_AWARE_LIGHT_SHAFTS
@@ -99,26 +119,25 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #endif
 
 //Common Functions//
-#ifdef SSAO
+#if defined SSAO || defined WORLD_OUTLINE
     float GetLinearDepth(float depth) {
         return (2.0 * near) / (far + near - depth * farMinusNear);
     }
+#endif
 
+#ifdef SSAO
     vec2 OffsetDist(float x, int s) {
         float n = fract(x * 1.414) * 3.1415;
         return pow2(vec2(cos(n), sin(n)) * x / s);
     }
 
-    float DoAmbientOcclusion(float z0, float dither) {
+    float DoAmbientOcclusion(float linearZ0, float dither) {
         float ao = 0.0;
         int samples = 12;
         
-        if (z0 < 0.56) return 1.0;
-        z0 = GetLinearDepth(z0);
-        
         float sampleDepth = 0.0, angle = 0.0, dist = 0.0;
         float fovScale = gbufferProjection[1][1] / 1.37;
-        float distScale = max(farMinusNear * z0 + near, 3.0);
+        float distScale = max(farMinusNear * linearZ0 + near, 3.0);
         vec2 scale = vec2(0.4 / aspectRatio, 0.5) * fovScale / distScale;
 
         for (int i = 1; i <= samples; i++) {
@@ -129,12 +148,12 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
             vec2 coord2 = texCoord - offset;
 
             sampleDepth = GetLinearDepth(texture2D(depthtex0, coord1).r);
-            float aosample = farMinusNear * (z0 - sampleDepth) * 2.0;
+            float aosample = farMinusNear * (linearZ0 - sampleDepth) * 2.0;
             angle = clamp(0.5 - aosample, 0.0, 1.0);
             dist = clamp(0.5 * aosample - 1.0, 0.0, 1.0);
 
             sampleDepth = GetLinearDepth(texture2D(depthtex0, coord2).r);
-            aosample = farMinusNear * (z0 - sampleDepth) * 2.0;
+            aosample = farMinusNear * (linearZ0 - sampleDepth) * 2.0;
             angle += clamp(0.5 - aosample, 0.0, 1.0);
             dist += clamp(0.5 * aosample - 1.0, 0.0, 1.0);
             
@@ -185,6 +204,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#endif
 #endif
 
+#ifdef AURORA_BOREALIS
+	#include "/lib/atmospherics/auroraBorealis.glsl"
+#endif
+
 #if defined OVERWORLD && CLOUD_QUALITY > 0
 	#include "/lib/atmospherics/volumetricClouds.glsl"
 #endif
@@ -193,12 +216,16 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#include "/lib/atmospherics/enderStars.glsl"
 #endif
 
+#ifdef WORLD_OUTLINE
+	#include "/lib/misc/worldOutline.glsl"
+#endif
+
 //Program//
 void main() {
 	vec3 color = texelFetch(colortex0, texelCoord, 0).rgb;
-	float z    = texelFetch(depthtex0, texelCoord, 0).r;
+	float z0   = texelFetch(depthtex0, texelCoord, 0).r;
 
-	vec4 screenPos = vec4(texCoord, z, 1.0);
+	vec4 screenPos = vec4(texCoord, z0, 1.0);
 	vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
 	viewPos /= viewPos.w;
 	float lViewPos = length(viewPos);
@@ -214,6 +241,10 @@ void main() {
 	float VdotU = dot(nViewPos, upVec);
 	float VdotS = dot(nViewPos, sunVec);
 
+	#ifdef AURORA_BOREALIS
+		vec3 auroraBorealis = vec3(0.0);
+	#endif
+
 	#ifdef TEMPORAL_FILTER
 		vec4 refAndCloudNew = vec4(0.0);
 	#endif
@@ -221,11 +252,16 @@ void main() {
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
 		bool sun = false;
 	#endif
-	if (z < 1.0) {
+	
+	if (z0 < 1.0) {
 		vec3 texture5 = texelFetch(colortex1, texelCoord, 0).rgb;
 
+		#if defined SSAO || defined WORLD_OUTLINE
+			float linearZ0 = GetLinearDepth(z0);
+		#endif
+
 		#ifdef SSAO
-			float ssao = DoAmbientOcclusion(z, dither);
+			float ssao = z0 < 0.56 ? 1.0 : DoAmbientOcclusion(linearZ0, dither);
 		#else
 			float ssao = 1.0;
 		#endif
@@ -254,10 +290,7 @@ void main() {
 				vec3 roughPos = playerPos + cameraPosition;
 				roughPos *= 256.0;
 				vec2 roughCoord = roughPos.xz + roughPos.y;
-				#ifdef TAA
-					roughCoord += ditherAnimate;
-				#endif
-				vec3 roughNoise = texture2D(noisetex, roughCoord).rgb;
+				vec3 roughNoise = vec3(texture2D(noisetex, roughCoord).r, texture2D(noisetex, roughCoord + 0.1).r, texture2D(noisetex, roughCoord + 0.2).r);
 				roughNoise = vec3(0.3, 0.3, 0.3) * (roughNoise - vec3(0.5));
 				
 				roughNoise *= pow2(1.0 - smoothnessD);
@@ -270,10 +303,21 @@ void main() {
 			}
 		#endif
 
+		#ifdef WORLD_OUTLINE
+			DoWorldOutline(color, linearZ0);
+		#endif
+
 		DoFog(color, lViewPos, playerPos, VdotU, VdotS, dither);
 	} else { // Sky
-		#if defined OVERWORLD && CLOUD_QUALITY > 0
-			sun = color.r > 2.0;
+		#ifdef OVERWORLD
+			#if CLOUD_QUALITY > 0
+				sun = color.r > 2.0;
+			#endif
+
+			#ifdef AURORA_BOREALIS
+				auroraBorealis = GetAuroraBorealis(viewPos.xyz, VdotU, dither);
+				color.rgb += auroraBorealis;
+			#endif
 		#endif
 		#ifdef NETHER
 			color.rgb = netherSkyColor;
@@ -287,7 +331,7 @@ void main() {
 	float cloudLinearDepth = 1.0;
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
 		vec4 volumetricClouds = vec4(0.0);
-		if (z > 0.56) {
+		if (z0 > 0.56) {
 			const float threshold1 = 800.0;
 			#ifndef SECOND_CLOUD_LAYER
 				volumetricClouds =
@@ -309,11 +353,15 @@ void main() {
 			#endif
 		}
 
+		#ifdef AURORA_BOREALIS
+			volumetricClouds.rgb += auroraBorealis * 0.1;
+		#endif
+
 		#ifndef TEMPORAL_FILTER
 			color = mix(color, volumetricClouds.rgb, volumetricClouds.a);
 		#else
 			refAndCloudNew.rgb += volumetricClouds.rgb * volumetricClouds.a;
-			refAndCloudNew.a = volumetricClouds.a;
+			refAndCloudNew.a = max(refAndCloudNew.a, volumetricClouds.a);
 		#endif
 	#endif
 	#ifdef SCENE_AWARE_LIGHT_SHAFTS
@@ -323,25 +371,27 @@ void main() {
 
 	#ifdef TEMPORAL_FILTER
 		vec4 refAndCloudWrite;
+		if (z0 > 0.56) {
+			vec3 cameraOffset = cameraPosition - previousCameraPosition;
+			vec2 prvCoord = Reprojection(playerPos, cameraOffset);
+			vec4 refAndCloudOld = texture2D(colortex6, prvCoord);
 
-		vec3 cameraOffset = (cameraPosition - previousCameraPosition) * float(z > 0.56);
-		vec2 prvCoord = Reprojection(playerPos, cameraOffset);
-		vec4 refAndCloudOld = texture2D(colortex6, prvCoord);
-		if (z > 0.56) {
 			float blendFactor = float(prvCoord.x > 0.0 && prvCoord.x < 1.0 && prvCoord.y > 0.0 && prvCoord.y < 1.0);
 			float velocity = length(cameraOffset) * max(16.0 - lViewPos / gbufferProjection[1][1], 3.0);
-			blendFactor *= max(exp(-velocity) * 0.95, 0.25);
+			blendFactor *= max(exp(-velocity) * 0.95, 0.5);
+
+			for (int i = 0; i < 8; i++) {
+				float depthCheck = texelFetch(depthtex0, texelCoord + neighbourhoodOffsets[i] * 4, 0).r;
+				if (abs(GetLinearDepth(depthCheck) - GetLinearDepth(z)) > 0.09) blendFactor = 0.0;
+			}
+			blendFactor *= min1(refAndCloudOld.a * 10000000.0);
+
 			refAndCloudWrite = mix(refAndCloudNew, refAndCloudOld, blendFactor);
 
-			if (texCoord.x < -0.5) {
-				color.rgb *= 1.0 - refAndCloudNew.a;
-				color.rgb += refAndCloudNew.rgb;
-			} else {
-				color.rgb *= 1.0 - refAndCloudWrite.a;
-				color.rgb += refAndCloudWrite.rgb;
-			}
+			color.rgb *= 1.0 - refAndCloudWrite.a;
+			color.rgb += refAndCloudWrite.rgb;
 		} else {
-			refAndCloudWrite = refAndCloudOld;
+			refAndCloudWrite = vec4(0.0);
 		}
 	#endif
 
@@ -408,8 +458,8 @@ void main() {
 				vec2 absCamPosXZ = abs(cameraPosition.xz);
 				float maxCamPosXZ = max(absCamPosXZ.x, absCamPosXZ.y);
 
-				if (gl_Fog.start / far > 0.5 || maxCamPosXZ > 350.0) vlFactor = max(vlFactor - OSIEBB*2, 0.0);
-				else                                                 vlFactor = min(vlFactor + OSIEBB*2, 1.0);
+				if (gl_Fog.start / far > 0.5 || maxCamPosXZ > 350.0) vlFactor = max(vlFactor - OSIEBCA*2, 0.0);
+				else                                                 vlFactor = min(vlFactor + OSIEBCA*2, 1.0);
 			}
 		#endif
     #endif

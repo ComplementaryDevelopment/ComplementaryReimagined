@@ -13,6 +13,12 @@ noperspective in vec2 texCoord;
 //Uniforms//
 uniform sampler2D colortex3;
 
+#ifdef UNDERWATER_DISTORTION
+	uniform int isEyeInWater;
+
+	uniform float frameTimeCounter;
+#endif
+
 //Pipeline Constants//
 /*
 const int colortex0Format = R11F_G11F_B10F; //main color
@@ -54,7 +60,13 @@ const float ambientOcclusionLevel = 1.0;
 
 //Program//
 void main() {
-	vec3 color = texture2D(colortex3, texCoord).rgb;
+	vec2 texCoordM = texCoord;
+
+	#ifdef UNDERWATER_DISTORTION
+		if (isEyeInWater == 1) texCoordM += 0.0007 * sin((texCoord.x + texCoord.y) * 25.0 + frameTimeCounter * 3.0);
+	#endif
+
+	vec3 color = texture2D(colortex3, texCoordM).rgb;
 
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(color, 1.0);

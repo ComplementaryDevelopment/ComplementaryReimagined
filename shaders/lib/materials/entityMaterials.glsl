@@ -14,11 +14,20 @@ if (entityId < 50064) {
                 }
             } else {
                 if (entityId == 50008) { // Item Frame
-                    //if (normalM == vec3(0.0, 1.0, 0.0)) normalM = northVec;
+                    noSmoothLighting = true;
+                    if (dot(normal, normal) > 1.1) { // Maps
+                        normalM = upVec;
+                        shadowMult = vec3(0.0);
+                        lmCoordM.x = mix(lmCoordM.x, 1.0, pow2(pow2(lmCoord.y)) * 0.75);
+                    }
                 } else /*if (entityId == 50012)*/ { // Glow Item Frame
+                    noSmoothLighting = true;
                     lmCoordM = vec2(1.0, 0.0);
                     emission = 0.25;
-                    //if (normalM == vec3(0.0, 1.0, 0.0)) normalM = northVec;
+                    if (dot(normal, normal) > 1.1) { // Maps
+                        normalM = upVec;
+                        shadowMult = vec3(0.0);
+                    }
                 }
             }
         } else {

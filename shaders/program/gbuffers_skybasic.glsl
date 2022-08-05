@@ -67,7 +67,7 @@ void main() {
 
 		float VdotU = dot(nViewPos, upVec);
 		float VdotS = dot(nViewPos, sunVec);
-		float dither = Bayer4(gl_FragCoord.xy);
+		float dither = Bayer8(gl_FragCoord.xy);
 
 		color.rgb = GetSky(VdotU, VdotS, dither, true, false);
 		

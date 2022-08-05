@@ -19,7 +19,6 @@ flat in vec4 glColor;
 
 //Uniforms//
 uniform int isEyeInWater;
-uniform int entityId;
 
 uniform vec3 cameraPosition;
 
@@ -92,15 +91,13 @@ void main() {
 		if (mat < 31020) { // Glass, Glass Pane, Beacon (31008, 31012, 31016)
 			if (color1.a > 0.5) color1 = vec4(0.0, 0.0, 0.0, 1.0);
 			else color1 = vec4(vec3(0.25 * (1.0 - GLASS_OPACITY)), 1.0);
+			//color2.rgb = vec3(0.25);
 		} else {
 			//if (mat == 31020) { //
 
 			//} /*else : upper limit*/
 		}
 	}
-
-	color1.r += OSIEBB;
-	if (entityId >= 0) color1.rgb = vec3(0.0, 0.0, 0.0);
 
     gl_FragData[0] = color1;
     gl_FragData[1] = color2;

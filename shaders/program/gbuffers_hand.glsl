@@ -65,7 +65,7 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 void main() {
 	vec4 color = texture2D(texture, texCoord);
 	
-	float materialMask = OSIEBB * 4.0; // No SSAO, No TAA
+	float materialMask = OSIEBCA * 4.0; // No SSAO, No TAA
 
 	if (color.a > 0.00001) {
 		color.rgb *= glColor.rgb;

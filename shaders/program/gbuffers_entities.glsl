@@ -74,31 +74,30 @@ void main() {
 	vec4 color = texture2D(texture, texCoord);
 	color *= glColor;
 
-	float materialMask = OSIEBB * 4.0; // No SSAO, No TAA
-	if (color.a > 0.00001) {
-		color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
+	color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
 
-		vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
-		vec3 viewPos = ScreenToView(screenPos);
-		vec3 nViewPos = normalize(viewPos);
-		vec3 playerPos = ViewToPlayer(viewPos);
-		float lViewPos = length(viewPos);
-		float VdotN = dot(nViewPos, normal);
+	vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+	vec3 viewPos = ScreenToView(screenPos);
+	vec3 nViewPos = normalize(viewPos);
+	vec3 playerPos = ViewToPlayer(viewPos);
+	float lViewPos = length(viewPos);
+	float VdotN = dot(nViewPos, normal);
 
-		float emission = 0.0, highlightMult = 1.0;
-		vec2 lmCoordM = lmCoord;
-		vec3 normalM = VdotN > 0.0 ? -normal : normal; // Inverted Normal Workaround
-		vec3 shadowMult = vec3(1.0);
-		#ifdef IPBR
-			#include "/lib/materials/entityMaterials.glsl"
-		#else
-			// I should put player effects here when I actually do player effects
-		#endif
+	bool noSmoothLighting = atlasSize.x < 600.0; // To fix fire looking too dim
+	float materialMask = OSIEBCA * 4.0; // No SSAO, No TAA
+	float emission = 0.0, highlightMult = 1.0;
+	vec2 lmCoordM = lmCoord;
+	vec3 normalM = VdotN > 0.0 ? -normal : normal; // Inverted Normal Workaround
+	vec3 shadowMult = vec3(1.0);
+	#ifdef IPBR
+		#include "/lib/materials/entityMaterials.glsl"
+	#else
+		// I should put player effects here when I actually do player effects
+	#endif
 
-		DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-		           true, false, false, 0,
-			       0.0, highlightMult, emission);
-	}
+	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
+				noSmoothLighting, false, false, 0,
+				0.0, highlightMult, emission);
 
 	/* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;
@@ -165,6 +164,11 @@ void main() {
 					gl_Position.z += 0.0001;
 				}
 			}
+			if (gl_Normal.y == 1.0) { // Maps
+				normal = upVec * 2.0;
+			}
+		} else if (entityId == 50084) { // Slime
+			gl_Position.z -= 0.00015;
 		}
 	#endif
 }

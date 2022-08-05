@@ -1,4 +1,4 @@
-materialMask = OSIEBB * 3.0; // Gold Fresnel
+materialMask = OSIEBCA * 3.0; // Gold Fresnel
 
 float colorG2 = pow2(color.g);
 float colorG4 = pow2(colorG2);

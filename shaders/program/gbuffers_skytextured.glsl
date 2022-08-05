@@ -57,9 +57,9 @@ void main() {
 		float VdotU = dot(nViewPos, upVec);
 
 		if (VdotS > 0.0) {
-			color.rgb *= float(color.b > 0.1775); // 0.065 to 0.290 // disable with compatibility mode
+			color.rgb *= float(color.b > 0.1775); // 0.065 to 0.290
 
-			if (color.b > 0.48) { // 0.295 to 0.665 // disable with compatibility mode
+			if (color.b > 0.48) { // 0.295 to 0.665
 				color.rgb *= 12.0;
 			} else {
 				color.rgb *= 8.0;
@@ -67,7 +67,7 @@ void main() {
 
 			color.rgb *= normalize(lightColor);
 		} else {
-			color.rgb *= sqrt2(max0(color.r - 0.115)); // 0.065 to 0.165 // disable with compatibility mode
+			color.rgb *= sqrt2(max0(color.r - 0.115)); // 0.065 to 0.165
 			color.rgb *= 1.5;
 		}
 

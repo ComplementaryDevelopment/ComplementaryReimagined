@@ -23,6 +23,7 @@ uniform vec3 fogColor;
 
 uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
+uniform sampler2D depthtex1;
 
 #if defined BLOOM_FOG || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
 	uniform vec3 cameraPosition;
@@ -51,7 +52,6 @@ uniform sampler2D depthtex0;
 	uniform mat4 shadowProjection;
 
 	uniform sampler2D colortex3;
-	uniform sampler2D depthtex1;
 	uniform sampler2D noisetex;
 	uniform sampler2DShadow shadowtex0;
 	uniform sampler2DShadow shadowtex1;
@@ -102,13 +102,13 @@ uniform sampler2D depthtex0;
 void main() {
 	vec3 color = texelFetch(colortex0, texelCoord, 0).rgb;
 	float z0 = texelFetch(depthtex0, texelCoord, 0).r;
+	float z1 = texelFetch(depthtex1, texelCoord, 0).r;
 
 	#if LIGHTSHAFT_QUALITY > 0
 		vec4 volumetricLight = vec4(0.0);
 		float vlFactorM = vlFactor;
 
 		#if defined OVERWORLD || defined END
-			float z1 = texelFetch(depthtex1, texelCoord, 0).r;
 			vec3 translucentMult = texelFetch(colortex3, texelCoord, 0).rgb;
 			if (translucentMult == vec3(0.0)) translucentMult = vec3(1.0);
 
@@ -126,7 +126,7 @@ void main() {
 				dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
 			#endif
 
-			volumetricLight = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
+			volumetricLight = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
 		#endif
 	#endif
 
@@ -139,10 +139,13 @@ void main() {
 		#if LIGHTSHAFT_QUALITY > 0
 			volumetricLight.rgb *= pow2(underwaterMult);
 		#endif
+	} else if (isEyeInWater == 2) {
+		if (z1 == 1.0) color.rgb = fogColor * 5.0;
+		volumetricLight.rgb *= 0.0;
 	}
-		
+	
 	color = pow(color, vec3(2.2));
-		
+	
 	#if LIGHTSHAFT_QUALITY > 0
 		#ifndef OVERWORLD
 			volumetricLight.rgb *= volumetricLight.rgb;
@@ -159,7 +162,7 @@ void main() {
 
 		color *= GetBloomFog(lViewPos0);
 	#endif
-
+	
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(color, 1.0);
 	

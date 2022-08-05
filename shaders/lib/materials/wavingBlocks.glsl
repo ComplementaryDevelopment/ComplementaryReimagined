@@ -31,7 +31,7 @@ void DoWave_Foliage(inout vec3 playerPos, vec3 worldPos) {
 }
 
 void DoWave_GroundedFoliage(inout vec3 playerPos, vec3 worldPos) {
-    if (gl_MultiTexCoord0.t < mc_midTexCoord.t || fract(worldPos.y + 0.2) > 0.25) {
+    if (gl_MultiTexCoord0.t < mc_midTexCoord.t || fract(worldPos.y + 0.21) > 0.26) {
         DoWave_Foliage(playerPos, worldPos);
     }
 }

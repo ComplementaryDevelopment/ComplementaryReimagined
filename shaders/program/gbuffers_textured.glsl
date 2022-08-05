@@ -97,12 +97,12 @@ void main() {
 	#endif
 
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
-		if (cloudLinearDepth < 1.0 && cloudLinearDepth > 0.0) if (pow2(cloudLinearDepth + OSIEBB * dither) * far < lViewPos) discard;
+		if (cloudLinearDepth < 1.0 && cloudLinearDepth > 0.0) if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < lViewPos) discard;
 	#endif
 
 	vec3 shadowMult = vec3(1.0);
 	vec2 lmCoordM = lmCoord;
-	float emission = 0.0, materialMask = OSIEBB * 4.0; // No SSAO, No TAA
+	float emission = 0.0, materialMask = OSIEBCA * 4.0; // No SSAO, No TAA
 
 	#ifdef IPBR
 	if (atlasSize.x < 900.0) { // We don't want to detect particles from the block atlas
@@ -127,13 +127,19 @@ void main() {
 		}
 		//color.rgb = vec3(fract(float(frameCounter) * 0.01), fract(float(frameCounter) * 0.015), fract(float(frameCounter) * 0.02));
 	}
+
+	bool noSmoothLighting = false;
+	#else
+	bool noSmoothLighting = true;
 	#endif
 
 	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normal, lmCoordM,
-	           false, false, false, 0,
+	           noSmoothLighting, false, false, 0,
 			   0.0, 1.0, emission);
 
-	color.rgb *= 1.5;
+	#ifdef IPBR
+		color.rgb *= 1.5;
+	#endif
 
 	#if MC_VERSION >= 11500
 		vec3 nViewPos = normalize(viewPos);
@@ -146,7 +152,7 @@ void main() {
 
 	// Blending
 	vec3 translucentMult = mix(vec3(1.0), color.rgb, sqrt1(color.a)) * (1.0 - pow(color.a, 64.0));
-	translucentMult.r += OSIEBB;
+	translucentMult.r += OSIEBCA;
 	
 	/* DRAWBUFFERS:013 */
 	gl_FragData[0] = color;

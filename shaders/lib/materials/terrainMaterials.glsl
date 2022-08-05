@@ -11,7 +11,7 @@ if (mat < 10512) {
                             else if (mat == 10004) { // Grounded Waving Foliage
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
-                                DoFoliageColorTweaks(color.rgb, lViewPos);
+                                DoFoliageColorTweaks(color.rgb, shadowMult, lViewPos);
                             }
                         } else {
                             if (mat == 10008) { // Leaves
@@ -27,12 +27,12 @@ if (mat < 10512) {
                             if (mat == 10016) { // Non-waving Foliage
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
-                                DoFoliageColorTweaks(color.rgb, lViewPos);
+                                DoFoliageColorTweaks(color.rgb, shadowMult, lViewPos);
                             }
                             else /*if (mat == 10020)*/ { // Upper Waving Foliage
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
-                                DoFoliageColorTweaks(color.rgb, lViewPos);
+                                DoFoliageColorTweaks(color.rgb, shadowMult, lViewPos);
                             }
                         } else {
                             if (mat == 10024) { //
@@ -70,7 +70,7 @@ if (mat < 10512) {
                                         color.rgb *= color.rgb;
                                         emission = 8.0 * color.r;
                                     } else if (color.r > color.g * 2.0) {
-                                        materialMask = OSIEBB * 5.0; // Redstone Fresnel
+                                        materialMask = OSIEBCA * 5.0; // Redstone Fresnel
 
                                         float factor = pow2(color.r);
                                         smoothnessG = 0.4;
@@ -165,7 +165,6 @@ if (mat < 10512) {
                     if (mat < 10080) {
                         if (mat < 10072) {
                             if (mat == 10064) { // Lectern
-                                noVanillaAO = true;
                                 #include "/lib/materials/specificMaterials/planks/oakPlanks.glsl"
                             }
                             else /*if (mat == 10068)*/ { // Lava
@@ -647,7 +646,7 @@ if (mat < 10512) {
                                 }
                             }
                             else /*if (mat == 10292)*/ { // Copper Block++:All Non-raw Variants
-                                materialMask = OSIEBB * 2.0; // Copper Fresnel
+                                materialMask = OSIEBCA * 2.0; // Copper Fresnel
                                 smoothnessG = pow2(pow2(color.r)) + pow2(max0(color.g - color.r * 0.5)) * 0.3;
                                 smoothnessG = min1(smoothnessG);
                                 smoothnessD = smoothnessG;
@@ -740,7 +739,7 @@ if (mat < 10512) {
                             }
                         } else {
                             if (mat == 10328) { // Amethyst Block, Budding Amethyst
-                                materialMask = OSIEBB; // Intense Fresnel
+                                materialMask = OSIEBCA; // Intense Fresnel
 
                                 float factor = pow2(color.r);
 
@@ -890,7 +889,7 @@ if (mat < 10512) {
                     if (mat < 10400) {
                         if (mat < 10392) {
                             if (mat == 10384) { // Packed Ice
-                                materialMask = OSIEBB; // Intense Fresnel
+                                materialMask = OSIEBCA; // Intense Fresnel
                                 float factor = pow2(color.g);
                                 float factor2 = pow2(factor);
                                 smoothnessG = 1.0 - 0.5 * factor;
@@ -902,7 +901,7 @@ if (mat < 10512) {
                                 #endif
                             }
                             else /*if (mat == 10388)*/ { // Blue Ice
-                                materialMask = OSIEBB; // Intense Fresnel
+                                materialMask = OSIEBCA; // Intense Fresnel
                                 float factor = min1(pow2(color.g) * 1.38);
                                 float factor2 = pow2(factor);
                                 smoothnessG = 1.0 - 0.5 * factor;
@@ -1038,7 +1037,7 @@ if (mat < 10512) {
                         if (mat < 10456) {
                             if (mat == 10448) { // Sea Lantern
                                 noSmoothLighting = true; noDirectionalShading = true;
-                                lmCoordM.x = 0.65;
+                                lmCoordM.x = 0.7;
                                 
                                 smoothnessD = min1(max0(0.5 - color.r) * 2.0);
                                 smoothnessG = color.g;
@@ -1046,7 +1045,7 @@ if (mat < 10512) {
                                 vec2 signMidCoordPosM = (floor((signMidCoordPos + 1.0) * 8.0) + 0.5) * 0.125 - 1.0;
                                 float dotsignMidCoordPos = dot(signMidCoordPosM, signMidCoordPosM);
                                 float lBlockPosM = pow2(max0(1.0 - 1.125 * dotsignMidCoordPos));
-                                emission = pow2(color.b) * 0.8 + 6.0 * lBlockPosM;
+                                emission = pow2(color.b) * 0.8 + 5.0 * lBlockPosM;
 
                                 color.rb *= vec2(1.13, 1.05);
 
@@ -1143,23 +1142,26 @@ if (mat < 10512) {
                     } else {
                         if (mat < 10504) {
                             if (mat == 10496) { // Torch
-                                noSmoothLighting = true; noDirectionalShading = true;
-                                lmCoordM.x = 0.77;
-
+                                noDirectionalShading = true;
+                                lmCoordM.x = min1(0.7 + 0.3 * pow2(1.0 - signMidCoordPos.y));
+                                
                                 if (color.r > 0.95) {
-                                    emission = 4.3;
+                                    emission = 2.8;
                                     color.r *= 1.2;
                                     color.b *= 0.9;
                                 }
+                                emission += 0.0001; // No light reducing during noon
                             }
                             else /*if (mat == 10500)*/ { // End Rod
-                                noSmoothLighting = true; noDirectionalShading = true;
-                                lmCoordM.x = 0.77;
+                                noDirectionalShading = true;
+                                vec3 fractPos = abs(fract(playerPos + cameraPosition) - 0.5);
+                                float maxCoord = max(fractPos.x, max(fractPos.y, fractPos.z));
+                                lmCoordM.x = maxCoord < 0.4376 ? 0.88 : 0.73;
 
                                 float dotColor = dot(color.rgb, color.rgb);
                                 if (dotColor > 2.0) {
                                     float factor = pow2(pow2(dotColor * 0.333));
-                                    emission = 4.7;
+                                    emission = 2.9;
                                     color.rgb = pow2(pow2(color.rgb));
                                     color.g *= 0.95;
                                 } else {
@@ -1239,9 +1241,11 @@ if (mat < 10512) {
                                 lmCoordM.x = min(lmCoordM.x * 0.9, 0.77);
 
                                 if (color.b > 0.6) {
-                                    emission = 3.75;
+                                    emission = 3.2;
                                     color.rgb *= color.rgb;
+                                    color.r = min1(color.r + 0.1);
                                 }
+                                emission += 0.0001; // No light reducing during noon
                             }
                             else /*if (mat == 10532)*/ { // Brown Mushroom Block
                                 if (color.r > color.g && color.g > color.b && color.b > 0.37) {
@@ -1365,8 +1369,7 @@ if (mat < 10512) {
                                 if (min1(color.r * 3.0) >= color.g + 0.1) { // Soul Lantern:Metal Part, Chain
                                     #include "/lib/materials/specificMaterials/lanternMetal.glsl"
                                 } else { // Soul Lantern:Emissive Part
-                                    emission = color.r * 4.0 + 0.5;
-                                    color.r *= 0.75;
+                                    emission = color.r * 3.5 + 0.5;
                                 }
                             }
                         } else {
@@ -1446,6 +1449,7 @@ if (mat < 10512) {
                             }
                             else /*if (mat == 10604)*/ { // Redstone Torch
                                 #include "/lib/materials/specificMaterials/redstoneTorch.glsl"
+                                emission += 0.0001; // No light reducing during noon
                             }
                         }
                     }
@@ -1516,7 +1520,7 @@ if (mat < 10512) {
                                 }
                             }
                             else /*if (mat == 10636)*/ { // Redstone Lamp:Unlit
-                                materialMask = OSIEBB; // Intense Fresnel
+                                materialMask = OSIEBCA; // Intense Fresnel
                                 smoothnessG = color.r * 0.5 + 0.2;
                                 float factor = pow2(smoothnessG);
                                 highlightMult = factor * 2.0 + 1.0;
@@ -1535,7 +1539,7 @@ if (mat < 10512) {
                                 noDirectionalShading = true;
                                 lmCoordM.x = 0.88;
 
-                                materialMask = OSIEBB; // Intense Fresnel
+                                materialMask = OSIEBCA; // Intense Fresnel
                                 smoothnessG = color.r * 0.35 + 0.2;
                                 float factor = pow2(smoothnessG);
                                 highlightMult = factor * 2.0 + 1.0;
@@ -1572,7 +1576,8 @@ if (mat < 10512) {
                                 emission = min(pow2(pow2(pow2(dotColor * 0.6))), 5.5) + 0.1;
                             }
                             else /*if (mat == 10652)*/ { // Campfire:Lit
-                                noSmoothLighting = true;
+                                vec3 fractPos = fract(playerPos + cameraPosition) - 0.5;
+                                lmCoordM.x = 1.0 - 0.5 * dot(fractPos.xz, fractPos.xz);
 
                                 float dotColor = dot(color.rgb, color.rgb);
                                 if (color.r > color.b && color.r - color.g < 0.15 && dotColor < 1.5) {
@@ -1596,6 +1601,7 @@ if (mat < 10512) {
                                     noDirectionalShading = true;
                                     emission = 1.5;
                                     color.rgb = pow1_5(color.rgb);
+                                    color.r = min1(color.r + 0.15);
                                 }
                             }
                             else /*if (mat == 10660)*/ { // Campfire:Unlit, Soul Campfire:Unlit

@@ -84,8 +84,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #endif
 
 //Common Functions//
-void DoFoliageColorTweaks(inout vec3 color, float lViewPos) {
-	color *= 1.0 + 0.002 * max(50.0 - lViewPos, 0.0);
+void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, float lViewPos) {
+	float factor = max(80.0 - lViewPos, 0.0);
+	//color *= 1.0 + 0.001 * factor;
+	shadowMult *= 1.0 + 0.005 * noonFactor * factor;
 }
 
 void DoBrightBlockTweaks(inout vec3 shadowMult, inout float highlightMult) {
@@ -167,6 +169,8 @@ void main() {
 			} else if (mat == 10020) { // Upper Waving Foliage
 				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 			}
+
+			else if (lmCoord.x > 0.99999) lmCoordM.x = 0.95;
 		#endif
 
 		#if SHOW_LIGHT_LEVEL > 0
@@ -258,6 +262,7 @@ void main() {
 	lmCoord  = GetLightMapCoordinates();
 
 	glColor = gl_Color;
+	if (glColor.a < 0.1) glColor.a = 1.0;
 
 	normal = normalize(gl_NormalMatrix * gl_Normal);
 	upVec = normalize(gbufferModelView[1].xyz);

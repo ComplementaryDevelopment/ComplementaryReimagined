@@ -172,7 +172,7 @@ void main() {
 	#endif
 
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
-		if (cloudLinearDepth < 1.0) if (pow2(cloudLinearDepth + OSIEBB * dither) * far < lViewPos) discard;
+		if (cloudLinearDepth < 1.0) if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < lViewPos) discard;
 	#endif
 
 	vec3 nViewPos = normalize(viewPos);
@@ -326,6 +326,8 @@ void main() {
 
 		viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
 	#endif
+
+	gl_Position.z -= 0.0001;
 }
 
 #endif

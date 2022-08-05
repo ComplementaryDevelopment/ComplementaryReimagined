@@ -24,8 +24,10 @@ screen.PERFORMANCE_SETTINGS.comment=Settings that directly relate to the perform
 
 screen.PREFERENCE_SETTINGS=Preference Settings
 screen.PREFERENCE_SETTINGS.comment=Settings that are optional, and not changed by the different shader profiles.
-    screen.CLOUD_SETTINGS=Clouds
-    screen.CLOUD_SETTINGS.comment=Settings that relate to the clouds.
+    screen.SKY_SETTINGS=Sky
+    screen.SKY_SETTINGS.comment=Settings that relate to the sky.
+        screen.CLOUD_SETTINGS=Clouds
+        screen.CLOUD_SETTINGS.comment=Settings that relate to the clouds.
     screen.CAMERA_SETTINGS=Camera
     screen.CAMERA_SETTINGS.comment=Settings that determine how the final image is tweaked.
     screen.IPBR_SETTINGS=IntegratedPBR
@@ -163,6 +165,18 @@ option.NIGHT_STAR_AMOUNT.comment=Determines the amount of stars in the night sky
 value.NIGHT_STAR_AMOUNT.2=§aMedium
 value.NIGHT_STAR_AMOUNT.3=§aHigh
 
+option.AURORA_BOREALIS=Aurora Borealis
+option.AURORA_BOREALIS.comment=Enables northern lights to appear in the night sky.
+value.AURORA_BOREALIS.true=§dON
+value.AURORA_BOREALIS.false=§aOFF
+
+option.AURORA_CONDITION=Aurora
+option.AURORA_CONDITION.comment=Determines the condition(s) for the Aurora Borealis to appear.
+value.AURORA_CONDITION.0=§aNo Condition
+value.AURORA_CONDITION.1=§aFull Moon
+value.AURORA_CONDITION.2=§aSnowy Biome
+value.AURORA_CONDITION.3=§aFull Moon in Snowy Biome
+
 option.PIXEL_SHADOW=Pixelated Shadows
 option.PIXEL_SHADOW.comment=Modifies the world coordinates on a grid to make shadows pixelated. §e[*]§r This does not affect performance.
 value.PIXEL_SHADOW.0=§aOFF
@@ -174,19 +188,19 @@ value.PIXEL_SHADOW.128=§a128x128
 
 option.BLOOM_STRENGTH=Bloom Strength
 option.BLOOM_STRENGTH.comment=Determines the intensity of glow on bright things, and the bloom from rain/cave humidity.
-value.BLOOM_STRENGTH.0.027=§a15%
-value.BLOOM_STRENGTH.0.036=§a20%
-value.BLOOM_STRENGTH.0.045=§a25%
-value.BLOOM_STRENGTH.0.054=§a30%
-value.BLOOM_STRENGTH.0.063=§a35%
-value.BLOOM_STRENGTH.0.072=§a40%
-value.BLOOM_STRENGTH.0.081=§a45%
-value.BLOOM_STRENGTH.0.09=§a50%
-value.BLOOM_STRENGTH.0.10=§a55%
-value.BLOOM_STRENGTH.0.11=§a60%
-value.BLOOM_STRENGTH.0.12=§a65%
-value.BLOOM_STRENGTH.0.13=§a70%
-value.BLOOM_STRENGTH.0.14=§a75%
+value.BLOOM_STRENGTH.0.027=15%
+value.BLOOM_STRENGTH.0.036=20%
+value.BLOOM_STRENGTH.0.045=25%
+value.BLOOM_STRENGTH.0.054=30%
+value.BLOOM_STRENGTH.0.063=35%
+value.BLOOM_STRENGTH.0.072=40%
+value.BLOOM_STRENGTH.0.081=45%
+value.BLOOM_STRENGTH.0.09=50%
+value.BLOOM_STRENGTH.0.10=55%
+value.BLOOM_STRENGTH.0.11=60%
+value.BLOOM_STRENGTH.0.12=65%
+value.BLOOM_STRENGTH.0.13=70%
+value.BLOOM_STRENGTH.0.14=75%
 
 option.FXAA=FXAA
 option.FXAA.comment=Enables Fast Approximate Anti-Aliasing, which is basically an effect that produces smoother image.
@@ -246,3 +260,8 @@ option.WAVING_BLOCKS.comment=Adds movement to some blocks to simulate wind.
 value.WAVING_BLOCKS.0=§aOFF
 value.WAVING_BLOCKS.1=§aFoliage
 value.WAVING_BLOCKS.2=§bFoliage + Leaves
+
+option.WORLD_OUTLINE=Outlined World
+option.WORLD_OUTLINE.comment=Adds outlines around blocks.
+value.WORLD_OUTLINE.true=§bON
+value.WORLD_OUTLINE.false=§aOFF
