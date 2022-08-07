@@ -141,7 +141,10 @@ void main() {
 		#endif
 	} else if (isEyeInWater == 2) {
 		if (z1 == 1.0) color.rgb = fogColor * 5.0;
-		volumetricLight.rgb *= 0.0;
+		
+		#if LIGHTSHAFT_QUALITY > 0
+			volumetricLight.rgb *= 0.0;
+		#endif
 	}
 	
 	color = pow(color, vec3(2.2));

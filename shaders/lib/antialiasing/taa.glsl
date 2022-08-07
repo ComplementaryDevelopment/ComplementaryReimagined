@@ -58,5 +58,5 @@ void DoTAA(inout vec3 color, inout vec3 temp) {
 	
 	color = mix(color, tempColor, blendFactor);
 	temp = color;
-	//if (edge > 0.5) color.rgb = vec3(1.0, 0.0, 1.0);
+	//if (edge > 0.05) color.rgb = vec3(1.0, 0.0, 1.0);
 }
