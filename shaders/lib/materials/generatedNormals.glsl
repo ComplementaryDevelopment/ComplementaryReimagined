@@ -1,4 +1,5 @@
 const float normalThreshold = 0.05;
+const float normalClamp = 0.2;
 const float packSizeGN = 128.0;
 
 float GetDif(float lOriginalAlbedo, vec2 offsetCoord) {
@@ -11,14 +12,14 @@ float GetDif(float lOriginalAlbedo, vec2 offsetCoord) {
     float dif = lOriginalAlbedo - lNearbyAlbedo;
     if (dif > 0.0) dif = max(dif - normalThreshold, 0.0);
     else           dif = min(dif + normalThreshold, 0.0);
-    return dif;
+    return clamp(dif, -normalClamp, normalClamp);
 }
 
 void GenerateNormals(inout vec3 normalM, vec3 color) {
     vec2 absMidCoordPos2 = absMidCoordPos * 2.0;
 
     float lOriginalAlbedo = length(color.rgb);
-    float normalMult = max0(1.0 - mipDelta) * 1.5;
+    float normalMult = max0(1.0 - mipDelta) * 2.5;
 
     #ifndef SAFER_GENERATED_NORMALS
         vec2 offsetR = 16.0 / atlasSize;
@@ -51,9 +52,11 @@ void GenerateNormals(inout vec3 normalM, vec3 color) {
         
         normalMap.xy *= normalMult;
 
-        mat3 tbnMatrix = mat3(tangent.x, binormal.x, normal.x,
-                              tangent.y, binormal.y, normal.y,
-                              tangent.z, binormal.z, normal.z);
+        mat3 tbnMatrix = mat3(
+            tangent.x, binormal.x, normal.x,
+            tangent.y, binormal.y, normal.y,
+            tangent.z, binormal.z, normal.z
+        );
 
         if (normalMap.xy != vec2(0.0, 0.0))
             normalM = clamp(normalize(normalMap.xyz * tbnMatrix), vec3(-1.0), vec3(1.0));

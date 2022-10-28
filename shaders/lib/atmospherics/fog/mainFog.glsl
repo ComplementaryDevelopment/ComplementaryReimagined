@@ -70,7 +70,7 @@
         fog *= altitudeFactor * 0.9 + 0.1;
 
         #ifdef OVERWORLD
-            fog *= 0.2 + 0.8 * eyeBrightnessM;
+            fog *= 0.2 + 0.8 * sqrt2(eyeBrightnessM);
             #ifdef CAVE_FOG
                 float caveFactor = GetCaveFactor();
                 float caveFog = 1.0 - exp(- lViewPos * 0.015);

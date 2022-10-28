@@ -9,9 +9,10 @@
 #ifdef FRAGMENT_SHADER
 
 in vec2 texCoord;
-flat in vec2 lmCoord;
+in vec2 lmCoord;
 
-flat in vec3 normal, upVec, sunVec;
+flat in vec3 upVec, sunVec;
+in vec3 normal;
 
 flat in vec4 glColor;
 
@@ -97,7 +98,8 @@ void main() {
 	#endif
 
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
-		if (cloudLinearDepth < 1.0 && cloudLinearDepth > 0.0) if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < lViewPos) discard;
+		if (cloudLinearDepth > 0.0) // Because Iris changes the pipeline position of opaque particles
+		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < lViewPos) discard;
 	#endif
 
 	vec3 shadowMult = vec3(1.0);
@@ -107,7 +109,7 @@ void main() {
 	#ifdef IPBR
 	if (atlasSize.x < 900.0) { // We don't want to detect particles from the block atlas
 		if (color.b > 1.15 * (color.r + color.g) && color.g > color.r * 1.25 && color.g < 0.425 && color.b > 0.75) { // Water Particle
-			color.rgb = sqrt2(color.rgb) * 0.35;
+			color.rgb = sqrt3(color.rgb) * 0.35;
 		} else if (color.r == color.g && color.r - 0.5 * color.b < 0.06) { // Underwater Particle
 			if (isEyeInWater == 1) {
 				color.rgb = sqrt2(color.rgb) * 0.35;
@@ -166,9 +168,10 @@ void main() {
 #ifdef VERTEX_SHADER
 
 out vec2 texCoord;
-flat out vec2 lmCoord;
+out vec2 lmCoord;
 
-flat out vec3 normal, upVec, sunVec;
+flat out vec3 upVec, sunVec;
+out vec3 normal;
 
 flat out vec4 glColor;
 

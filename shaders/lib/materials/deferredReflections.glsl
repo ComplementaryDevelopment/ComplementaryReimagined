@@ -68,8 +68,8 @@ vec3 colorAdd = fresnelM * reflection.rgb * reflectColor;
 float colorMultInv = fresnelM * (intenseFresnel ? 0.25 : 0.75) * max(reflection.a, skyLightFactor);
 
 #ifndef TEMPORAL_FILTER
-    color += colorAdd;
     color *= 1.0 - colorMultInv;
+    color += colorAdd;
 #else
     refAndCloudNew.rgb = colorAdd;
     refAndCloudNew.a = colorMultInv;

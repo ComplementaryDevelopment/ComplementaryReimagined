@@ -11,7 +11,8 @@
 in vec2 texCoord;
 in vec2 lmCoord;
 
-flat in vec3 normal, upVec, sunVec, northVec, eastVec;
+flat in vec3 upVec, sunVec, northVec, eastVec;
+in vec3 normal;
 
 in vec4 glColor;
 
@@ -93,7 +94,8 @@ void main() {
 out vec2 texCoord;
 out vec2 lmCoord;
 
-flat out vec3 normal, upVec, sunVec, northVec, eastVec;
+flat out vec3 upVec, sunVec, northVec, eastVec;
+out vec3 normal;
 
 out vec4 glColor;
 

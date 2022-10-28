@@ -15,11 +15,12 @@ in vec2 lmCoord;
 in vec2 signMidCoordPos;
 flat in vec2 absMidCoordPos;
 
-flat in vec3 normal, upVec, sunVec, northVec, eastVec;
+flat in vec3 upVec, sunVec, northVec, eastVec;
+in vec3 normal;
 
 in vec4 glColor;
 
-#ifdef GENERATED_NORMALS
+#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS
 	flat in vec3 binormal, tangent;
 #endif
 
@@ -43,8 +44,13 @@ uniform mat4 shadowProjection;
 
 uniform sampler2D texture;
 
-#if defined NETHER || defined COATED_TEXTURES
+#if defined NETHER || RAIN_PUDDLES >= 1 || defined COATED_TEXTURES
 	uniform sampler2D noisetex;
+#endif
+
+#if RAIN_PUDDLES >= 1
+	uniform float wetness;
+	uniform float isRainy;
 #endif
 
 #if defined GENERATED_NORMALS || defined COATED_TEXTURES
@@ -60,7 +66,7 @@ uniform sampler2D texture;
 	uniform int heldItemId2;
 #endif
 
-#if !defined HELD_LIGHTING && SHOW_LIGHT_LEVEL == 2
+#if HELD_LIGHTING_MODE == 0 && SHOW_LIGHT_LEVEL == 2
 	uniform int heldBlockLightValue;
 	uniform int heldBlockLightValue2;
 #endif
@@ -86,8 +92,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 //Common Functions//
 void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, float lViewPos) {
 	float factor = max(80.0 - lViewPos, 0.0);
-	//color *= 1.0 + 0.001 * factor;
 	shadowMult *= 1.0 + 0.005 * noonFactor * factor;
+
+	if (signMidCoordPos.x < 0.0) shadowMult *= 1.15;
+	else shadowMult *= 0.87;
 }
 
 void DoBrightBlockTweaks(inout vec3 shadowMult, inout float highlightMult) {
@@ -138,6 +146,9 @@ void main() {
 
 		int subsurfaceMode = 0;
 		bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false;
+		#if RAIN_PUDDLES >= 1
+			float noPuddles = 0.0;
+		#endif
 		#ifdef GENERATED_NORMALS
 			bool noGeneratedNormals = false;
 		#endif
@@ -171,6 +182,56 @@ void main() {
 			}
 
 			else if (lmCoord.x > 0.99999) lmCoordM.x = 0.95;
+		#endif
+
+		#if RAIN_PUDDLES >= 1
+			float puddleLightFactor = max0(lmCoord.y * 32.0 - 31.0) * clamp((1.0 - 1.15 * lmCoord.x) * 10.0, 0.0, 1.0);
+			float puddleMixer = puddleLightFactor * isRainy;
+			if (NdotU + pow2(pow2(wetness)) * puddleMixer - noPuddles > 1.0001) {
+				mat3 tbnMatrix = mat3(
+					tangent.x, binormal.x, normal.x,
+					tangent.y, binormal.y, normal.y,
+					tangent.z, binormal.z, normal.z
+				);
+
+				vec2 worldPosXZ = playerPos.xz + cameraPosition.xz;
+				#if WATER_STYLE == 1
+					vec2 puddlePosNormal = floor(worldPosXZ * 16.0) * 0.0625;
+					vec2 puddleWind = vec2(frameTimeCounter) * 0.015;
+				#else
+					vec2 puddlePosNormal = worldPosXZ;
+					vec2 puddleWind = vec2(frameTimeCounter) * 0.03;
+				#endif
+
+				puddlePosNormal *= 0.1;
+				vec2 pNormalCoord1 = puddlePosNormal + vec2(puddleWind.x, puddleWind.y);
+				vec2 pNormalCoord2 = puddlePosNormal + vec2(puddleWind.x * -1.5, puddleWind.y * -1.0);
+				vec3 pNormalNoise1 = texture2D(noisetex, pNormalCoord1).rgb;
+				vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
+				float pNormalMult = 0.03;
+            
+				vec3 puddleNormal = vec3((pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult, 1.0);
+				puddleNormal = clamp(normalize(puddleNormal * tbnMatrix), vec3(-1.0), vec3(1.0));
+
+				#if RAIN_PUDDLES < 2
+					vec2 puddlePosForm = puddlePosNormal * 0.05;
+					float pFormNoise  = texture2D(noisetex, puddlePosForm).b   * 3.0;
+						  pFormNoise += texture2D(noisetex, puddlePosForm * 0.5).b  * 5.0;
+						  pFormNoise += texture2D(noisetex, puddlePosForm * 0.25).b * 8.0;
+						  pFormNoise *= sqrt1(wetness) * 0.5625 + 0.4375;
+						  pFormNoise  = clamp(pFormNoise - 7.0, 0.0, 1.0);
+				#else
+					float pFormNoise = wetness;
+				#endif
+				puddleMixer *= pFormNoise;
+
+				float puddleSmoothnessG = 0.7 - rainFactor * 0.3;
+				float puddleHighlight = (1.5 - subsurfaceMode * 0.6 * (1.0 - noonFactor));
+				smoothnessG = mix(smoothnessG, puddleSmoothnessG, puddleMixer);
+				highlightMult = mix(highlightMult, puddleHighlight, puddleMixer);
+				smoothnessD = mix(smoothnessD, 1.0, sqrt1(puddleMixer));
+				normalM = mix(normalM, puddleNormal, puddleMixer * rainFactor);
+			}
 		#endif
 
 		#if SHOW_LIGHT_LEVEL > 0
@@ -214,11 +275,12 @@ out vec2 lmCoord;
 out vec2 signMidCoordPos;
 flat out vec2 absMidCoordPos;
 
-flat out vec3 normal, upVec, sunVec, northVec, eastVec;
+flat out vec3 upVec, sunVec, northVec, eastVec;
+out vec3 normal;
 
 out vec4 glColor;
 
-#ifdef GENERATED_NORMALS
+#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS
 	flat out vec3 binormal, tangent;
 #endif
 
@@ -227,7 +289,7 @@ out vec4 glColor;
 	uniform float viewWidth, viewHeight;
 #endif
 
-#if WAVING_BLOCKS >= 1
+#ifdef WAVING_ANYTHING
 	uniform float frameTimeCounter;
 
 	uniform vec3 cameraPosition;
@@ -239,7 +301,7 @@ out vec4 glColor;
 attribute vec4 mc_Entity;
 attribute vec4 mc_midTexCoord;
 
-#ifdef GENERATED_NORMALS
+#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS
 	attribute vec4 at_tangent;
 #endif
 
@@ -252,7 +314,7 @@ attribute vec4 mc_midTexCoord;
 	#include "/lib/util/jitter.glsl"
 #endif
 
-#if WAVING_BLOCKS >= 1
+#ifdef WAVING_ANYTHING
 	#include "/lib/materials/wavingBlocks.glsl"
 #endif
 
@@ -277,26 +339,29 @@ void main() {
 
 	mat = int(mc_Entity.x + 0.5);
 
-	#if WAVING_BLOCKS >= 1
+	#ifdef WAVING_ANYTHING
 		vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
 
 		DoWave(position.xyz, mat);
 
+		#ifdef FLICKERING_FIX
+			//position.y += max0(0.002 - abs(mat - 10256.0)); // Iron Bars
+		#endif
+
 		gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
 	#else
-
 		gl_Position = ftransform();
-	#endif
-
-	#ifdef FLICKERING_FIX
-		if (mat == 10256) gl_Position.z -= 0.00001; // Iron Bars !!!!! someone please remind me to optimise this using position later !!!!!
+	
+		#ifdef FLICKERING_FIX
+			//if (mat == 10256) gl_Position.z -= 0.00001; // Iron Bars
+		#endif
 	#endif
 
 	#ifdef TAA
 		gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 	#endif
 
-	#ifdef GENERATED_NORMALS
+	#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS
 		binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
 		tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
 	#endif

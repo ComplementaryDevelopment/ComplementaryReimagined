@@ -82,45 +82,71 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
 
             fresnelMult = 0.5;
         }
+    #else
+        shadowMult = vec3(0.0); 
     #endif
 
-    #if WATER_STYLE >= 2
-        vec3 normalMap = vec3(0.0, 0.0, 1.0);
+    #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1
 
-        #if WATER_STYLE < 3
-            normalMap.xy += texture2D(noisetex, waterPos + wind * 0.5).rg - 0.5;
-            waterPos *= 0.5;
-            normalMap.xy -= texture2D(noisetex, waterPos - wind).rg - 0.5;
-            waterPos *= 0.5;
-            normalMap.xy -= texture2D(noisetex, waterPos + wind).rg - 0.5;
+        #if WATER_STYLE >= 2
+            vec3 normalMap = vec3(0.0, 0.0, 1.0);
+
+            #if WATER_STYLE < 3
+                normalMap.xy += texture2D(noisetex, waterPos + wind * 0.5).rg - 0.5;
+                waterPos *= 0.5;
+                normalMap.xy -= texture2D(noisetex, waterPos - wind).rg - 0.5;
+                waterPos *= 0.5;
+                normalMap.xy -= texture2D(noisetex, waterPos + wind).rg - 0.5;
+            #else
+                waterPos *= 0.35;
+                wind *= 0.8;
+                vec2 parallaxMult = 0.0005 * viewVector.xy / lViewPos;
+                float normalOffset = 0.002;
+                float waveMult = 1.25;
+
+                for (int i = 0; i < 4; i++) {
+                    float height = 0.5 - GetWaterHeightMap(waterPos, nViewPos, wind);
+                    waterPos += parallaxMult * pow2(height);
+                }
+
+                float h1 = GetWaterHeightMap(waterPos + vec2( normalOffset, 0.0), nViewPos, wind);
+                float h2 = GetWaterHeightMap(waterPos + vec2(-normalOffset, 0.0), nViewPos, wind);
+                float h3 = GetWaterHeightMap(waterPos + vec2(0.0,  normalOffset), nViewPos, wind);
+                float h4 = GetWaterHeightMap(waterPos + vec2(0.0, -normalOffset), nViewPos, wind);
+
+                normalMap.xy = vec2(h1 - h2, h3 - h4) * waveMult;
+            #endif
+
+            normalMap.xy *= 0.03 * lmCoordM.y + 0.01;
+            vec3 minNormal = mix(normal, vec3(-1.0), pow2(1.0 - fresnel));
         #else
-            waterPos *= 0.35;
-            wind *= 0.8;
-            vec2 parallaxMult = 0.0005 * viewVector.xy / lViewPos;
-            float normalOffset = 0.002;
-            float waveMult = 1.25;
+            float pNormalMult = 0.02 * rainFactor * isRainy * pow2(lmCoordM.y);
 
-            for (int i = 0; i < 4; i++) {
-                float height = 0.5 - GetWaterHeightMap(waterPos, nViewPos, wind);
-                waterPos += parallaxMult * pow2(height);
-            }
+            if (pNormalMult > 0.0005) {       
+                vec2 puddlePos = floor((playerPos.xz + cameraPosition.xz) * 16.0) * 0.00625;
 
-            float h1 = GetWaterHeightMap(waterPos + vec2( normalOffset, 0.0), nViewPos, wind);
-            float h2 = GetWaterHeightMap(waterPos + vec2(-normalOffset, 0.0), nViewPos, wind);
-            float h3 = GetWaterHeightMap(waterPos + vec2(0.0,  normalOffset), nViewPos, wind);
-            float h4 = GetWaterHeightMap(waterPos + vec2(0.0, -normalOffset), nViewPos, wind);
+                vec2 puddleWind = vec2(frameTimeCounter) * 0.015;
+                vec2 pNormalCoord1 = puddlePos + vec2(puddleWind.x, puddleWind.y);
+                vec2 pNormalCoord2 = puddlePos + vec2(puddleWind.x * -1.5, puddleWind.y * -1.0);
+                vec3 pNormalNoise1 = texture2D(noisetex, pNormalCoord1).rgb;
+                vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
+                
+                vec3 normalMap = vec3((pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult, 1.0);
+                vec3 minNormal = vec3(-1.0);
 
-            normalMap.xy = vec2(h1 - h2, h3 - h4) * waveMult;
         #endif
+        
+            mat3 tbnMatrix = mat3(
+                tangent.x, binormal.x, normal.x,
+                tangent.y, binormal.y, normal.y,
+                tangent.z, binormal.z, normal.z
+            );
 
-        normalMap.xy *= 0.03 * lmCoordM.y + 0.01;
+            normalM = clamp(normalize(normalMap * tbnMatrix), minNormal, vec3(1.0));
 
-        mat3 tbnMatrix = mat3(tangent.x, binormal.x, normal.x,
-                              tangent.y, binormal.y, normal.y,
-                              tangent.z, binormal.z, normal.z);
-
-        vec3 minNormal = mix(normal, vec3(-1.0), pow2(1.0 - fresnel));
-        normalM = clamp(normalize(normalMap * tbnMatrix), minNormal, vec3(1.0));
+        #if WATER_STYLE == 1
+            }
+        #endif
 
         #if WATER_STYLE >= 3
             fresnel = pow2(clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0));
@@ -128,7 +154,7 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
         #endif
     #endif
 
-    fresnel *= fresnelMult;
+    fresnel *= fresnelMult * (max0(NdotU) * 0.5 + 0.5);
 
     // Blending 
     float fresnel2 = pow2(fresnel);

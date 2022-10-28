@@ -13,6 +13,13 @@ in vec2 texCoord;
 in vec4 glColor;
 
 //Uniforms//
+uniform float viewWidth, viewHeight;
+
+uniform mat4 gbufferProjectionInverse;
+uniform mat4 gbufferModelViewInverse;
+uniform mat4 shadowModelView;
+uniform mat4 shadowProjection;
+
 uniform sampler2D texture;
 
 //Pipeline Constants//
@@ -22,12 +29,25 @@ uniform sampler2D texture;
 //Common Functions//
 
 //Includes//
+#include "/lib/util/spaceConversion.glsl"
+
+#ifdef TAA
+	#include "/lib/util/jitter.glsl"
+#endif
 
 //Program//
 void main() {
 	vec4 color = texture2D(texture, texCoord);
 	vec3 colorP = color.rgb;
 	color *= glColor;
+
+	vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+	#ifdef TAA
+		vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
+	#else
+		vec3 viewPos = ScreenToView(screenPos);
+	#endif
+	float lViewPos = length(viewPos);
 
 	#ifdef IPBR
 		float emission = dot(colorP, colorP);
@@ -37,10 +57,12 @@ void main() {
 			emission = pow2(pow2(emission)) * 0.1;
 		}
 
-		color.rgb *= color.rgb * emission * 3.0;
+		color.rgb *= color.rgb * emission * 2.0;
 	#else
 		color.rgb *= color.rgb * 4.0;
 	#endif
+
+	color.rgb *= 0.5 + 0.5 * exp(- lViewPos * 0.04);
 
     /* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;

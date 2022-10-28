@@ -54,8 +54,10 @@ void main() {
 				color1.rgb *= 1.0 - pow(color1.a, 64.0);
 				color1.rgb *= 0.25; // Natural Strength
 
-				color2.rgb = normalize(color1.rgb) * 0.35;
-			} /*else : lower limit*/
+				color2.rgb = normalize(color1.rgb) * 0.5;
+			} else { // Lower limit
+				color1.rgb *= 0.25; // Natural Strength
+			}
 		} else {
 			if (mat == 31000) { // Water
 				vec3 worldPos = position.xyz + cameraPosition;
@@ -91,16 +93,16 @@ void main() {
 		if (mat < 31020) { // Glass, Glass Pane, Beacon (31008, 31012, 31016)
 			if (color1.a > 0.5) color1 = vec4(0.0, 0.0, 0.0, 1.0);
 			else color1 = vec4(vec3(0.25 * (1.0 - GLASS_OPACITY)), 1.0);
-			//color2.rgb = vec3(0.25);
+			color2.rgb = vec3(0.3);
 		} else {
 			//if (mat == 31020) { //
 
-			//} /*else : upper limit*/
+			//} /*else : Upper limit*/
 		}
 	}
 
-    gl_FragData[0] = color1;
-    gl_FragData[1] = color2;
+    gl_FragData[0] = color1; // Shadow Color
+    gl_FragData[1] = color2; // Light Shaft Color
 }
 
 #endif
@@ -123,7 +125,7 @@ uniform mat4 shadowModelView, shadowModelViewInverse;
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
 
-#if WAVING_BLOCKS >= 1
+#ifdef WAVING_ANYTHING
 	uniform float frameTimeCounter;
 
 	uniform vec3 cameraPosition;
@@ -132,18 +134,21 @@ uniform mat4 gbufferModelViewInverse;
 //Attributes//
 attribute vec4 mc_Entity;
 
-#if defined PERPENDICULAR_TWEAKS || WAVING_BLOCKS >= 1
+#if defined PERPENDICULAR_TWEAKS || defined WAVING_ANYTHING
 	attribute vec4 mc_midTexCoord;
 #endif
 
 //Common Variables//
+#if defined WAVING_ANYTHING && defined NO_WAVING_INDOORS
+	vec2 lmCoord = vec2(0.0);
+#endif
 
 //Common Functions//
 
 //Includes//
 #include "/lib/util/spaceConversion.glsl"
 
-#if WAVING_BLOCKS >= 1
+#ifdef WAVING_ANYTHING
 	#include "/lib/materials/wavingBlocks.glsl"
 #endif
 
@@ -152,7 +157,7 @@ void main() {
 	#ifdef PERPENDICULAR_TWEAKS
 		vec3 normal = gl_NormalMatrix * gl_Normal;
 		
-		if (abs(dot(normal, shadowModelView[2].xyz)) > 0.99 && mc_Entity.x > 5000.0) {
+		if (abs(dot(normal, gl_ModelViewMatrix[2].xyz)) > 0.99) {
 			gl_Position = vec4(-1.0);
 		} else
 	#endif
@@ -165,10 +170,12 @@ void main() {
 
 		mat = int(mc_Entity.x + 0.5);
 
-		position = shadowModelViewInverse * shadowProjectionInverse * ftransform();
+		position = gl_Vertex;
 
-		#if WAVING_BLOCKS >= 1
-			lmCoord = GetLightMapCoordinates();
+		#ifdef WAVING_ANYTHING
+			#ifdef NO_WAVING_INDOORS
+				lmCoord = GetLightMapCoordinates();
+			#endif
 
 			DoWave(position.xyz, mat);
 		#endif
@@ -183,7 +190,7 @@ void main() {
 			}
 		#endif
 
-		gl_Position = shadowProjection * shadowModelView * position;
+		gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * position;
 
 		float lVertexPos = sqrt(gl_Position.x * gl_Position.x + gl_Position.y * gl_Position.y);
 		float distortFactor = lVertexPos * shadowMapBias + (1.0 - shadowMapBias);

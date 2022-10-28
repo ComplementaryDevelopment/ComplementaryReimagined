@@ -11,7 +11,7 @@ vec3[8] colors = vec3[](
 color.rgb = vec3(0.4214321, 0.4722309, 1.9922364) * 0.08;
 
 float dither = Bayer64(gl_FragCoord.xy);
-#if AA > 1
+#ifdef TAA
 	dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
 	int repeat = 4;
 #else

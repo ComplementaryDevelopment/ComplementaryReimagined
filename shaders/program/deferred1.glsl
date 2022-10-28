@@ -37,7 +37,7 @@ uniform mat4 shadowProjection;
 
 uniform sampler2D colortex0;
 uniform sampler2D colortex1;
-uniform sampler2D colortex6;
+uniform sampler2D colortex7;
 uniform sampler2D depthtex0;
 uniform sampler2D noisetex;
 
@@ -332,7 +332,7 @@ void main() {
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
 		vec4 volumetricClouds = vec4(0.0);
 		if (z0 > 0.56) {
-			const float threshold1 = 800.0;
+			const float threshold1 = 1000.0;
 			#ifndef SECOND_CLOUD_LAYER
 				volumetricClouds =
 					GetVolumetricClouds(CLOUD_ALT1, threshold1, cloudLinearDepth, sun, playerPos, lViewPos, nViewPos, VdotS, VdotU, dither);
@@ -374,7 +374,7 @@ void main() {
 		if (z0 > 0.56) {
 			vec3 cameraOffset = cameraPosition - previousCameraPosition;
 			vec2 prvCoord = Reprojection(playerPos, cameraOffset);
-			vec4 refAndCloudOld = texture2D(colortex6, prvCoord);
+			vec4 refAndCloudOld = texture2D(colortex7, prvCoord);
 
 			float blendFactor = float(prvCoord.x > 0.0 && prvCoord.x < 1.0 && prvCoord.y > 0.0 && prvCoord.y < 1.0);
 			float velocity = length(cameraOffset) * max(16.0 - lViewPos / gbufferProjection[1][1], 3.0);
@@ -400,7 +400,7 @@ void main() {
 	gl_FragData[1] = vec4(cloudLinearDepth, 0.0, 0.0, 1.0);
 	gl_FragData[2] = vec4(sqrt(color) - 1.0, 1.0);
 	#ifdef TEMPORAL_FILTER
-		/*DRAWBUFFERS:0456*/
+		/*DRAWBUFFERS:0457*/
 		gl_FragData[3] = refAndCloudWrite;
 	#endif
 }

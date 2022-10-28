@@ -10,7 +10,8 @@
 
 flat in vec2 lmCoord;
 
-flat in vec3 normal, upVec, sunVec, northVec, eastVec;
+flat in vec3 upVec, sunVec, northVec, eastVec;
+in vec3 normal;
 
 flat in vec4 glColor;
 
@@ -33,6 +34,10 @@ uniform mat4 shadowProjection;
 
 #ifdef CLOUD_SHADOWS
 	uniform sampler2D gaux3;
+#endif
+
+#if SELECTION_OUTLINE == 1
+	uniform float frameTimeCounter;
 #endif
 
 //Pipeline Constants//
@@ -80,6 +85,30 @@ void main() {
 	           false, false, false, 0,
 			   0.0, 0.0, 0.0);
 
+	#if SELECTION_OUTLINE > 0
+	if (abs(color.a - 0.4) + dot(color.rgb, color.rgb) < 0.01) {
+		#if SELECTION_OUTLINE == 1 // Rainbow
+			float posFactor = playerPos.x + playerPos.y + playerPos.z + cameraPosition.x + cameraPosition.y + cameraPosition.z;
+			color.rgb = clamp(abs(mod(fract(frameTimeCounter*0.25 + posFactor*0.2) * 6.0 + vec3(0.0,4.0,2.0), 6.0) - 3.0) - 1.0,
+						0.0, 1.0) * vec3(3.0, 2.0, 3.0);
+		#elif SELECTION_OUTLINE == 2 // White
+			color.rgb = vec3(2.0);
+		#elif SELECTION_OUTLINE == 3 // Red
+			color.rgb = vec3(3.0, 0.0, 0.0);
+		#elif SELECTION_OUTLINE == 4 // Green
+			color.rgb = vec3(0.0, 2.0, 0.0);
+		#elif SELECTION_OUTLINE == 5 // Blue
+			color.rgb = vec3(0.0, 0.0, 3.0);
+		#elif SELECTION_OUTLINE == 6 // Yellow
+			color.rgb = vec3(2.0, 2.0, 0.0);
+		#elif SELECTION_OUTLINE == 7 // Cyan
+			color.rgb = vec3(0.0, 2.0, 2.5);
+		#elif SELECTION_OUTLINE == 8 // Magenta
+			color.rgb = vec3(2.0, 0.0, 2.0);
+		#endif
+	}
+	#endif
+
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = color;
 
@@ -96,7 +125,8 @@ void main() {
 
 flat out vec2 lmCoord;
 
-flat out vec3 normal, upVec, sunVec, northVec, eastVec;
+flat out vec3 upVec, sunVec, northVec, eastVec;
+out vec3 normal;
 
 flat out vec4 glColor;
 

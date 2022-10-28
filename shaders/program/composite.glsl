@@ -12,7 +12,7 @@ flat in float vlFactor;
 
 noperspective in vec2 texCoord;
 
-#if defined BLOOM_FOG || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
+#if defined BLOOM_FOG && !defined MOTION_BLURRING || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
 	flat in vec3 upVec, sunVec;
 #endif
 
@@ -25,7 +25,7 @@ uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
 uniform sampler2D depthtex1;
 
-#if defined BLOOM_FOG || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
+#if defined BLOOM_FOG && !defined MOTION_BLURRING || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
 	uniform vec3 cameraPosition;
 	
 	uniform mat4 gbufferProjectionInverse;
@@ -62,7 +62,7 @@ uniform sampler2D depthtex1;
 //const bool colortex0MipmapEnabled = true;
 
 //Common Variables//
-#if defined BLOOM_FOG || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
+#if defined BLOOM_FOG && !defined MOTION_BLURRING || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
 	float SdotU = dot(sunVec, upVec);
 	float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 #endif
@@ -74,6 +74,8 @@ uniform sampler2D depthtex1;
 	float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
 	float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	float vlTime = min(abs(SdotU) - 0.05, 0.15) / 0.15;
+
+	vec2 view = vec2(viewWidth, viewHeight);
 	
 	#ifdef OVERWORLD
 		vec3 lightVec = sunVec * ((timeAngle < 0.5325 || timeAngle > 0.9675) ? 1.0 : -1.0);
@@ -87,7 +89,7 @@ uniform sampler2D depthtex1;
 //Includes//
 #include "/lib/atmospherics/fog/waterFog.glsl"
 
-#ifdef BLOOM_FOG
+#if defined BLOOM_FOG && !defined MOTION_BLURRING
 	#include "/lib/atmospherics/fog/bloomFog.glsl"
 #endif
 
@@ -121,7 +123,7 @@ void main() {
 			float VdotL = dot(nViewPos, lightVec);
 			float VdotU = dot(nViewPos, upVec);
 
-			float dither = texture2D(noisetex, texCoord * vec2(viewWidth, viewHeight) / 128.0).b;
+			float dither = texture2D(noisetex, texCoord * view / 128.0).b;
 			#ifdef TAA
 				dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
 			#endif
@@ -129,7 +131,7 @@ void main() {
 			volumetricLight = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
 		#endif
 	#endif
-
+	
 	if (isEyeInWater == 1) {
 		if (z0 == 1.0) color.rgb = waterFogColor;
 
@@ -157,13 +159,13 @@ void main() {
 		color += volumetricLight.rgb;
 	#endif
 
-	#ifdef BLOOM_FOG
+	#if defined BLOOM_FOG && !defined MOTION_BLURRING
 		vec4 screenPos0 = vec4(texCoord, z0, 1.0);
 		vec4 viewPos0 = gbufferProjectionInverse * (screenPos0 * 2.0 - 1.0);
 		viewPos0 /= viewPos0.w;
 		float lViewPos0 = length(viewPos0.xyz);
 
-		color *= GetBloomFog(lViewPos0);
+		color *= GetBloomFog(lViewPos0); // Reminder: Bloom Fog moves between composite and composite2 depending on Motion Blur
 	#endif
 	
 	/* DRAWBUFFERS:0 */
@@ -184,7 +186,7 @@ flat out float vlFactor;
 
 noperspective out vec2 texCoord;
 
-#if defined BLOOM_FOG || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
+#if defined BLOOM_FOG && !defined MOTION_BLURRING || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
 	flat out vec3 upVec, sunVec;
 #endif
 
@@ -209,7 +211,7 @@ void main() {
 
 	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-	#if defined BLOOM_FOG || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
+	#if defined BLOOM_FOG && !defined MOTION_BLURRING || LIGHTSHAFT_QUALITY > 0 && (defined OVERWORLD || defined END)
 		upVec = normalize(gbufferModelView[1].xyz);
 		sunVec = GetSunVector();
 	#endif

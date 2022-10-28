@@ -14,7 +14,7 @@
     #else
         vec3 sunsetClearLightColor = pow(vec3(0.6, 0.40, 0.24), vec3(1.5 + invNoonFactor)) * 6.4; //light shaft color
     #endif
-    vec3 sunsetClearAmbientColor   = noonClearAmbientColor * vec3(1.0, 0.8, 0.7);
+    vec3 sunsetClearAmbientColor   = noonClearAmbientColor * vec3(1.0, 0.85, 0.8);
 
     #if !defined COMPOSITE && !defined DEFERRED1
         vec3 nightClearLightColor = vec3(0.15, 0.14, 0.20) * (0.4 + vsBrightness * 0.4); //ground color

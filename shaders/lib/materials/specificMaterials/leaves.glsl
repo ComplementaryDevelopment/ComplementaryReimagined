@@ -5,7 +5,3 @@ subsurfaceMode = 2;
     smoothnessG = factor * 0.5;
     highlightMult = factor * 2.0;
 #endif
-
-#if SHADOW_QUALITY < 3
-    shadowMult = vec3(sqrt1(max0(lmCoordM.y - 0.95) * 20.0));
-#endif

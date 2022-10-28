@@ -2,6 +2,13 @@
 
 #include "/lib/colors/lightAndAmbientColors.glsl"
 
+vec2 InterleavedGradientNoise2(int i, int h) {
+	float n = 52.9829189 * fract(0.06711056 * i + 0.00583715 * i);
+	float m = 52.9829189 * fract(0.06711056 * h + 0.00583715 * h);
+	float fracter = 1.61803398875 * mod(float(frameCounter), 3600.0);
+	return fract(vec2(n, m) + fracter);
+}
+
 float GetDepth(float depth) {
 	return 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
 }
@@ -37,7 +44,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 			  VdotUM = pow(VdotUM, min(lViewPos / far, 1.0) * (3.0 - 2.0 * vlSceneIntensity));
 		float vlMult = mix(VdotUM * VdotLM, 0.5 + 0.5 * VdotLM, rainFactor2) * vlTime;
 			  vlMult *= mix(invNoonFactor * 0.875 + 0.125, 1.0, max(vlSceneIntensity, rainFactor2));
-			  vlMult *= mix(0.4, 1.0, max(sunVisibility, invRainFactor));
+			  vlMult *= mix(0.25, 1.0, max(sunVisibility, invRainFactor));
 	#endif
 
 	#ifdef OVERWORLD
@@ -135,14 +142,26 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 	#if defined OVERWORLD && defined SCENE_AWARE_LIGHT_SHAFTS
 		if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5) {
 			if (frameCounter % int(0.06666 / frameTimeSmooth + 0.5) == 0) { // Change speed is not too different above 10 fps
-				vec4 wpos = vec4(shadowModelView[3][0], shadowModelView[3][1], shadowModelView[3][2], shadowModelView[3][3]);
-				wpos = shadowProjection * wpos;
-				wpos /= wpos.w;
-				vec4 shadowPosition = DistortShadow(wpos, 1.0 - shadowMapBias);
-				shadowPosition.z -= 0.0005;
-				float shadowSample = shadow2D(shadowtex0, shadowPosition.xyz).z;
-				if (shadowSample > 0.5 || eyeBrightness.y > 180) vlFactor = max(vlFactor - OSIEBCA*3, 0.0);
-				else                                             vlFactor = min(vlFactor + OSIEBCA*2, 1.0);
+				if (eyeBrightness.y < 180) {
+					vec4 wpos = vec4(shadowModelView[3][0], shadowModelView[3][1], shadowModelView[3][2], shadowModelView[3][3]);
+					wpos = shadowProjection * wpos;
+					wpos /= wpos.w;
+					vec4 shadowPosition = DistortShadow(wpos, 1.0 - shadowMapBias);
+					shadowPosition.z -= 0.0005;
+					float shadowSample = shadow2D(shadowtex0, shadowPosition.xyz).z;
+
+					if (shadowSample < 0.5) {
+						float skySample = 0.0;
+						for (int i = 0; i < 7; i++) {
+							for (int h = 0; h < 4; h++) {
+								skySample += float(texelFetch(depthtex1, ivec2(view * InterleavedGradientNoise2(i, h)), 0).r == 1.0);
+							}
+						}
+						if (skySample < 1.5) {
+							vlFactor = min(vlFactor + OSIEBCA*2, 1.0);
+						} else vlFactor = max(vlFactor - OSIEBCA*3, 0.0);
+					} else vlFactor = max(vlFactor - OSIEBCA*3, 0.0);
+				} else vlFactor = max(vlFactor - OSIEBCA*3, 0.0);
 			}
 		} else vlFactor = 0.0;
 	#endif

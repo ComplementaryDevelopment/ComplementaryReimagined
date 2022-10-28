@@ -16,10 +16,15 @@ if (mat < 10512) {
                         } else {
                             if (mat == 10008) { // Leaves
                                 #include "/lib/materials/specificMaterials/leaves.glsl"
+
+                                #if SHADOW_QUALITY < 3
+                                    shadowMult = vec3(sqrt1(max0(lmCoordM.y - 0.95) * 20.0));
+                                #endif
                             }
                             else /*if (mat == 10012)*/ { // Vine
                                 #include "/lib/materials/specificMaterials/leaves.glsl"
-                                shadowMult = vec3(1.2);
+                                
+                                subsurfaceMode = 3;
                             }
                         }
                     } else {
@@ -492,6 +497,10 @@ if (mat < 10512) {
                                 smoothnessD = smoothnessG * 0.7;
 
                                 DoBrightBlockTweaks(shadowMult, highlightMult);
+
+                                #if RAIN_PUDDLES >= 1
+                                    noPuddles = 1.0;
+                                #endif
                             }
                             else /*if (mat == 10236)*/ { // Red Sand
                                 highlightMult = 2.0;
@@ -501,6 +510,10 @@ if (mat < 10512) {
 
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.77;
+                                #endif
+
+                                #if RAIN_PUDDLES >= 1
+                                    noPuddles = 1.0;
                                 #endif
                             }
                         }
@@ -1037,15 +1050,17 @@ if (mat < 10512) {
                         if (mat < 10456) {
                             if (mat == 10448) { // Sea Lantern
                                 noSmoothLighting = true; noDirectionalShading = true;
-                                lmCoordM.x = 0.7;
+                                lmCoordM.x = 0.8;
                                 
                                 smoothnessD = min1(max0(0.5 - color.r) * 2.0);
                                 smoothnessG = color.g;
 
                                 vec2 signMidCoordPosM = (floor((signMidCoordPos + 1.0) * 8.0) + 0.5) * 0.125 - 1.0;
                                 float dotsignMidCoordPos = dot(signMidCoordPosM, signMidCoordPosM);
-                                float lBlockPosM = pow2(max0(1.0 - 1.125 * dotsignMidCoordPos));
-                                emission = pow2(color.b) * 0.8 + 5.0 * lBlockPosM;
+                                float lBlockPosM = pow2(max0(1.0 - 1.125 * pow2(dotsignMidCoordPos)));
+                                emission = pow2(color.b) * 0.8 + 3.0 * lBlockPosM;
+
+                                emission *= 0.4 + max0(0.6 - 0.006 * lViewPos);
 
                                 color.rb *= vec2(1.13, 1.05);
 
@@ -1058,6 +1073,10 @@ if (mat < 10512) {
                                 lmCoordM.x = 0.65;
 
                                 emission = 0.1 + pow2(pow2(color.r)) * 4.0;
+
+                                #if RAIN_PUDDLES >= 1
+                                    noPuddles = color.g * 4.0;
+                                #endif
 
                                 color.gb *= vec2(1.0 - min(color.g, 0.6));
                             }
@@ -1156,12 +1175,13 @@ if (mat < 10512) {
                                 noDirectionalShading = true;
                                 vec3 fractPos = abs(fract(playerPos + cameraPosition) - 0.5);
                                 float maxCoord = max(fractPos.x, max(fractPos.y, fractPos.z));
-                                lmCoordM.x = maxCoord < 0.4376 ? 0.88 : 0.73;
+                                lmCoordM.x = maxCoord < 0.4376 ? 0.95 : 0.8;
 
                                 float dotColor = dot(color.rgb, color.rgb);
                                 if (dotColor > 2.0) {
-                                    float factor = pow2(pow2(dotColor * 0.333));
-                                    emission = 2.9;
+                                    emission = 2.3;
+                                    emission *= 0.4 + max0(0.6 - 0.006 * lViewPos);
+
                                     color.rgb = pow2(pow2(color.rgb));
                                     color.g *= 0.95;
                                 } else {
@@ -1366,7 +1386,7 @@ if (mat < 10512) {
                                 noSmoothLighting = true;
                                 lmCoordM.x = min(lmCoordM.x, 0.77);
 
-                                if (min1(color.r * 3.0) >= color.g + 0.1) { // Soul Lantern:Metal Part, Chain
+                                if (min1(color.r * 3.0) >= color.g + 0.25) { // Soul Lantern:Metal Part, Chain
                                     #include "/lib/materials/specificMaterials/lanternMetal.glsl"
                                 } else { // Soul Lantern:Emissive Part
                                     emission = color.r * 3.5 + 0.5;
@@ -1412,6 +1432,8 @@ if (mat < 10512) {
                         } else {
                             if (mat == 10584) { // Candle++:Lit
                                 noSmoothLighting = true;
+                                
+                                color.rgb *= 1.0 + pow2(max(-signMidCoordPos.y, float(NdotU > 0.9) * 1.2));
                             }
                             else /*if (mat == 10588)*/ { // Respawn Anchor:Unlit
                                 noSmoothLighting = true;
@@ -1458,6 +1480,10 @@ if (mat < 10512) {
                         if (mat < 10616) {
                             if (mat == 10608) { // Redstone Block
                                 #include "/lib/materials/specificMaterials/redstoneBlock.glsl"
+                                #ifdef EMISSIVE_REDSTONE_BLOCK
+                                    emission = 0.4 + 3.5 * pow2(pow2(color.r));
+                                    color.gb *= 0.5;
+                                #endif
                             }
                             else /*if (mat == 10612)*/ { // Redstone Ore:Unlit
                                 if (color.r - color.g > 0.2) { // Redstone Ore:Unlit:Redstone Part
@@ -1565,7 +1591,6 @@ if (mat < 10512) {
                                     highlightMult = 1.0 + 2.5 * factor;
                                     smoothnessD = factor;
                                 }
-                                
                             }
                         } else {
                             if (mat == 10648) { // Shroomlight
@@ -1573,7 +1598,7 @@ if (mat < 10512) {
                                 lmCoordM = vec2(1.0, 0.0);
 
                                 float dotColor = dot(color.rgb, color.rgb);
-                                emission = min(pow2(pow2(pow2(dotColor * 0.6))), 5.5) + 0.1;
+                                emission = min(pow2(pow2(pow2(dotColor * 0.6))), 5.0) + 0.1;
                             }
                             else /*if (mat == 10652)*/ { // Campfire:Lit
                                 vec3 fractPos = fract(playerPos + cameraPosition) - 0.5;
@@ -1649,7 +1674,10 @@ if (mat < 10512) {
                                 noSmoothLighting = true; noDirectionalShading = true;
                                 lmCoordM = vec2(0.9, 0.0);
 
-                                emission = color.g > 0.99 ? 2.0 : 0.9;
+                                vec2 signMidCoordPosM = abs((floor((signMidCoordPos + 1.0) * 8.0) + 0.5) * 0.125 - 1.0);
+                                float value = 1.0 - max(signMidCoordPosM.x, signMidCoordPosM.y);
+                                emission = 0.3 + 5.5 * pow2(value);
+                                if (color.g < 0.99) emission = min(emission, 0.75);
 
                                 color.rgb = pow2(color.rgb);
                             }
@@ -1657,7 +1685,10 @@ if (mat < 10512) {
                                 noSmoothLighting = true; noDirectionalShading = true;
                                 lmCoordM = vec2(0.9, 0.0);
 
-                                emission = color.b > 0.97 ? 2.0 : 0.75;
+                                vec2 signMidCoordPosM = abs((floor((signMidCoordPos + 1.0) * 8.0) + 0.5) * 0.125 - 1.0);
+                                float value = 1.0 - max(signMidCoordPosM.x, signMidCoordPosM.y);
+                                emission = 0.3 + 5.5 * pow2(value);
+                                if (color.b < 0.97) emission = min(emission, 0.6);
 
                                 color.rgb = pow2(color.rgb);
                             }
@@ -1668,10 +1699,12 @@ if (mat < 10512) {
                                 noSmoothLighting = true; noDirectionalShading = true;
                                 lmCoordM = vec2(0.9, 0.0);
 
-                                emission = color.g > 0.99 ? 2.0 : 0.75;
+                                vec2 signMidCoordPosM = abs((floor((signMidCoordPos + 1.0) * 8.0) + 0.5) * 0.125 - 1.0);
+                                float value = 1.0 - max(signMidCoordPosM.x, signMidCoordPosM.y);
+                                emission = 0.3 + 5.5 * pow2(value);
+                                if (color.g < 0.99) emission = min(emission, 0.6);
 
                                 color.rgb = pow2(color.rgb);
-                            
                             }
                             else /*if (mat == 10692)*/ { // Reinforced Deepslate
                                 if (abs(color.r - color.g) < 0.01) { // Reinforced Deepslate:Deepslate Part
@@ -1770,8 +1803,13 @@ if (mat < 10512) {
                 } else {
                     if (mat < 10752) {
                         if (mat < 10744) {
-                            if (mat == 10736) { //
-                            
+                            if (mat == 10736) { // Structure Block, Jigsaw Block
+                                vec2 signMidCoordPosM = (floor((signMidCoordPos + 1.0) * 8.0) + 0.5) * 0.125 - 1.0;
+                                float dotsignMidCoordPos = dot(signMidCoordPosM, signMidCoordPosM);
+                                float lBlockPosM = pow2(max0(1.0 - 1.125 * pow2(dotsignMidCoordPos)));
+
+                                emission = 5.0 * lBlockPosM;
+                                color.rgb = pow2(color.rgb);
                             }
                             else /*if (mat == 10740)*/ { //
 

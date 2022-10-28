@@ -1,4 +1,4 @@
-Complementary Agreement 1.2
+Complementary Agreement 1.3
 ===========================
 
 0. Terminology
@@ -47,8 +47,10 @@ Complementary Agreement 1.2
             the name of the Modified Pack and This Pack. Adding or removing
             invisible characters or the removal of "Complementary" does not
             count as a character difference.
-       This section (1.3) covers any forks of The Pack as long as the intent
-       is modification.
+         d. The Modified Pack must look noticeably different from The Pack
+            in multiple common gameplay scenarios that must include daytime
+            overworld visuals, regardless of the setting or variable changes
+            in the Modified Pack and/or The Pack.
 
 2. Denied Cases
 ---------------

@@ -1,7 +1,7 @@
 //Lighting Uniforms//
 uniform float darknessLightFactor;
 
-#ifdef HELD_LIGHTING
+#if HELD_LIGHTING_MODE >= 1
 	uniform int heldBlockLightValue;
 	uniform int heldBlockLightValue2;
 #endif
@@ -49,7 +49,7 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         #ifndef GBUFFERS_TEXTURED
                 #ifdef GBUFFERS_TERRAIN
                     if (subsurfaceMode != 0) {
-                        NdotLM = 1.0;
+                        NdotLM = clamp(mod(subsurfaceMode, 3), 0.5, 1.0);
                     }
                 #endif
             #if defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING
@@ -64,6 +64,7 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
         if (shadowMult.r > 0.00001) {
             if (NdotLM > 0.0001) {
+                vec3 shadowMultBeforeLighting = shadowMult;
                 float shadowLength = shadowDistance * 0.9166667 - length(vec4(playerPos.x, playerPos.y, playerPos.y, playerPos.z));
 
                 if (shadowLength > 0.000001) {
@@ -85,8 +86,9 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
                         #ifdef GBUFFERS_TERRAIN
                             #ifdef PERPENDICULAR_TWEAKS
-                                if (subsurfaceMode == 2) bias *= vec3(0.0, 0.0, -0.75);
-                                else
+                                if (subsurfaceMode == 2) {
+                                    bias *= vec3(0.0, 0.0, -0.75);
+                                } else
                             #endif
                             if (subsurfaceMode == 1) bias *= 1.0 - lightmapYM;
                         #endif
@@ -145,11 +147,11 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                 if (shadowLength < shadowSmooth) {
                     float shadowMixer = max(shadowLength / shadowSmooth, 0.0);
                     #ifdef OVERWORLD
-                        float skyLightshadowMult = pow2(pow2(lightmapY2));
+                        float skyLightShadowMult = pow2(pow2(lightmapY2));
                     #else
-                        float skyLightshadowMult = 1.0;
+                        float skyLightShadowMult = 1.0;
                     #endif
-                    shadowMult = mix(vec3(skyLightshadowMult), shadowMult, shadowMixer);
+                    shadowMult = mix(vec3(skyLightShadowMult * shadowMultBeforeLighting), shadowMult, shadowMixer);
                     
                     #ifdef GBUFFERS_TERRAIN
                         if (subsurfaceMode != 0) {
@@ -191,12 +193,22 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
             shadowMult *= max(NdotLM * shadowTime, 0.0);
         }
+        #ifdef GBUFFERS_WATER
+            else { // Low Quality Water
+                shadowMult = vec3(pow2(lightmapY2) * max(NdotLM * shadowTime, 0.0));
+            }
+        #endif
     #endif
 
     // Blocklight
-    #ifdef HELD_LIGHTING
-        float heldLight = max(heldBlockLightValue, heldBlockLightValue2) - lViewPos;
-        lightmap.x = max(lightmap.x, heldLight * 0.066666);
+    #if HELD_LIGHTING_MODE >= 1
+        float heldLight = max(heldBlockLightValue, heldBlockLightValue2);
+        float lViewPosL = lViewPos;
+        #if HELD_LIGHTING_MODE == 1
+            heldLight *= 0.75;
+            lViewPosL *= 1.5;
+        #endif
+        lightmap.x = max(lightmap.x, (heldLight - lViewPosL) * 0.066666);
     #endif
     float lightmapXM;
     if (!noSmoothLighting) {
@@ -217,7 +229,7 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             vec3 minLighting = vec3(0.5);
         #endif
 
-        minLighting *= 1.0 - eyeBrightnessM2;
+        minLighting *= 1.0 - lightmapYM;
     #else
         vec3 minLighting = vec3(0.0);
     #endif
@@ -231,7 +243,9 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             dayFactor = max0(dayFactor - emission * 1000000.0);
             lightmapXM *= pow(max(lightmap.x, 0.001), dayFactor);
 
-            shadowLighting *= 0.5 + 0.5 * lightmapYM;
+            float nightMult = 1.0 + 0.003 * max0(64.0 - lViewPos) * (1.0 - sunVisibility2);
+            ambientMult *= nightMult;
+            shadowLighting *= nightMult * (0.5 + 0.5 * lightmapYM);
         } else {
             lightmapXM *= 1.8;
             shadowLighting *= 0.25 + 0.75 * lightmapYM;
@@ -256,13 +270,13 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             float NdotEM = 1.0 - 0.1 * absNdotE2;
             directionShade = NdotUM * NdotEM * NdotNM;
 
-            ambientMult *= mix(1.0, NdotEM, sunVisibility2);
             shadowLighting *= 1.0 + absNdotE2 * 0.75;
 
             #if defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING
+                // Epic hacks to get a bit more natural looking lighting during noon
                 ambientMult = mix(ambientMult,
-                                (shadowLighting * 0.2 * pow(lightmapYM, 128.0) + ambientMult * ambientColor) / max(ambientColor, 0.001),
-                                absNdotE2 * noonFactor20);
+                                  shadowLighting + ambientMult * 0.25,
+                                  (0.65 - 0.65 * absNdotN) * absNdotE2 * noonFactor20 * pow(lightmapYM, 128.0));
                 if (subsurfaceMode == 0) shadowLighting *= 1.0 + pow2(absNdotN) * noonFactor20;
                 else shadowLighting *= 1.0 - absNdotE2 * (0.35 * noonFactor20);
             #endif

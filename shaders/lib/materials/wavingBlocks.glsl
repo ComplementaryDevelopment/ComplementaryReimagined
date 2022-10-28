@@ -1,7 +1,3 @@
-#ifdef SHADOW
-    vec2 lmCoord = vec2(0.0);
-#endif
-
 vec3 GetWave(in vec3 pos, float waveSpeed) {
     float wind = frameTimeCounter * waveSpeed;
 
@@ -14,7 +10,11 @@ vec3 GetWave(in vec3 pos, float waveSpeed) {
     wave.z = sin(wind*0.0224 + d1 + d2 + pos.x - pos.z + pos.y) * magnitude;
     wave.y = sin(wind*0.0015 + d2 + d0 + pos.z + pos.y - pos.y) * magnitude;
 
-    wave *= max0(lmCoord.y - 0.9);
+    #ifdef NO_WAVING_INDOORS
+        wave *= max0(lmCoord.y - 0.9);
+    #else
+        wave *= 0.1;
+    #endif
 
     return wave;
 }
@@ -48,14 +48,20 @@ void DoWave_Leaves(inout vec3 playerPos, vec3 worldPos) {
 void DoWave(inout vec3 playerPos, int mat) {
     vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
 
-    if (mat == 10004) { // Grounded Waving Foliage
-        DoWave_GroundedFoliage(playerPos.xyz, worldPos);
-    } else if (mat == 10020) { // Upper Layer Waving Foliage
-        DoWave_Foliage(playerPos.xyz, worldPos);
-    }
+    #ifdef WAVING_FOLIAGE
+        if (mat == 10004) { // Grounded Waving Foliage
+            DoWave_GroundedFoliage(playerPos.xyz, worldPos);
+        } else if (mat == 10020) { // Upper Layer Waving Foliage
+            DoWave_Foliage(playerPos.xyz, worldPos);
+        }
+        
+        #ifdef WAVING_LEAVES
+            else
+        #endif
+    #endif
 
-    #if WAVING_BLOCKS >= 2
-        else if (mat == 10008 || mat == 10012) { // Leaves, Vine
+    #ifdef WAVING_LEAVES
+        if (mat == 10008 || mat == 10012) { // Leaves, Vine
             DoWave_Leaves(playerPos.xyz, worldPos);
         }
     #endif

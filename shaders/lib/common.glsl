@@ -36,10 +36,9 @@
     #define HAND_SWAYING 0 //[0 1 2 3]
     //#define LESS_LAVA_FOG
     #define SHOW_LIGHT_LEVEL 0 //[0 1 2 3]
-    #define MINIMUM_LIGHT_MODE 2 //[0 1 2 3 4]
-    #define HELD_LIGHTING
-    #define WAVING_BLOCKS 1 //[0 1 2]
     //#define WORLD_OUTLINE
+    #define RAIN_PUDDLES 0 //[0 1 2]
+    #define SELECTION_OUTLINE 0 //[0 1 2 3 4 5 6 7 8]
 
     #define AURORA_BOREALIS
     #define AURORA_CONDITION 3 //[0 1 2 3]
@@ -52,6 +51,8 @@
 
     #define BLOOM_STRENGTH 0.09 //[0.027 0.036 0.045 0.054 0.063 0.072 0.081 0.09 0.10 0.11 0.12 0.13 0.14]
     #define FXAA
+    //#define MOTION_BLURRING
+    #define MOTION_BLURRING_STRENGTH 1.00 //[0.01 0.02 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.10 2.20 2.30 2.40 2.50 2.60 2.70 2.80 2.90 3.00 3.25 3.50 3.75 4.00 4.50 5.00 6.00 7.50 10.00]
     #define T_EXPOSURE 1.40 //[0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90]
     #define T_WHITE_CURVE 2.8 //[1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0 3.1 3.2 3.3 3.4 3.5 3.6 3.7 3.8]
     #define T_LOWER_CURVE 1.20 //[0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
@@ -61,11 +62,26 @@
 
     #define GLOWING_ORES 0 //[0 1 2]
     //#define FANCY_GLASS
+    //#define EMISSIVE_REDSTONE_BLOCK
     //#define GENERATED_WATER_NORMALS
+
+    #define BLOCKLIGHT_COLOR_MODE 10 //[9 10 11]
+    #define MINIMUM_LIGHT_MODE 2 //[0 1 2 3 4]
+    #define HELD_LIGHTING_MODE 2 //[0 1 2]
+
+    #define NO_WAVING_INDOORS
+    #define WAVING_FOLIAGE
+    //#define WAVING_LEAVES
 
 //Internal Settings//
 
-    #define PBR_REFLECTIONS
+    #if RP_MODE >= 1 && REFLECTION_QUALITY >= 3
+        #define PBR_REFLECTIONS
+    #endif
+
+    #if defined WAVING_FOLIAGE || defined WAVING_LEAVES
+        #define WAVING_ANYTHING
+    #endif
 
     #define GLASS_OPACITY 0.25
     #define FANCY_NETHERPORTAL
@@ -120,10 +136,6 @@
     #endif
     #ifdef GBUFFERS_WATER
         #undef LIGHT_HIGHLIGHT
-    #endif
-
-    #if RP_MODE == 0 || REFLECTION_QUALITY < 3
-        #undef PBR_REFLECTIONS
     #endif
 
     #ifndef PERPENDICULAR_TWEAKS
@@ -182,7 +194,15 @@
     const float pi = 3.14159265359;
     const float OSIEBCA = 1.0 / 255.0; // One Step In Eight Bit Color Attachment
 
-    const vec3 blocklightCol = vec3(0.43, 0.32, 0.26) * 0.85;
+    const float blocklightColMult = 0.85;
+    #if BLOCKLIGHT_COLOR_MODE == 9
+        const vec3 blocklightCol = vec3(0.40, 0.32, 0.29) * blocklightColMult;
+    #elif BLOCKLIGHT_COLOR_MODE == 10
+        const vec3 blocklightCol = vec3(0.43, 0.32, 0.26) * blocklightColMult;
+    #elif BLOCKLIGHT_COLOR_MODE == 11
+        const vec3 blocklightCol = vec3(0.44, 0.31, 0.22) * blocklightColMult;
+    #endif
+
     vec3 caveFogColor = vec3(0.13, 0.13, 0.15) * (0.7 + 0.3 * vsBrightness);
     vec3 waterFogColor = vec3(0.07, 0.08, 0.13) * vec3(1.0 + vsBrightness);
     vec3 endSkyColor = vec3(0.095, 0.07, 0.15) * 1.5;
@@ -374,3 +394,5 @@
     float smoothstep1(float x) {
         return x * x * (3.0 - 2.0 * x);
     }
+
+// 62 75 74 20 74 68 4F 73 65 20 77 68 6F 20 68 6F 70 65 20 69 6E 20 74 68 65 20 6C 69 6D 69 4E 61 6C 0A 77 69 6C 6C 20 72 65 6E 65 77 20 74 68 65 69 72 20 73 54 72 65 6E 67 74 48 2E 0A 74 68 65 79 20 77 69 6C 6C 20 73 6F 41 72 20 6F 6E 20 65 6C 79 54 72 61 73 20 6C 69 6B 65 20 70 68 61 6E 74 6F 6D 73 3B 0A 74 68 65 79 20 77 69 6C 6C 20 72 75 6E 20 61 6E 44 20 6E 6F 74 20 67 72 6F 77 20 77 65 41 72 79 2C 0A 74 68 65 59 20 77 69 6C 6C 20 77 61 6C 6B 20 61 6E 64 20 6E 6F 74 20 62 65 20 66 61 69 6E 74 2E

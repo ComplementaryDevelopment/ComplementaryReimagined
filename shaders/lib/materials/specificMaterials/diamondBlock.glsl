@@ -5,7 +5,7 @@ float factor2 = pow2(factor);
 float factor4 = pow2(factor2);
 
 smoothnessG = factor - pow2(pow2(color.g)) * 0.4;
-highlightMult = 3.0 * factor4;
+highlightMult = 3.0 * max(pow2(factor4), 0.2);
 
 smoothnessD = factor4 * 0.75;
 

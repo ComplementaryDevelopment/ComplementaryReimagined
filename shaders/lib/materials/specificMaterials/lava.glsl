@@ -14,3 +14,7 @@ noDirectionalShading = true;
 lmCoordM = vec2(0.0);
 emission = color.g * 6.0;
 color.rgb *= vec3(1.25, vec2(0.9));
+
+#if RAIN_PUDDLES >= 1
+    noPuddles = 1.0;
+#endif

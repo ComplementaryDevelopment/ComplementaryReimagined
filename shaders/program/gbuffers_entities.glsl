@@ -11,7 +11,8 @@
 in vec2 texCoord;
 in vec2 lmCoord;
 
-flat in vec3 normal, upVec, sunVec, northVec, eastVec;
+flat in vec3 upVec, sunVec, northVec, eastVec;
+in vec3 normal;
 
 in vec4 glColor;
 
@@ -92,7 +93,9 @@ void main() {
 	#ifdef IPBR
 		#include "/lib/materials/entityMaterials.glsl"
 	#else
-		// I should put player effects here when I actually do player effects
+		if (entityId == 50004) { // Lightning Bolt
+			#include "/lib/materials/specificMaterials/entities/lightningBolt.glsl"
+		}
 	#endif
 
 	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
@@ -112,7 +115,8 @@ void main() {
 out vec2 texCoord;
 out vec2 lmCoord;
 
-flat out vec3 normal, upVec, sunVec, northVec, eastVec;
+flat out vec3 upVec, sunVec, northVec, eastVec;
+out vec3 normal;
 
 out vec4 glColor;
 

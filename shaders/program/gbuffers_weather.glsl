@@ -8,8 +8,8 @@
 //////////Fragment Shader//////////Fragment Shader//////////Fragment Shader//////////
 #ifdef FRAGMENT_SHADER
 
-in vec2 texCoord;
 flat in vec2 lmCoord;
+in vec2 texCoord;
 
 flat in vec3 upVec, sunVec;
 
@@ -55,8 +55,8 @@ void main() {
 //////////Vertex Shader//////////Vertex Shader//////////Vertex Shader//////////
 #ifdef VERTEX_SHADER
 
-out vec2 texCoord;
 flat out vec2 lmCoord;
+out vec2 texCoord;
 
 flat out vec3 upVec, sunVec;
 

@@ -10,7 +10,7 @@ vec3 cloudDayLightColor = mix(vec3(1.0), pow(lightColor, vec3(cloudColorFactor *
 vec3 cloudLightColor   =  mix(lightColor * 0.7, cloudDayLightColor, sunVisibility);
 vec3 cloudAmbientColor = mix(nightClearLightColor * 0.3, ambientColor * 0.5, cloudColorFactor);*/
 vec3 cloudRainColor = mix(nightMiddleSkyColor, dayMiddleSkyColor, sunFactor) * 0.6;
-vec3 cloudAmbientColor = mix(ambientColor * (sunVisibility2 * 0.65 + 0.35), cloudRainColor * 0.5, rainFactor);
+vec3 cloudAmbientColor = mix(ambientColor * (sunVisibility2 * 0.6 + 0.35), cloudRainColor * 0.5, rainFactor);
 vec3 cloudLightColor   = mix(lightColor * 0.9, cloudRainColor, rainFactor);
 
 #if CLOUD_QUALITY >= 3

@@ -45,6 +45,7 @@ uniform sampler2D texture;
 //Program//
 void main() {
 	#ifdef OVERWORLD
+		vec2 tSize = textureSize(texture, 0);
 		vec4 color = texture2D(texture, texCoord);
 		color.rgb *= glColor.rgb;
 	
@@ -56,26 +57,35 @@ void main() {
 		float VdotS = dot(nViewPos, sunVec);
 		float VdotU = dot(nViewPos, upVec);
 
-		if (VdotS > 0.0) {
-			color.rgb *= float(color.b > 0.1775); // 0.065 to 0.290
 
-			if (color.b > 0.48) { // 0.295 to 0.665
-				color.rgb *= 12.0;
+		if (abs(tSize.y - 48.0) < 16.5) {
+			if (VdotS > 0.0) {
+				color.rgb *= float(color.b > 0.1775); // 0.065 to 0.290
+
+				if (color.b > 0.48) { // 0.295 to 0.665
+					color.rgb *= 12.0;
+				} else {
+					color.rgb *= 8.0;
+				}
+
+				color.rgb *= normalize(lightColor);
+
+				#ifdef SUN_MOON_HORIZON
+					color.rgb *= 0.2 + 0.8 * sunVisibility2;
+				#endif
 			} else {
-				color.rgb *= 8.0;
+				color.rgb *= sqrt2(max0(color.r - 0.115)); // 0.065 to 0.165
+				color.rgb *= 1.5;
 			}
 
-			color.rgb *= normalize(lightColor);
+			#ifdef SUN_MOON_HORIZON
+				color.rgb *= smoothstep1(pow2(clamp((VdotU + 0.1) * 10.0, 0.0, 1.0)));
+			#else
+				color.rgb *= pow2(pow2(pow2(min1(VdotU + 1.0))));
+			#endif
 		} else {
-			color.rgb *= sqrt2(max0(color.r - 0.115)); // 0.065 to 0.165
-			color.rgb *= 1.5;
+			color.rgb *= color.rgb * smoothstep1(sqrt1(max0(VdotU)));
 		}
-
-		#ifdef SUN_MOON_HORIZON
-			color.rgb *= pow2(clamp((VdotU + 0.005) * 30.0, 0.0, 1.0));
-		#else
-			color.rgb *= pow2(pow2(pow2(min1(VdotU + 1.0))));
-		#endif
 
 		if (isEyeInWater == 1) color.rgb *= 0.25;
 		color.a *= invRainFactor * invRainFactor;

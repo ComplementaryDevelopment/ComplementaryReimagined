@@ -53,7 +53,7 @@ void DoTAA(inout vec3 color, inout vec3 temp) {
 	float blendMinimum = 0.3;
 	float blendVariable = 0.25;
 	float blendConstant = 0.65;
-	float lengthVelocity = length(velocity) * 50;
+	float lengthVelocity = length(velocity) * 100.0;
 	blendFactor *= max(exp(-lengthVelocity) * blendVariable + blendConstant - lengthVelocity * edge, blendMinimum);
 	
 	color = mix(color, tempColor, blendFactor);

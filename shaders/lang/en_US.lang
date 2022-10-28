@@ -24,14 +24,33 @@ screen.PERFORMANCE_SETTINGS.comment=Settings that directly relate to the perform
 
 screen.PREFERENCE_SETTINGS=Preference Settings
 screen.PREFERENCE_SETTINGS.comment=Settings that are optional, and not changed by the different shader profiles.
-    screen.SKY_SETTINGS=Sky
-    screen.SKY_SETTINGS.comment=Settings that relate to the sky.
-        screen.CLOUD_SETTINGS=Clouds
-        screen.CLOUD_SETTINGS.comment=Settings that relate to the clouds.
-    screen.CAMERA_SETTINGS=Camera
-    screen.CAMERA_SETTINGS.comment=Settings that determine how the final image is tweaked.
-    screen.IPBR_SETTINGS=IntegratedPBR
-    screen.IPBR_SETTINGS.comment=Settings that are related to the features of IntegratedPBR.
+
+screen.ATMOSPHERE_SETTINGS=Atmosphere
+screen.ATMOSPHERE_SETTINGS.comment=Settings that relate to the atmosphere.
+
+screen.CLOUD_SETTINGS=Clouds
+screen.CLOUD_SETTINGS.comment=Settings that relate to the clouds.
+
+screen.CAMERA_SETTINGS=Camera
+screen.CAMERA_SETTINGS.comment=Settings that relate to the view/camera.
+
+screen.TONEMAP_SETTINGS=Color Balance
+screen.TONEMAP_SETTINGS.comment=Settings that determine the color balance of the visuals.
+
+screen.MATERIAL_SETTINGS=Materials
+screen.MATERIAL_SETTINGS.comment=Settings that are related to the materials of Minecraft.
+
+screen.IPBR_SETTINGS=IntegratedPBR
+screen.IPBR_SETTINGS.comment=Settings that are related to the features of IntegratedPBR.
+
+screen.LIGHTING_SETTINGS=Lighting
+screen.LIGHTING_SETTINGS.comment=Settings that are related to lighting.
+
+screen.WAVING_SETTINGS=Waving Blocks
+screen.WAVING_SETTINGS.comment=Settings that are about waving blocks.
+
+screen.OTHER_SETTINGS=Other
+screen.OTHER_SETTINGS.comment=Settings that don't fit into any other category.
 
 #Settings
 option.RP_MODE=RP Support
@@ -48,12 +67,12 @@ value.CLOUD_QUALITY.1=§eLow
 value.CLOUD_QUALITY.0=§cOFF
 
 option.WATER_QUALITY=Water Quality
-option.WATER_QUALITY.comment=Adjusts the visual quality of water. §aMedium§r: Default. §eLow§r: Disables edge foaming, no fancy alpha and no varying color intensity over Medium.
+option.WATER_QUALITY.comment=Adjusts the visual quality of water. §aMedium§r: Default. §eLow§r: No edge foaming, no fancy alpha, no varying color intensity, and no surface shadows over Medium.
 value.WATER_QUALITY.2=§aMedium
 value.WATER_QUALITY.1=§eLow
 
 option.REFLECTION_QUALITY=Reflection Quality
-option.REFLECTION_QUALITY.comment=Adjusts the visual quality of reflections. §bHigh§r: Material-tailored reflections on all blocks (RP Support option must be set to Integrated PBR+). §aMedium§r: Reflections on water and translucents. §cOFF§r: No reflections.
+option.REFLECTION_QUALITY.comment=Adjusts the visual quality of reflections. §bHigh§r: Material-based reflections on all blocks (RP Support option must be set to anything but Basic.). §aMedium§r: Reflections on water and translucents. §cOFF§r: No reflections.
 value.REFLECTION_QUALITY.3=§bHigh
 value.REFLECTION_QUALITY.2=§aMedium
 value.REFLECTION_QUALITY.0=§cOFF
@@ -150,9 +169,9 @@ option.T_VIBRANCE=Vibrance
 option.T_VIBRANCE.comment=Adjusts the colorfulness of the image, but already colorful pixels are less affected.
 
 option.WATER_STYLE=Water Style
-option.WATER_STYLE.comment=Determines the style of water. §c[-]§r Setting this to "Realistic-ish" can severely impact performance.
+option.WATER_STYLE.comment=Determines the style of water. §c[-]§r Water waves can severely impact performance.
 value.WATER_STYLE.1=§aReimagined
-value.WATER_STYLE.2=§aReimagined + Waves
+value.WATER_STYLE.2=§dReimagined + Waves
 value.WATER_STYLE.3=§dRealistic-ish
 
 option.SUN_MOON_HORIZON=Sun/Moon Horizon
@@ -202,10 +221,18 @@ value.BLOOM_STRENGTH.0.12=65%
 value.BLOOM_STRENGTH.0.13=70%
 value.BLOOM_STRENGTH.0.14=75%
 
-option.FXAA=FXAA
-option.FXAA.comment=Enables Fast Approximate Anti-Aliasing, which is basically an effect that produces smoother image.
+option.FXAA=Anti-Aliasing
+option.FXAA.comment=Enables Fast Approximate Anti-Aliasing (FXAA), which is basically an effect that produces smoother image. §e[*]§r Disabling this option won't disable lite Temporal Anti Aliasing (TAA), because lite TAA is required for a lot of effects to perform good.
 value.FXAA.true=§aON
 value.FXAA.false=§aOFF
+
+option.MOTION_BLURRING=Motion Blur
+option.MOTION_BLURRING.comment=Applies blur to the image when moving the camera.
+value.MOTION_BLURRING.true=§bON
+value.MOTION_BLURRING.false=§aOFF
+
+option.MOTION_BLURRING_STRENGTH=Motion Blur Strength
+option.MOTION_BLURRING_STRENGTH.comment=Adjusts the intensity of motion blur.
 
 option.FANCY_GLASS=Improved Glass
 option.FANCY_GLASS.comment=Improves the regular glass by adding a translucent layer to it. §c[-]§r Currently causes blending problems on Iris because of a Sodium bug. §e[*]§r RP Support option must be set to Integrated PBR+.
@@ -232,7 +259,7 @@ value.SHOW_LIGHT_LEVEL.2=§aHold Light Source
 value.SHOW_LIGHT_LEVEL.3=§aAlways ON
 
 option.MINIMUM_LIGHT_MODE=Cave Lighting
-option.MINIMUM_LIGHT_MODE.comment=Improves visibility in closed areas by adding some lighting. §e[*]§r "Vanilla Brightness" option mean the cave lighting will be determined by the "Brightness" slider in Video Settings.
+option.MINIMUM_LIGHT_MODE.comment=Improves visibility in closed areas by adding some lighting. §e[*]§r "Vanilla Brightness" option mean the cave lighting will be determined by the "Brightness" slider in Video Settings. §e[*]§r Also affects most places that don't have skylight.
 value.MINIMUM_LIGHT_MODE.0=§aVery Dark
 value.MINIMUM_LIGHT_MODE.1=§aDark
 value.MINIMUM_LIGHT_MODE.2=§aVanilla Brightness
@@ -245,23 +272,67 @@ value.GLOWING_ORES.0=§aOFF
 value.GLOWING_ORES.1=§aOverworld
 value.GLOWING_ORES.2=§aOverworld + Nether
 
+option.EMISSIVE_REDSTONE_BLOCK=Glowing Redstone Block
+option.EMISSIVE_REDSTONE_BLOCK.comment=Adds emission to the Redstone Block. §e[*]§r RP Support option must be set to Integrated PBR+.
+value.EMISSIVE_REDSTONE_BLOCK.true=§aON
+value.EMISSIVE_REDSTONE_BLOCK.false=§aOFF
+
 option.GENERATED_WATER_NORMALS=Generated Normals on Water
 option.GENERATED_WATER_NORMALS.comment=Allows Generated Normals to appear on water. §e[*]§r RP Support option must be set to Integrated PBR+. §e[*]§r Generated Normals option must be enabled.
 value.GENERATED_WATER_NORMALS.true=§aON
 value.GENERATED_WATER_NORMALS.false=§aOFF
 
-option.HELD_LIGHTING=Dynamic Handheld Lighting
-option.HELD_LIGHTING.comment=Allows handheld light sources to cast light onto the scene.
-value.HELD_LIGHTING.true=§aON
-value.HELD_LIGHTING.false=§aOFF
+option.HELD_LIGHTING_MODE=Dynamic Handheld Lighting
+option.HELD_LIGHTING_MODE.comment=Allows handheld light sources to cast light onto the scene.
+value.HELD_LIGHTING_MODE.0=§aOFF
+value.HELD_LIGHTING_MODE.1=§aSubtle
+value.HELD_LIGHTING_MODE.2=§aNormal
 
-option.WAVING_BLOCKS=Waving Blocks
-option.WAVING_BLOCKS.comment=Adds movement to some blocks to simulate wind.
-value.WAVING_BLOCKS.0=§aOFF
-value.WAVING_BLOCKS.1=§aFoliage
-value.WAVING_BLOCKS.2=§bFoliage + Leaves
+option.BLOCKLIGHT_COLOR_MODE=Blocklight Color
+option.BLOCKLIGHT_COLOR_MODE.comment=Determines the color of the light cast from light sources.
+value.BLOCKLIGHT_COLOR_MODE.9=§aCold
+value.BLOCKLIGHT_COLOR_MODE.10=§aNatural
+value.BLOCKLIGHT_COLOR_MODE.11=§aWarm
+
+option.NO_WAVING_INDOORS=No Waving in Closed Areas
+option.NO_WAVING_INDOORS.comment=Prevents blocks from waving in closed areas using skylight. §c[-]§r Can cause slight problems with some resource pack models.
+value.NO_WAVING_INDOORS.true=§aON
+value.NO_WAVING_INDOORS.false=§aOFF
+
+option.WAVING_FOLIAGE=Waving Foliage
+option.WAVING_FOLIAGE.comment=Adds movement to foliage to simulate wind.
+value.WAVING_FOLIAGE.true=§aON
+value.WAVING_FOLIAGE.false=§aOFF
+
+option.WAVING_LEAVES=Waving Leaves
+option.WAVING_LEAVES.comment=Adds movement to leaves to simulate wind.
+value.WAVING_LEAVES.true=§aON
+value.WAVING_LEAVES.false=§aOFF
 
 option.WORLD_OUTLINE=Outlined World
 option.WORLD_OUTLINE.comment=Adds outlines around blocks.
 value.WORLD_OUTLINE.true=§bON
 value.WORLD_OUTLINE.false=§aOFF
+
+option.RAIN_PUDDLES=Rain Puddles
+option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic.
+value.RAIN_PUDDLES.0=§aOFF
+value.RAIN_PUDDLES.1=§bON - Puddles
+value.RAIN_PUDDLES.2=§bON - Full Coverage
+
+option.UNDERWATER_DISTORTION=Underwater Distortion
+option.UNDERWATER_DISTORTION.comment=Adds subtle refraction to the screen when the camera is inside water.
+value.UNDERWATER_DISTORTION.true=§aON
+value.UNDERWATER_DISTORTION.false=§aOFF
+
+option.SELECTION_OUTLINE=Selection Outline
+option.SELECTION_OUTLINE.comment=Changes the color of the block selection outline.
+value.SELECTION_OUTLINE.0=§aDefault
+value.SELECTION_OUTLINE.1=§aRainbow
+value.SELECTION_OUTLINE.2=§aWhite
+value.SELECTION_OUTLINE.3=§aRed
+value.SELECTION_OUTLINE.4=§aGreen
+value.SELECTION_OUTLINE.5=§aBlue
+value.SELECTION_OUTLINE.6=§aYellow
+value.SELECTION_OUTLINE.7=§aCyan
+value.SELECTION_OUTLINE.8=§aMagenta

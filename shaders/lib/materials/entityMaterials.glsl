@@ -10,7 +10,7 @@ if (entityId < 50064) {
                         color.r *= 1.1;
                     }
                 } else if (entityId == 50004) { // Lightning Bolt
-                    color = vec4(1.0, 1.25, 1.875, 1.0);
+                    #include "/lib/materials/specificMaterials/entities/lightningBolt.glsl"
                 }
             } else {
                 if (entityId == 50008) { // Item Frame
@@ -40,7 +40,7 @@ if (entityId < 50064) {
 
                         } else*/ if (CheckForColor(identification, vec3(50, 20, 54))) {
                             if (GetLuminance(color.rgb) >= 0.99999) {
-                                emission = 3.0;
+                                emission = 2.0;
                             }
                         }
                     }
@@ -130,28 +130,8 @@ if (entityId < 50064) {
 
                     color.rgb *= color.rgb;
                 } else /*if (entityId == 50076)*/ { // Boat
-                    float posPush = 0.0;
-                    if (texCoord.x > 0.265625 && texCoord.y > 0.046875 && texCoord.x < 0.484375 && texCoord.y < 0.296875) {
-                        // The inside floor
-                        posPush = 0.023;
-                    } else if (texCoord.x > 0.015625 && texCoord.y > 0.328125) {
-                        if (texCoord.x < 0.15625 && texCoord.y < 0.421875) {
-                            // Inside wall 1
-                            posPush = max0(texCoord.y - 0.328125);
-                        } else if (texCoord.y > 0.453125 && texCoord.x < 0.140625 && texCoord.y < 0.546875) {
-                            // Inside wall 2
-                            posPush = max0(texCoord.y - 0.453125);
-                        } else if (texCoord.x < 0.234375) {
-                            if (texCoord.y > 0.578125 && texCoord.y < 0.671875) {
-                                // Inside wall 3
-                                posPush = max0(texCoord.y - 0.578125);
-                            } else if (texCoord.y > 0.703125 && texCoord.y < 0.796875) {
-                                // Inside wall 4
-                                posPush = max0(texCoord.y - 0.703125);
-                            }
-                        }
-                    }
-                    playerPos.y += posPush * 2.2;
+                    //playerPos.y += 0.18; // to avoid water shadow
+                    playerPos.y += 0.38; // to also avoid the black inner shadow bug
                 }
             }
         } else {

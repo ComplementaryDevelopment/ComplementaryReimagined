@@ -13,11 +13,12 @@ flat in int mat;
 in vec2 texCoord;
 in vec2 lmCoord;
 
-flat in vec3 normal, upVec, sunVec, northVec, eastVec;
+flat in vec3 upVec, sunVec, northVec, eastVec;
+in vec3 normal;
 
 in vec4 glColor;
 
-#if WATER_STYLE >= 2 || defined GENERATED_NORMALS
+#if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 || defined GENERATED_NORMALS
 	flat in vec3 binormal, tangent;
 #endif
 
@@ -70,6 +71,10 @@ uniform sampler2D texture;
 	uniform mat4 gbufferProjection;
 
 	uniform sampler2D gaux2;
+#endif
+
+#if RAIN_PUDDLES >= 1
+	uniform float isRainy;
 #endif
 
 #ifdef GENERATED_NORMALS
@@ -172,7 +177,7 @@ void main() {
 	#endif
 
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
-		if (cloudLinearDepth < 1.0) if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < lViewPos) discard;
+		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < lViewPos) discard;
 	#endif
 
 	vec3 nViewPos = normalize(viewPos);
@@ -242,11 +247,12 @@ flat out int mat;
 out vec2 texCoord;
 out vec2 lmCoord;
 
-flat out vec3 normal, upVec, sunVec, northVec, eastVec;
+flat out vec3 upVec, sunVec, northVec, eastVec;
+out vec3 normal;
 
 out vec4 glColor;
 
-#if WATER_STYLE >= 2 || defined GENERATED_NORMALS
+#if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 || defined GENERATED_NORMALS
 	flat out vec3 binormal, tangent;
 #endif
 
@@ -267,7 +273,7 @@ out vec4 glColor;
 //Attributes//
 attribute vec4 mc_Entity;
 
-#if WATER_STYLE >= 2 || defined FANCY_NETHERPORTAL || defined GENERATED_NORMALS
+#if WATER_STYLE >= 2 || defined FANCY_NETHERPORTAL || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 || defined GENERATED_NORMALS
 	attribute vec4 mc_midTexCoord;
 
 	attribute vec4 at_tangent;
@@ -302,7 +308,7 @@ void main() {
 
 	mat = int(mc_Entity.x + 0.5);
 
-	#if WATER_STYLE >= 2 || defined GENERATED_NORMALS
+	#if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 || defined GENERATED_NORMALS
 		binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
 		tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
 	#endif
@@ -320,9 +326,11 @@ void main() {
 			vec3 tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
 		#endif
 
-		mat3 tbnMatrix = mat3(tangent.x, binormal.x, normal.x,
-							  tangent.y, binormal.y, normal.y,
-							  tangent.z, binormal.z, normal.z);
+        mat3 tbnMatrix = mat3(
+            tangent.x, binormal.x, normal.x,
+            tangent.y, binormal.y, normal.y,
+            tangent.z, binormal.z, normal.z
+        );
 
 		viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
 	#endif
