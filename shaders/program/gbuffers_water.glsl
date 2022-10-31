@@ -158,10 +158,6 @@ void main() {
 	vec4 colorP = texture2D(texture, texCoord);
 	vec4 color = colorP * vec4(glColor.rgb, 1.0);
 
-	#if defined OVERWORLD && CLOUD_QUALITY > 0
-		float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
-	#endif
-
 	vec2 screenCoord = gl_FragCoord.xy / vec2(viewWidth, viewHeight);
 	vec3 screenPos = vec3(screenCoord, gl_FragCoord.z);
 	#ifdef TAA
@@ -177,7 +173,9 @@ void main() {
 	#endif
 
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
-		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < lViewPos) discard;
+		float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
+
+		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < min(lViewPos, far)) discard;
 	#endif
 
 	vec3 nViewPos = normalize(viewPos);

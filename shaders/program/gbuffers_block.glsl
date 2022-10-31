@@ -225,6 +225,8 @@ void main() {
 	northVec = normalize(gbufferModelView[2].xyz);
 	sunVec = GetSunVector();
 
+	if (normal != normal) normal = -upVec; // Mod Fix: Fixes Better Nether Fireflies
+
 	#if defined GENERATED_NORMALS || defined COATED_TEXTURES
 		if (blockEntityId == 60008) { // Chest
 			float fractWorldPosY = fract((gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex).y + cameraPosition.y);

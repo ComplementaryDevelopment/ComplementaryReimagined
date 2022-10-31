@@ -83,10 +83,6 @@ void main() {
 	vec4 colorP = color;
 	color *= glColor;
 
-	#if defined OVERWORLD && CLOUD_QUALITY > 0
-		float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
-	#endif
-
 	vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
 	vec3 viewPos = ScreenToView(screenPos);
 	float lViewPos = length(viewPos);
@@ -98,8 +94,10 @@ void main() {
 	#endif
 
 	#if defined OVERWORLD && CLOUD_QUALITY > 0
+		float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
+
 		if (cloudLinearDepth > 0.0) // Because Iris changes the pipeline position of opaque particles
-		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < lViewPos) discard;
+		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < min(lViewPos, far)) discard;
 	#endif
 
 	vec3 shadowMult = vec3(1.0);

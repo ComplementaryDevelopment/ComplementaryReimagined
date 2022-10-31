@@ -157,7 +157,7 @@ void main() {
 	#ifdef PERPENDICULAR_TWEAKS
 		vec3 normal = gl_NormalMatrix * gl_Normal;
 		
-		if (abs(dot(normal, gl_ModelViewMatrix[2].xyz)) > 0.99) {
+		if (abs(dot(normal, gl_ModelViewMatrix[2].xyz)) > 0.99 && abs(mat - 20000) < 19999) {
 			gl_Position = vec4(-1.0);
 		} else
 	#endif
