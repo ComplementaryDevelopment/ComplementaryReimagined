@@ -154,49 +154,41 @@ attribute vec4 mc_Entity;
 
 //Program//
 void main() {
-	#ifdef PERPENDICULAR_TWEAKS
-		vec3 normal = gl_NormalMatrix * gl_Normal;
-		
-		if (abs(dot(normal, gl_ModelViewMatrix[2].xyz)) > 0.99 && abs(mat - 20000) < 19999) {
-			gl_Position = vec4(-1.0);
-		} else
+	texCoord = gl_MultiTexCoord0.xy;
+	glColor = gl_Color;
+
+	sunVec = GetSunVector();
+	upVec = normalize(gbufferModelView[1].xyz);
+
+	mat = int(mc_Entity.x + 0.5);
+
+	position = gl_Vertex;
+
+	#ifdef WAVING_ANYTHING
+		#ifdef NO_WAVING_INDOORS
+			lmCoord = GetLightMapCoordinates();
+		#endif
+
+		DoWave(position.xyz, mat);
 	#endif
-	{
-		texCoord = gl_MultiTexCoord0.xy;
-		glColor = gl_Color;
 
-		sunVec = GetSunVector();
-		upVec = normalize(gbufferModelView[1].xyz);
-
-		mat = int(mc_Entity.x + 0.5);
-
-		position = gl_Vertex;
-
-		#ifdef WAVING_ANYTHING
-			#ifdef NO_WAVING_INDOORS
-				lmCoord = GetLightMapCoordinates();
-			#endif
-
-			DoWave(position.xyz, mat);
-		#endif
-
-		#ifdef PERPENDICULAR_TWEAKS
-			if (mat == 10004 || mat == 10016) {
-				vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
-				vec2 texMinMidCoord = texCoord - midCoord;
-				if (texMinMidCoord.y < 0.0) {
-					position.xyz += normal * 0.25;
-				}
+	#ifdef PERPENDICULAR_TWEAKS
+		if (mat == 10004 || mat == 10016) {
+			vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
+			vec2 texMinMidCoord = texCoord - midCoord;
+			if (texMinMidCoord.y < 0.0) {
+				vec3 normal = gl_NormalMatrix * gl_Normal;
+				position.xyz += normal * 0.25;
 			}
-		#endif
+		}
+	#endif
 
-		gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * position;
+	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * position;
 
-		float lVertexPos = sqrt(gl_Position.x * gl_Position.x + gl_Position.y * gl_Position.y);
-		float distortFactor = lVertexPos * shadowMapBias + (1.0 - shadowMapBias);
-		gl_Position.xy *= 1.0 / distortFactor;
-		gl_Position.z = gl_Position.z * 0.2;
-	}
+	float lVertexPos = sqrt(gl_Position.x * gl_Position.x + gl_Position.y * gl_Position.y);
+	float distortFactor = lVertexPos * shadowMapBias + (1.0 - shadowMapBias);
+	gl_Position.xy *= 1.0 / distortFactor;
+	gl_Position.z = gl_Position.z * 0.2;
 }
 
 #endif
