@@ -156,6 +156,7 @@ void main() {
 			volumetricLight.rgb *= volumetricLight.rgb;
 		#endif
 
+		color.rgb *= 1.0 - volumetricLight.a * rainFactor * 0.5;
 		color += volumetricLight.rgb;
 	#endif
 
