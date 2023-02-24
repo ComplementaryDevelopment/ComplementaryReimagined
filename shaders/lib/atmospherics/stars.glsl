@@ -32,11 +32,11 @@ vec3 GetStars(vec3 viewPos, float VdotU, float VdotS) {
     star = max0(star);
     star *= star;
 
-	float starFogFactor = clamp(VdotU * 3.0, 0.0, 1.0);
+	float starFogFactor = min1(VdotU * 3.0);
     star *= starFogFactor * (1.0 - sunVisibility);
-    star *= clamp(1.0 - pow(abs(VdotS) * 1.002, 100.0), 0.0, 1.0);
+    star *= max0(1.0 - pow(abs(VdotS) * 1.002, 100.0));
 
-    vec3 stars = (star * 40.0 * invRainFactor) * sqrt(nightMiddleSkyColor);
+    vec3 stars = 40.0 * star * vec3(0.38, 0.4, 0.5) * invRainFactor;
 
     return stars;
 }

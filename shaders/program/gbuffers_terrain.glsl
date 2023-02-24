@@ -20,7 +20,7 @@ in vec3 normal;
 
 in vec4 glColor;
 
-#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS
+#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
 	flat in vec3 binormal, tangent;
 #endif
 
@@ -44,6 +44,10 @@ uniform mat4 shadowProjection;
 
 uniform sampler2D texture;
 
+#ifdef IPBR
+	uniform ivec2 atlasSize;
+#endif
+
 #if defined NETHER || RAIN_PUDDLES >= 1 || defined COATED_TEXTURES || defined SNOWY_WORLD
 	uniform sampler2D noisetex;
 #endif
@@ -51,10 +55,6 @@ uniform sampler2D texture;
 #if RAIN_PUDDLES >= 1
 	uniform float wetness;
 	uniform float isRainy;
-#endif
-
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES
-	uniform ivec2 atlasSize;
 #endif
 
 #ifdef CLOUD_SHADOWS
@@ -69,6 +69,11 @@ uniform sampler2D texture;
 #if HELD_LIGHTING_MODE == 0 && SHOW_LIGHT_LEVEL == 2
 	uniform int heldBlockLightValue;
 	uniform int heldBlockLightValue2;
+#endif
+
+#ifdef CUSTOM_PBR
+	uniform sampler2D normals;
+	uniform sampler2D specular;
 #endif
 
 //Pipeline Constants//
@@ -89,6 +94,14 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	vec3 lightVec = sunVec;
 #endif
 
+#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
+	mat3 tbnMatrix = mat3(
+		tangent.x, binormal.x, normal.x,
+		tangent.y, binormal.y, normal.y,
+		tangent.z, binormal.z, normal.z
+	);
+#endif
+
 //Common Functions//
 void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, inout float snowMinNdotU, float lViewPos) {
 	float factor = max(80.0 - lViewPos, 0.0);
@@ -105,9 +118,14 @@ void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, inout float s
 	#endif
 }
 
-void DoBrightBlockTweaks(inout vec3 shadowMult, inout float highlightMult) {
-	shadowMult = vec3(0.7);
-	highlightMult *= 1.428;
+void DoBrightBlockTweaks(vec3 color, float minLight, inout vec3 shadowMult, inout float highlightMult) {
+	float factor = mix(minLight, 1.0, pow2(pow2(color.r)));
+	shadowMult = vec3(factor);
+	highlightMult /= factor;
+}
+
+void DoOceanBlockTweaks(inout float smoothnessD) {
+	smoothnessD *= max0(lmCoord.y - 0.95) * 20.0;
 }
 
 float GetMaxColorDif(vec3 color) {
@@ -128,11 +146,15 @@ float GetMaxColorDif(vec3 color) {
 #endif
 
 #ifdef GENERATED_NORMALS
-	#include "/lib/materials/generatedNormals.glsl"
+	#include "/lib/materials/materialMethods/generatedNormals.glsl"
 #endif
 
 #ifdef COATED_TEXTURES
-	#include "/lib/materials/coatedTextures.glsl"
+	#include "/lib/materials/materialMethods/coatedTextures.glsl"
+#endif
+
+#ifdef CUSTOM_PBR
+	#include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
 
 //Program//
@@ -142,9 +164,7 @@ void main() {
 	float smoothnessD = 0.0, materialMask = 0.0, skyLightFactor = 0.0;
 	vec3 normalM = normal;
 	if (color.a > 0.00001) {
-		#ifdef GENERATED_NORMALS
-			vec3 colorP = color.rgb;
-		#endif
+		vec3 colorP = color.rgb;
 		color.rgb *= glColor.rgb;
 		
 		vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
@@ -172,7 +192,7 @@ void main() {
 		vec3 shadowMult = vec3(1.0);
 		#ifdef IPBR
 			vec3 maRecolor = vec3(0.0);
-			#include "/lib/materials/terrainMaterials.glsl"
+			#include "/lib/materials/materialHandling/terrainMaterials.glsl"
 
 			#ifdef GENERATED_NORMALS
 				if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
@@ -182,6 +202,10 @@ void main() {
 				CoatTextures(color.rgb, noiseFactor, playerPos);
 			#endif
 		#else
+			#ifdef CUSTOM_PBR
+				GetCustomMaterials(normalM, NdotU, smoothnessG, smoothnessD, highlightMult, emission, materialMask);
+			#endif
+
 			if (mat == 10000) { // No directional shading
 				noDirectionalShading = true;
 			} else if (mat == 10004) { // Grounded Waving Foliage
@@ -189,14 +213,9 @@ void main() {
 
 				DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
 			} else if (mat == 10008) { // Leaves
-				#include "/lib/materials/specificMaterials/leaves.glsl"
-
-				#if SHADOW_QUALITY < 3
-					shadowMult = vec3(sqrt1(max0(max(lmCoordM.y, min1(lmCoordM.x * 2.0)) - 0.95) * 20.0)); //dup5823
-				#endif
+				#include "/lib/materials/specificMaterials/terrain/leaves.glsl"
 			} else if (mat == 10012) { // Vine
-				#include "/lib/materials/specificMaterials/leaves.glsl"
-				shadowMult = vec3(1.2);
+				shadowMult = vec3(1.7); //dup2315
 			} else if (mat == 10016) { // Non-waving Foliage
 				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 			} else if (mat == 10020) { // Upper Waving Foliage
@@ -239,12 +258,6 @@ void main() {
 			float puddleLightFactor = max0(lmCoord.y * 32.0 - 31.0) * clamp((1.0 - 1.15 * lmCoord.x) * 10.0, 0.0, 1.0);
 			float puddleMixer = puddleLightFactor * isRainy;
 			if (NdotU + pow2(pow2(wetness)) * puddleMixer - noPuddles > 1.0001) {
-				mat3 tbnMatrix = mat3(
-					tangent.x, binormal.x, normal.x,
-					tangent.y, binormal.y, normal.y,
-					tangent.z, binormal.z, normal.z
-				);
-
 				vec2 worldPosXZ = playerPos.xz + cameraPosition.xz;
 				#if WATER_STYLE == 1
 					vec2 puddlePosNormal = floor(worldPosXZ * 16.0) * 0.0625;
@@ -304,8 +317,6 @@ void main() {
 				skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
 			#endif
 		#endif
-
-		normalM = mat3(gbufferModelViewInverse) * normalM;
 	} else discard;
 
 	/* DRAWBUFFERS:01 */
@@ -314,7 +325,7 @@ void main() {
 
 	#if REFLECTION_QUALITY >= 3 && RP_MODE != 0
 		/* DRAWBUFFERS:015 */
-		gl_FragData[2] = vec4(normalM, 1.0);
+		gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
 	#endif
 }
 
@@ -335,7 +346,7 @@ out vec3 normal;
 
 out vec4 glColor;
 
-#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS
+#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
 	flat out vec3 binormal, tangent;
 #endif
 
@@ -356,7 +367,7 @@ out vec4 glColor;
 attribute vec4 mc_Entity;
 attribute vec4 mc_midTexCoord;
 
-#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS
+#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
 	attribute vec4 at_tangent;
 #endif
 
@@ -370,7 +381,7 @@ attribute vec4 mc_midTexCoord;
 #endif
 
 #ifdef WAVING_ANYTHING_TERRAIN
-	#include "/lib/materials/wavingBlocks.glsl"
+	#include "/lib/materials/materialMethods/wavingBlocks.glsl"
 #endif
 
 //Program//
@@ -416,7 +427,7 @@ void main() {
 		gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 	#endif
 
-	#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS
+	#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
 		binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
 		tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
 	#endif

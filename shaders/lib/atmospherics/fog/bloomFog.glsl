@@ -28,5 +28,7 @@ float GetBloomFog(float lViewPos) {
         //float bloomFogMult = endBloomAdd;
     #endif
 
+    bloomFogMult *= BLOOM_STRENGTH * 8.33333;
+
     return 1.0 + bloomFog * bloomFogMult;
 }

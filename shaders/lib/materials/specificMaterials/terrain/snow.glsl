@@ -3,7 +3,7 @@ highlightMult = 2.0;
 
 smoothnessD = smoothnessG;
 
-DoBrightBlockTweaks(shadowMult, highlightMult);
+DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
 
 #if RAIN_PUDDLES >= 1
     noPuddles = 1.0;

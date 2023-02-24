@@ -29,7 +29,7 @@ vec3 SampleBasicShadow(vec3 shadowPos) {
         if (rainFactor > 0.9999) return vec3(shadow0);
         float shadow1 = shadow2D(shadowtex1, vec3(shadowPos.st, shadowPos.z)).x;
         if (shadow1 > 0.9999) {
-            shadowcol = texelFetch(shadowcolor0, ivec2(shadowPos.st * shadowMapResolution), 0).rgb * (shadow1 * 4.0 * invRainFactorSqrt);
+            shadowcol = texture2D(shadowcolor0, shadowPos.st).rgb * (shadow1 * 4.0 * invRainFactorSqrt);
         }
     }
 
@@ -76,9 +76,9 @@ vec3 SampleFilteredShadow(vec3 shadowPos, float offset, bool leaves) {
         
         #if SHADOW_QUALITY == 1
             shadowSamples /= 2;
-        #elif SHADOW_QUALITY == 3
-            shadowSamples *= 2;
         #elif SHADOW_QUALITY == 4
+            shadowSamples *= 2;
+        #elif SHADOW_QUALITY == 5
             shadowSamples *= 6;
         #endif
         
@@ -100,7 +100,11 @@ vec3 GetShadow(vec3 shadowPos, float offset, float gradientNoise, bool leaves) {
     #if !defined ENTITY_SHADOWS && defined GBUFFERS_BLOCK
         offset *= 4.0;
     #else
-        offset *= 1.0 + rainFactor2 * 3.0;
+        #ifdef OVERWORLD
+            offset *= 1.0 + rainFactor2 * 3.0;
+        #else
+            offset *= 8.0;
+        #endif
     #endif
 
     #ifdef SHADOW_FILTERING

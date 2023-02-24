@@ -13,34 +13,26 @@ if (entityId < 50064) {
                     #include "/lib/materials/specificMaterials/entities/lightningBolt.glsl"
                 }
             } else {
-                if (entityId == 50008) { // Item Frame
+                if (entityId == 50008) { // Item Frame, Glow Item Frame
                     noSmoothLighting = true;
-                    if (dot(normal, normal) > 1.1) { // Maps
-                        normalM = upVec;
-                        shadowMult = vec3(0.0);
-                        lmCoordM.x = mix(lmCoordM.x, 1.0, pow2(pow2(lmCoord.y)) * 0.75);
-                    }
-                } else /*if (entityId == 50012)*/ { // Glow Item Frame
-                    noSmoothLighting = true;
-                    lmCoordM = vec2(1.0, 0.0);
-                    emission = 0.25;
-                    if (dot(normal, normal) > 1.1) { // Maps
-                        normalM = upVec;
-                        shadowMult = vec3(0.0);
-                    }
+                } else /*if (entityId == 50012)*/ { //
+                
                 }
             }
         } else {
             if (entityId < 50024) {
                 if (entityId == 50016) { // Player
                     if (entityColor.a < 0.001) {
-                        vec3 identification = texelFetch(texture, ivec2(63, 0), 0).rgb;
-                        
-                        /*if (CheckForColor(identification, vec3(193, 91, 241))) {
+                        #ifdef COATED_TEXTURES
+                            noiseFactor = 0.5;
+                        #endif
 
-                        } else*/ if (CheckForColor(identification, vec3(50, 20, 54))) {
-                            if (GetLuminance(color.rgb) >= 0.99999) {
-                                emission = 2.0;
+                        if (CheckForColor(texelFetch(texture, ivec2(0, 0), 0).rgb, vec3(23, 46, 92))) {
+                            for (int i = 63; i >= 56; i--) {
+                                vec3 dif = color.rgb - texelFetch(texture, ivec2(i, 0), 0).rgb;
+                                if (dif == clamp(dif, vec3(-0.001), vec3(0.001))) {
+                                    emission = 2.0 * texelFetch(texture, ivec2(i, 1), 0).r;
+                                }
                             }
                         }
                     }
@@ -139,7 +131,7 @@ if (entityId < 50064) {
                 if (entityId == 50080) { // Allay
                     if (atlasSize.x < 900) {
                         lmCoordM = vec2(0.0);
-                        emission = float(color.r > 0.9) * 5.0 + color.g;
+                        emission = float(color.r > 0.9 && color.b > 0.9) * 5.0 + color.g;
                     } else {
                         lmCoordM.x = 0.8;
                     }
@@ -179,7 +171,7 @@ if (entityId < 50064) {
             } else {
                 if (entityId == 50120) { // 
                 
-                } else if (entityId == 50124) { //
+                } else /*if (entityId == 50124)*/ { //
 
                 }
             }

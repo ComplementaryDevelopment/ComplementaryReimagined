@@ -171,8 +171,7 @@ void main() {
 		viewPos /= viewPos.w;
 		float lViewPos = length(viewPos.xyz);
 
-		float bloomFog = GetBloomFog(lViewPos);
-		color /= bloomFog;
+		color /= GetBloomFog(lViewPos);
 	#else
 		float lViewPos = 0.0;
 	#endif
@@ -199,10 +198,11 @@ void main() {
 	
 	BSLColorSaturation(color);
 
-	vec2 texCoordMin = texCoord.xy - 0.5;
-	float vignette = 1.0 - dot(texCoordMin, texCoordMin) * (1.0 - GetLuminance(color));
-	vignette = sqrt(vignette);
-	color *= vignette;
+	#ifdef VIGNETTE_R
+		vec2 texCoordMin = texCoord.xy - 0.5;
+		float vignette = 1.0 - dot(texCoordMin, texCoordMin) * (1.0 - GetLuminance(color));
+		color *= vignette;
+	#endif
 
 	float filmGrain = dither;
 	color += vec3((filmGrain - 0.25) / 128.0);

@@ -56,7 +56,7 @@ void main() {
 
 				color2.rgb = normalize(color1.rgb) * 0.5;
 			} else { // Lower limit
-				color1.rgb *= 0.25; // Natural Strength
+				color1.rgb *= 0.0;
 			}
 		} else {
 			if (mat == 31000) { // Water
@@ -68,7 +68,7 @@ void main() {
 					vec2 causticWind = vec2(frameTimeCounter * 0.04, 0.0);
 					float caustic = texture2D(noisetex, worldPos.xz * 0.05 + causticWind).g;
 					      caustic += texture2D(noisetex, worldPos.xz * 0.1 - causticWind).g;
-					color1.rgb = vec3(pow2(caustic) * 0.3 + 0.1);
+					color1.rgb = vec3(pow2(caustic) * 0.3);
 				#endif
 				color1.rgb *= glColor.rgb * vec3(0.6, 0.8, 1.1);
 				
@@ -149,7 +149,7 @@ attribute vec4 mc_Entity;
 #include "/lib/util/spaceConversion.glsl"
 
 #if defined WAVING_ANYTHING_TERRAIN || defined WAVING_WATER_VERTEX
-	#include "/lib/materials/wavingBlocks.glsl"
+	#include "/lib/materials/materialMethods/wavingBlocks.glsl"
 #endif
 
 //Program//
@@ -162,7 +162,7 @@ void main() {
 
 	mat = int(mc_Entity.x + 0.5);
 
-	position = gl_Vertex;
+	position = shadowModelViewInverse * shadowProjectionInverse * ftransform();
 
 	#if defined WAVING_ANYTHING_TERRAIN || defined WAVING_WATER_VERTEX
 		#ifdef NO_WAVING_INDOORS
@@ -173,7 +173,7 @@ void main() {
 	#endif
 
 	#ifdef PERPENDICULAR_TWEAKS
-		if (mat == 10004 || mat == 10016) {
+		if (mat == 10004 || mat == 10016) { // Foliage
 			vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
 			vec2 texMinMidCoord = texCoord - midCoord;
 			if (texMinMidCoord.y < 0.0) {
@@ -183,7 +183,7 @@ void main() {
 		}
 	#endif
 
-	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * position;
+	gl_Position = shadowProjection * shadowModelView * position;
 
 	float lVertexPos = sqrt(gl_Position.x * gl_Position.x + gl_Position.y * gl_Position.y);
 	float distortFactor = lVertexPos * shadowMapBias + (1.0 - shadowMapBias);

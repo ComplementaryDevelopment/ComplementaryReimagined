@@ -1,4 +1,10 @@
-vec3 glColorM = glColor.rgb;
+#if MC_VERSION >= 11300
+    vec3 glColorM = glColor.rgb;
+#else
+    vec3 glColorM = texture2DLod(texture, texCoord, 100.0).rgb * vec3(1.35, 1.8, 1.0);
+    colorP.rgb = min(pow2(pow2(pow2(color.rgb / normalize(color.rgb) * 0.95))), vec3(0.9));
+#endif
+
 glColorM.g = max(glColorM.g, 0.35);
 glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
 
@@ -10,16 +16,16 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
     color.rgb = colorPM * glColorM;
 #endif
 
-#if defined GENERATED_NORMALS && (!defined GENERATED_WATER_NORMALS || WATER_STYLE >= 3)
+#if defined GENERATED_NORMALS && WATER_STYLE >= 3
     noGeneratedNormals = true;
 #endif
 
 #ifdef GBUFFERS_WATER
-    translucentMultAlreadyCalculated = true;
+    translucentMultCalculated = true;
 
     lmCoordM.y = min(lmCoord.y * 1.07, 1.0); // Iris/Sodium skylight inconsistency workaround
 
-    float fresnelMult = 1.0;
+    reflectMult = 1.0;
 
     #if WATER_QUALITY >= 2 || WATER_STYLE >= 2
         vec2 wind = vec2(frameTimeCounter * 0.016, 0.0);
@@ -28,7 +34,7 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
         #if WATER_STYLE < 3
              waterPos = floor(waterPos);
         #endif
-             waterPos = 0.002 * (waterPos + worldPos.y * 32.0);
+        waterPos = 0.002 * (waterPos + worldPos.y * 32.0);
     #endif
 
     #if WATER_QUALITY >= 2
@@ -49,9 +55,14 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
             float lViewPosT = length(viewPosT);
             float lViewPosDif = lViewPos - lViewPosT;
             
-            // Water Fog
-            color.a = sqrt1(color.a);
-            color.a *= 0.5 + 0.5 * max0(1.0 - exp(lViewPosDif * 0.15));
+            float waterFog = max0(1.0 - exp(lViewPosDif * 0.15));
+            #if WATER_STYLE < 3
+                color.a = sqrt1(color.a);
+                color.a *= 0.5 + 0.5 * waterFog;
+            #else
+                color.a = 0.98;
+                color.a *= 0.25 + 0.75 * waterFog;
+            #endif
         
             // Water Foam
             if (NdotU > 0.99) {
@@ -74,20 +85,19 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
                 foam *= clamp((fract(worldPos.y) - 0.7) * 10.0, 0.0, 1.0);
 
                 color = mix(color, vec4(0.9, 0.95, 1.05, 1.0), foam);
-                fresnelMult = 1.0 - foam;
+                reflectMult = 1.0 - foam;
             }
         } else {
             color.rgb *= 1.0 + lmCoordM.y * 0.5;
             noDirectionalShading = true;
 
-            fresnelMult = 0.5;
+            reflectMult = 0.5;
         }
     #else
         shadowMult = vec3(0.0); 
     #endif
 
     #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1
-
         #if WATER_STYLE >= 2
             vec3 normalMap = vec3(0.0, 0.0, 1.0);
 
@@ -135,12 +145,6 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
                 vec3 minNormal = vec3(-1.0);
 
         #endif
-        
-            mat3 tbnMatrix = mat3(
-                tangent.x, binormal.x, normal.x,
-                tangent.y, binormal.y, normal.y,
-                tangent.z, binormal.z, normal.z
-            );
 
             normalM = clamp(normalize(normalMap * tbnMatrix), minNormal, vec3(1.0));
 
@@ -149,27 +153,34 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
         #endif
 
         #if WATER_STYLE >= 3
-            fresnel = pow2(clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0));
-            color.rgb *= 1.0 + fresnel;
+            fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
         #endif
     #endif
 
-    fresnel *= fresnelMult * (max0(NdotU) * 0.5 + 0.5);
+    float fresnel2 = pow2(fresnel);
+    float fresnel4 = pow2(fresnel2);
+
+    // Final Tweaks
+    reflectMult *= 0.5 + 0.5 * max0(NdotU);
+
+    #if WATER_STYLE >= 3
+        color.rgb *= 1.0 + pow2(fresnel);
+    #endif
 
     // Blending 
-    float fresnel2 = pow2(fresnel);
-    translucentMult.rgb = normalize(sqrt2(glColor.rgb)) * vec3(0.7, 0.7, 1.0);
-    translucentMult.rgb = mix(translucentMult.rgb, vec3(float(isEyeInWater == 0) * eyeBrightnessM), fresnel2);
+    translucentMult.rgb = normalize(sqrt2(glColor.rgb));
+    translucentMult.g *= 0.88;
+    translucentMult.rgb = mix(translucentMult.rgb, vec3(float(isEyeInWater == 0) * eyeBrightnessM), fresnel4);
     if (isEyeInWater == 0)
         translucentMult.rgb = mix(translucentMult.rgb, vec3(1.0), min1(lViewPos * TRANSLUCENT_BLEND_FALLOFF_MULT));
-    color.a = mix(color.a, 1.0, fresnel2);
+    color.a = mix(color.a, 1.0, fresnel4);
 
     // Highlight
     #if WATER_STYLE < 3
         smoothnessG = 0.5;
-        highlightMult = min(pow2(pow2(dot(colorP.rgb, colorP.rgb) * 0.4)), 0.5) * (16.0 - 15.0 * fresnel) * (sunVisibility > 0.5 ? 1.0 : 0.5);
+        highlightMult = min(pow2(pow2(dot(colorP.rgb, colorP.rgb) * 0.4)), 0.5) * (16.0 - 15.0 * fresnel2) * (sunVisibility > 0.5 ? 1.0 : 0.5);
     #else
         smoothnessG = 0.5;
-        highlightMult = 0.4 - 0.375 * fresnel;
+        highlightMult = 0.4 - 0.375 * fresnel2;
     #endif
 #endif

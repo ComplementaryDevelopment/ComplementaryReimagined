@@ -1,0 +1,1 @@
+noSmoothLighting = true;

@@ -6,9 +6,10 @@ if (color.a > 0.001) {
     #ifdef FANCY_GLASS
         smoothnessG = 0.5;
         highlightMult = 2.5;
+        reflectMult = 1.0;
         color.rgb = vec3(0.75, 0.8, 0.85);
 
-        translucentMultAlreadyCalculated = true;
+        translucentMultCalculated = true;
         translucentMult.a = 0.0;
 
         color.a = max(color.a, GLASS_OPACITY);

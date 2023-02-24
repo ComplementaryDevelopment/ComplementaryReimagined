@@ -57,7 +57,11 @@ void main() {
 		float VdotS = dot(nViewPos, sunVec);
 		float VdotU = dot(nViewPos, upVec);
 
-		if (abs(tSize.y - 48.0) < 16.5) {
+		if (abs(tSize.y - 264.0) < 248.5) { //tSize.y must range from 16 to 512
+			#if SUN_MOON_STYLE == 2
+				discard;
+			#endif
+
 			if (VdotS > 0.0) { // Sun
 				if (color.b > 0.1775) { // 0.065 to 0.290
 					if (color.b > 0.48) { // 0.295 to 0.665
@@ -67,21 +71,14 @@ void main() {
 					}
 
 					color.rgb *= normalize(lightColor);
-
-					#ifdef SUN_MOON_HORIZON
-						color.rgb *= 0.2 + 0.8 * sunVisibility2;
-					#endif
+					color.rgb *= 0.2 + 0.8 * sunVisibility2;
 				} else discard;
 			} else { // Moon
 				color.rgb *= sqrt2(max0(color.r - 0.115)); // 0.065 to 0.165
 				color.rgb *= 1.5;
 			}
 
-			#ifdef SUN_MOON_HORIZON
-				color.rgb *= smoothstep1(pow2(clamp((VdotU + 0.1) * 10.0, 0.0, 1.0)));
-			#else
-				color.rgb *= pow2(pow2(pow2(min1(VdotU + 1.0))));
-			#endif
+			color.rgb *= GetHorizonFactor(VdotU);
 		} else { // Custom Sky
 			color.rgb *= color.rgb * smoothstep1(sqrt1(max0(VdotU)));
 		}

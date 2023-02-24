@@ -9,5 +9,5 @@ if (color.g < 0.05 && color.b > 0.3) {
 
     maRecolor = vec3(min(max0(factor * 0.7 - 0.1) * 1.3, 0.5));
 } else {
-    #include "/lib/materials/specificMaterials/obsidian.glsl"
+    #include "/lib/materials/specificMaterials/terrain/obsidian.glsl"
 }

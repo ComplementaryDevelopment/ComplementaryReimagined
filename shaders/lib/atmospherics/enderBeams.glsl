@@ -4,7 +4,7 @@ vec3 endOrangeCol = vec3(1.0, 0.3, 0.0);
 vec3 beamPurple = normalize(ambientColor * ambientColor * ambientColor) * (2.5 - 1.0 * vlFactor);
 vec3 beamOrange = endOrangeCol * (300.0 + 700.0 * vlFactor);
 
-vec2 wind = vec2(syncedTime * 0.0016);
+vec2 wind = vec2(syncedTime * 0.00);
 
 float BeamNoise(vec2 planeCoord, vec2 wind) {
     float noise = texture2D(noisetex, planeCoord * 0.175   - wind * 0.0625).b;

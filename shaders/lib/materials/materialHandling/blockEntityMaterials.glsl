@@ -64,6 +64,7 @@ if (blockEntityId > 1) {
                     color.rgb *= vec3(1.0, 0.25, 0.1);
                 }
             } else /*if (blockEntityId == 60024)*/ { //
+            
             }
         }
     }

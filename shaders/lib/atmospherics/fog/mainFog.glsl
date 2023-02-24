@@ -5,13 +5,14 @@
         #include "/lib/colors/skyColors.glsl"
     #endif
 
-    void DoBorderFog(inout vec3 color, inout float sky, float lPlayerPosXZ, float VdotU, float VdotS, float dither) {
+    void DoBorderFog(inout vec3 color, inout float skyFade, float lPlayerPosXZ, float VdotU, float VdotS, float dither) {
         #if defined OVERWORLD || defined END
             float fog = lPlayerPosXZ / far;
             fog *= fog;
             fog *= fog;
-            fog *= fog * fog;
-            fog = 1.0 - exp(-6.0 * fog);
+            fog *= fog;
+            fog *= fog;
+            fog = 1.0 - exp(-3.0 * fog);
         #endif
         #ifdef NETHER
             float fog = lPlayerPosXZ / far;
@@ -32,9 +33,9 @@
             color = mix(color, fogColorM, fog);
 
             #ifndef GBUFFERS_WATER
-                sky = fog;
+                skyFade = fog;
             #else
-                sky = fog * (1.0 - isEyeInWater);
+                skyFade = fog * (1.0 - isEyeInWater);
             #endif
         }
     }
@@ -72,11 +73,12 @@
         return altitudeFactor;
     }
 
-    void DoAtmosphericFog(inout vec3 color, float lViewPos, vec3 playerPos) {
+    void DoAtmosphericFog(inout vec3 color, vec3 playerPos, float lViewPos, float VdotS) {
         float fog = 1.0 - exp(-pow(lViewPos * (0.001 - 0.0007 * rainFactor), 2.0 - rainFactor2) * lViewPos);
-              fog *= 0.95 - 0.25 * invRainFactor;
+              fog *= ATM_FOG_MULT - 0.25 * invRainFactor;
         
-        float altitudeFactor = GetAtmFogAltitudeFactor(playerPos.y + cameraPosition.y);
+        float altitudeFactorP = GetAtmFogAltitudeFactor(playerPos.y + cameraPosition.y);
+        float altitudeFactor = altitudeFactorP;
 
         #ifdef OVERWORLD
             altitudeFactor *= 1.0 - 0.75 * GetAtmFogAltitudeFactor(cameraPosition.y) * invRainFactor;
@@ -94,8 +96,17 @@
         if (fog > 0.0) {
             fog = clamp(fog, 0.0, 1.0);
             #ifdef OVERWORLD
-                vec3 fogColorM = mix(nightUpSkyColor * (2.5 - sunFactor * 2.5), sqrt(dayDownSkyColor) * (0.8 + noonFactor * 0.6), sunFactor);
-                     fogColorM = mix(fogColorM, mix(nightMiddleSkyColor, dayMiddleSkyColor, sunFactor), rainFactor);
+                float nightFogMult = 2.5 - 0.625 * pow2(pow2(altitudeFactorP));
+                float dayNightFogBlend = pow(1.0 - nightFactor, 4.0 - VdotS - 2.5 * sunVisibility2);
+                vec3 clearFogColor = mix(
+                    nightUpSkyColor * (nightFogMult - dayNightFogBlend * nightFogMult),
+                    sqrt(dayDownSkyColor) * (0.9 + noonFactor * 0.5),
+                    dayNightFogBlend
+                );
+
+                vec3 rainFogColor = mix(normalize(nightMiddleSkyColor) * 0.15, dayMiddleSkyColor * 1.1, dayNightFogBlend);
+
+                vec3 fogColorM = mix(clearFogColor, rainFogColor, rainFactor);
             #else
                 vec3 fogColorM = endSkyColor;
             #endif
@@ -150,15 +161,15 @@ void DoDarknessFog(inout vec3 color, float lViewPos) {
     color *= exp(-fog);
 }
 
-void DoFog(inout vec3 color, inout float sky, float lViewPos, vec3 playerPos, float VdotU, float VdotS, float dither) {
+void DoFog(inout vec3 color, inout float skyFade, float lViewPos, vec3 playerPos, float VdotU, float VdotS, float dither) {
     #ifdef CAVE_FOG
         DoCaveFog(color, lViewPos);
     #endif
     #ifdef ATMOSPHERIC_FOG
-        DoAtmosphericFog(color, lViewPos, playerPos);
+        DoAtmosphericFog(color, playerPos, lViewPos, VdotS);
     #endif
     #ifdef BORDER_FOG
-        DoBorderFog(color, sky, length(playerPos.xz), VdotU, VdotS, dither);
+        DoBorderFog(color, skyFade, length(playerPos.xz), VdotU, VdotS, dither);
     #endif
 
     if (isEyeInWater == 1) DoWaterFog(color, lViewPos);

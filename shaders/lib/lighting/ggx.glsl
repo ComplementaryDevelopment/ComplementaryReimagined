@@ -32,8 +32,6 @@ float GetNoHSquared(float radiusTan, float NoL, float NoV, float VoL) {
 }
 
 float GGX(vec3 normalM, vec3 viewPos, vec3 lightVec, float NdotLmax0, float smoothnessG) {
-    if (NdotLmax0 < 0.0001) return 0.0;
-    
     smoothnessG = sqrt1(smoothnessG * 0.9 + 0.1);
     float roughnessP = (1.35 - smoothnessG);
     float roughness = pow2(pow2(roughnessP));
@@ -42,7 +40,12 @@ float GGX(vec3 normalM, vec3 viewPos, vec3 lightVec, float NdotLmax0, float smoo
 
     float dotLH = clamp(dot(halfVec, lightVec), 0.0, 1.0);
     float dotNV = dot(normalM, -viewPos);
-    float dotNH = GetNoHSquared(0.01, NdotLmax0, dotNV, dot(-viewPos, lightVec));
+    
+    #if REFLECTION_QUALITY >= 2
+        float dotNH = GetNoHSquared(0.01, NdotLmax0, dotNV, dot(-viewPos, lightVec));
+    #else
+        float dotNH = pow2(min1(2.0 * NdotLmax0 * dotNV * length(halfVec) - dot(-viewPos, lightVec)));
+    #endif
     
     float denom = dotNH * roughness - dotNH + 1.0;
     float D = roughness / (3.141592653589793 * denom * denom);
@@ -53,6 +56,8 @@ float GGX(vec3 normalM, vec3 viewPos, vec3 lightVec, float NdotLmax0, float smoo
     float specular = max(NdotLmax0M * D * F / pow2(dotLH), 0.0);
     specular = max(specular, 0.0);
     specular = specular / (0.125 * specular + 1.0);
+
+    specular *= sqrt1(NdotLmax0);
 
     return specular;
 }

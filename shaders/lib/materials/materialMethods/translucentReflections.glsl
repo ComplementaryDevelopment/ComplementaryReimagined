@@ -2,12 +2,17 @@ vec3 pos = vec3(0.0);
 float dist = 0.0;
 int sr = 0;
 
-vec3 nViewPosR = reflect(nViewPos, normalM);
+vec3 normalMR = normalM;
+#ifdef GENERATED_NORMALS
+    normalMR = mix(normalMP, normalM, 0.05);
+#endif
+
+vec3 nViewPosR = reflect(nViewPos, normalMR);
 float RVdotU = dot(normalize(nViewPosR), upVec);
 float RVdotS = dot(normalize(nViewPosR), sunVec);
 
 vec3 start = viewPos;
-vec3 vector = 0.5 * reflect(normalize(viewPos), normalize(normalM));
+vec3 vector = 0.5 * reflect(normalize(viewPos), normalize(normalMR));
 vec3 viewPosRT = viewPos + vector;
 vec3 tvector = vector;
 
@@ -40,7 +45,7 @@ vec4 reflection = vec4(0.0);
 if (pos.z < 0.99997) {
     reflection.a = border;
     if (reflection.a > 0.001) {
-        reflection.rgb = texture2D(gaux2, pos.xy).rgb;
+        reflection = texture2D(gaux2, pos.xy);
     }
 }
 
@@ -64,4 +69,4 @@ if (reflection.a < 1.0) {
     reflection.rgb = mix(skyReflection, reflection.rgb, reflection.a);
 }
 
-color.rgb = mix(color.rgb, reflection.rgb, fresnel * reflectMult);
+color.rgb = mix(color.rgb, reflection.rgb, fresnel);

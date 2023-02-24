@@ -25,6 +25,8 @@ uniform sampler2D colortex1;
 uniform sampler2D depthtex1;
 
 //Pipeline Constants//
+#include "/lib/misc/pipelineSettings.glsl"
+
 const bool colortex3MipmapEnabled = true;
 
 //Common Variables//

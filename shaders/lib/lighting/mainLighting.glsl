@@ -10,206 +10,230 @@ uniform float darknessLightFactor;
 #include "/lib/colors/lightAndAmbientColors.glsl"
 #include "/lib/lighting/ggx.glsl"
 
-#if defined OVERWORLD || defined END
+#if SHADOW_QUALITY > 0 && (defined OVERWORLD || defined END)
     #include "/lib/lighting/shadowSampling.glsl"
 #endif
 
 #ifdef CLOUD_SHADOWS
-    #include "/lib/atmospherics/cloudCoord.glsl"
+    #include "/lib/atmospherics/clouds/cloudCoord.glsl"
 #endif
 
-//Lighting Variables//
-float eyeBrightnessM2 = eyeBrightnessM * eyeBrightnessM;
-float noonFactor20 = pow(noonFactor, 20.0);        
+//
 vec3 highlightColor = normalize(pow(lightColor, vec3(0.37))) * (0.5 + 1.3 * sunVisibility2) * (1.0 - 0.85 * rainFactor);
 
 //Lighting//
 void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 viewPos, float lViewPos, vec3 normalM, vec2 lightmap,
                 bool noSmoothLighting, bool noDirectionalShading, bool noVanillaAO, int subsurfaceMode,
                 float smoothnessG, float highlightMult, float emission) {
-    // Prepare Variables
     float lightmapY2 = pow2(lightmap.y);
     float lightmapYM = smoothstep1(lightmap.y);
     float subsurfaceHighlight = 0.0;
     vec3 ambientMult = vec3(1.0);
     vec3 shadowLighting = lightColor;
     vec3 nViewPos = normalize(viewPos);
+    float NdotUmax0 = max0(NdotU);
 
-    #if defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING || defined DIRECTIONAL_SHADING
+    #ifdef OVERWORLD
+        float skyLightShadowMult = pow2(pow2(lightmapY2));
+    #else
+        float skyLightShadowMult = 1.0;
+    #endif
+
+    #if defined SIDE_SHADOWING || defined DIRECTIONAL_SHADING
         float NdotN = dot(normalM, northVec);
         float absNdotN = abs(NdotN);
     #endif
 
-    // Real-Time Shadows
+    // Shadows
     #if defined OVERWORLD || defined END
         float NdotL = dot(normalM, lightVec);
-        float NdotLmax0 = max(NdotL, 0.0);
+        #if SHADOW_QUALITY == 0
+            if (subsurfaceMode == 1) {
+                NdotU = 1.0;
+                NdotUmax0 = 1.0;
+                NdotL = dot(upVec, lightVec);
+            } else if (subsurfaceMode == 2) {
+                highlightMult *= NdotL;
+                NdotL = mix(NdotL, 1.0, 0.35);
+            }
+
+            subsurfaceMode = 0;
+        #endif
+        float NdotLmax0 = max0(NdotL);
         float NdotLM = NdotLmax0 * 0.9999;
 
         #ifndef GBUFFERS_TEXTURED
                 #ifdef GBUFFERS_TERRAIN
-                    if (subsurfaceMode != 0) {
-                        NdotLM = clamp(mod(subsurfaceMode, 3), 0.5, 1.0);
-                    }
+                    if (subsurfaceMode != 0) NdotLM = 1.0;
                 #endif
-            #if defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING
+            #ifdef SIDE_SHADOWING
                 #ifdef GBUFFERS_TERRAIN
                      else
                 #endif
-                NdotLM = mix(NdotLM, (NdotL + 0.4) * 0.714, absNdotN * pow2(pow2(pow2(1.0 - NdotLM))));
+                NdotLM = max0(NdotL + 0.4) * 0.714;
+
+                #ifdef END
+                    NdotLM = sqrt3(NdotLM);
+                #endif
             #endif
         #else
             NdotLM = 1.0;
         #endif
 
-        #if defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING
-            #if !defined ENTITY_SHADOWS && (defined GBUFFERS_ENTITIES || defined GBUFFERS_BLOCK)
-                shadowLighting = mix(shadowLighting * 0.75, ambientColor, 0.5 * pow2(pow2(1.0 - NdotLM)));
-                NdotLM = NdotLM * 0.75 + 0.25;
-            #endif
+        #if !defined ENTITY_SHADOWS && (defined GBUFFERS_ENTITIES || defined GBUFFERS_BLOCK)
+            shadowLighting = mix(shadowLighting * 0.75, ambientColor, 0.5 * pow2(pow2(1.0 - NdotLM)));
+            NdotLM = NdotLM * 0.75 + 0.25;
         #endif
 
         if (shadowMult.r > 0.00001) {
-            if (NdotLM > 0.0001) {
-                vec3 shadowMultBeforeLighting = shadowMult;
-                float shadowLength = shadowDistance * 0.9166667 - length(vec4(playerPos.x, playerPos.y, playerPos.y, playerPos.z));
+            #if SHADOW_QUALITY > 0
+                if (NdotLM > 0.0001) {
+                    vec3 shadowMultBeforeLighting = shadowMult;
+                    float shadowLength = shadowDistance * 0.9166667 - length(vec4(playerPos.x, playerPos.y, playerPos.y, playerPos.z));
 
-                if (shadowLength > 0.000001) {
-                    float offset = 0.0009765;
+                    if (shadowLength > 0.000001) {
+                        float offset = 0.0009765;
 
-                    vec3 playerPosM = playerPos;
-                    
-                    #if PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
-                        playerPosM = floor((playerPosM + cameraPosition) * PIXEL_SHADOW + 0.001) / PIXEL_SHADOW - cameraPosition + 0.5 / PIXEL_SHADOW;
-                    #endif
+                        vec3 playerPosM = playerPos;
+                        
+                        #if PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
+                            playerPosM = floor((playerPosM + cameraPosition) * PIXEL_SHADOW + 0.001) / PIXEL_SHADOW - cameraPosition + 0.5 / PIXEL_SHADOW;
+                        #endif
 
-                    #ifndef GBUFFERS_TEXTURED
-                        // Shadow bias without peter-panning
-                        vec3 worldNormal = normalize(ViewToPlayer(normal*1000.0));
-                        vec3 bias = worldNormal * min(0.12 + length(playerPos) / 200.0, 0.5) * (2.0 - NdotLmax0);
+                        #ifndef GBUFFERS_TEXTURED
+                            // Shadow bias without peter-panning
+                            vec3 worldNormal = normalize(ViewToPlayer(normal*1000.0));
+                            vec3 bias = worldNormal * min(0.12 + length(playerPos) / 200.0, 0.5) * (2.0 - NdotLmax0);
 
-                        // Fix light leaking in caves
-                        #ifdef GBUFFERS_TERRAIN
-                            #ifdef PERPENDICULAR_TWEAKS
+                            // Fix light leaking in caves
+                            #ifdef GBUFFERS_TERRAIN
                                 if (subsurfaceMode == 2) {
                                     bias *= vec3(0.0, 0.0, -0.75);
-                                } else
+                                } else if (subsurfaceMode == 1) {
+                                    bias *= 1.0 - lightmapYM;
+                                }
                             #endif
-                            if (subsurfaceMode == 1) bias *= 1.0 - lightmapYM;
-                        #endif
-                        if (lightmapYM < 0.999) {
-                            #ifdef GBUFFERS_ENTITIES
-                                vec3 centerplayerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
-                                playerPosM = mix(centerplayerPos, playerPosM, 0.5 + 0.5 * lightmapYM);
-                            #elif defined GBUFFERS_HAND
-                                playerPosM = mix(vec3(0.0), playerPosM, 0.2 + 0.8 * lightmapYM);
-                            #else
-                                vec3 edgeFactor = 0.2 * (0.5 - fract(playerPosM + cameraPosition + worldNormal * 0.01));
+                            if (lightmapYM < 0.999) {
+                                #ifdef GBUFFERS_ENTITIES
+                                    vec3 centerplayerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
+                                    playerPosM = mix(centerplayerPos, playerPosM, 0.5 + 0.5 * lightmapYM);
+                                #elif defined GBUFFERS_HAND
+                                    playerPosM = mix(vec3(0.0), playerPosM, 0.2 + 0.8 * lightmapYM);
+                                #else
+                                    vec3 edgeFactor = 0.2 * (0.5 - fract(playerPosM + cameraPosition + worldNormal * 0.01));
 
-                                #ifdef GBUFFERS_WATER
-                                    bias *= 0.5;
-                                    playerPosM += (1.0 - lightmapYM) * edgeFactor;
-                                #endif
+                                    #ifdef GBUFFERS_WATER
+                                        bias *= 0.7;
+                                        playerPosM += (1.0 - lightmapYM) * edgeFactor;
+                                    #endif
 
-                                playerPosM += (1.0 - pow2(pow2(max(glColor.a, lightmapYM)))) * edgeFactor;
-                            #endif
-                        }
-
-                        playerPosM += bias;
-                    #else
-                        vec3 centerplayerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
-                        playerPosM = mix(centerplayerPos, playerPosM + vec3(0.0, 0.02, 0.0), lightmapYM);
-                    #endif
-                        
-                    vec3 shadowPos = calculateShadowPos(playerPosM);
-
-                    #ifdef TAA
-                        float gradientNoise = InterleavedGradientNoise();
-                    #else
-                        float gradientNoise = 0.5;
-                    #endif
-
-                    bool leaves = false;
-                    #ifdef GBUFFERS_TERRAIN
-                        if (subsurfaceMode == 0) {
-                            #if defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING
-                                offset *= 1.0 + pow2(absNdotN);
-                            #endif
-                        } else {
-                            float VdotL = dot(nViewPos, lightVec);
-                            float lightFactor = pow(max(VdotL, 0.0), 10.0) * float(isEyeInWater == 0);
-                            if (subsurfaceMode == 1) {
-                                offset = 0.0010235 * lightmapYM + 0.0009765;
-                                shadowPos.z -= max(NdotL * 0.0001, 0.0) * lightmapYM;
-                                subsurfaceHighlight = lightFactor * 0.8;
-                                #ifndef SHADOW_FILTERING
-                                    shadowPos.z -= 0.0002;
-                                #endif
-                            } else {
-                                leaves = true;
-                                offset = 0.0005235 * lightmapYM + 0.0009765;
-                                shadowPos.z -= 0.000175 * lightmapYM;
-                                subsurfaceHighlight = lightFactor * 0.6;
-                                #ifndef SHADOW_FILTERING
-                                    NdotLM = mix(NdotL, NdotLM, 0.5);
+                                    playerPosM += (1.0 - pow2(pow2(max(glColor.a, lightmapYM)))) * edgeFactor;
                                 #endif
                             }
-                        }
-                    #endif
 
-                    shadowMult *= GetShadow(shadowPos, offset, gradientNoise, leaves);
-                }
-
-                float shadowSmooth = 16.0;
-                if (shadowLength < shadowSmooth) {
-                    float shadowMixer = max0(shadowLength / shadowSmooth);
-                    #ifdef OVERWORLD
-                        float skyLightShadowMult = pow2(pow2(lightmapY2));
-                    #else
-                        float skyLightShadowMult = 1.0;
-                    #endif
-                    
-                    #ifdef GBUFFERS_TERRAIN
-                        if (subsurfaceMode != 0) {
-                            float shadowMixerM = pow2(shadowMixer);
-
-                            if (subsurfaceMode == 1) skyLightShadowMult *= mix(0.6 + 0.3 * pow2(noonFactor), 1.0, shadowMixerM);
-                            else skyLightShadowMult *= mix(NdotL * 0.4999 + 0.5, 1.0, shadowMixerM);
-
-                            subsurfaceHighlight *= shadowMixer;
-                        }
-                    #endif
-
-                    shadowMult = mix(vec3(skyLightShadowMult * shadowMultBeforeLighting), shadowMult, shadowMixer);
-                }
-
-                #ifdef CLOUD_SHADOWS
-                    if (shadowMult.r > 0.0001) {
-                        vec3 worldPos = playerPos + cameraPosition;
-
-                        float EdotL = dot(eastVec, lightVec);
-                        float EdotLM = tan(acos(EdotL));
-
-                        float distToCloudLayer1 = CLOUD_ALT1 - worldPos.y;
-                        float cloudOffset1 = distToCloudLayer1 / EdotLM;
-                        vec2 cloudPos1 = GetRoundedCloudCoord(ModifyTracePos(worldPos + vec3(cloudOffset1, 0,0), CLOUD_ALT1).xz);
-                        float cloudSample = texture2D(gaux3, cloudPos1).r;
-                        cloudSample *= clamp(distToCloudLayer1 * 0.1, 0.0, 1.0);
-
-                        #ifdef SECOND_CLOUD_LAYER
-                            float distToCloudLayer2 = CLOUD_ALT2 - worldPos.y;
-                            float cloudOffset2 = distToCloudLayer2 / EdotLM;
-                            vec2 cloudPos2 = GetRoundedCloudCoord(ModifyTracePos(worldPos + vec3(cloudOffset2, 0,0), CLOUD_ALT2).xz);
-                            float cloudSample2 = texture2D(gaux3, cloudPos2).r;
-                            cloudSample2 *= clamp(distToCloudLayer2 * 0.1, 0.0, 1.0);
-
-                            cloudSample = max(cloudSample, cloudSample2);
+                            playerPosM += bias;
+                        #else
+                            vec3 centerplayerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
+                            playerPosM = mix(centerplayerPos, playerPosM + vec3(0.0, 0.02, 0.0), lightmapYM);
                         #endif
-                        
-                        shadowMult *= 1.0 - 0.85 * cloudSample * sqrt3(1.0 - abs(EdotL));
+                            
+                        vec3 shadowPos = calculateShadowPos(playerPosM);
+
+                        #ifdef TAA
+                            float gradientNoise = InterleavedGradientNoise();
+                        #else
+                            float gradientNoise = 0.5;
+                        #endif
+
+                        bool leaves = false;
+                        #ifdef GBUFFERS_TERRAIN
+                            if (subsurfaceMode == 0) {
+                                #if defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING
+                                    offset *= 1.0 + pow2(absNdotN);
+                                #endif
+                            } else {
+                                float VdotL = dot(nViewPos, lightVec);
+                                float lightFactor = pow(max(VdotL, 0.0), 10.0) * float(isEyeInWater == 0);
+                                if (subsurfaceMode == 1) {
+                                    offset = 0.0010235 * lightmapYM + 0.0009765;
+                                    shadowPos.z -= max(NdotL * 0.0001, 0.0) * lightmapYM;
+                                    subsurfaceHighlight = lightFactor * 0.8;
+                                    #ifndef SHADOW_FILTERING
+                                        shadowPos.z -= 0.0002;
+                                    #endif
+                                } else {
+                                    leaves = true;
+                                    offset = 0.0005235 * lightmapYM + 0.0009765;
+                                    shadowPos.z -= 0.000175 * lightmapYM;
+                                    subsurfaceHighlight = lightFactor * 0.6;
+                                    #ifndef SHADOW_FILTERING
+                                        NdotLM = mix(NdotL, NdotLM, 0.5);
+                                    #endif
+                                }
+                            }
+                        #endif
+
+                        shadowMult *= GetShadow(shadowPos, offset, gradientNoise, leaves);
                     }
-                #endif
-            }
+
+                    float shadowSmooth = 16.0;
+                    if (shadowLength < shadowSmooth) {
+                        float shadowMixer = max0(shadowLength / shadowSmooth);
+                        
+                        #ifdef GBUFFERS_TERRAIN
+                            if (subsurfaceMode != 0) {
+                                float shadowMixerM = pow2(shadowMixer);
+
+                                if (subsurfaceMode == 1) skyLightShadowMult *= mix(0.6 + 0.3 * pow2(noonFactor), 1.0, shadowMixerM);
+                                else skyLightShadowMult *= mix(NdotL * 0.4999 + 0.5, 1.0, shadowMixerM);
+
+                                subsurfaceHighlight *= shadowMixer;
+                            }
+                        #endif
+
+                        shadowMult = mix(vec3(skyLightShadowMult * shadowMultBeforeLighting), shadowMult, shadowMixer);
+                    }
+
+                    #ifdef CLOUD_SHADOWS
+                        if (shadowMult.r > 0.0001) {
+                            vec3 worldPos = playerPos + cameraPosition;
+
+                            float EdotL = dot(eastVec, lightVec);
+                            float EdotLM = tan(acos(EdotL));
+
+                            #if SUN_ANGLE != 0
+                                float NVdotLM = tan(acos(dot(northVec, lightVec)));
+                            #endif
+
+                            float distToCloudLayer1 = CLOUD_ALT1 - worldPos.y;
+                            vec3 cloudOffset1 = vec3(distToCloudLayer1 / EdotLM, 0.0, 0.0);
+                            #if SUN_ANGLE != 0
+                                cloudOffset1.z += distToCloudLayer1 / NVdotLM;
+                            #endif
+                            vec2 cloudPos1 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset1, CLOUD_ALT1).xz);
+                            float cloudSample = texture2D(gaux3, cloudPos1).r;
+                            cloudSample *= clamp(distToCloudLayer1 * 0.1, 0.0, 1.0);
+
+                            #if CLOUD_STYLE == 2
+                                float distToCloudLayer2 = CLOUD_ALT2 - worldPos.y;
+                                vec3 cloudOffset2 = vec3(distToCloudLayer2 / EdotLM, 0.0, 0.0);
+                                #if SUN_ANGLE != 0
+                                    cloudOffset2.z += distToCloudLayer2 / NVdotLM;
+                                #endif
+                                vec2 cloudPos2 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset2, CLOUD_ALT2).xz);
+                                float cloudSample2 = texture2D(gaux3, cloudPos2).r;
+                                cloudSample2 *= clamp(distToCloudLayer2 * 0.1, 0.0, 1.0);
+
+                                cloudSample = max(cloudSample, cloudSample2);
+                            #endif
+                            
+                            shadowMult *= 1.0 - 0.85 * cloudSample * sqrt3(1.0 - abs(EdotL));
+                        }
+                    #endif
+                }
+            #else
+                shadowMult *= skyLightShadowMult;
+            #endif
 
             shadowMult *= max(NdotLM * shadowTime, 0.0);
         }
@@ -227,6 +251,8 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         #if HELD_LIGHTING_MODE == 1
             heldLight *= 0.75;
             lViewPosL *= 1.5;
+        #elif HELD_LIGHTING_MODE == 2
+            heldLight *= 0.97;
         #endif
         lightmap.x = max(lightmap.x, (heldLight - lViewPosL) * 0.066666);
     #endif
@@ -240,11 +266,11 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Minimum Light
     #if !defined END && MINIMUM_LIGHT_MODE > 0
         #if MINIMUM_LIGHT_MODE == 1
-            vec3 minLighting = vec3(0.05);
+            vec3 minLighting = vec3(0.06);
         #elif MINIMUM_LIGHT_MODE == 2
             vec3 minLighting = vec3(0.075 + vsBrightness * 0.145);
         #elif MINIMUM_LIGHT_MODE == 3
-            vec3 minLighting = vec3(0.3);
+            vec3 minLighting = vec3(0.25);
         #elif MINIMUM_LIGHT_MODE == 4
             vec3 minLighting = vec3(0.5);
         #endif
@@ -258,19 +284,35 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #ifdef OVERWORLD
         ambientMult = vec3(mix(lightmapYM, pow2(lightmapYM) * lightmapYM, rainFactor));
 
-        if (isEyeInWater != 1) {
-            float dayFactor = lightmapY2 * (sunVisibility2 * 0.4 + (0.6 - 0.6 * pow2(invNoonFactor))) * (6.0 - 5.0 * rainFactor);
-            dayFactor = max0(dayFactor - emission * 1000000.0);
-            lightmapXM *= pow(max(lightmap.x, 0.001), dayFactor);
+        #if SHADOW_QUALITY == 0
+            float tweakFactor = 1.0 + 0.6 * (1.0 - pow2(pow2(pow2(noonFactor))));
+            shadowLighting /= tweakFactor;
+            ambientMult *= mix(tweakFactor, 1.0, 0.5 * NdotUmax0);
+            float bothTweak = 0.9;
+            shadowLighting *= bothTweak;
+            ambientMult *= bothTweak;
+        #endif
 
-            float nightMult = 1.0 + 0.002 * max0(96.0 - lViewPos) * (1.0 - sunVisibility2);
-            ambientMult *= nightMult;
-            shadowLighting *= nightMult * (0.5 + 0.5 * lightmapYM);
+        if (isEyeInWater != 1) {
+            float lxFactor = (sunVisibility2 * 0.4 + (0.6 - 0.6 * pow2(invNoonFactor))) * (6.0 - 5.0 * rainFactor);
+            lxFactor *= lightmapY2 + 2.0 * shadowMult.r;
+            lxFactor = max0(lxFactor - emission * 1000000.0);
+            lightmapXM *= pow(max(lightmap.x, 0.001), lxFactor);
+
+            // Less light in the distance / more light closer to the camera during rain or night to simulate thicker fog
+            float rainLF = 0.1 * rainFactor;
+            float lightFogTweaks = 1.0 + max0(96.0 - lViewPos) * (0.002 * (1.0 - sunVisibility2) + 0.0104 * rainLF) - rainLF;
+            ambientMult *= lightFogTweaks;
+            shadowLighting *= lightFogTweaks;
         } else {
             lightmapXM *= 1.8;
             shadowLighting *= 0.25 + 0.75 * lightmapYM;
             minLighting *= 1.4;
         }
+    #endif
+
+    #ifdef GBUFFERS_HAND
+        ambientMult *= 1.3; // To improve held map visibility
     #endif
 
     // Directional Shading
@@ -284,28 +326,29 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             #if !defined NETHER || MC_VERSION < 11600
                 float NdotUM = 0.75 + NdotU * 0.25;
             #else
-                float NdotUM = 0.75 + max(NdotU, 0.0) * 0.25;
+                float NdotUM = 0.75 + abs(NdotU + 0.25) * 0.2;
             #endif
             float NdotNM = 1.0 + 0.075 * absNdotN;
             float NdotEM = 1.0 - 0.1 * absNdotE2;
             directionShade = NdotUM * NdotEM * NdotNM;
 
-            shadowLighting *= 1.0 + absNdotE2 * 0.75;
+            #ifdef OVERWORLD
+                shadowLighting *= 1.0 + absNdotE2 * 0.75;
+            #elif defined NETHER && MC_VERSION >= 11600
+                directionShade = pow(directionShade, 1.75);
+            #endif
 
-            #if defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING
-                // Fake GI
+            #if defined CUSTOM_PBR && defined DIRECTIONAL_SHADING
+                float NPdotU = abs(dot(normal, upVec));
+                ambientColor *= 1.0 + 0.4 * NdotE * NPdotU;
+            #endif
+
+            #if defined OVERWORLD && defined PERPENDICULAR_TWEAKS && defined SIDE_SHADOWING
+                // Fake bounced light
                 ambientColor = mix(ambientColor, shadowLighting, (0.05 + 0.03 * subsurfaceMode) * absNdotN * lightmapY2);
-                //ambientColor += sunsetClearLightColor * 0.1 * pow2((dot(sunVec, eastVec) > 0.0 ? NdotE : -NdotE) + 1.0) * pow2(pow2(1.0 - nightFactor)) * invRainFactor;
 
-                // Epic hack to get a bit more natural looking lighting during noon
-                if (subsurfaceMode == 0) {
-                    ambientMult = mix(
-                        ambientMult,
-                        shadowLighting + ambientMult * 0.25,
-                        (0.65 - 0.65 * absNdotN) * absNdotE2 * (noonFactor20) * pow(lightmapYM, 128.0)
-                    );
-                    shadowLighting *= 1.0 + pow2(absNdotN) * noonFactor20;
-                }
+                // Get a bit more natural looking lighting during noon
+                shadowLighting *= 1.0 + max0(1.0 - subsurfaceMode) * pow(noonFactor, 20.0) * (pow2(absNdotN) - absNdotE2 * 0.1);
             #endif
         }
     #endif
@@ -320,10 +363,23 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     if (subsurfaceMode != 0) vanillaAO = min1(glColor.a * 1.15);
     else if (!noVanillaAO) {
         #ifdef GBUFFERS_TERRAIN
-            vanillaAO = pow(
-                pow1_5(min1(glColor.a + 0.08)),
-                1.0 + dotSceneLighting * 0.02 + max0(NdotU) * (0.15 + 0.25 * pow2(noonFactor * pow2(lightmapY2)))
-            );
+            vanillaAO = min1(glColor.a + 0.08);
+            #ifdef OVERWORLD
+                vanillaAO = pow(
+                    pow1_5(vanillaAO),
+                    1.0 + dotSceneLighting * 0.02 + NdotUmax0 * (0.15 + 0.25 * pow2(noonFactor * pow2(lightmapY2)))
+                );
+            #elif defined NETHER
+                vanillaAO = pow(
+                    pow1_5(vanillaAO),
+                    1.0 + NdotUmax0 * 0.5
+                );
+            #else
+                vanillaAO = pow(
+                    vanillaAO,
+                    0.75 + NdotUmax0 * 0.25
+                );
+            #endif
         #else
             vanillaAO = glColor.a;
         #endif
@@ -346,7 +402,6 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
     // Final Lighting
     color.rgb *= directionShade * vanillaAO * (blockLighting + sceneLighting + minLighting + nightVisionLighting) + emission;
-    //color.rgb = mix(color.rgb, sceneLighting * 0.5, clamp01(0.004 * dotSceneLighting * vanillaAO)); // Extra Highlight
     color.rgb += lightHighlight;
     
     // Darkness Pulse

@@ -43,6 +43,7 @@ uniform mat4 shadowProjection;
 //Pipeline Constants//
 
 //Common Variables//
+float NdotU = dot(normal, upVec);
 float SdotU = dot(sunVec, upVec);
 float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;

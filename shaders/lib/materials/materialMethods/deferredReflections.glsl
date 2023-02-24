@@ -65,7 +65,7 @@ if (reflection.a < 1.0) {
 }
 
 vec3 colorAdd = fresnelM * reflection.rgb * reflectColor;
-float colorMultInv = fresnelM * (intenseFresnel ? 0.25 : 0.75) * max(reflection.a, skyLightFactor);
+float colorMultInv = fresnelM * (0.75 - intenseFresnel * 0.5) * max(reflection.a, skyLightFactor);
 
 #ifndef TEMPORAL_FILTER
     color *= 1.0 - colorMultInv;

@@ -18,6 +18,10 @@ flat in vec4 glColor;
 
 #ifdef CLOUD_SHADOWS
 	flat in vec3 eastVec;
+	
+	#if SUN_ANGLE != 0
+		flat in vec3 northVec;
+	#endif
 #endif
 
 //Uniforms//
@@ -43,7 +47,10 @@ uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 
 uniform sampler2D texture;
-uniform sampler2D gaux1;
+
+#ifdef CLOUDS_REIMAGINED
+	uniform sampler2D gaux1;
+#endif
 
 #ifdef CLOUD_SHADOWS
 	uniform sampler2D gaux3;
@@ -52,6 +59,7 @@ uniform sampler2D gaux1;
 //Pipeline Constants//
 
 //Common Variables//
+float NdotU = dot(normal, upVec);
 float SdotU = dot(sunVec, upVec);
 float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
@@ -93,7 +101,7 @@ void main() {
 		dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
 	#endif
 
-	#if defined OVERWORLD && CLOUD_QUALITY > 0
+	#ifdef CLOUDS_REIMAGINED
 		float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
 
 		if (cloudLinearDepth > 0.0) // Because Iris changes the pipeline position of opaque particles
@@ -102,7 +110,7 @@ void main() {
 
 	vec3 shadowMult = vec3(1.0);
 	vec2 lmCoordM = lmCoord;
-	float emission = 0.0, materialMask = OSIEBCA * 4.0; // No SSAO, No TAA
+	float emission = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
 
 	#ifdef IPBR
 	if (atlasSize.x < 900.0) { // We don't want to detect particles from the block atlas
@@ -114,7 +122,7 @@ void main() {
 				if (fract(playerPos.y + cameraPosition.y) > 0.25) discard;
 			}
 		} else if (color.a < 0.99 && dot(color.rgb, color.rgb) < 1.0) { // Campfire Smoke
-			color.a *= 0.2;
+			color.a *= 0.5;
 			materialMask = 0.0;
 		} else if (max(abs(colorP.r - colorP.b), abs(colorP.b - colorP.g)) < 0.001) { // Grayscale Particles
 			float dotColor = dot(color.rgb, color.rgb);
@@ -139,7 +147,7 @@ void main() {
 	#endif
 
 	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normal, lmCoordM,
-	           noSmoothLighting, false, false, 0,
+	           noSmoothLighting, false, true, 0,
 			   0.0, 1.0, emission);
 
 	#if MC_VERSION >= 11500
@@ -177,6 +185,10 @@ flat out vec4 glColor;
 
 #ifdef CLOUD_SHADOWS
 	flat out vec3 eastVec;
+	
+	#if SUN_ANGLE != 0
+		flat out vec3 northVec;
+	#endif
 #endif
 
 //Uniforms//
@@ -208,6 +220,10 @@ void main() {
 
 	#ifdef CLOUD_SHADOWS
 		eastVec = normalize(gbufferModelView[0].xyz);
+	
+		#if SUN_ANGLE != 0
+			northVec = normalize(gbufferModelView[2].xyz);
+		#endif
 	#endif
 }
 

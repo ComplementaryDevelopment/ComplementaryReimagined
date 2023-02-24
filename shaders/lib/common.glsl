@@ -11,9 +11,11 @@
 ---------------------------------------------------------------------*/
 
 //User Settings//
-    #define CMPR 3 //[0 1 2 3 4 5]
+    #define CMPR 0 //[0]
 
-    #define RP_MODE 1 //[0 1]
+    #define SHADER_STYLE 1 //[1 4]
+
+    #define RP_MODE 1 //[0 1 2 3]
 
     #if RP_MODE == 1
         #define IPBR
@@ -21,17 +23,19 @@
         //#define COATED_TEXTURES
     #endif
 
-    #define SHADOW_QUALITY 2 //[1 2 3 4]
+    #if RP_MODE >= 2
+        #define CUSTOM_PBR
+    #endif
+
+    #define SHADOW_QUALITY 2 //[0 1 2 3 4 5]
     const float shadowDistance = 192.0; //[64.0 80.0 96.0 112.0 128.0 160.0 192.0 224.0 256.0 320.0 384.0 512.0 768.0 1024.0]
     //#define ENTITY_SHADOWS
     #define SSAO
-    #define CLOUD_QUALITY 3 //[0 1 2 3 4]
     #define WATER_QUALITY 2 //[1 2]
-    #define REFLECTION_QUALITY 3 //[0 2 3]
+    #define REFLECTION_QUALITY 3 //[0 1 2 3]
     #define LIGHTSHAFT_QUALITY 3 //[0 1 2 3 4]
 
-    #define WATER_STYLE 1 //[1 2 3]
-    #define BORDER_FOG
+    #define WATER_STYLE_DEFINE -1 //[-1 1 2 3]
     #define PIXEL_SHADOW 0 //[0 8 16 32 64 128]
     #define HAND_SWAYING 0 //[0 1 2 3]
     //#define LESS_LAVA_FOG
@@ -41,19 +45,28 @@
     #define SELECTION_OUTLINE 0 //[0 1 2 3 4 5 6 7 8]
     //#define SNOWY_WORLD
 
-    #define AURORA_BOREALIS
-    #define AURORA_CONDITION 3 //[0 1 2 3]
+    #define AURORA_STYLE_DEFINE -1 //[-1 0 1 2]
+    #define AURORA_CONDITION 3 //[0 1 2 3 4]
+    #define SUN_MOON_STYLE_DEFINE -1 //[-1 1 2]
     #define SUN_MOON_HORIZON
     #define NIGHT_STAR_AMOUNT 2 //[2 3]
+    #define CLOUD_STYLE_DEFINE -1 //[-1 0 1 2 3]
     //#define CLOUD_SHADOWS
-    //#define SECOND_CLOUD_LAYER
-    #define CLOUD_ALT1 192.0 //[64.0 68.0 72.0 76.0 80.0 84.0 88.0 92.0 96.0 100.0 104.0 108.0 112.0 116.0 120.0 124.0 128.0 132.0 136.0 140.0 144.0 148.0 152.0 156.0 160.0 164.0 168.0 172.0 176.0 180.0 184.0 188.0 192.0 196.0 200.0 204.0 208.0 212.0 216.0 220.0 224.0 228.0 232.0 236.0 240.0 244.0 248.0 252.0 254.0 256.0]
-    #define CLOUD_ALT2 288.0 //[272.0 274.0 276.0 278.0 280.0 282.0 284.0 286.0 288.0 290.0 292.0 294.0 296.0 298.0 300.0 302.0 306.0 308.0 310.0 312.0 314.0 316.0 318.0 320.0 322.0 324.0 326.0 328.0 330.0 332.0 334.0 336.0 338.0 340.0 342.0 344.0 346.0 348.0 350.0 352.0 354.0 356.0 358.0 360.0 362.0 364.0 366.0 368.0 370.0 372.0 374.0 376.0 378.0 380.0 382.0 384.0]
+    #define CLOUD_HIGH_QUALITY 1 //[1 2]
+    #define CLOUD_ALT1 192.0 //[8.0 12.0 16.0 20.0 22.0 24.0 28.0 32.0 36.0 40.0 44.0 48.0 52.0 56.0 60.0 64.0 68.0 72.0 76.0 80.0 84.0 88.0 92.0 96.0 100.0 104.0 108.0 112.0 116.0 120.0 124.0 128.0 132.0 136.0 140.0 144.0 148.0 152.0 156.0 160.0 164.0 168.0 172.0 176.0 180.0 184.0 188.0 192.0 196.0 200.0 204.0 208.0 212.0 216.0 220.0 224.0 228.0 232.0 236.0 240.0 244.0 248.0 252.0 254.0 256.0 272.0 274.0 276.0 278.0 280.0 282.0 284.0 286.0 288.0 290.0 292.0 294.0 296.0 298.0 300.0 302.0 306.0 308.0 310.0 312.0 314.0 316.0 318.0 320.0 322.0 324.0 326.0 328.0 330.0 332.0 334.0 336.0 338.0 340.0 342.0 344.0 346.0 348.0 350.0 352.0 354.0 356.0 358.0 360.0 362.0 364.0 366.0 368.0 370.0 372.0 374.0 376.0 378.0 380.0 382.0 384.0 388.0 392.0 396.0 400.0]
+    #define CLOUD_ALT2 288.0 //[8.0 12.0 16.0 20.0 22.0 24.0 28.0 32.0 36.0 40.0 44.0 48.0 52.0 56.0 60.0 64.0 68.0 72.0 76.0 80.0 84.0 88.0 92.0 96.0 100.0 104.0 108.0 112.0 116.0 120.0 124.0 128.0 132.0 136.0 140.0 144.0 148.0 152.0 156.0 160.0 164.0 168.0 172.0 176.0 180.0 184.0 188.0 192.0 196.0 200.0 204.0 208.0 212.0 216.0 220.0 224.0 228.0 232.0 236.0 240.0 244.0 248.0 252.0 254.0 256.0 272.0 274.0 276.0 278.0 280.0 282.0 284.0 286.0 288.0 290.0 292.0 294.0 296.0 298.0 300.0 302.0 306.0 308.0 310.0 312.0 314.0 316.0 318.0 320.0 322.0 324.0 326.0 328.0 330.0 332.0 334.0 336.0 338.0 340.0 342.0 344.0 346.0 348.0 350.0 352.0 354.0 356.0 358.0 360.0 362.0 364.0 366.0 368.0 370.0 372.0 374.0 376.0 378.0 380.0 382.0 384.0 388.0 392.0 396.0 400.0]
+
+    #define BORDER_FOG
+    #define ATM_FOG_MULT 0.95 //[0.50 0.65 0.80 0.95]
+    #define CAVE_FOG
+    #define LIGHTSHAFT_BEHAVIOUR 1 //[1 2 3]
 
     #define BLOOM_STRENGTH 0.12 //[0.027 0.036 0.045 0.054 0.063 0.072 0.081 0.09 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 0.18 0.19]
     #define FXAA
+    #define IMAGE_SHARPENING 3 //[0 1 2 3 4 5 6 7 8 9 10]
     //#define MOTION_BLURRING
     #define MOTION_BLURRING_STRENGTH 1.00 //[0.01 0.02 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.10 2.20 2.30 2.40 2.50 2.60 2.70 2.80 2.90 3.00 3.25 3.50 3.75 4.00 4.50 5.00 6.00 7.50 10.00]
+    #define VIGNETTE_R
     #define T_EXPOSURE 1.40 //[0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90]
     #define TM_WHITE_CURVE 2.0 //[1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0]
     #define T_LOWER_CURVE 1.20 //[0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
@@ -64,7 +77,9 @@
     #define GLOWING_ORES 0 //[0 1 2]
     //#define FANCY_GLASS
     //#define EMISSIVE_REDSTONE_BLOCK
-    //#define GENERATED_WATER_NORMALS
+
+    #define NORMAL_MAP_STRENGTH 100 //[0 10 15 20 30 40 60 80 100 120 140 160 180 200]
+    #define CUSTOM_EMISSION_INTENSITY 100 //[0 5 7 10 15 20 25 30 35 40 45 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 225 250]
 
     #define BLOCKLIGHT_COLOR_MODE 10 //[9 10 11]
     #define MINIMUM_LIGHT_MODE 2 //[0 1 2 3 4]
@@ -75,7 +90,10 @@
     //#define WAVING_LEAVES
     #define WAVING_WATER_VERTEX
 
+    #define SUN_ANGLE -1 //[-1 0 -20 -30 -40]
+
 //Internal Settings//
+    #define SIDE_SHADOWING
 
     #if RP_MODE >= 1 && REFLECTION_QUALITY >= 3
         #define PBR_REFLECTIONS
@@ -92,19 +110,12 @@
     #define SHADOW_FILTERING
     const int shadowMapResolution = 2048;
 
-    // Disable PERPENDICULAR_TWEAKS if you change sunPathRotation to anything but 0.0 or else you will get incorrect lighting
-    const float sunPathRotation = 0.0;
-    #define PERPENDICULAR_TWEAKS
-    #define SIDE_SHADOWING
-
     #define LIGHT_HIGHLIGHT
     #define DIRECTIONAL_SHADING
     #define SSAO_QUALITY 1 //[1 2 3]
 
     #define CLOUD_STRETCH 5.5
     #define ATMOSPHERIC_FOG
-    #define SCENE_AWARE_LIGHT_SHAFTS
-    #define CAVE_FOG
     #define BLOOM_FOG
 
     #define TAA
@@ -117,12 +128,62 @@
     #define BLOOM
     #define UNDERWATER_DISTORTION
 
+//Visual Style Handling//
+    #if SHADER_STYLE == 1
+        #define WATER_STYLE_DEFAULT 1
+        #define AURORA_STYLE_DEFAULT 1
+        #define SUN_MOON_STYLE_DEFAULT 1
+        #define CLOUD_STYLE_DEFAULT 1
+    #elif SHADER_STYLE == 4
+        #define WATER_STYLE_DEFAULT 3
+        #define AURORA_STYLE_DEFAULT 2
+        #define SUN_MOON_STYLE_DEFAULT 2
+        #define CLOUD_STYLE_DEFAULT 3
+    #endif
+    #if WATER_STYLE_DEFINE == -1
+        #define WATER_STYLE WATER_STYLE_DEFAULT
+    #else
+        #define WATER_STYLE WATER_STYLE_DEFINE
+    #endif
+    #if AURORA_STYLE_DEFINE == -1
+        #define AURORA_STYLE AURORA_STYLE_DEFAULT
+    #else
+        #define AURORA_STYLE AURORA_STYLE_DEFINE
+    #endif
+    #if SUN_MOON_STYLE_DEFINE == -1
+        #define SUN_MOON_STYLE SUN_MOON_STYLE_DEFAULT
+    #else
+        #define SUN_MOON_STYLE SUN_MOON_STYLE_DEFINE
+    #endif
+    #if CLOUD_STYLE_DEFINE == -1
+        #define CLOUD_STYLE CLOUD_STYLE_DEFAULT
+    #else
+        #define CLOUD_STYLE CLOUD_STYLE_DEFINE
+    #endif
+    // Thanks to SpacEagle17 and isuewo for the sun angle handling
+    #if SUN_ANGLE == -1
+        #if SHADER_STYLE == 1
+            const float sunPathRotation = 0.0;
+            #define PERPENDICULAR_TWEAKS
+        #elif SHADER_STYLE == 4
+            const float sunPathRotation = -40.0;
+        #endif
+    #elif SUN_ANGLE == 0
+        const float sunPathRotation = 0.0;
+        #define PERPENDICULAR_TWEAKS
+    #elif SUN_ANGLE == -20
+        const float sunPathRotation = -20.0;
+    #elif SUN_ANGLE == -30
+        const float sunPathRotation = -30.0;
+    #elif SUN_ANGLE == -40
+        const float sunPathRotation = -40.0;
+    #endif
+
 //Define Handling//
     #ifndef OVERWORLD
         #undef LIGHT_HIGHLIGHT
         #undef CAVE_FOG
         #undef CLOUD_SHADOWS
-        #undef AURORA_BOREALIS
         #undef SNOWY_WORLD
     #endif
     #ifdef NETHER
@@ -141,27 +202,25 @@
         #undef LIGHT_HIGHLIGHT
     #endif
 
-    #ifndef PERPENDICULAR_TWEAKS
-        #undef CLOUD_SHADOWS
-        #undef SIDE_SHADOWING
-    #endif
     #ifndef BLOOM
         #undef BLOOM_FOG
     #endif
+
     #ifndef GLOWING_ENTITY_FIX
         #undef GBUFFERS_ENTITIES_GLOWING
     #endif
-    #if SHADOW_QUALITY == 1
-        //#undef SHADOW_FILTERING
+
+    #if defined OVERWORLD && CLOUD_STYLE > 0
+        #define CLOUDS_ACTIVATE
     #endif
-    #if CLOUD_QUALITY == 0
+    #if defined OVERWORLD && (CLOUD_STYLE == 1 || CLOUD_STYLE == 2)
+        #define CLOUDS_REIMAGINED
+    #else
         #undef CLOUD_SHADOWS
     #endif
 
 //Activate Settings//
     #ifdef ENTITY_SHADOWS
-    #endif
-    #ifdef GENERATED_WATER_NORMALS
     #endif
 
 //Very Common Uniforms//
@@ -194,6 +253,18 @@
 
     const float pi = 3.14159265359;
     const float OSIEBCA = 1.0 / 255.0; // One Step In Eight Bit Color Attachment
+    /* materialMask steps
+    IntegratedPBR:
+        OSIEBCA * 1.0 = Intense Fresnel
+        OSIEBCA * 2.0 = Copper Fresnel
+        OSIEBCA * 3.0 = Gold Fresnel
+        OSIEBCA * 4.0 = 
+        OSIEBCA * 5.0 = Redstone Fresnel
+    PBR Independant: (Limited to 241 and above)
+        OSIEBCA * 253.0 = Reduced Edge TAA
+        OSIEBCA * 254.0 = No SSAO, No TAA
+        OSIEBCA * 255.0 = Unused as 1.0 is the clear color
+    */
 
     const float blocklightColMult = 0.875;
     #if BLOCKLIGHT_COLOR_MODE == 9
@@ -213,7 +284,12 @@
         vec3 caveFogColor = caveFogColorRaw;
     #endif
 
-    vec3 waterFogColor = vec3(0.07, 0.08, 0.13) * vec3(1.0 + vsBrightness);
+    #if LIGHTSHAFT_QUALITY > 0 && SHADOW_QUALITY > 0
+        vec3 waterFogColor = vec3(0.07, 0.08, 0.11) * vec3(1.0 + vsBrightness);
+    #else
+        vec3 waterFogColor = vec3(0.15, 0.26, 0.3) * vec3(1.0 + 0.5 * vsBrightness);
+    #endif
+
     vec3 endSkyColor = vec3(0.095, 0.07, 0.15) * 1.5;
 
     #ifdef FRAGMENT_SHADER
@@ -254,6 +330,19 @@
         return 1.25 * (1.0 - NdotLM2 * NdotLM2) / NdotLM;
     }
 
+    float GetHorizonFactor(float XdotU) {
+        #ifdef SUN_MOON_HORIZON
+            float horizon = clamp((XdotU + 0.1) * 10.0, 0.0, 1.0);
+            horizon *= horizon;
+            return horizon * horizon * (3.0 - 2.0 * horizon);
+        #else
+            float horizon = min(XdotU + 1.0, 1.0);
+            horizon *= horizon;
+            horizon *= horizon;
+            return horizon * horizon;
+        #endif
+    }
+
     bool CheckForColor(vec3 albedo, vec3 check) { // Thanks to Builderb0y
         vec3 dif = albedo - check * 0.003921568;
         return dif == clamp(dif, vec3(-0.001), vec3(0.001));
@@ -292,6 +381,22 @@
     }
     vec4 pow2(vec4 x) {
         return x * x;
+    }
+
+    int pow3(int x) {
+        return pow2(x) * x;
+    }
+    float pow3(float x) {
+        return pow2(x) * x;
+    }
+    vec2 pow3(vec2 x) {
+        return pow2(x) * x;
+    }
+    vec3 pow3(vec3 x) {
+        return pow2(x) * x;
+    }
+    vec4 pow3(vec4 x) {
+        return pow2(x) * x;
     }
 
     float pow1_5(float x) { // Faster pow(x, 1.5) approximation (that isn't accurate at all) if x is between 0 and 1

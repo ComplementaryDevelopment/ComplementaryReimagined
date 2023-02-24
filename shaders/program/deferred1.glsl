@@ -12,7 +12,7 @@ noperspective in vec2 texCoord;
 
 flat in vec3 upVec, sunVec;
 
-#ifdef SCENE_AWARE_LIGHT_SHAFTS
+#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
     flat in float vlFactor;
 #endif
 
@@ -55,19 +55,20 @@ uniform sampler2D noisetex;
 	uniform sampler2D colortex5;
 #endif
 
-#ifdef AURORA_BOREALIS
+#if AURORA_STYLE > 0
 	uniform int moonPhase;
 
 	uniform float isSnowy;
 #endif
 
-#if CLOUD_QUALITY >= 0
-	uniform sampler2D colortex3;
-#endif
-#if CLOUD_QUALITY >= 2
+#ifdef CLOUDS_REIMAGINED
 	uniform ivec2 eyeBrightness;
 	
-	uniform sampler2DShadow shadowtex0;
+	uniform sampler2D colortex3;
+	
+	#if SHADOW_QUALITY > 0
+		uniform sampler2DShadow shadowtex0;
+	#endif
 #endif
 
 #ifdef TEMPORAL_FILTER
@@ -88,6 +89,7 @@ float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
 float shadowTime = shadowTimeVar2 * shadowTimeVar2;
+float farMinusNear = far - near;
 
 #ifdef OVERWORLD
 	vec3 lightVec = sunVec * ((timeAngle < 0.5325 || timeAngle > 0.9675) ? 1.0 : -1.0);
@@ -96,8 +98,6 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #endif
 
 #if defined SSAO || defined WORLD_OUTLINE
-    float farMinusNear = far - near;
-
     vec2 view = vec2(viewWidth, viewHeight);
 #endif
 
@@ -114,16 +114,15 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	);
 #endif
 
-#ifndef SCENE_AWARE_LIGHT_SHAFTS
+#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+#else
 	float vlFactor = 0.0;
 #endif
 
 //Common Functions//
-#if defined SSAO || defined WORLD_OUTLINE
-    float GetLinearDepth(float depth) {
-        return (2.0 * near) / (far + near - depth * farMinusNear);
-    }
-#endif
+float GetLinearDepth(float depth) {
+	return (2.0 * near) / (far + near - depth * farMinusNear);
+}
 
 #ifdef SSAO
     vec2 OffsetDist(float x, int s) {
@@ -205,12 +204,12 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#endif
 #endif
 
-#ifdef AURORA_BOREALIS
+#if AURORA_STYLE > 0
 	#include "/lib/atmospherics/auroraBorealis.glsl"
 #endif
 
-#if defined OVERWORLD && CLOUD_QUALITY > 0
-	#include "/lib/atmospherics/volumetricClouds.glsl"
+#ifdef CLOUDS_ACTIVATE
+	#include "/lib/atmospherics/clouds/mainClouds.glsl"
 #endif
 
 #ifdef END
@@ -241,9 +240,10 @@ void main() {
 
 	float VdotU = dot(nViewPos, upVec);
 	float VdotS = dot(nViewPos, sunVec);
-	float sky = 0.0;
+	float skyFade = 0.0;
+	vec3 waterRefColor = vec3(0.0);
 
-	#ifdef AURORA_BOREALIS
+	#if AURORA_STYLE > 0
 		vec3 auroraBorealis = vec3(0.0);
 	#endif
 
@@ -251,7 +251,7 @@ void main() {
 		vec4 refAndCloudNew = vec4(0.0);
 	#endif
 
-	#if defined OVERWORLD && CLOUD_QUALITY > 0
+	#ifdef CLOUDS_ACTIVATE
 		bool sun = false;
 	#endif
 	
@@ -269,11 +269,34 @@ void main() {
 		#endif
 		
 		int materialMaskInt = int(texture5.g * 255.1);
-		bool intenseFresnel = false;
+		float intenseFresnel = 0.0;
 		float smoothnessD = texture5.r;
 		vec3 reflectColor = vec3(1.0);
-		
-		#include "/lib/materials/deferredMaterials.glsl"
+
+		#ifdef IPBR
+			#include "/lib/materials/materialHandling/deferredMaterials.glsl"
+		#else
+			if (materialMaskInt <= 240) {
+				#ifdef PBR_REFLECTIONS
+					#if RP_MODE == 2 // SEUSPBR
+						float metalness = materialMaskInt / 240.0;
+
+						intenseFresnel = metalness;
+						reflectColor = mix(reflectColor, color.rgb / max(color.r, max(color.g, color.b)), metalness);
+						color.rgb *= 1.0 - 0.25 * metalness;
+					#elif RP_MODE == 3 // labPBR
+						float metalness = float(materialMaskInt >= 230);
+
+						intenseFresnel = materialMaskInt / 240.0;
+						reflectColor = mix(reflectColor, color.rgb / max(color.r, max(color.g, color.b)), metalness);
+						color.rgb *= 1.0 - 0.25 * metalness;
+					#endif
+				#endif
+			} else {
+				if (materialMaskInt == 254) // No SSAO, No TAA
+					ssao = 1.0;
+			}
+		#endif
 		
 		color.rgb *= ssao;
 
@@ -285,7 +308,11 @@ void main() {
 
 			float fresnelFactor = (1.0 - smoothnessD) * 0.7;
 			float fresnelM = max(fresnel - fresnelFactor, 0.0) / (1.0 - fresnelFactor);
-			fresnelM = intenseFresnel ? fresnelM * 0.75 + 0.25 : pow2(fresnelM);
+			#ifdef IPBR
+				fresnelM = mix(pow2(fresnelM), fresnelM * 0.75 + 0.25, intenseFresnel);
+			#else
+				fresnelM = mix(pow2(fresnelM), fresnelM * 0.5 + 0.5, intenseFresnel);
+			#endif
 			fresnelM = fresnelM * smoothnessD - dither * 0.001;
 
 			if (fresnelM > 0.0) {
@@ -302,9 +329,9 @@ void main() {
 
 				normalM += roughNoise;
 			
-				#include "/lib/materials/deferredReflections.glsl"
+				#include "/lib/materials/materialMethods/deferredReflections.glsl"
 
-				//if (gl_FragCoord.x > 960) color = vec3(0.25,0,0.25);
+				//if (gl_FragCoord.x > 960) color = vec3(5.25,0,5.25);
 			}
 		#endif
 
@@ -312,16 +339,18 @@ void main() {
 			DoWorldOutline(color, linearZ0);
 		#endif
 
-		DoFog(color, sky, lViewPos, playerPos, VdotU, VdotS, dither);
+		waterRefColor = sqrt(color) - 1.0;
+
+		DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither);
 	} else { // Sky
-		sky = 1.0;
+		skyFade = 1.0;
 		
 		#ifdef OVERWORLD
-			#if CLOUD_QUALITY > 0
+			#ifdef CLOUDS_REIMAGINED
 				sun = color.r > 2.0;
 			#endif
 
-			#ifdef AURORA_BOREALIS
+			#if AURORA_STYLE > 0
 				auroraBorealis = GetAuroraBorealis(viewPos.xyz, VdotU, dither);
 				color.rgb += auroraBorealis;
 			#endif
@@ -334,51 +363,30 @@ void main() {
 			color.rgb += GetEnderStars(viewPos.xyz, VdotU);
 		#endif
 	}
-
+	
 	float cloudLinearDepth = 1.0;
-	#if defined OVERWORLD && CLOUD_QUALITY > 0
-		vec4 volumetricClouds = vec4(0.0);
-		if (z0 > 0.56) {
-			const float threshold1 = 1000.0;
-			#ifndef SECOND_CLOUD_LAYER
-				volumetricClouds =
-					GetVolumetricClouds(CLOUD_ALT1, threshold1, cloudLinearDepth, sun, sky, playerPos, lViewPos, VdotS, VdotU, dither);
-			#else
-				const float threshold2 = 1000.0;
-
-				if (abs(cameraPosition.y - CLOUD_ALT1) < abs(cameraPosition.y - CLOUD_ALT2)) {
-					volumetricClouds =
-					GetVolumetricClouds(CLOUD_ALT1, threshold1, cloudLinearDepth, sun, sky, playerPos, lViewPos, VdotS, VdotU, dither);
-					if (volumetricClouds.a == 0.0) volumetricClouds =
-					GetVolumetricClouds(CLOUD_ALT2, threshold2, cloudLinearDepth, sun, sky, playerPos, lViewPos, VdotS, VdotU, dither);
-				} else {
-					volumetricClouds =
-					GetVolumetricClouds(CLOUD_ALT2, threshold2, cloudLinearDepth, sun, sky, playerPos, lViewPos, VdotS, VdotU, dither);
-					if (volumetricClouds.a == 0.0) volumetricClouds =
-					GetVolumetricClouds(CLOUD_ALT1, threshold1, cloudLinearDepth, sun, sky, playerPos, lViewPos, VdotS, VdotU, dither);
-				}
-			#endif
-		}
-
-		#ifdef AURORA_BOREALIS
-			volumetricClouds.rgb += auroraBorealis * 0.1;
-		#endif
-
-		#ifndef TEMPORAL_FILTER
-			color = mix(color, volumetricClouds.rgb, volumetricClouds.a);
-		#else
-			refAndCloudNew.rgb += volumetricClouds.rgb * volumetricClouds.a;
-			refAndCloudNew.a = max(refAndCloudNew.a, volumetricClouds.a);
-		#endif
-	#endif
-	#ifdef SCENE_AWARE_LIGHT_SHAFTS
-		if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5)
-			cloudLinearDepth = vlFactor;
-	#endif
 
 	#ifdef TEMPORAL_FILTER
-		vec4 refAndCloudWrite;
-		if (z0 > 0.56) {
+		vec4 refAndCloudWrite = vec4(0.0);
+	#endif
+
+	if (z0 > 0.56) {
+		#ifdef CLOUDS_ACTIVATE
+			vec4 clouds = GetClouds(cloudLinearDepth, skyFade, playerPos, viewPos.xyz, lViewPos, VdotS, VdotU, dither);
+
+			#if AURORA_STYLE > 0
+				clouds.rgb += auroraBorealis * 0.1;
+			#endif
+
+			#ifndef TEMPORAL_FILTER
+				color = mix(color, clouds.rgb, clouds.a);
+			#else
+				refAndCloudNew.rgb += clouds.rgb * clouds.a;
+				refAndCloudNew.a = max(refAndCloudNew.a, clouds.a);
+			#endif
+		#endif
+
+		#ifdef TEMPORAL_FILTER
 			vec3 cameraOffset = cameraPosition - previousCameraPosition;
 			vec2 prvCoord = Reprojection(playerPos, cameraOffset);
 			vec4 refAndCloudOld = texture2D(colortex7, prvCoord);
@@ -397,17 +405,20 @@ void main() {
 
 			color.rgb *= 1.0 - refAndCloudWrite.a;
 			color.rgb += refAndCloudWrite.rgb;
-		} else {
-			refAndCloudWrite = vec4(0.0);
-		}
+		#endif
+	}
+
+	#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+		if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5)
+			cloudLinearDepth = vlFactor;
 	#endif
 
-	/*DRAWBUFFERS:045*/
+	/*DRAWBUFFERS:054*/
     gl_FragData[0] = vec4(color, 1.0);
-	gl_FragData[1] = vec4(cloudLinearDepth, 0.0, 0.0, 1.0);
-	gl_FragData[2] = vec4(sqrt(color) - 1.0, 1.0);
+	gl_FragData[1] = vec4(waterRefColor, 1.0 - skyFade);
+	gl_FragData[2] = vec4(cloudLinearDepth, 0.0, 0.0, 1.0);
 	#ifdef TEMPORAL_FILTER
-		/*DRAWBUFFERS:0457*/
+		/*DRAWBUFFERS:0547*/
 		gl_FragData[3] = refAndCloudWrite;
 	#endif
 }
@@ -421,12 +432,12 @@ noperspective out vec2 texCoord;
 
 flat out vec3 upVec, sunVec;
 
-#ifdef SCENE_AWARE_LIGHT_SHAFTS
+#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
     flat out float vlFactor;
 #endif
 
 //Uniforms//
-#ifdef SCENE_AWARE_LIGHT_SHAFTS
+#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
 	uniform float viewWidth, viewHeight;
 	
 	uniform sampler2D colortex4;
@@ -457,7 +468,7 @@ void main() {
 	upVec = normalize(gbufferModelView[1].xyz);
 	sunVec = GetSunVector();
 
-	#ifdef SCENE_AWARE_LIGHT_SHAFTS
+	#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
 		vlFactor = texelFetch(colortex4, ivec2(viewWidth-1, viewHeight-1), 0).r;
 
 		#ifdef END

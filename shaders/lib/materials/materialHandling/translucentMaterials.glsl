@@ -3,17 +3,17 @@ if (mat < 31008) {
         if (mat < 30008) {
             if (mat == 30000) { // Stained Glass
                 #include "/lib/materials/specificMaterials/translucents/stainedGlass.glsl"
-            } else /*if (mat == 30004)*/ { // Stained Glass Pane
+            } else if (mat == 30004) { // Stained Glass Pane
                 #include "/lib/materials/specificMaterials/translucents/stainedGlass.glsl"
                 noSmoothLighting = true;
             }
         } else {
             if (mat == 30008) { // Tinted Glass
-                color.a = pow(color.a, 1.0 - sqrt1(fresnel) * 0.65);
-                fresnel *= 0.75;
+                color.a = pow(color.a, 1.0 - fresnel * 0.65);
+                reflectMult = 0.75;
             } else /*if (mat == 30012)*/ { // Slime Block
-                translucentMultAlreadyCalculated = true;
-                fresnel *= 0.25;
+                translucentMultCalculated = true;
+                reflectMult = 0.25;
                 translucentMult = vec4(pow2(color.rgb) * 0.2, 1.0);
 
                 smoothnessG = color.g * 0.5;
@@ -23,8 +23,8 @@ if (mat < 31008) {
     } else {
         if (mat < 31000) {
             if (mat == 30016) { // Honey Block
-                translucentMultAlreadyCalculated = true;
-                fresnel *= 0.25;
+                translucentMultCalculated = true;
+                reflectMult = 0.25;
                 translucentMult = vec4(pow2(color.rgb) * 0.2, 1.0);
 
                 smoothnessG = color.r * 0.7;
@@ -41,7 +41,7 @@ if (mat < 31008) {
                 smoothnessG = pow2(color.g) * color.g;
                 highlightMult = pow2(min1(pow2(color.g) * 1.5)) * 3.5;
 
-                fresnel *= 0.7;
+                reflectMult = 0.7;
             }
         }
     }
@@ -57,7 +57,7 @@ if (mat < 31008) {
             }
         } else {
             if (mat == 31016) { // Beacon
-                translucentMultAlreadyCalculated = true;
+                translucentMultCalculated = true;
                 lmCoordM.x = 0.88;
                 
                 if (color.b > 0.5) {
@@ -74,8 +74,6 @@ if (mat < 31008) {
                         else if (lColor > 1.15) color.rgb = baseColor + 0.09;
                         else                    color.rgb = baseColor + 0.05;
                         emission = 4.0;
-
-                        fresnel = 0.0;
                     }
                 } else { // Beacon:Obsidian
                     float factor = color.r * 1.5;
@@ -83,8 +81,6 @@ if (mat < 31008) {
                     smoothnessG = factor;
                     highlightMult = 2.0 + min1(smoothnessG * 2.0) * 1.5;
                     smoothnessG = min1(smoothnessG);
-
-                    fresnel = 0.0;
                 }
             
             } else /*if (mat == 31020)*/ { //

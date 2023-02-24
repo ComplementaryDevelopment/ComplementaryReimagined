@@ -33,6 +33,12 @@ uniform mat4 gbufferModelViewInverse;
 	uniform vec3 cameraPosition;
 #endif
 
+#if SUN_MOON_STYLE == 2
+	uniform int moonPhase;
+	
+	uniform mat4 gbufferModelView;
+#endif
+
 //Pipeline Constants//
 
 //Common Variables//
@@ -72,6 +78,42 @@ void main() {
 		color.rgb = GetSky(VdotU, VdotS, dither, true, false);
 		
 		color.rgb += GetStars(viewPos.xyz, VdotU, VdotS);
+
+		#if SUN_MOON_STYLE == 2
+			float absVdotS = abs(VdotS);
+			if (absVdotS > 0.9965) {
+				float sunMoonMixer = 285.714 * (absVdotS - 0.9965) * invRainFactor;
+				if (VdotS > 0.0) {
+					sunMoonMixer = pow2(sunMoonMixer) * GetHorizonFactor(SdotU);
+					color.rgb = mix(color.rgb, vec3(0.9, 0.5, 0.3) * 10.0, sunMoonMixer);
+				} else {
+					vec3 moonColor = vec3(0.38, 0.4, 0.5);
+					sunMoonMixer = max0(sunMoonMixer - 0.25) * 1.33333 * GetHorizonFactor(-SdotU);
+
+					if (moonPhase >= 1) {
+						float moonPhaseOffset = 0.0;
+						if (moonPhase != 4) {
+							moonPhaseOffset = 0.0055;
+							moonColor *= 8.5;
+						} else moonColor *= 10.0;
+						if (moonPhase > 4) {
+							moonPhaseOffset = -moonPhaseOffset;
+						}
+
+						float ang = fract(timeAngle - (0.25 + moonPhaseOffset));
+						ang = (ang + (cos(ang * 3.14159265358979) * -0.5 + 0.5 - ang) / 3.0) * 6.28318530717959;
+						vec2 sunRotationData2 = vec2(cos(sunPathRotation * 0.01745329251994), -sin(sunPathRotation * 0.01745329251994));
+						vec3 rawSunVec2 = (gbufferModelView * vec4(vec3(-sin(ang), cos(ang) * sunRotationData2) * 2000.0, 1.0)).xyz;
+					
+						float moonPhaseVdosS = dot(nViewPos, normalize(rawSunVec2.xyz));
+
+						sunMoonMixer *= pow2(1.0 - min1(pow(abs(moonPhaseVdosS), 750.0) * 3.0));
+					} else moonColor *= 4.0;
+
+					color.rgb = mix(color.rgb, moonColor, sunMoonMixer);
+				}
+			}
+		#endif
 	} else discard;
 	#endif
 

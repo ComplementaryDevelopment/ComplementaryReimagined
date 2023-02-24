@@ -9,9 +9,23 @@ float GetDif(float lOriginalAlbedo, vec2 offsetCoord) {
         vec4 textureSample = texture2D(texture, offsetCoord);
         float lNearbyAlbedo = length(textureSample.rgb * textureSample.a * 1.5);
     #endif
+    
+    #ifdef GBUFFERS_ENTITIES
+        lOriginalAlbedo = abs(lOriginalAlbedo - 1.0);
+        lNearbyAlbedo = abs(lNearbyAlbedo - 1.0);
+    #endif
+
     float dif = lOriginalAlbedo - lNearbyAlbedo;
-    if (dif > 0.0) dif = max(dif - normalThreshold, 0.0);
-    else           dif = min(dif + normalThreshold, 0.0);
+
+    #ifdef GBUFFERS_ENTITIES
+        dif = -dif;
+    #endif
+
+    #ifndef GBUFFERS_WATER
+        if (dif > 0.0) dif = max(dif - normalThreshold, 0.0);
+        else           dif = min(dif + normalThreshold, 0.0);
+    #endif
+
     return clamp(dif, -normalClamp, normalClamp);
 }
 
@@ -22,9 +36,9 @@ void GenerateNormals(inout vec3 normalM, vec3 color) {
     float normalMult = max0(1.0 - mipDelta) * 2.5;
 
     #ifndef SAFER_GENERATED_NORMALS
-        vec2 offsetR = 16.0 / atlasSize;
+        vec2 offsetR = 16.0 / atlasSizeM;
     #else
-        vec2 offsetR = max(absMidCoordPos2.x, absMidCoordPos2.y) * vec2(float(atlasSize.y) / float(atlasSize.x), 1.0);
+        vec2 offsetR = max(absMidCoordPos2.x, absMidCoordPos2.y) * vec2(float(atlasSizeM.y) / float(atlasSizeM.x), 1.0);
     #endif
     offsetR /= packSizeGN;
 
@@ -52,13 +66,7 @@ void GenerateNormals(inout vec3 normalM, vec3 color) {
         
         normalMap.xy *= normalMult;
 
-        mat3 tbnMatrix = mat3(
-            tangent.x, binormal.x, normal.x,
-            tangent.y, binormal.y, normal.y,
-            tangent.z, binormal.z, normal.z
-        );
-
         if (normalMap.xy != vec2(0.0, 0.0))
-            normalM = clamp(normalize(normalMap.xyz * tbnMatrix), vec3(-1.0), vec3(1.0));
+            normalM = clamp(normalize(normalMap * tbnMatrix), vec3(-1.0), vec3(1.0));
     }
 }
