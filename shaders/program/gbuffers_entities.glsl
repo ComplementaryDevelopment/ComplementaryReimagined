@@ -276,7 +276,7 @@ void main() {
 		} else if (entityId == 50084) { // Slime
 			gl_Position.z -= 0.00015;
 		}
-		#if SHADOW_QUALITY == 0
+		#ifndef REALTIME_SHADOWS
 			else if (entityId == 50016) { // Player
 				if (glColor.a < 0.5) gl_Position.z += 0.0005;
 			}

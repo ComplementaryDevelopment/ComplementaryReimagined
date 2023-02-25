@@ -27,7 +27,8 @@
         #define CUSTOM_PBR
     #endif
 
-    #define SHADOW_QUALITY 2 //[0 1 2 3 4 5]
+    #define REALTIME_SHADOWS
+    #define SHADOW_QUALITY 2 //[1 2 3 4 5]
     const float shadowDistance = 192.0; //[64.0 80.0 96.0 112.0 128.0 160.0 192.0 224.0 256.0 320.0 384.0 512.0 768.0 1024.0]
     //#define ENTITY_SHADOWS
     #define SSAO
@@ -284,7 +285,7 @@
         vec3 caveFogColor = caveFogColorRaw;
     #endif
 
-    #if LIGHTSHAFT_QUALITY > 0 && SHADOW_QUALITY > 0
+    #if LIGHTSHAFT_QUALITY > 0 && defined REALTIME_SHADOWS
         vec3 waterFogColor = vec3(0.07, 0.08, 0.11) * vec3(1.0 + vsBrightness);
     #else
         vec3 waterFogColor = vec3(0.15, 0.26, 0.3) * vec3(1.0 + 0.5 * vsBrightness);

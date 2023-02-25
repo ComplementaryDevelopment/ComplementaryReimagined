@@ -1,7 +1,7 @@
 #ifndef INCLUDE_WATER_FOG
 #define INCLUDE_WATER_FOG
     float GetWaterFog(float lViewPos) {
-        #if LIGHTSHAFT_QUALITY > 0 && SHADOW_QUALITY > 0
+        #if LIGHTSHAFT_QUALITY > 0 && defined REALTIME_SHADOWS
             float fog = lViewPos / 48.0;
             fog *= fog;
         #else

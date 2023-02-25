@@ -26,7 +26,7 @@ uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
 uniform sampler2D depthtex1;
 
-#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 	uniform int frameCounter;
 
 	uniform float viewWidth, viewHeight;
@@ -60,7 +60,7 @@ uniform sampler2D depthtex1;
 float SdotU = dot(sunVec, upVec);
 float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 
-#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 	float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
 	float sunVisibility2 = sunVisibility * sunVisibility;
 	float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
@@ -86,7 +86,7 @@ float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(S
 	#include "/lib/atmospherics/fog/bloomFog.glsl"
 #endif
 
-#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 	#ifdef END
 		#include "/lib/atmospherics/enderBeams.glsl"
 	#endif
@@ -99,7 +99,7 @@ void main() {
 	float z0 = texelFetch(depthtex0, texelCoord, 0).r;
 	float z1 = texelFetch(depthtex1, texelCoord, 0).r;
 
-	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 		vec4 volumetricLight = vec4(0.0);
 		float vlFactorM = vlFactor;
 
@@ -129,20 +129,20 @@ void main() {
 		const vec3 underwaterMult = vec3(0.80, 0.87, 0.97) * 0.71;
 		color.rgb *= underwaterMult;
 
-		#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+		#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 			volumetricLight.rgb *= pow2(underwaterMult);
 		#endif
 	} else if (isEyeInWater == 2) {
 		if (z1 == 1.0) color.rgb = fogColor * 5.0;
 		
-		#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+		#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 			volumetricLight.rgb *= 0.0;
 		#endif
 	}
 	
 	color = pow(color, vec3(2.2));
 	
-	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 		#ifndef OVERWORLD
 			volumetricLight.rgb *= volumetricLight.rgb;
 		#endif
@@ -162,7 +162,7 @@ void main() {
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(color, 1.0);
 	
-	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 		/* DRAWBUFFERS:04 */
 		gl_FragData[1] = vec4(vlFactorM, 0.0, 0.0, 1.0);
 	#endif

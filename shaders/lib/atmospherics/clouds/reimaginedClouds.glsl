@@ -16,7 +16,7 @@ float InterleavedGradientNoise() {
     #endif
 }
 
-#if SHADOW_QUALITY > 0
+#ifdef REALTIME_SHADOWS
     vec3 GetShadowOnCloudPosition(vec3 tracePos) {
         vec3 wpos = PlayerToShadow(tracePos - cameraPosition);
         float distb = sqrt(wpos.x * wpos.x + wpos.y * wpos.y);
@@ -90,7 +90,7 @@ vec4 GetVolumetricClouds(float cloudAltitude, float distanceThreshold, inout flo
         if (GetCloudNoise(tracePos.xyz, cloudAltitude)) {
             float lightMult = 1.0;
 
-            #if SHADOW_QUALITY > 0
+            #ifdef REALTIME_SHADOWS
                 if (GetShadowOnCloud(tracePos, cloudAltitude, lowerPlaneAltitude, higherPlaneAltitude)) {
                     if (eyeBrightness.y != 240) continue;
                     else lightMult = 0.25;

@@ -12,7 +12,7 @@ noperspective in vec2 texCoord;
 
 flat in vec3 upVec, sunVec;
 
-#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
     flat in float vlFactor;
 #endif
 
@@ -66,7 +66,7 @@ uniform sampler2D noisetex;
 	
 	uniform sampler2D colortex3;
 	
-	#if SHADOW_QUALITY > 0
+	#ifdef REALTIME_SHADOWS
 		uniform sampler2DShadow shadowtex0;
 	#endif
 #endif
@@ -114,7 +114,7 @@ float farMinusNear = far - near;
 	);
 #endif
 
-#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 #else
 	float vlFactor = 0.0;
 #endif
@@ -408,7 +408,7 @@ void main() {
 		#endif
 	}
 
-	#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+	#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 		if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5)
 			cloudLinearDepth = vlFactor;
 	#endif
@@ -432,12 +432,12 @@ noperspective out vec2 texCoord;
 
 flat out vec3 upVec, sunVec;
 
-#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
     flat out float vlFactor;
 #endif
 
 //Uniforms//
-#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 	uniform float viewWidth, viewHeight;
 	
 	uniform sampler2D colortex4;
@@ -468,7 +468,7 @@ void main() {
 	upVec = normalize(gbufferModelView[1].xyz);
 	sunVec = GetSunVector();
 
-	#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && SHADOW_QUALITY > 0 || defined END
+	#if LIGHTSHAFT_BEHAVIOUR == 1 && LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 		vlFactor = texelFetch(colortex4, ivec2(viewWidth-1, viewHeight-1), 0).r;
 
 		#ifdef END

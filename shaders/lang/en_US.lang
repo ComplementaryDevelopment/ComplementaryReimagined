@@ -77,9 +77,13 @@ value.REFLECTION_QUALITY.1=§4Potato §e[*]
 value.REFLECTION_QUALITY.2=§aMedium
 value.REFLECTION_QUALITY.3=§bHigh
 
+option.REALTIME_SHADOWS=Real-Time Shadows
+option.REALTIME_SHADOWS.comment=Enables traditional shadows that move depending on the terrain and sun/moon angle. §e[*]§r Disabling this option will cause Light Shafts to not work, and will stop other shadow options from doing anything
+value.REALTIME_SHADOWS.true=§bON
+value.REALTIME_SHADOWS.false=§cOFF
+
 option.SHADOW_QUALITY=Shadow Sample Quality
-option.SHADOW_QUALITY.comment=Adjusts the quality of shadows. Every tier further reduces the shadow noise artifacts, and options lower than §bHigh§r enable optimised shadows on leaves. §e[*]§r Potato quality will disable real-time shadows, causing Light Shafts and Shadow Distance to not work.
-value.SHADOW_QUALITY.0=§4Potato §e[*]
+option.SHADOW_QUALITY.comment=Adjusts the quality of shadows. Every tier further reduces the shadow noise artifacts, and options lower than §bHigh§r enable optimised shadows on leaves.
 value.SHADOW_QUALITY.1=§eLow
 value.SHADOW_QUALITY.2=§aMedium
 value.SHADOW_QUALITY.3=§bHigh

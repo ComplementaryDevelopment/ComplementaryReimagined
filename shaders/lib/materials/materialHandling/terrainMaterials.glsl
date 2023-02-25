@@ -13,7 +13,7 @@ if (mat < 10512) {
 
                                 DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
 
-                                #if SHADOW_QUALITY == 0
+                                #ifndef REALTIME_SHADOWS
                                     shadowMult *= 1.0 - 0.3 * (signMidCoordPos.y + 1.0) * (1.0 - abs(signMidCoordPos.x))
                                     + 0.5 * (1.0 - signMidCoordPos.y) * invNoonFactor; // consistency357381
                                 #endif
@@ -36,7 +36,7 @@ if (mat < 10512) {
 
                                 DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
 
-                                #if SHADOW_QUALITY == 0
+                                #ifndef REALTIME_SHADOWS
                                     shadowMult *= 1.0 + invNoonFactor; // consistency357381
                                 #endif
                             }

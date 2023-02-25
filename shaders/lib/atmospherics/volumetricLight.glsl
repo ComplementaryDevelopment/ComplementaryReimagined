@@ -112,7 +112,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 		
 		float shadowSample = 1.0;
 		vec3 vlSample = vec3(1.0);
-		#if SHADOW_QUALITY > 0
+		#ifdef REALTIME_SHADOWS
 			wpos = shadowModelView * wpos;
 			wpos = shadowProjection * wpos;
 			wpos /= wpos.w;

@@ -12,6 +12,6 @@ materialMask = OSIEBCA * 253.0; // Reduced Edge TAA
     color.rgb = color.rgb * 0.5 + 0.5 * (color.rgb / glColor.rgb);
 #endif
 
-#if SHADOW_QUALITY > 0 && SHADOW_QUALITY < 3
+#if defined REALTIME_SHADOWS && SHADOW_QUALITY < 3
     shadowMult = vec3(sqrt1(max0(max(lmCoordM.y, min1(lmCoordM.x * 2.0)) - 0.95) * 20.0));
 #endif
