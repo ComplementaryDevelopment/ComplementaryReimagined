@@ -119,7 +119,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 			float distb = sqrt(wpos.x * wpos.x + wpos.y * wpos.y);
 			float distortFactor = 1.0 - shadowMapBias + distb * shadowMapBias;
 			vec4 shadowPosition = DistortShadow(wpos,distortFactor);
-			shadowPosition.z += 0.0001;
+			//shadowPosition.z += 0.0001;
 			
 			#ifdef OVERWORLD
 				float percentComplete = currentDist / maxDist;

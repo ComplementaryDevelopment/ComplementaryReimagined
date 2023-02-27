@@ -177,7 +177,7 @@ void main() {
 		vec3 playerPos = ViewToPlayer(viewPos);
 
 		int subsurfaceMode = 0;
-		bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false;
+		bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false, centerShadowBias = false;
 		#ifdef SNOWY_WORLD
 			float snowFactor = 1.0;
 		#endif
@@ -210,18 +210,20 @@ void main() {
 				noDirectionalShading = true;
 			} else if (mat == 10004) { // Grounded Waving Foliage
 				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-
 				DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
 			} else if (mat == 10008) { // Leaves
 				#include "/lib/materials/specificMaterials/terrain/leaves.glsl"
 			} else if (mat == 10012) { // Vine
-				shadowMult = vec3(1.7); //dup2315
+				shadowMult = vec3(1.7);
+				centerShadowBias = true;
 			} else if (mat == 10016) { // Non-waving Foliage
 				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 			} else if (mat == 10020) { // Upper Waving Foliage
 				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-
 				DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+			} else if (mat == 10744) { // Cobweb
+				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+				centerShadowBias = true;
 			}
 
 			#ifdef SNOWY_WORLD
@@ -303,7 +305,7 @@ void main() {
 		#endif
 
 		DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-		           noSmoothLighting, noDirectionalShading, noVanillaAO, subsurfaceMode,
+		           noSmoothLighting, noDirectionalShading, noVanillaAO, centerShadowBias, subsurfaceMode,
 				   smoothnessG, highlightMult, emission);
 
 		#ifdef IPBR

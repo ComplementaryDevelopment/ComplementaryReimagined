@@ -143,7 +143,7 @@ void main() {
 
 		vec3 shadowMult = vec3(0.4);
 		DoLighting(color.rgb, shadowMult, playerPos, viewPos, 0.0, normalM, lmCoord,
-				true, false, false, 0,
+				true, false, false, false, 0,
 				smoothnessG, highlightMult, emission);
 	}
 

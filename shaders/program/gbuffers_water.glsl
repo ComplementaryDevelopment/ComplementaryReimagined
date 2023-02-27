@@ -240,7 +240,7 @@ void main() {
 
 	// Lighting
 	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-	           noSmoothLighting, noDirectionalShading, false, 0,
+	           noSmoothLighting, noDirectionalShading, false, false, 0,
 			   smoothnessG, highlightMult, emission);
 
 	// Reflections
@@ -261,13 +261,22 @@ void main() {
 			vec3 screenPosR = clipPosR.xyz / clipPosR.w * 0.5 + 0.5;
 
 			vec4 reflection = vec4(0.0);
-			if (abs(screenPosR.x - 0.5) < 0.5 && abs(screenPosR.y - 0.5) < 0.5) {
+			vec2 rEdge = vec2(0.6, 0.53);
+			vec2 screenPosRM = abs(screenPosR.xy - 0.5);
+			if (screenPosRM.x < rEdge.x && screenPosRM.y < rEdge.y) {
+				vec2 edgeFactor = pow2(pow2(pow2(screenPosRM / rEdge)));
+				screenPosR.y += (dither - 0.5) * (0.03 * (edgeFactor.x + edgeFactor.y) + 0.004);
+
 				screenPosR.z = texture2D(depthtex1, screenPosR.xy).x;
 				vec3 viewPosR = ScreenToView(screenPosR);
 				if (lViewPos <= 2.0 + length(viewPosR)) {
 					reflection = texture2D(gaux2, screenPosR.xy);
 					reflection.rgb = pow2(reflection.rgb + 1.0);
 				}
+
+				edgeFactor.x = pow2(edgeFactor.x);
+				edgeFactor = 1.0 - edgeFactor;
+				reflection.a *= edgeFactor.x * edgeFactor.y;
 			}
 
 			reflection.a *= reflection.a;

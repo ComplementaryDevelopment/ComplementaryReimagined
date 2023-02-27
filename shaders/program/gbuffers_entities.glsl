@@ -160,7 +160,7 @@ void main() {
 	normalM = gl_FrontFacing ? normalM : -normalM; // Inverted Normal Workaround
 
 	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-				noSmoothLighting, false, false, 0,
+				noSmoothLighting, false, false, true, 0,
 				smoothnessG, highlightMult, emission);
 
 	#if defined CUSTOM_PBR && defined PBR_REFLECTIONS
@@ -277,9 +277,7 @@ void main() {
 			gl_Position.z -= 0.00015;
 		}
 		#ifndef REALTIME_SHADOWS
-			else if (entityId == 50016) { // Player
-				if (glColor.a < 0.5) gl_Position.z += 0.0005;
-			}
+			if (glColor.a < 0.5) gl_Position.z += 0.0005;
 		#endif
 	#endif
 }

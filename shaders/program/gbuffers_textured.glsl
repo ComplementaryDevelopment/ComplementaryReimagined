@@ -147,7 +147,7 @@ void main() {
 	#endif
 
 	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normal, lmCoordM,
-	           noSmoothLighting, false, true, 0,
+	           noSmoothLighting, false, true, false, 0,
 			   0.0, 1.0, emission);
 
 	#if MC_VERSION >= 11500

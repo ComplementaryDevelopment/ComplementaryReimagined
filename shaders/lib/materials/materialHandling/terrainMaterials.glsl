@@ -10,7 +10,6 @@ if (mat < 10512) {
                             } 
                             else if (mat == 10004) { // Grounded Waving Foliage
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-
                                 DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
 
                                 #ifndef REALTIME_SHADOWS
@@ -23,7 +22,8 @@ if (mat < 10512) {
                                 #include "/lib/materials/specificMaterials/terrain/leaves.glsl"
                             }
                             else /*if (mat == 10012)*/ { // Vine
-				                shadowMult = vec3(1.7); //dup2315
+				                shadowMult = vec3(1.7);
+				                centerShadowBias = true;
                             }
                         }
                     } else {
@@ -33,7 +33,6 @@ if (mat < 10512) {
                             }
                             else /*if (mat == 10020)*/ { // Upper Waving Foliage
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-
                                 DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
 
                                 #ifndef REALTIME_SHADOWS
@@ -1694,7 +1693,7 @@ if (mat < 10512) {
                                 lmCoordM.x = 1.0 - 0.5 * dot(fractPos.xz, fractPos.xz);
 
                                 float dotColor = dot(color.rgb, color.rgb);
-                                if (color.r > color.b && color.r - color.g < 0.15 && dotColor < 1.5) {
+                                if (color.r > color.b && color.r - color.g < 0.15 && dotColor < 1.4) {
                                     #include "/lib/materials/specificMaterials/terrain/oakWood.glsl"
                                 } else if (color.r > color.b || dotColor > 2.9) {
                                     noDirectionalShading = true;
@@ -1904,8 +1903,9 @@ if (mat < 10512) {
                                 #include "/lib/materials/specificMaterials/terrain/lanternMetal.glsl"
                             }
                         } else {
-                            if (mat == 10744) { //
-                            
+                            if (mat == 10744) { // Cobweb
+                                subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+                                centerShadowBias = true;
                             }
                             else /*if (mat == 10748)*/ { //
 

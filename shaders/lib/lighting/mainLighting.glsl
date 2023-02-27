@@ -23,7 +23,7 @@ vec3 highlightColor = normalize(pow(lightColor, vec3(0.37))) * (0.5 + 1.3 * sunV
 
 //Lighting//
 void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 viewPos, float lViewPos, vec3 normalM, vec2 lightmap,
-                bool noSmoothLighting, bool noDirectionalShading, bool noVanillaAO, int subsurfaceMode,
+                bool noSmoothLighting, bool noDirectionalShading, bool noVanillaAO, bool centerShadowBias, int subsurfaceMode,
                 float smoothnessG, float highlightMult, float emission) {
     float lightmapY2 = pow2(lightmap.y);
     float lightmapYM = smoothstep1(lightmap.y);
@@ -105,7 +105,6 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             vec3 worldNormal = normalize(ViewToPlayer(normal*1000.0));
                             vec3 bias = worldNormal * min(0.12 + length(playerPos) / 200.0, 0.5) * (2.0 - NdotLmax0);
 
-                            // Fix light leaking in caves
                             #ifdef GBUFFERS_TERRAIN
                                 if (subsurfaceMode == 2) {
                                     bias *= vec3(0.0, 0.0, -0.75);
@@ -113,21 +112,24 @@ void DoLighting(inout vec3 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                     bias *= 1.0 - lightmapYM;
                                 }
                             #endif
+                            // Fix light leaking in caves
                             if (lightmapYM < 0.999) {
-                                #ifdef GBUFFERS_ENTITIES
-                                    vec3 centerplayerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
-                                    playerPosM = mix(centerplayerPos, playerPosM, 0.5 + 0.5 * lightmapYM);
-                                #elif defined GBUFFERS_HAND
+                                #ifdef GBUFFERS_HAND
                                     playerPosM = mix(vec3(0.0), playerPosM, 0.2 + 0.8 * lightmapYM);
                                 #else
-                                    vec3 edgeFactor = 0.2 * (0.5 - fract(playerPosM + cameraPosition + worldNormal * 0.01));
+                                    if (centerShadowBias) {
+                                        vec3 centerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
+                                        playerPosM = mix(centerPos, playerPosM, 0.5 + 0.5 * lightmapYM);
+                                    } else {
+                                        vec3 edgeFactor = 0.2 * (0.5 - fract(playerPosM + cameraPosition + worldNormal * 0.01));
 
-                                    #ifdef GBUFFERS_WATER
-                                        bias *= 0.7;
-                                        playerPosM += (1.0 - lightmapYM) * edgeFactor;
-                                    #endif
+                                        #ifdef GBUFFERS_WATER
+                                            bias *= 0.7;
+                                            playerPosM += (1.0 - lightmapYM) * edgeFactor;
+                                        #endif
 
-                                    playerPosM += (1.0 - pow2(pow2(max(glColor.a, lightmapYM)))) * edgeFactor;
+                                        playerPosM += (1.0 - pow2(pow2(max(glColor.a, lightmapYM)))) * edgeFactor;
+                                    }
                                 #endif
                             }
 

@@ -83,7 +83,7 @@ void main() {
 
 	vec3 shadowMult = vec3(1.0);
 	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normal, lmCoord,
-	           false, false, false, 0,
+	           false, false, false, false, 0,
 			   0.0, 0.0, 0.0);
 
 	#if SELECTION_OUTLINE > 0

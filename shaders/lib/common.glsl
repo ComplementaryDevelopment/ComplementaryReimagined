@@ -96,14 +96,6 @@
 //Internal Settings//
     #define SIDE_SHADOWING
 
-    #if RP_MODE >= 1 && REFLECTION_QUALITY >= 3
-        #define PBR_REFLECTIONS
-    #endif
-
-    #if defined WAVING_FOLIAGE || defined WAVING_LEAVES
-        #define WAVING_ANYTHING_TERRAIN
-    #endif
-
     #define GLASS_OPACITY 0.25
     #define FANCY_NETHERPORTAL
     #define TRANSLUCENT_BLEND_FALLOFF_MULT 0.01
@@ -218,6 +210,14 @@
         #define CLOUDS_REIMAGINED
     #else
         #undef CLOUD_SHADOWS
+    #endif
+
+    #if RP_MODE >= 1 && REFLECTION_QUALITY >= 3
+        #define PBR_REFLECTIONS
+    #endif
+
+    #if defined WAVING_FOLIAGE || defined WAVING_LEAVES
+        #define WAVING_ANYTHING_TERRAIN
     #endif
 
 //Activate Settings//

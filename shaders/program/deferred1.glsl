@@ -277,20 +277,19 @@ void main() {
 			#include "/lib/materials/materialHandling/deferredMaterials.glsl"
 		#else
 			if (materialMaskInt <= 240) {
-				#ifdef PBR_REFLECTIONS
+				#ifdef CUSTOM_PBR
 					#if RP_MODE == 2 // SEUSPBR
 						float metalness = materialMaskInt / 240.0;
 
 						intenseFresnel = metalness;
-						reflectColor = mix(reflectColor, color.rgb / max(color.r, max(color.g, color.b)), metalness);
 						color.rgb *= 1.0 - 0.25 * metalness;
 					#elif RP_MODE == 3 // labPBR
 						float metalness = float(materialMaskInt >= 230);
 
 						intenseFresnel = materialMaskInt / 240.0;
-						reflectColor = mix(reflectColor, color.rgb / max(color.r, max(color.g, color.b)), metalness);
 						color.rgb *= 1.0 - 0.25 * metalness;
 					#endif
+					reflectColor = mix(reflectColor, color.rgb / max(color.r + 0.00001, max(color.g, color.b)), metalness);
 				#endif
 			} else {
 				if (materialMaskInt == 254) // No SSAO, No TAA

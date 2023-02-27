@@ -16,7 +16,8 @@ glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
     color.rgb = colorPM * glColorM;
 #endif
 
-#if defined GENERATED_NORMALS && WATER_STYLE >= 3
+#define PHYSICS_OCEAN_INJECTION
+#if defined GENERATED_NORMALS && WATER_STYLE >= 3 || defined PHYSICS_OCEAN
     noGeneratedNormals = true;
 #endif
 
