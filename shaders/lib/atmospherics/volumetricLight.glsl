@@ -21,6 +21,7 @@ vec4 DistortShadow(vec4 shadowpos, float distortFactor) {
 vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewPos, vec3 nViewPos, float VdotL, float VdotU, vec2 texCoord, float z0, float z1, float dither) {
 	if (max(blindness, darknessFactor) > 0.1) return vec4(0.0);
 	vec4 volumetricLight = vec4(0.0);
+	vec3 vlColorReducer = vec3(1.0);
 
 	#ifdef OVERWORLD
 		vec3 vlColor = lightColor;
@@ -33,9 +34,9 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 			vlMult = 0.6 + 0.4 * max0(far - lViewPos) / far;
 			vlColor = normalize(pow(vlColor, vec3(1.0 - max0(1.0 - 1.5 * nightFactor))));
 			vlColor *= 0.0766 + 0.0766 * vsBrightness;
+		} else {
+			vlColorReducer = 1.0 / sqrt(vlColor);
 		}
-
-		vec3 vlColorReducer = 1.0 / sqrt(vlColor);
 
 		float VdotLM = max((VdotL + 1.0) / 2.0, 0.0);
 		float VdotUM = mix(pow2(1.0 - max(VdotU, 0.0)), 1.0, 0.5 * vlSceneIntensity);

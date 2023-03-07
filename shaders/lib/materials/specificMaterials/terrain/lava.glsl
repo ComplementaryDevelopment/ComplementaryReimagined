@@ -1,5 +1,12 @@
-// Tweak to revent the animation of lava causing brightness pulsing
-color.rgb /= (max(GetLuminance(texture2DLod(texture, texCoord, 100.0).rgb) * 2.5, 0.001));
+// Tweak to prevent the animation of lava causing brightness pulsing
+vec3 avgColor = vec3(0.0);
+ivec2 itexCoordC = ivec2(midCoord * atlasSize + 0.0001);
+for (int x = -8; x < 8; x += 2) {
+    for (int y = -8; y < 8; y += 2) {
+        avgColor += texelFetch(texture, itexCoordC + ivec2(x, y), 0).rgb;
+    }
+}
+color.rgb /= (max(GetLuminance(avgColor) * 0.0390625, 0.001));
 
 #ifdef NETHER
     vec3 worldPos = playerPos + cameraPosition;

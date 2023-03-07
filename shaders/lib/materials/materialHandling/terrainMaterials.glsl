@@ -1436,23 +1436,24 @@ if (mat < 10512) {
                                 noSmoothLighting = true;
                                 lmCoordM.x = 0.77;
 
-                                if (color.r < color.b) { // Lantern:Metal Part
-                                    #include "/lib/materials/specificMaterials/terrain/lanternMetal.glsl"
-                                } else { // Lantern:Emissive Part
-                                    emission = pow2(color.g) * 5.0 + 1.0;
+                                #include "/lib/materials/specificMaterials/terrain/lanternMetal.glsl"
 
-                                    color.gb *= vec2(0.8, 0.7);
-                                }
+                                emission = 3.0 * max0(color.r - color.b);
+                                emission += min(pow2(pow2(0.75 * dot(color.rgb, color.rgb))), 5.0);
+                                color.gb *= pow(vec2(0.8, 0.7), vec2(sqrt(emission) * 0.5));
+
+                                #ifdef SNOWY_WORLD
+                                    snowFactor = 0.0;
+                                #endif
                             }
                             else /*if (mat == 10564)*/ { // Soul Lantern
                                 noSmoothLighting = true;
                                 lmCoordM.x = min(lmCoordM.x, 0.77); // consistency748523
 
-                                if (min1(color.r * 3.0) >= color.g + 0.25) { // Soul Lantern:Metal Part
-                                    #include "/lib/materials/specificMaterials/terrain/lanternMetal.glsl"
-                                } else { // Soul Lantern:Emissive Part
-                                    emission = color.r * 3.0 + 0.5;
-                                }
+                                #include "/lib/materials/specificMaterials/terrain/lanternMetal.glsl"
+
+                                emission = 0.9 * max0(color.g - color.r * 2.0);
+                                emission += min(pow2(pow2(0.55 * dot(color.rgb, color.rgb))), 3.5);
 
                                 #ifdef SNOWY_WORLD
                                     snowFactor = 0.0;

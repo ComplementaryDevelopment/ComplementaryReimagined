@@ -14,6 +14,7 @@ in vec2 texCoord;
 in vec2 lmCoord;
 in vec2 signMidCoordPos;
 flat in vec2 absMidCoordPos;
+flat in vec2 midCoord;
 
 flat in vec3 upVec, sunVec, northVec, eastVec;
 in vec3 normal;
@@ -342,6 +343,7 @@ out vec2 texCoord;
 out vec2 lmCoord;
 out vec2 signMidCoordPos;
 flat out vec2 absMidCoordPos;
+flat out vec2 midCoord;
 
 flat out vec3 upVec, sunVec, northVec, eastVec;
 out vec3 normal;
@@ -400,7 +402,7 @@ void main() {
 	northVec = normalize(gbufferModelView[2].xyz);
 	sunVec = GetSunVector();
 
-	vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
+	midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
 	vec2 texMinMidCoord = texCoord - midCoord;
 	signMidCoordPos = sign(texMinMidCoord);
 	absMidCoordPos  = abs(texMinMidCoord);
