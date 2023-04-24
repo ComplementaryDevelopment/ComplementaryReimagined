@@ -1,3 +1,6 @@
+#ifndef INCLUDE_ENDERBEAMS
+#define INCLUDE_ENDERBEAMS
+
 #include "/lib/colors/lightAndAmbientColors.glsl"
 
 vec3 endOrangeCol = vec3(1.0, 0.3, 0.0);
@@ -49,3 +52,5 @@ vec3 DrawEnderBeams(float VdotU, vec3 playerPos) {
 
     return beams.rgb;
 }
+
+#endif

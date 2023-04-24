@@ -46,20 +46,18 @@ uniform mat4 gbufferModelViewInverse;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 
-uniform sampler2D texture;
+uniform sampler2D tex;
+uniform sampler2D noisetex;
 
 #ifdef CLOUDS_REIMAGINED
 	uniform sampler2D gaux1;
-#endif
-
-#ifdef CLOUD_SHADOWS
-	uniform sampler2D gaux3;
 #endif
 
 //Pipeline Constants//
 
 //Common Variables//
 float NdotU = dot(normal, upVec);
+float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
 float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
@@ -85,9 +83,13 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#include "/lib/atmospherics/fog/mainFog.glsl"
 #endif
 
+#ifdef ATM_COLOR_MULTS
+    #include "/lib/colors/colorMultipliers.glsl"
+#endif
+
 //Program//
 void main() {
-	vec4 color = texture2D(texture, texCoord);
+	vec4 color = texture2D(tex, texCoord);
 	vec4 colorP = color;
 	color *= glColor;
 
@@ -101,6 +103,10 @@ void main() {
 		dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
 	#endif
 
+	#ifdef ATM_COLOR_MULTS
+		atmColorMult = GetAtmColorMult();
+	#endif
+
 	#ifdef CLOUDS_REIMAGINED
 		float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
 
@@ -108,14 +114,13 @@ void main() {
 		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < min(lViewPos, far)) discard;
 	#endif
 
-	vec3 shadowMult = vec3(1.0);
-	vec2 lmCoordM = lmCoord;
 	float emission = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
-
+	vec2 lmCoordM = lmCoord;
+	vec3 shadowMult = vec3(1.0);
 	#ifdef IPBR
 	if (atlasSize.x < 900.0) { // We don't want to detect particles from the block atlas
 		if (color.b > 1.15 * (color.r + color.g) && color.g > color.r * 1.25 && color.g < 0.425 && color.b > 0.75) { // Water Particle
-			color.rgb = sqrt3(color.rgb) * 0.35;
+			color.rgb = sqrt3(color.rgb) * 0.45;
 		} else if (color.r == color.g && color.r - 0.5 * color.b < 0.06) { // Underwater Particle
 			if (isEyeInWater == 1) {
 				color.rgb = sqrt2(color.rgb) * 0.35;
@@ -140,15 +145,14 @@ void main() {
 		}
 		//color.rgb = vec3(fract(float(frameCounter) * 0.01), fract(float(frameCounter) * 0.015), fract(float(frameCounter) * 0.02));
 	}
-
 	bool noSmoothLighting = false;
 	#else
 	bool noSmoothLighting = true;
 	#endif
 
-	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normal, lmCoordM,
-	           noSmoothLighting, false, true, false, 0,
-			   0.0, 1.0, emission);
+	DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normal, lmCoordM,
+	           noSmoothLighting, false, true, false,
+			   0, 0.0, 1.0, emission);
 
 	#if MC_VERSION >= 11500
 		vec3 nViewPos = normalize(viewPos);
@@ -161,13 +165,12 @@ void main() {
 	#endif
 
 	// Blending
-	vec3 translucentMult = mix(vec3(1.0), color.rgb, sqrt1(color.a)) * (1.0 - pow(color.a, 64.0));
-	translucentMult.r += OSIEBCA;
+	vec3 translucentMult = mix(vec3(1.0), normalize(pow2(color.rgb)) * pow2(color.rgb), sqrt1(color.a)) * (1.0 - pow(color.a, 64.0));
 	
 	/* DRAWBUFFERS:013 */
 	gl_FragData[0] = color;
 	gl_FragData[1] = vec4(0.0, materialMask, 0.0, 1.0);
-	gl_FragData[2] = vec4(translucentMult, 1.0);
+	gl_FragData[2] = vec4(1.0 - translucentMult, 1.0);
 }
 
 #endif

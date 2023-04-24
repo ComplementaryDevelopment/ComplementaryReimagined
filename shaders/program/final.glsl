@@ -22,7 +22,7 @@ uniform sampler2D colortex3;
 #endif
 
 //Pipeline Constants//
-#include "/lib/misc/pipelineSettings.glsl"
+#include "/lib/pipelineSettings.glsl"
 
 //Common Variables//
 
@@ -48,19 +48,56 @@ uniform sampler2D colortex3;
 #endif
 
 //Includes//
+#ifdef MC_ANISOTROPIC_FILTERING
+	#include "/lib/util/textRendering.glsl"
+
+	void beingTextM(int textSize, vec2 offset) {
+		beginText(ivec2(vec2(viewWidth, viewHeight) * texCoord) / textSize, ivec2(0 + offset.x, viewHeight / textSize - offset.y));
+		text.bgCol = vec4(0.0);
+	}
+#endif
 
 //Program//
 void main() {
 	vec2 texCoordM = texCoord;
 
 	#ifdef UNDERWATER_DISTORTION
-		if (isEyeInWater == 1) texCoordM += 0.0007 * sin((texCoord.x + texCoord.y) * 25.0 + frameTimeCounter * 3.0);
+		if (isEyeInWater == 1)
+			texCoordM += WATER_REFRACTION_INTENSITY * 0.00035 * sin((texCoord.x + texCoord.y) * 25.0 + frameTimeCounter * 3.0);
 	#endif
 
 	vec3 color = texture2D(colortex3, texCoordM).rgb;
 
 	#if IMAGE_SHARPENING > 0
 		SharpenImage(color, texCoordM);
+	#endif
+
+	#ifdef MC_ANISOTROPIC_FILTERING
+		color.rgb = mix(color.rgb, vec3(0.0), 0.75);
+
+		beingTextM(8, vec2(6, 10));
+		text.fgCol = vec4(1.0, 0.0, 0.0, 1.0);
+		printString((_I, _m, _p, _o, _r, _t, _a, _n, _t, _space, _I, _s, _s, _u, _e, _space));
+		endText(color.rgb);
+
+		beingTextM(4, vec2(15, 30));
+		printLine();
+		text.fgCol = vec4(1.0, 1.0, 1.0, 1.0);
+		printString((
+			_P, _l, _e, _a, _s, _e, _space, _g, _o, _space, _t, _o, _space,
+			_E, _S, _C, _space, _minus, _space, _O, _p, _t, _i, _o, _n, _s, _space, _minus, _space
+		));
+		printLine();
+		printString((
+			_V, _i, _d, _e, _o, _space, _S, _e, _t, _t, _i, _n, _g, _s, _space, _minus, _space,
+			_Q, _u, _a, _l, _i, _t, _y, _space, _minus, _space
+		));
+		printLine();
+		printString((
+			_a, _n, _d, _space, _d, _i, _s, _a, _b, _l, _e, _space,
+			_A, _n, _i, _s, _o, _t, _r, _o, _p, _i, _c, _space, _F, _i, _l, _t, _e, _r, _i, _n, _g, _dot
+		));
+		endText(color.rgb);
 	#endif
 
 	/* DRAWBUFFERS:0 */

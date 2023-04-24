@@ -90,7 +90,7 @@ vec4 GetVolumetricClouds(float cloudAltitude, float distanceThreshold, inout flo
         if (GetCloudNoise(tracePos.xyz, cloudAltitude)) {
             float lightMult = 1.0;
 
-            #ifdef REALTIME_SHADOWS
+            #if defined CLOUD_CLOSED_AREA_CHECK && defined REALTIME_SHADOWS
                 if (GetShadowOnCloud(tracePos, cloudAltitude, lowerPlaneAltitude, higherPlaneAltitude)) {
                     if (eyeBrightness.y != 240) continue;
                     else lightMult = 0.25;

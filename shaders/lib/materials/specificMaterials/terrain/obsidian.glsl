@@ -1,6 +1,6 @@
 materialMask = OSIEBCA; // Intense Fresnel
 
-float factor = color.r * 1.5;
+float factor = max0(0.3 - abs(color.r - 0.3)) * 1.5;
 
 smoothnessG = factor;
 highlightMult = 2.0 + min1(smoothnessG * 2.0) * 1.5;

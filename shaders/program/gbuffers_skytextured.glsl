@@ -26,7 +26,7 @@ uniform vec3 fogColor;
 
 uniform mat4 gbufferProjectionInverse;
 
-uniform sampler2D texture;
+uniform sampler2D tex;
 
 //Pipeline Constants//
 
@@ -45,8 +45,8 @@ uniform sampler2D texture;
 //Program//
 void main() {
 	#ifdef OVERWORLD
-		vec2 tSize = textureSize(texture, 0);
-		vec4 color = texture2D(texture, texCoord);
+		vec2 tSize = textureSize(tex, 0);
+		vec4 color = texture2D(tex, texCoord);
 		color.rgb *= glColor.rgb;
 	
 		vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
@@ -80,7 +80,12 @@ void main() {
 
 			color.rgb *= GetHorizonFactor(VdotU);
 		} else { // Custom Sky
-			color.rgb *= color.rgb * smoothstep1(sqrt1(max0(VdotU)));
+			#if MC_VERSION >= 11300
+				color.rgb *= color.rgb * smoothstep1(sqrt1(max0(VdotU)));
+			#else
+				discard;
+				// Old mc custom skyboxes are weirdly broken, so we discard.
+			#endif
 		}
 
 		if (isEyeInWater == 1) color.rgb *= 0.25;

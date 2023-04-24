@@ -25,7 +25,7 @@ uniform sampler2D colortex1;
 uniform sampler2D depthtex1;
 
 //Pipeline Constants//
-#include "/lib/misc/pipelineSettings.glsl"
+#include "/lib/pipelineSettings.glsl"
 
 const bool colortex3MipmapEnabled = true;
 
@@ -33,7 +33,7 @@ const bool colortex3MipmapEnabled = true;
 
 //Common Functions//
 float GetLinearDepth(float depth) {
-   return (2.0 * near) / (far + near - depth * (far - near));
+    return (2.0 * near) / (far + near - depth * (far - near));
 }
 
 //Includes//
@@ -44,18 +44,24 @@ float GetLinearDepth(float depth) {
 //Program//
 void main() {
     vec3 color = texelFetch(colortex3, texelCoord, 0).rgb;
+    vec3 temp = vec3(0.0);
+    float depth;
+
+	#ifdef TEMPORAL_FILTER
+		depth = texelFetch(depthtex1, texelCoord, 0).r;
+	#endif
 
     #ifdef TAA
-        vec3 temp = vec3(0.0);
-        DoTAA(color, temp);
+        DoTAA(color, temp, depth);
     #endif
 
-    /*DRAWBUFFERS:3*/
+    /*DRAWBUFFERS:32*/
 	gl_FragData[0] = vec4(color, 1.0);
+    gl_FragData[1] = vec4(temp, 1.0);
     
-	#ifdef TAA
-        /*DRAWBUFFERS:32*/
-        gl_FragData[1] = vec4(temp, 1.0);
+	#ifdef TEMPORAL_FILTER
+        /*DRAWBUFFERS:326*/
+        gl_FragData[2] = vec4(depth, 0.0, 0.0, 1.0);
 	#endif
 }
 

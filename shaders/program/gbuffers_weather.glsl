@@ -21,7 +21,7 @@ uniform int isEyeInWater;
 uniform vec3 skyColor;
 uniform vec3 fogColor;
 
-uniform sampler2D texture;
+uniform sampler2D tex;
 
 //Pipeline Constants//
 
@@ -38,7 +38,7 @@ float sunVisibility2 = sunVisibility * sunVisibility;
 
 //Program//
 void main() {
-	vec4 color = texture2D(texture, texCoord);
+	vec4 color = texture2D(tex, texCoord);
 	color *= glColor;
 
 	if (color.a < 0.1 || isEyeInWater == 3) discard;

@@ -1,13 +1,11 @@
-if (color.g < 0.05 && color.b > 0.3) {
-    smoothnessG = 0.4;
-    highlightMult = 1.5;
-    smoothnessD = 0.3;
+#include "/lib/materials/specificMaterials/terrain/obsidian.glsl"
 
-    float factor = pow2(color.b);
-    emission = 0.9 + pow2(pow2(factor)) * 7.5;
-    color.r *= 1.15;
+highlightMult *= 0.5;
 
-    maRecolor = vec3(min(max0(factor * 0.7 - 0.1) * 1.3, 0.5));
-} else {
-    #include "/lib/materials/specificMaterials/terrain/obsidian.glsl"
-}
+float factor0 = sqrt2(max0(color.b - color.g * 6.0));
+float factor1 = pow2(color.b);
+emission = 0.9 + pow2(pow2(factor1)) * 7.5;
+emission *= factor0;
+color.r *= 1.15;
+
+maRecolor = vec3(factor0 * min(max0(factor1 * 0.7 - 0.1) * 1.3, 0.5));

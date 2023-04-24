@@ -47,13 +47,19 @@ void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float depth, inout 
 	tempColor = clamp(tempColor, minclr, maxclr);
 }
 
-void DoTAA(inout vec3 color, inout vec3 temp) {
+void DoTAA(inout vec3 color, inout vec3 temp, float depth) {
 	int materialMask = int(texelFetch(colortex1, texelCoord, 0).g * 255.1);
 
-	if (materialMask == 254) // No SSAO, No TAA
-		return;
+	if (materialMask == 254) return; // No SSAO, No TAA
 
-	float depth = texelFetch(depthtex1, texelCoord, 0).r;
+	#ifndef TEMPORAL_FILTER
+		depth = texelFetch(depthtex1, texelCoord, 0).r;
+	#endif
+
+	#ifdef CUSTOM_PBR
+		if (depth <= 0.56) return; // materialMask is occupied, so we do the check manually
+	#endif
+
 	vec3 coord = vec3(texCoord, depth);
 	vec3 cameraOffset = cameraPosition - previousCameraPosition;
 	vec2 prvCoord = Reprojection(coord, cameraOffset);

@@ -41,7 +41,7 @@ float GGX(vec3 normalM, vec3 viewPos, vec3 lightVec, float NdotLmax0, float smoo
     float dotLH = clamp(dot(halfVec, lightVec), 0.0, 1.0);
     float dotNV = dot(normalM, -viewPos);
     
-    #if REFLECTION_QUALITY >= 2
+    #if WATER_REFLECT_QUALITY >= 2
         float dotNH = GetNoHSquared(0.01, NdotLmax0, dotNV, dot(-viewPos, lightVec));
     #else
         float dotNH = pow2(min1(2.0 * NdotLmax0 * dotNV * length(halfVec) - dot(-viewPos, lightVec)));

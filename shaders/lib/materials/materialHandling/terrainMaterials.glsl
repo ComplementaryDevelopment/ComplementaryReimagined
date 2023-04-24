@@ -851,8 +851,12 @@ if (mat < 10512) {
                 } else {
                     if (mat < 10368) {
                         if (mat < 10360) {
-                            if (mat == 10352) { // Lapis Block, Dried Kelp Block
+                            if (mat == 10352) { // Lapis Block
                                 #include "/lib/materials/specificMaterials/terrain/lapisBlock.glsl"
+
+                                #ifdef EMISSIVE_LAPIS_BLOCK
+                                    emission = pow2(dot(color.rgb, color.rgb)) * 10.0;
+                                #endif
                             }
                             else /*if (mat == 10356)*/ { // Lapis Ore
                                 if (color.r != color.g) { // Lapis Ore:Lapis Part
@@ -1276,13 +1280,11 @@ if (mat < 10512) {
                             else /*if (mat == 10516)*/ { // Furnace:Lit
                                 lmCoordM.x *= 0.95;
 
+                                #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
+
                                 float dotColor = dot(color.rgb, color.rgb);
-                                if (color.r > color.b * 1.5 || dotColor > 2.9) {
-                                    emission = 2.0 * dotColor;
-                                    color.r *= 1.3;
-                                } else {
-                                    #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
-                                }
+                                emission = 2.0 * dotColor * max0(pow2(pow2(pow2(color.r))) - color.b) + pow(dotColor * 0.35, 32.0);                
+                                color.r *= 1.0 + 0.1 * emission;
                             }
                         } else {
                             if (mat == 10520) { // Cactus
@@ -1522,18 +1524,19 @@ if (mat < 10512) {
                             if (mat == 10592) { // Respawn Anchor:Lit
                                 noSmoothLighting = true;
 
+                                #include "/lib/materials/specificMaterials/terrain/cryingObsidian.glsl"
 
                                 vec2 absCoord = abs(signMidCoordPos);
                                 if (NdotU > 0.9 && max(absCoord.x, absCoord.y) < 0.754) { // Portal
                                     highlightMult = 0.0;
                                     smoothnessD = 0.0;
                                     emission = pow2(color.r) * color.r * 16.0;
+                                    maRecolor = vec3(0.0);
                                 } else if (color.r + color.g > 1.3) { // Respawn Anchor:Glowstone Part
-                                    emission = 4.2;
-                                } else {
-                                    #include "/lib/materials/specificMaterials/terrain/cryingObsidian.glsl"
-                                    emission += 0.2;
+                                    emission = 4.2 * sqrt3(max0(color.r + color.g - 1.3));
                                 }
+
+                                emission += 0.1;
 
                                 #ifdef SNOWY_WORLD
                                     snowFactor = 0.0;
@@ -1908,8 +1911,13 @@ if (mat < 10512) {
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
                                 centerShadowBias = true;
                             }
-                            else /*if (mat == 10748)*/ { //
+                            else /*if (mat == 10748)*/ { // Dried Kelp Block
+                                smoothnessG = pow2(color.b) * 0.8;
+                                smoothnessD = smoothnessG;
 
+                                #ifdef COATED_TEXTURES
+                                    noiseFactor = 0.5;
+                                #endif
                             }
                         }
                     } else {

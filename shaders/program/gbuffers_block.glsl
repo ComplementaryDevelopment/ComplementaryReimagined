@@ -16,13 +16,19 @@ in vec3 normal;
 
 in vec4 glColor;
 
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 	in vec2 signMidCoordPos;
 	flat in vec2 absMidCoordPos;
 #endif
 
 #if defined GENERATED_NORMALS || defined CUSTOM_PBR
 	flat in vec3 binormal, tangent;
+#endif
+
+#ifdef POM
+	in vec3 viewVector;
+
+	in vec4 vTexCoordAM;
 #endif
 
 //Uniforms//
@@ -44,18 +50,11 @@ uniform mat4 gbufferModelViewInverse;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 
-uniform sampler2D texture;
+uniform sampler2D tex;
+uniform sampler2D noisetex;
 
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 	uniform ivec2 atlasSize;
-#endif
-
-#ifdef COATED_TEXTURES
-	uniform sampler2D noisetex;
-#endif
-
-#ifdef CLOUD_SHADOWS
-	uniform sampler2D gaux3;
 #endif
 
 #ifdef CUSTOM_PBR
@@ -67,6 +66,7 @@ uniform sampler2D texture;
 
 //Common Variables//
 float NdotU = dot(normal, upVec);
+float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
 float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
@@ -118,7 +118,7 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 
 //Program//
 void main() {
-	vec4 color = texture2D(texture, texCoord);
+	vec4 color = texture2D(tex, texCoord);
 	#ifdef GENERATED_NORMALS
 		vec3 colorP = color.rgb;
 	#endif
@@ -143,7 +143,7 @@ void main() {
 		#include "/lib/materials/materialHandling/blockEntityMaterials.glsl"
 	#else
 		#ifdef CUSTOM_PBR
-			GetCustomMaterials(normalM, NdotU, smoothnessG, smoothnessD, highlightMult, emission, materialMask);
+			GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
 		#endif
 
 		if (blockEntityId == 60000) { // End Portal, End Gateway
@@ -166,15 +166,15 @@ void main() {
 		CoatTextures(color.rgb, noiseFactor, playerPos);
 	#endif
 
-	DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-	           noSmoothLighting, noDirectionalShading, false, false, 0,
-			   smoothnessG, highlightMult, emission);
+	DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
+	           noSmoothLighting, noDirectionalShading, false, false,
+			   0, smoothnessG, highlightMult, emission);
 
 	/* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;
 	gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
-	#if REFLECTION_QUALITY >= 3 && RP_MODE >= 2
+	#if BLOCK_REFLECT_QUALITY >= 1 && RP_MODE >= 2
 		/* DRAWBUFFERS:015 */
 		gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
 	#endif
@@ -193,7 +193,7 @@ out vec3 normal;
 
 out vec4 glColor;
 
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 	out vec2 signMidCoordPos;
 	flat out vec2 absMidCoordPos;
 #endif
@@ -202,12 +202,18 @@ out vec4 glColor;
 	flat out vec3 binormal, tangent;
 #endif
 
+#ifdef POM
+	out vec3 viewVector;
+
+	out vec4 vTexCoordAM;
+#endif
+
 //Uniforms//
 #ifdef TAA
 	uniform float viewWidth, viewHeight;
 #endif
 
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 	uniform int blockEntityId;
 
 	uniform vec3 cameraPosition;
@@ -216,7 +222,7 @@ out vec4 glColor;
 #endif
 
 //Attributes//
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 	attribute vec4 mc_midTexCoord;
 #endif
 
@@ -255,7 +261,7 @@ void main() {
 
 	if (normal != normal) normal = -upVec; // Mod Fix: Fixes Better Nether Fireflies
 
-	#if defined GENERATED_NORMALS || defined COATED_TEXTURES
+	#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 		if (blockEntityId == 60008) { // Chest
 			float fractWorldPosY = fract((gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex).y + cameraPosition.y);
 			if (fractWorldPosY > 0.56 && 0.57 > fractWorldPosY) gl_Position.z -= 0.0001;
@@ -270,6 +276,19 @@ void main() {
 	#if defined GENERATED_NORMALS || defined CUSTOM_PBR
 		binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
 		tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
+	#endif
+
+	#ifdef POM
+		mat3 tbnMatrix = mat3(
+			tangent.x, binormal.x, normal.x,
+			tangent.y, binormal.y, normal.y,
+			tangent.z, binormal.z, normal.z
+		);
+
+		viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
+
+		vTexCoordAM.zw  = abs(texMinMidCoord) * 2;
+		vTexCoordAM.xy  = min(texCoord, midCoord - texMinMidCoord);
 	#endif
 }
 

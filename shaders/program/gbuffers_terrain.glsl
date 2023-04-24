@@ -25,6 +25,12 @@ in vec4 glColor;
 	flat in vec3 binormal, tangent;
 #endif
 
+#ifdef POM
+	in vec3 viewVector;
+
+	in vec4 vTexCoordAM;
+#endif
+
 //Uniforms//
 uniform int isEyeInWater;
 uniform int frameCounter;
@@ -43,23 +49,21 @@ uniform mat4 gbufferModelViewInverse;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 
-uniform sampler2D texture;
+uniform sampler2D tex;
+uniform sampler2D noisetex;
 
-#ifdef IPBR
+#if defined IPBR || defined POM
 	uniform ivec2 atlasSize;
 #endif
 
-#if defined NETHER || RAIN_PUDDLES >= 1 || defined COATED_TEXTURES || defined SNOWY_WORLD
-	uniform sampler2D noisetex;
-#endif
-
 #if RAIN_PUDDLES >= 1
-	uniform float wetness;
-	uniform float isRainy;
-#endif
-
-#ifdef CLOUD_SHADOWS
-	uniform sampler2D gaux3;
+	#if RAIN_PUDDLES < 3
+		uniform float wetness;
+		uniform float isRainy;
+	#else
+		float wetness = 1.0;
+		float isRainy = 1.0;
+	#endif
 #endif
 
 #if SHOW_LIGHT_LEVEL == 1
@@ -81,6 +85,7 @@ uniform sampler2D texture;
 
 //Common Variables//
 float NdotU = dot(normal, upVec);
+float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
 float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
@@ -160,173 +165,177 @@ float GetMaxColorDif(vec3 color) {
 
 //Program//
 void main() {
-	vec4 color = texture2D(texture, texCoord);
+	vec4 color = texture2D(tex, texCoord);
 
 	float smoothnessD = 0.0, materialMask = 0.0, skyLightFactor = 0.0;
 	vec3 normalM = normal;
-	if (color.a > 0.00001) {
-		vec3 colorP = color.rgb;
-		color.rgb *= glColor.rgb;
-		
-		vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
-		#ifdef TAA
-			vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
-		#else
-			vec3 viewPos = ScreenToView(screenPos);
-		#endif
-		float lViewPos = length(viewPos);
-		vec3 playerPos = ViewToPlayer(viewPos);
 
-		int subsurfaceMode = 0;
-		bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false, centerShadowBias = false;
-		#ifdef SNOWY_WORLD
-			float snowFactor = 1.0;
-		#endif
-		#if RAIN_PUDDLES >= 1
-			float noPuddles = 0.0;
-		#endif
+	#if !defined POM || !defined POM_ALLOW_CUTOUT
+		if (color.a <= 0.00001) discard;
+	#endif
+
+	vec3 colorP = color.rgb;
+	color.rgb *= glColor.rgb;
+	
+	vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+	#ifdef TAA
+		vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
+	#else
+		vec3 viewPos = ScreenToView(screenPos);
+	#endif
+	float lViewPos = length(viewPos);
+	vec3 playerPos = ViewToPlayer(viewPos);
+
+	int subsurfaceMode = 0;
+	bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false, centerShadowBias = false;
+	#ifdef SNOWY_WORLD
+		float snowFactor = 1.0;
+	#endif
+	#if RAIN_PUDDLES >= 1
+		float noPuddles = 0.0;
+	#endif
+	#ifdef GENERATED_NORMALS
+		bool noGeneratedNormals = false;
+	#endif
+	float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0, snowMinNdotU = 0.0;
+	vec2 lmCoordM = lmCoord;
+	vec3 shadowMult = vec3(1.0);
+	#ifdef IPBR
+		vec3 maRecolor = vec3(0.0);
+		#include "/lib/materials/materialHandling/terrainMaterials.glsl"
+
 		#ifdef GENERATED_NORMALS
-			bool noGeneratedNormals = false;
+			if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
 		#endif
-		float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0, snowMinNdotU = 0.0;
-		vec2 lmCoordM = lmCoord;
-		vec3 shadowMult = vec3(1.0);
-		#ifdef IPBR
-			vec3 maRecolor = vec3(0.0);
-			#include "/lib/materials/materialHandling/terrainMaterials.glsl"
 
-			#ifdef GENERATED_NORMALS
-				if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
-			#endif
-
-			#ifdef COATED_TEXTURES
-				CoatTextures(color.rgb, noiseFactor, playerPos);
-			#endif
-		#else
-			#ifdef CUSTOM_PBR
-				GetCustomMaterials(normalM, NdotU, smoothnessG, smoothnessD, highlightMult, emission, materialMask);
-			#endif
-
-			if (mat == 10000) { // No directional shading
-				noDirectionalShading = true;
-			} else if (mat == 10004) { // Grounded Waving Foliage
-				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-				DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
-			} else if (mat == 10008) { // Leaves
-				#include "/lib/materials/specificMaterials/terrain/leaves.glsl"
-			} else if (mat == 10012) { // Vine
-				shadowMult = vec3(1.7);
-				centerShadowBias = true;
-			} else if (mat == 10016) { // Non-waving Foliage
-				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-			} else if (mat == 10020) { // Upper Waving Foliage
-				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-				DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
-			} else if (mat == 10744) { // Cobweb
-				subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-				centerShadowBias = true;
-			}
-
-			#ifdef SNOWY_WORLD
-			else if (mat == 10132) { // Grass Block:Normal
-				if (glColor.b < 0.999) { // Grass Block:Normal:Grass Part
-					snowMinNdotU = min(pow2(pow2(color.g)) * 1.9, 0.1);
-					color.rgb = color.rgb * 0.5 + 0.5 * (color.rgb / glColor.rgb);
-				}
-			}
-			#endif
-
-			else if (lmCoord.x > 0.99999) lmCoordM.x = 0.95;
+		#ifdef COATED_TEXTURES
+			CoatTextures(color.rgb, noiseFactor, playerPos);
 		#endif
+	#else
+		#ifdef CUSTOM_PBR
+			GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
+		#endif
+
+		if (mat == 10000) { // No directional shading
+			noDirectionalShading = true;
+		} else if (mat == 10004) { // Grounded Waving Foliage
+			subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+			DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+		} else if (mat == 10008) { // Leaves
+			#include "/lib/materials/specificMaterials/terrain/leaves.glsl"
+		} else if (mat == 10012) { // Vine
+			shadowMult = vec3(1.7);
+			centerShadowBias = true;
+		} else if (mat == 10016) { // Non-waving Foliage
+			subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+		} else if (mat == 10020) { // Upper Waving Foliage
+			subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+			DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+		} else if (mat == 10744) { // Cobweb
+			subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+			centerShadowBias = true;
+		}
 
 		#ifdef SNOWY_WORLD
-			snowFactor *= 1000.0 * max(NdotU - 0.9, snowMinNdotU) * max0(lmCoord.y - 0.9) * (0.9 - clamp(lmCoord.x, 0.8, 0.9));
-			if (snowFactor > 0.0001) {
-				const float packSizeSW = 16.0;
-				vec3 worldPos = playerPos + cameraPosition;
-        		vec2 noiseCoord = floor(packSizeSW * worldPos.xz + 0.001) / packSizeSW;
-				     noiseCoord += floor(packSizeSW * worldPos.y + 0.001) / packSizeSW;
-    			float noiseTexture = dot(vec2(0.25, 0.75), texture2D(noisetex, noiseCoord * 0.45).rg);
-				vec3 snowColor = mix(vec3(0.65, 0.8, 0.85), vec3(1.0, 1.0, 1.0), noiseTexture * 0.75 + 0.125);
-
-				color.rgb = mix(color.rgb, snowColor + color.rgb * emission * 0.2, snowFactor);
-				smoothnessG = mix(smoothnessG, 0.25 + 0.25 * noiseTexture, snowFactor);
-				highlightMult = mix(highlightMult, 2.0 - subsurfaceMode * 0.666, snowFactor);
-				smoothnessD = mix(smoothnessD, 0.0, snowFactor);
-				emission *= 1.0 - snowFactor * 0.85;
+		else if (mat == 10132) { // Grass Block:Normal
+			if (glColor.b < 0.999) { // Grass Block:Normal:Grass Part
+				snowMinNdotU = min(pow2(pow2(color.g)) * 1.9, 0.1);
+				color.rgb = color.rgb * 0.5 + 0.5 * (color.rgb / glColor.rgb);
 			}
+		}
 		#endif
 
-		#if RAIN_PUDDLES >= 1
-			float puddleLightFactor = max0(lmCoord.y * 32.0 - 31.0) * clamp((1.0 - 1.15 * lmCoord.x) * 10.0, 0.0, 1.0);
-			float puddleMixer = puddleLightFactor * isRainy;
-			if (NdotU + pow2(pow2(wetness)) * puddleMixer - noPuddles > 1.0001) {
-				vec2 worldPosXZ = playerPos.xz + cameraPosition.xz;
-				#if WATER_STYLE == 1
-					vec2 puddlePosNormal = floor(worldPosXZ * 16.0) * 0.0625;
-					vec2 puddleWind = vec2(frameTimeCounter) * 0.015;
-				#else
-					vec2 puddlePosNormal = worldPosXZ;
-					vec2 puddleWind = vec2(frameTimeCounter) * 0.03;
-				#endif
+		else if (lmCoord.x > 0.99999) lmCoordM.x = 0.95;
+	#endif
 
-				puddlePosNormal *= 0.1;
-				vec2 pNormalCoord1 = puddlePosNormal + vec2(puddleWind.x, puddleWind.y);
-				vec2 pNormalCoord2 = puddlePosNormal + vec2(puddleWind.x * -1.5, puddleWind.y * -1.0);
-				vec3 pNormalNoise1 = texture2D(noisetex, pNormalCoord1).rgb;
-				vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
-				float pNormalMult = 0.03;
-            
-				vec3 puddleNormal = vec3((pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult, 1.0);
-				puddleNormal = clamp(normalize(puddleNormal * tbnMatrix), vec3(-1.0), vec3(1.0));
+	#ifdef SNOWY_WORLD
+		snowFactor *= 1000.0 * max(NdotU - 0.9, snowMinNdotU) * max0(lmCoord.y - 0.9) * (0.9 - clamp(lmCoord.x, 0.8, 0.9));
+		if (snowFactor > 0.0001) {
+			const float packSizeSW = 16.0;
+			vec3 worldPos = playerPos + cameraPosition;
+			vec2 noiseCoord = floor(packSizeSW * worldPos.xz + 0.001) / packSizeSW;
+					noiseCoord += floor(packSizeSW * worldPos.y + 0.001) / packSizeSW;
+			float noiseTexture = dot(vec2(0.25, 0.75), texture2D(noisetex, noiseCoord * 0.45).rg);
+			vec3 snowColor = mix(vec3(0.65, 0.8, 0.85), vec3(1.0, 1.0, 1.0), noiseTexture * 0.75 + 0.125);
 
-				#if RAIN_PUDDLES < 2
-					vec2 puddlePosForm = puddlePosNormal * 0.05;
-					float pFormNoise  = texture2D(noisetex, puddlePosForm).b   * 3.0;
-						  pFormNoise += texture2D(noisetex, puddlePosForm * 0.5).b  * 5.0;
-						  pFormNoise += texture2D(noisetex, puddlePosForm * 0.25).b * 8.0;
-						  pFormNoise *= sqrt1(wetness) * 0.5625 + 0.4375;
-						  pFormNoise  = clamp(pFormNoise - 7.0, 0.0, 1.0);
-				#else
-					float pFormNoise = wetness;
-				#endif
-				puddleMixer *= pFormNoise;
+			color.rgb = mix(color.rgb, snowColor + color.rgb * emission * 0.2, snowFactor);
+			smoothnessG = mix(smoothnessG, 0.25 + 0.25 * noiseTexture, snowFactor);
+			highlightMult = mix(highlightMult, 2.0 - subsurfaceMode * 0.666, snowFactor);
+			smoothnessD = mix(smoothnessD, 0.0, snowFactor);
+			emission *= 1.0 - snowFactor * 0.85;
+		}
+	#endif
 
-				float puddleSmoothnessG = 0.7 - rainFactor * 0.3;
-				float puddleHighlight = (1.5 - subsurfaceMode * 0.6 * (1.0 - noonFactor));
-				smoothnessG = mix(smoothnessG, puddleSmoothnessG, puddleMixer);
-				highlightMult = mix(highlightMult, puddleHighlight, puddleMixer);
-				smoothnessD = mix(smoothnessD, 1.0, sqrt1(puddleMixer));
-				normalM = mix(normalM, puddleNormal, puddleMixer * rainFactor);
-			}
-		#endif
-
-		#if SHOW_LIGHT_LEVEL > 0
-			#include "/lib/misc/showLightLevels.glsl"
-		#endif
-
-		DoLighting(color.rgb, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-		           noSmoothLighting, noDirectionalShading, noVanillaAO, centerShadowBias, subsurfaceMode,
-				   smoothnessG, highlightMult, emission);
-
-		#ifdef IPBR
-			color.rgb += maRecolor;
-		#endif
-
-		#ifdef PBR_REFLECTIONS
-			#ifdef OVERWORLD
-				skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
+	#if RAIN_PUDDLES >= 1
+		float puddleLightFactor = max0(lmCoord.y * 32.0 - 31.0) * clamp((1.0 - 1.15 * lmCoord.x) * 10.0, 0.0, 1.0);
+		float puddleNormalFactor = pow2(max0(NdotUmax0 - 0.5) * 2.0);
+		float puddleMixer = puddleLightFactor * isRainy * puddleNormalFactor;
+		if (pow2(pow2(wetness)) * puddleMixer - noPuddles > 0.00001) {
+			vec2 worldPosXZ = playerPos.xz + cameraPosition.xz;
+			#if WATER_STYLE == 1
+				vec2 puddlePosNormal = floor(worldPosXZ * 16.0) * 0.0625;
+				vec2 puddleWind = vec2(frameTimeCounter) * 0.015;
 			#else
-				skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
+				vec2 puddlePosNormal = worldPosXZ;
+				vec2 puddleWind = vec2(frameTimeCounter) * 0.03;
 			#endif
+
+			puddlePosNormal *= 0.1;
+			vec2 pNormalCoord1 = puddlePosNormal + vec2(puddleWind.x, puddleWind.y);
+			vec2 pNormalCoord2 = puddlePosNormal + vec2(puddleWind.x * -1.5, puddleWind.y * -1.0);
+			vec3 pNormalNoise1 = texture2D(noisetex, pNormalCoord1).rgb;
+			vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
+			float pNormalMult = 0.03;
+		
+			vec3 puddleNormal = vec3((pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult, 1.0);
+			puddleNormal = clamp(normalize(puddleNormal * tbnMatrix), vec3(-1.0), vec3(1.0));
+
+			#if RAIN_PUDDLES == 1 || RAIN_PUDDLES == 3
+				vec2 puddlePosForm = puddlePosNormal * 0.05;
+				float pFormNoise  = texture2D(noisetex, puddlePosForm).b   * 3.0;
+						pFormNoise += texture2D(noisetex, puddlePosForm * 0.5).b  * 5.0;
+						pFormNoise += texture2D(noisetex, puddlePosForm * 0.25).b * 8.0;
+						pFormNoise *= sqrt1(wetness) * 0.5625 + 0.4375;
+						pFormNoise  = clamp(pFormNoise - 7.0, 0.0, 1.0);
+			#else
+				float pFormNoise = wetness;
+			#endif
+			puddleMixer *= pFormNoise;
+
+			float puddleSmoothnessG = 0.7 - rainFactor * 0.3;
+			float puddleHighlight = (1.5 - subsurfaceMode * 0.6 * (1.0 - noonFactor));
+			smoothnessG = mix(smoothnessG, puddleSmoothnessG, puddleMixer);
+			highlightMult = mix(highlightMult, puddleHighlight, puddleMixer);
+			smoothnessD = mix(smoothnessD, 1.0, sqrt1(puddleMixer));
+			normalM = mix(normalM, puddleNormal, puddleMixer * rainFactor);
+		}
+	#endif
+
+	#if SHOW_LIGHT_LEVEL > 0
+		#include "/lib/misc/showLightLevels.glsl"
+	#endif
+
+	DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
+				noSmoothLighting, noDirectionalShading, noVanillaAO, centerShadowBias,
+				subsurfaceMode, smoothnessG, highlightMult, emission);
+
+	#ifdef IPBR
+		color.rgb += maRecolor;
+	#endif
+
+	#ifdef PBR_REFLECTIONS
+		#ifdef OVERWORLD
+			skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
+		#else
+			skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
 		#endif
-	} else discard;
+	#endif
 
 	/* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;
 	gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
-	#if REFLECTION_QUALITY >= 3 && RP_MODE != 0
+	#if BLOCK_REFLECT_QUALITY >= 1 && RP_MODE != 0
 		/* DRAWBUFFERS:015 */
 		gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
 	#endif
@@ -352,6 +361,12 @@ out vec4 glColor;
 
 #if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
 	flat out vec3 binormal, tangent;
+#endif
+
+#ifdef POM
+	out vec3 viewVector;
+
+	out vec4 vTexCoordAM;
 #endif
 
 //Uniforms//
@@ -434,6 +449,19 @@ void main() {
 	#if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
 		binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
 		tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
+	#endif
+
+	#ifdef POM
+		mat3 tbnMatrix = mat3(
+			tangent.x, binormal.x, normal.x,
+			tangent.y, binormal.y, normal.y,
+			tangent.z, binormal.z, normal.z
+		);
+
+		viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
+
+		vTexCoordAM.zw  = abs(texMinMidCoord) * 2;
+		vTexCoordAM.xy  = min(texCoord, midCoord - texMinMidCoord);
 	#endif
 }
 

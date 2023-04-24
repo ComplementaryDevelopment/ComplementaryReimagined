@@ -2,7 +2,6 @@
 #define INCLUDE_SKY_COLORS
 
 #ifdef OVERWORLD
-    float invNoonFactor2 = invNoonFactor * invNoonFactor;
     vec3 skyColorSqrt = sqrt(skyColor);
     
     vec3 noonUpSkyColor     = pow(skyColor, vec3(1.45)) * 0.85;

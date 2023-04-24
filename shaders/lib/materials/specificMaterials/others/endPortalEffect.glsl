@@ -53,7 +53,7 @@ for (int j = 0; j < repeat; j++) {
 		vec2 coord = mat2(Cos, Sin, -Sin, Cos) * pos + wind;
 		if (mod(float(i), 4) < 1.5) coord = coord.yx + vec2(-1.0, 1.0) * wind.y;
 		
-		vec3 psample = pow(texture2D(texture, coord).rgb, vec3(0.85)) * colors[i-1] * colormult;
+		vec3 psample = pow(texture2D(tex, coord).rgb, vec3(0.85)) * colors[i-1] * colormult;
 		color.rgb += psample * length(psample.rgb) * (3000.0 / repeat);
 	}
 }

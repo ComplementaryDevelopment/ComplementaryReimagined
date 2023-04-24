@@ -26,31 +26,39 @@ uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
 uniform sampler2D depthtex1;
 
-#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
-	uniform int frameCounter;
-
-	uniform float viewWidth, viewHeight;
-	uniform float far, near;
-	uniform float blindness;
-	uniform float darknessFactor;
-	uniform float frameTime;
+#if defined LIGHTSHAFTS_ACTIVE || WATER_QUALITY >= 3
 	uniform float frameTimeCounter;
-	uniform float frameTimeSmooth;
-
-	uniform ivec2 eyeBrightness;
-
-	uniform vec3 skyColor;
+	uniform float far, near;
 
 	uniform mat4 gbufferProjection;
 	uniform mat4 gbufferModelViewInverse;
 	uniform mat4 shadowModelView;
 	uniform mat4 shadowProjection;
 
-	uniform sampler2D colortex3;
 	uniform sampler2D noisetex;
+#endif
+
+#ifdef LIGHTSHAFTS_ACTIVE
+	uniform int frameCounter;
+
+	uniform float viewWidth, viewHeight;
+	uniform float blindness;
+	uniform float darknessFactor;
+	uniform float frameTime;
+	uniform float frameTimeSmooth;
+
+	uniform ivec2 eyeBrightness;
+
+	uniform vec3 skyColor;
+
+	uniform sampler2D colortex3;
 	uniform sampler2DShadow shadowtex0;
 	uniform sampler2DShadow shadowtex1;
 	uniform sampler2D shadowcolor1;
+#endif
+
+#if WATER_QUALITY >= 3
+	uniform sampler2D colortex1;
 #endif
 
 //Pipeline Constants//
@@ -60,7 +68,7 @@ uniform sampler2D depthtex1;
 float SdotU = dot(sunVec, upVec);
 float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 
-#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
+#ifdef LIGHTSHAFTS_ACTIVE
 	float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
 	float sunVisibility2 = sunVisibility * sunVisibility;
 	float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
@@ -86,11 +94,21 @@ float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(S
 	#include "/lib/atmospherics/fog/bloomFog.glsl"
 #endif
 
-#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
+#ifdef LIGHTSHAFTS_ACTIVE
 	#ifdef END
 		#include "/lib/atmospherics/enderBeams.glsl"
 	#endif
 	#include "/lib/atmospherics/volumetricLight.glsl"
+
+	#ifdef ATM_COLOR_MULTS
+		#include "/lib/colors/colorMultipliers.glsl"
+	#endif
+#endif
+
+#if WATER_QUALITY >= 3
+	#include "/lib/util/spaceConversion.glsl"
+
+	#include "/lib/materials/materialMethods/refraction.glsl"
 #endif
 
 //Program//
@@ -99,17 +117,26 @@ void main() {
 	float z0 = texelFetch(depthtex0, texelCoord, 0).r;
 	float z1 = texelFetch(depthtex1, texelCoord, 0).r;
 
-	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
-		vec4 volumetricLight = vec4(0.0);
-		float vlFactorM = vlFactor;
-
-		vec3 translucentMult = texelFetch(colortex3, texelCoord, 0).rgb;
-		if (translucentMult == vec3(0.0)) translucentMult = vec3(1.0);
-
-		vec4 screenPos = vec4(texCoord, z1, 1.0);
+	#if defined LIGHTSHAFTS_ACTIVE || WATER_QUALITY >= 3 || defined BLOOM_FOG && !defined MOTION_BLURRING
+		vec4 screenPos = vec4(texCoord, z0, 1.0);
 		vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
 		viewPos /= viewPos.w;
 		float lViewPos = length(viewPos.xyz);
+	#endif
+
+	#if WATER_QUALITY >= 3
+		DoRefraction(color, z0, z1, viewPos.xyz, lViewPos);
+	#endif
+
+	vec4 volumetricLight = vec4(0.0);
+
+	#ifdef LIGHTSHAFTS_ACTIVE
+		float vlFactorM = vlFactor;
+
+		/* The "1.0 - translucentMult" trick is done because of the default color attachment
+		value being vec3(0.0). This makes it vec3(1.0) to avoid issues especially on improved glass */
+		vec3 translucentMult = 1.0 - texelFetch(colortex3, texelCoord, 0).rgb;
+
 		vec3 nViewPos = normalize(viewPos.xyz);
 
 		float VdotL = dot(nViewPos, lightVec);
@@ -120,49 +147,54 @@ void main() {
 			dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
 		#endif
 
-		volumetricLight = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
+		vec4 screenPos1 = vec4(texCoord, z1, 1.0);
+		vec4 viewPos1 = gbufferProjectionInverse * (screenPos1 * 2.0 - 1.0);
+		viewPos1 /= viewPos1.w;
+		float lViewPos1 = length(viewPos1.xyz);
+
+		volumetricLight = GetVolumetricLight(vlFactorM, translucentMult, lViewPos1, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
+		
+		#ifdef ATM_COLOR_MULTS
+			volumetricLight.rgb *= GetAtmColorMult();
+		#endif
 	#endif
+
+	/*color.rgb = vec3(lViewPos);
+	if (gl_FragCoord.x > 960)
+	color.rgb = vec3(GetApproxDistance(z1));
+	color.rgb *= 0.02;
+	color.rgb = min(color.rgb, vec3(2.0));*/
 	
 	if (isEyeInWater == 1) {
 		if (z0 == 1.0) color.rgb = waterFogColor;
 
-		const vec3 underwaterMult = vec3(0.80, 0.87, 0.97) * 0.71;
-		color.rgb *= underwaterMult;
+		const vec3 underwaterMult = vec3(0.80, 0.87, 0.97);
+		color.rgb *= underwaterMult * 0.85;
 
-		#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
-			volumetricLight.rgb *= pow2(underwaterMult);
-		#endif
+		volumetricLight.rgb *= pow2(underwaterMult * 0.71);
 	} else if (isEyeInWater == 2) {
 		if (z1 == 1.0) color.rgb = fogColor * 5.0;
 		
-		#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
-			volumetricLight.rgb *= 0.0;
-		#endif
+		volumetricLight.rgb *= 0.0;
 	}
 	
 	color = pow(color, vec3(2.2));
 	
-	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
+	#ifdef LIGHTSHAFTS_ACTIVE
 		#ifndef OVERWORLD
 			volumetricLight.rgb *= volumetricLight.rgb;
 		#endif
-
 		color += volumetricLight.rgb;
 	#endif
 
 	#if defined BLOOM_FOG && !defined MOTION_BLURRING
-		vec4 screenPos0 = vec4(texCoord, z0, 1.0);
-		vec4 viewPos0 = gbufferProjectionInverse * (screenPos0 * 2.0 - 1.0);
-		viewPos0 /= viewPos0.w;
-		float lViewPos0 = length(viewPos0.xyz);
-
-		color *= GetBloomFog(lViewPos0); // Reminder: Bloom Fog moves between composite and composite2 depending on Motion Blur
+		color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog moves between composite and composite2 depending on Motion Blur
 	#endif
 	
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(color, 1.0);
 	
-	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
+	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END // Can't use LIGHTSHAFTS_ACTIVE on Optifine
 		/* DRAWBUFFERS:04 */
 		gl_FragData[1] = vec4(vlFactorM, 0.0, 0.0, 1.0);
 	#endif

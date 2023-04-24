@@ -14,7 +14,7 @@ for (int i = 0; i < sampleCount; i++) {
     float portalStep = (i + dither) / sampleCount;
     coord += interval * portalStep;
     vec2 sampleCoord = fract(coord) * absMidCoordPos2 + minimumMidCoordPos;
-    vec4 psample = texture2DLod(texture, sampleCoord, 0);
+    vec4 psample = texture2DLod(tex, sampleCoord, 0);
 
     float factor = 1.0 - portalStep;
     psample *= pow(factor, 0.1);

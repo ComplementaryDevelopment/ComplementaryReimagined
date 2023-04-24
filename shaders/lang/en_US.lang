@@ -27,6 +27,16 @@ screen.PERFORMANCE_SETTINGS.comment=Settings that directly relate to the perform
 screen.ATMOSPHERE_SETTINGS=Atmosphere
 screen.ATMOSPHERE_SETTINGS.comment=Settings that relate to the atmosphere.
 
+screen.ATM_COLOR_SETTINGS=Atmosphere Color Multipliers
+screen.ATM_COLOR_SETTINGS.comment=Enables customization of atmosphere colors that are mostly seen in the sky and fog.
+
+screen.MORNING_ATM_MULTS=Sunrise/Sunset Time
+screen.NOON_ATM_MULTS=Noon Time
+screen.NIGHT_ATM_MULTS=Night Time
+screen.RAIN_ATM_MULTS=Rainy/Snowy Weather
+screen.NETHER_ATM_MULTS=The Nether Dimension
+screen.END_ATM_MULTS=The End Dimension
+
 screen.CLOUD_SETTINGS=Clouds
 screen.CLOUD_SETTINGS.comment=Settings that relate to the clouds.
 
@@ -51,31 +61,53 @@ screen.CUSTOM_PBR_SETTINGS.comment=Settings that are related to the features of 
 screen.LIGHTING_SETTINGS=Lighting
 screen.LIGHTING_SETTINGS.comment=Settings that are related to lighting.
 
-screen.WAVING_SETTINGS=Waving Blocks
-screen.WAVING_SETTINGS.comment=Settings that are about waving blocks.
+screen.LIGHT_COLOR_SETTINGS=Lighting Color Multipliers
+screen.LIGHT_COLOR_SETTINGS.comment=Enables customization of lighting colors that are seen on all surfaces.
+
+screen.MORNING_LIGHT_MULTS=Sunrise/Sunset Time
+screen.NOON_LIGHT_MULTS=Noon Time
+screen.NIGHT_LIGHT_MULTS=Night Time
+screen.RAIN_LIGHT_MULTS=Rainy/Snowy Weather
+screen.NETHER_LIGHT_MULTS=The Nether Dimension
+screen.END_LIGHT_MULTS=The End Dimension
+
+screen.WAVING_SETTINGS=Waving Textures
+screen.WAVING_SETTINGS.comment=Settings that are about waving textures.
 
 screen.OTHER_SETTINGS=Other
 screen.OTHER_SETTINGS.comment=Settings that don't fit into any other category.
 
+screen.SELECT_OUTLINE_SETTINGS=Selection Outline Settings
+screen.SELECT_OUTLINE_SETTINGS.comment=Settings that change the block selection outline.
+
+screen.WORLD_OUTLINE_SETTINGS=World Outline Settings
+screen.WORLD_OUTLINE_SETTINGS.comment=Settings that are about the optional outline effect.
+
 #Settings
 option.RP_MODE=RP Support
-option.RP_MODE.comment=Changes many internal calculations to determine how different blocks and materials will be rendered. §bIntegrated PBR+§r: Calculated PBR and extra effects; recommended if you aren't using resource packs. §aBasic§r: No PBR or extra effects. §eSEUSPBR/labPBR§r: Materials using the required PBR resource packs.
+option.RP_MODE.comment=Changes many internal calculations to determine how different blocks and materials will be rendered. §bIntegrated PBR+§r: Calculated PBR and extra effects, highly recommended for most use cases. §aBasic§r: No PBR or extra effects. §eSEUSPBR/labPBR§r: Materials using the required PBR resource packs.
 value.RP_MODE.0=§aBasic
 value.RP_MODE.1=§bIntegrated PBR+
 value.RP_MODE.2=§eSEUSPBR (RP Required)
 value.RP_MODE.3=§elabPBR (RP Required)
 
-option.WATER_QUALITY=Water Quality
-option.WATER_QUALITY.comment=Adjusts the visual quality of water. §aMedium§r: Default. §eLow§r: No edge foaming, no fancy alpha, no varying color intensity, and no surface shadows over Medium.
+option.WATER_QUALITY=Water Material Quality
+option.WATER_QUALITY.comment=Adjusts the visual quality of water. §bHigh§r: Enables water refraction. §aMedium§r: Default. §eLow§r: No edge foaming, no fancy alpha, no varying color intensity, and no surface shadows over Medium.
 value.WATER_QUALITY.1=§eLow
 value.WATER_QUALITY.2=§aMedium
+value.WATER_QUALITY.3=§bHigh
 
-option.REFLECTION_QUALITY=Reflection Quality
-option.REFLECTION_QUALITY.comment=Adjusts the visual quality of reflections. §bHigh§r: Material-based reflections on all blocks (RP Support option must be set to anything but Basic.). §aMedium§r: Reflections on water and translucents. §4Potato §e[*]§r: Replaces water and translucent reflections with a faster method, may look incorrect in some situations. §cOFF§r: No reflections.
-value.REFLECTION_QUALITY.0=§cOFF
-value.REFLECTION_QUALITY.1=§4Potato §e[*]
-value.REFLECTION_QUALITY.2=§aMedium
-value.REFLECTION_QUALITY.3=§bHigh
+option.WATER_REFLECT_QUALITY=Water Reflection Quality
+option.WATER_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on translucents. §aMedium§r: Screenspace ray-traced reflections on water and translucents. §4Potato§r: Replaces water and translucent reflections with a faster method, may look incorrect in some situations. §cOFF§r: No reflections.
+value.WATER_REFLECT_QUALITY.0=§cOFF
+value.WATER_REFLECT_QUALITY.1=§4Potato
+value.WATER_REFLECT_QUALITY.2=§aMedium
+
+option.BLOCK_REFLECT_QUALITY=Block Reflection Quality §e[*]§r
+option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §bHigh§r: Smoother reflections using a temporal filter. §aMedium§r: Material-based reflections on all blocks. §e[*]§r RP Support option must be set to anything but Basic for any material reflections to appear.
+value.BLOCK_REFLECT_QUALITY.0=§cOFF
+value.BLOCK_REFLECT_QUALITY.2=§aMedium
+value.BLOCK_REFLECT_QUALITY.3=§bHigh
 
 option.REALTIME_SHADOWS=Real-Time Shadows
 option.REALTIME_SHADOWS.comment=Enables traditional shadows that move depending on the terrain and sun/moon angle. §e[*]§r Disabling this option will cause Light Shafts to not work, and will stop other shadow options from doing anything
@@ -122,6 +154,9 @@ value.ENTITY_SHADOWS.false=§eOFF
 
 option.SSAO=SSAO
 option.SSAO.comment=Enables Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene.
+value.SSAO.0=§cOFF
+value.SSAO.1=Subtle
+value.SSAO.2=Normal
 
 option.BORDER_FOG=Border Fog
 option.BORDER_FOG.comment=Intense fog on the edges of the loaded world to hide chunk borders. §e[*]§r It's recommended to disable Border Fog when playing with less than 8 chunks of render distance.
@@ -137,12 +172,12 @@ option.CAVE_FOG=Cave Fog
 option.CAVE_FOG.comment=Enables extra fog in deep underground areas.
 
 option.LIGHTSHAFT_BEHAVIOUR=Light Shaft Mode
-option.LIGHTSHAFT_BEHAVIOUR.comment=Determines the behaviour of light shafts. §a[+]§r Scene Aware Light Shafts automatically transition between regular and extreme modes to provide the best results. §c[-]§r Extreme mode is not recommended for general gameplay.
+option.LIGHTSHAFT_BEHAVIOUR.comment=Determines the behaviour of light shafts. §a[+]§r Scene Aware Light Shafts automatically transition between regular and extreme modes to provide the best results. §c[-]§r Extreme mode is not recommended for general gameplay, and it can severely impact performance.
 value.LIGHTSHAFT_BEHAVIOUR.1=Scene Aware §a[+]
 value.LIGHTSHAFT_BEHAVIOUR.2=Regular
 value.LIGHTSHAFT_BEHAVIOUR.3=Extreme §c[-]
 
-option.CLOUD_STYLE_DEFINE=Clouds
+option.CLOUD_STYLE_DEFINE=Cloud Style
 option.CLOUD_STYLE_DEFINE.comment=Determines the style of clouds.
 value.CLOUD_STYLE_DEFINE.-1=Default Style
 value.CLOUD_STYLE_DEFINE.0=§cOFF
@@ -151,18 +186,21 @@ value.CLOUD_STYLE_DEFINE.2=Double Reimagined
 value.CLOUD_STYLE_DEFINE.3=Fantasy
 
 option.CLOUD_SHADOWS=Cloud Shadows
-option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds.
+option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds. §e[*]§r Cloud shadows will be randomly generated if Cloud Style is set to "Fantasy".
 
-option.CLOUD_HIGH_QUALITY=High Quality Clouds
-option.CLOUD_HIGH_QUALITY.comment=Reduces noise and improves the integrity of the Reimagined Clouds. §c[-]§r This option can impact performance especially with double layer clouds.
+option.CLOUD_HIGH_QUALITY=High Quality Clouds §e[*]§r
+option.CLOUD_HIGH_QUALITY.comment=Reduces noise and improves the integrity of the Reimagined Clouds. §e[*]§r This setting only works when the Cloud Style is set to "Reimagined" or "Double Reimagined". §c[-]§r This option can impact performance especially with double layer clouds.
 value.CLOUD_HIGH_QUALITY.1=OFF
 value.CLOUD_HIGH_QUALITY.2=ON §c[-]
 
-option.CLOUD_ALT1=Cloud Layer Altitude
-option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at.
+option.CLOUD_CLOSED_AREA_CHECK=Prevent Clouds in Interiors §e[*]§r
+option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works when the Cloud Style is set to "Reimagined" or "Double Reimagined". §e[*]§r This setting will be treated as disabled if "Real-Time Shadows" are also disabled.
 
-option.CLOUD_ALT2=Second Cloud Layer Altitude
-option.CLOUD_ALT2.comment=Determines the world height which the second layer clouds will appear at. §e[*]§r This setting won't do anything if the "Second Cloud Layer" option isn't enabled.
+option.CLOUD_ALT1=Cloud Layer 1 Altitude §e[*]§r
+option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting only works when the Cloud Style is set to "Reimagined" or "Double Reimagined".
+
+option.CLOUD_ALT2=Cloud Layer 2 Altitude §e[*]§r
+option.CLOUD_ALT2.comment=Determines the world height which the second layer clouds will appear at. §e[*]§r This setting only works when the Cloud Style is set to "Double Reimagined".
 
 option.T_EXPOSURE=Tonemap Exposure
 option.T_EXPOSURE.comment=Adjusts the overall brightness of the image.
@@ -182,12 +220,33 @@ option.T_SATURATION.comment=Adjusts overall colorfulness of the image.
 option.T_VIBRANCE=Vibrance
 option.T_VIBRANCE.comment=Adjusts the colorfulness of the image, but already colorful pixels are less affected.
 
+option.COLORGRADING=Color Grading
+option.COLORGRADING.comment=Enables settings to freely mix up the final color channels.
+option.GR_RR=CG - Red to Red
+option.GR_RG=CG - Red to Green
+option.GR_RB=CG - Red to Blue
+option.GR_RC=CG - Red Curve
+option.GR_GR=CG - Green to Red
+option.GR_GG=CG - Green to Green
+option.GR_GB=CG - Green to Blue
+option.GR_GC=CG - Green Curve
+option.GR_BR=CG - Blue to Red
+option.GR_BG=CG - Blue to Green
+option.GR_BB=CG - Blue to Blue
+option.GR_BC=CG - Blue Curve
+
 option.WATER_STYLE_DEFINE=Water Style
 option.WATER_STYLE_DEFINE.comment=Determines the style of water. §c[-]§r Water waves can severely impact performance.
 value.WATER_STYLE_DEFINE.-1=Default Style
 value.WATER_STYLE_DEFINE.1=Reimagined
 value.WATER_STYLE_DEFINE.2=Reimagined + Waves
 value.WATER_STYLE_DEFINE.3=Fantasy
+
+option.WATER_BUMPINESS=Water Wave Strength §e[*]§r
+option.WATER_BUMPINESS.comment=Adjusts the intensity of waves seen on water. §e[*]§r This setting only works when the Water Style is set to "Reimagined + Waves" or "Fantasy".
+
+option.WATER_REFRACTION_INTENSITY=Water Refraction Intensity §e[*]§r
+option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when the Water Quality is set to "High" or above, or else it will only affect the subtle underwater distortion.
 
 option.SUN_ANGLE=Sun/Moon Angle
 option.SUN_ANGLE.comment=Adjusts the angle of sun/moon relative to the world during noon. §a[+]§r Reimagined's lighting model is specially designed to make the "0" sun angle work just as well as others.
@@ -293,7 +352,7 @@ option.SNOWY_WORLD=Snowy World
 option.SNOWY_WORLD.comment=Makes the entire world covered with snow.
 
 option.SHOW_LIGHT_LEVEL=Show Light Levels
-option.SHOW_LIGHT_LEVEL.comment=In Overworld: Yellow means mobs can spawn during night time, red means mobs can spawn anytime. In The Nether and The End: Yellow means some mobs can spawn, red means all mobs can spawn. §e[*]§r Disable Smooth Lighting for precise results.
+option.SHOW_LIGHT_LEVEL.comment=In Overworld: Yellow means mobs can spawn during night time, red means mobs can spawn anytime. In Nether or End: Yellow means some mobs can spawn, red means all mobs can spawn. §e[*]§r Disable Smooth Lighting for precise results.
 value.SHOW_LIGHT_LEVEL.0=OFF
 value.SHOW_LIGHT_LEVEL.1=Hold Spider Eye
 value.SHOW_LIGHT_LEVEL.2=Hold Light Source
@@ -313,6 +372,9 @@ option.GENERATED_NORMALS.comment=Adds auto-generated bumpy details to surfaces. 
 option.COATED_TEXTURES=Coated Textures
 option.COATED_TEXTURES.comment=Adds auto-generated noise to textures. §e[*]§r RP Support option must be set to Integrated PBR+.
 
+option.ENTITY_GN_AND_CT=GN and CT on Entities
+option.ENTITY_GN_AND_CT.comment=Decides if Generated Normals and Coated Textures can appear on entities. §e[*]§r This won't enable GN or CT on entities unless those options are already enabled.
+
 option.GLOWING_ORES=Glowing Ores
 option.GLOWING_ORES.comment=Adds emission to ores. §e[*]§r RP Support option must be set to Integrated PBR+.
 value.GLOWING_ORES.0=OFF
@@ -322,15 +384,59 @@ value.GLOWING_ORES.2=Overworld + Nether
 option.EMISSIVE_REDSTONE_BLOCK=Glowing Redstone Block
 option.EMISSIVE_REDSTONE_BLOCK.comment=Adds emission to the Redstone Block. §e[*]§r RP Support option must be set to Integrated PBR+.
 
+option.EMISSIVE_LAPIS_BLOCK=Glowing Lapis Lazuli Block
+option.EMISSIVE_LAPIS_BLOCK.comment=Adds emission to the Lapis Lazuli Block. §e[*]§r RP Support option must be set to Integrated PBR+.
+
 option.NORMAL_MAP_STRENGTH=Normal Map Strength
-option.NORMAL_MAP_STRENGTH.comment=Adjusts the strength of bumpy details on surfaces. §e[*]§r RP Support option must be set to SEUSPBR or labPBR.
+option.NORMAL_MAP_STRENGTH.comment=Adjusts the strength of bumpy details on surfaces. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
 
 option.CUSTOM_EMISSION_INTENSITY=Custom Emission Intensity
-option.CUSTOM_EMISSION_INTENSITY.comment=Adjusts the intensity of glowing surfaces. §e[*]§r RP Support option must be set to SEUSPBR or labPBR.
+option.CUSTOM_EMISSION_INTENSITY.comment=Adjusts the intensity of glowing surfaces. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+
+option.POM=Parallax Occlusion Mapping
+option.POM.comment=Enables 3D effect on surfaces. §c[-]§r This effect can severely impact performance. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+value.POM.false=OFF
+value.POM.true=ON §c[-]
+
+option.POM_DEPTH=POM Depth
+option.POM_DEPTH.comment=Adjusts the depth of parallax occlusion mapping. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+
+option.POM_QUALITY=POM Quality
+option.POM_QUALITY.comment=Adjusts the sharpness/accuracy of parallax occlusion mapping. §c[-]§r Values higher than 200 can severely impact performance. §e[*]§r Values lower than 100 will force "POM Lighting" to "Smooth". §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+value.POM_QUALITY.16=16 §e[*]
+value.POM_QUALITY.32=32 §e[*]
+value.POM_QUALITY.64=64 §e[*]
+value.POM_QUALITY.256=256 §c[-]
+value.POM_QUALITY.512=512 §c[-]
+
+option.POM_DISTANCE=POM Distance
+option.POM_DISTANCE.comment=Adjusts how far parallax occlusion mapping is calculated. §e[*]§r It's recommended to keep this value below 50 to get a small performance gain. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+value.POM_DISTANCE.64=64 §e[*]
+value.POM_DISTANCE.128=128 §e[*]
+value.POM_DISTANCE.256=256 §e[*]
+value.POM_DISTANCE.512=512 §e[*]
+value.POM_DISTANCE.1024=1024 §e[*]
+
+option.POM_LIGHTING_MODE=POM Lighting Mode
+option.POM_LIGHTING_MODE.comment=Adjusts the lighting style for POM-affected surfaces. Sharp: POM walls won't get light if they aren't facing towards the light. Smooth: POM walls will still get light as if they are not walls. §e[*]§r This option will be forced to "Smooth" if POM Quality is set lower than 100.
+value.POM_LIGHTING_MODE.1=Smooth
+value.POM_LIGHTING_MODE.2=Sharp
+
+option.POM_ALLOW_CUTOUT=POM on Cutout Surfaces
+option.POM_ALLOW_CUTOUT.comment=Makes POM be able to work on cutout block sections (like gaps of leaves). §c[-]§r This effect can severely impact performance.
+value.POM_ALLOW_CUTOUT.false=OFF
+value.POM_ALLOW_CUTOUT.true=ON §c[-]
+
+option.DIRECTIONAL_BLOCKLIGHT=Directional Blocklight
+option.DIRECTIONAL_BLOCKLIGHT.comment=Adds depth to blocklight depending on the surface normal. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used. §c[-]§r This effect can impact performance.
+value.DIRECTIONAL_BLOCKLIGHT.0=OFF
+value.DIRECTIONAL_BLOCKLIGHT.3=Subtle
+value.DIRECTIONAL_BLOCKLIGHT.7=Normal
+value.DIRECTIONAL_BLOCKLIGHT.11=Intense
 
 option.HELD_LIGHTING_MODE=Dynamic Handheld Lighting
 option.HELD_LIGHTING_MODE.comment=Allows handheld light sources to cast light onto the scene.
-value.HELD_LIGHTING_MODE.0=OFF
+value.HELD_LIGHTING_MODE.0=§cOFF
 value.HELD_LIGHTING_MODE.1=Subtle
 value.HELD_LIGHTING_MODE.2=Normal
 
@@ -349,29 +455,89 @@ option.WAVING_FOLIAGE.comment=Adds movement to foliage to simulate wind.
 option.WAVING_LEAVES=Waving Leaves
 option.WAVING_LEAVES.comment=Adds movement to leaves to simulate wind.
 
-option.WAVING_WATER_VERTEX=Waving Water Height
+option.WAVING_WATER_VERTEX=Waving Water Texture
 option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind.
 
-option.WORLD_OUTLINE=Outlined World
+option.WORLD_OUTLINE=World Outline
 option.WORLD_OUTLINE.comment=Adds outlines around blocks.
+
+option.WORLD_OUTLINE_THICKNESS=World Outline Thickness
+option.WORLD_OUTLINE_THICKNESS.comment=Determines the thickness of the World Outline effect.
 
 option.RAIN_PUDDLES=Rain Puddles
 option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic. §c[-]§r Rain puddles can severely impact performance.
 value.RAIN_PUDDLES.0=OFF
-value.RAIN_PUDDLES.1=ON - Puddles
-value.RAIN_PUDDLES.2=ON - Full Coverage
+value.RAIN_PUDDLES.1=§aON - Puddles
+value.RAIN_PUDDLES.2=§aON - Full Coverage
+value.RAIN_PUDDLES.3=§aON - §cAlways§a Puddles
+value.RAIN_PUDDLES.4=§aON - §cAlways§a Full
 
 option.UNDERWATER_DISTORTION=Underwater Distortion
 option.UNDERWATER_DISTORTION.comment=Adds subtle refraction to the screen when the camera is inside water.
 
-option.SELECTION_OUTLINE=Selection Outline
-option.SELECTION_OUTLINE.comment=Determines the color of the block selection outline.
-value.SELECTION_OUTLINE.0=Default
-value.SELECTION_OUTLINE.1=Rainbow
-value.SELECTION_OUTLINE.2=White
-value.SELECTION_OUTLINE.3=Red
-value.SELECTION_OUTLINE.4=Green
-value.SELECTION_OUTLINE.5=Blue
-value.SELECTION_OUTLINE.6=Yellow
-value.SELECTION_OUTLINE.7=Cyan
-value.SELECTION_OUTLINE.8=Magenta
+option.SELECT_OUTLINE=Selection Outline
+option.SELECT_OUTLINE.comment=Determines the color of the block selection outline.
+value.SELECT_OUTLINE.0=§cOFF
+value.SELECT_OUTLINE.1=Default
+value.SELECT_OUTLINE.2=Rainbow
+value.SELECT_OUTLINE.3=Select Color
+
+option.SELECT_OUTLINE_I=SO Brightness
+option.SELECT_OUTLINE_R=SO Red
+option.SELECT_OUTLINE_G=SO Green
+option.SELECT_OUTLINE_B=SO Blue
+
+option.LIGHT_COLOR_MULTS=Lighting Color Multipliers
+option.LIGHT_COLOR_MULTS.comment=Enables customization of lighting colors that are seen on all surfaces.
+
+option.ATM_COLOR_MULTS=Atmosphere Color Multipliers
+option.ATM_COLOR_MULTS.comment=Enables customization of atmosphere colors that are mostly seen in the sky and fog.
+
+option.LIGHT_MORNING_R=Lighting Red Multiplier
+option.LIGHT_MORNING_G=Lighting Green Multiplier
+option.LIGHT_MORNING_B=Lighting Blue Multiplier
+option.LIGHT_MORNING_I=Lighting Intensity Multiplier
+option.ATM_MORNING_R=Atmosphere Red Multiplier
+option.ATM_MORNING_G=Atmosphere Green Multiplier
+option.ATM_MORNING_B=Atmosphere Blue Multiplier
+option.ATM_MORNING_I=Atmosphere Intensity Multiplier
+option.LIGHT_NOON_R=Lighting Red Multiplier
+option.LIGHT_NOON_G=Lighting Green Multiplier
+option.LIGHT_NOON_B=Lighting Blue Multiplier
+option.LIGHT_NOON_I=Lighting Intensity Multiplier
+option.ATM_NOON_R=Atmosphere Red Multiplier
+option.ATM_NOON_G=Atmosphere Green Multiplier
+option.ATM_NOON_B=Atmosphere Blue Multiplier
+option.ATM_NOON_I=Atmosphere Intensity Multiplier
+option.LIGHT_NIGHT_R=Lighting Red Multiplier
+option.LIGHT_NIGHT_G=Lighting Green Multiplier
+option.LIGHT_NIGHT_B=Lighting Blue Multiplier
+option.LIGHT_NIGHT_I=Lighting Intensity Multiplier
+option.ATM_NIGHT_R=Atmosphere Red Multiplier
+option.ATM_NIGHT_G=Atmosphere Green Multiplier
+option.ATM_NIGHT_B=Atmosphere Blue Multiplier
+option.ATM_NIGHT_I=Atmosphere Intensity Multiplier
+option.LIGHT_RAIN_R=Lighting Red Multiplier
+option.LIGHT_RAIN_G=Lighting Green Multiplier
+option.LIGHT_RAIN_B=Lighting Blue Multiplier
+option.LIGHT_RAIN_I=Lighting Intensity Multiplier
+option.ATM_RAIN_R=Atmosphere Red Multiplier
+option.ATM_RAIN_G=Atmosphere Green Multiplier
+option.ATM_RAIN_B=Atmosphere Blue Multiplier
+option.ATM_RAIN_I=Atmosphere Intensity Multiplier
+option.LIGHT_NETHER_R=Lighting Red Multiplier
+option.LIGHT_NETHER_G=Lighting Green Multiplier
+option.LIGHT_NETHER_B=Lighting Blue Multiplier
+option.LIGHT_NETHER_I=Lighting Intensity Multiplier
+option.ATM_NETHER_R=Atmosphere Red Multiplier
+option.ATM_NETHER_G=Atmosphere Green Multiplier
+option.ATM_NETHER_B=Atmosphere Blue Multiplier
+option.ATM_NETHER_I=Atmosphere Intensity Multiplier
+option.LIGHT_END_R=Lighting Red Multiplier
+option.LIGHT_END_G=Lighting Green Multiplier
+option.LIGHT_END_B=Lighting Blue Multiplier
+option.LIGHT_END_I=Lighting Intensity Multiplier
+option.ATM_END_R=Atmosphere Red Multiplier
+option.ATM_END_G=Atmosphere Green Multiplier
+option.ATM_END_B=Atmosphere Blue Multiplier
+option.ATM_END_I=Atmosphere Intensity Multiplier

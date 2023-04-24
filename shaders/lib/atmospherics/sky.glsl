@@ -69,7 +69,7 @@ vec3 GetSky(float VdotU, float VdotS, float dither, bool doGlare, bool doGround)
 
             float glareWaterFactor = isEyeInWater * sunVisibility;
             vec3 glareColor = mix(vec3(0.38, 0.4, 0.5) * 0.7, sqrt(lightColor * 1.4), sunVisibility);
-                 glareColor = (glareColor + glareWaterFactor * waterFogColor * 10.0) * (1.0 + glareWaterFactor * 3.0);
+                 glareColor = glareColor + glareWaterFactor * waterFogColor * 30.0;
 
             finalSky += glare * shadowTime * glareColor;
         }

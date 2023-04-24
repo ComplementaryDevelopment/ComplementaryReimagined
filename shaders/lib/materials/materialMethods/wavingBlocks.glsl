@@ -47,7 +47,7 @@ void DoWave_Leaves(inout vec3 playerPos, vec3 worldPos) {
 
 void DoWave_Water(inout vec3 playerPos, vec3 worldPos) {
 	if (fract(worldPos.y + 0.005) > 0.06) {
-        float waterWaveTime = frameTimeCounter * 5.0;
+        float waterWaveTime = frameTimeCounter * 6.0;
         worldPos.xz *= 18.0;
         
         float wave  = sin(waterWaveTime * 0.7 + worldPos.x * 0.14 + worldPos.z * 0.07);

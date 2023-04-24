@@ -13,7 +13,7 @@ in vec2 texCoord;
 in vec4 glColor;
 
 //Uniforms//
-uniform sampler2D texture;
+uniform sampler2D tex;
 
 //Pipeline Constants//
 
@@ -25,7 +25,7 @@ uniform sampler2D texture;
 
 //Program//
 void main() {
-	vec4 color = texture2D(texture, texCoord) * glColor;
+	vec4 color = texture2D(tex, texCoord) * glColor;
 
 	#ifdef IPBR
 		if (CheckForColor(color.rgb, vec3(224, 121, 250))) { // Enderman Eye Edges

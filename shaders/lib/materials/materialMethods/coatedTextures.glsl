@@ -1,6 +1,12 @@
 const float packSizeNT = 64.0;
 
 void CoatTextures(inout vec3 color, float noiseFactor, vec3 playerPos) {
+    #ifndef ENTITY_GN_AND_CT
+        #if defined GBUFFERS_ENTITIES || defined GBUFFERS_HAND
+            return;
+        #endif
+    #endif
+
     #ifndef SAFER_GENERATED_NORMALS
         vec2 noiseCoord = floor(midCoordPos / 16.0 * packSizeNT * atlasSizeM) / packSizeNT / 3.0;
     #else

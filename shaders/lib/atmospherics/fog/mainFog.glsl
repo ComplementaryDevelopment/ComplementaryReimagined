@@ -1,3 +1,7 @@
+#ifdef ATM_COLOR_MULTS
+    #include "/lib/colors/colorMultipliers.glsl"
+#endif
+
 #ifdef BORDER_FOG
     #ifdef OVERWORLD
         #include "/lib/atmospherics/sky.glsl"
@@ -23,6 +27,7 @@
 
         if (fog > 0.0) {
             fog = clamp(fog, 0.0, 1.0);
+
             #ifdef OVERWORLD
                 vec3 fogColorM = GetSky(VdotU, VdotS, dither, true, false);
             #elif defined NETHER
@@ -30,6 +35,11 @@
             #else 
                 vec3 fogColorM = endSkyColor;
             #endif
+
+            #ifdef ATM_COLOR_MULTS
+                fogColorM *= atmColorMult;
+            #endif
+
             color = mix(color, fogColorM, fog);
 
             #ifndef GBUFFERS_WATER
@@ -95,6 +105,7 @@
 
         if (fog > 0.0) {
             fog = clamp(fog, 0.0, 1.0);
+
             #ifdef OVERWORLD
                 float nightFogMult = 2.5 - 0.625 * pow2(pow2(altitudeFactorP));
                 float dayNightFogBlend = pow(1.0 - nightFactor, 4.0 - VdotS - 2.5 * sunVisibility2);
@@ -110,6 +121,11 @@
             #else
                 vec3 fogColorM = endSkyColor;
             #endif
+
+            #ifdef ATM_COLOR_MULTS
+                fogColorM *= atmColorMult;
+            #endif
+
             color = mix(color, fogColorM, fog);
         }
     }

@@ -21,11 +21,10 @@ vec4 DistortShadow(vec4 shadowpos, float distortFactor) {
 vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewPos, vec3 nViewPos, float VdotL, float VdotU, vec2 texCoord, float z0, float z1, float dither) {
 	if (max(blindness, darknessFactor) > 0.1) return vec4(0.0);
 	vec4 volumetricLight = vec4(0.0);
-	vec3 vlColorReducer = vec3(1.0);
 
 	#ifdef OVERWORLD
 		vec3 vlColor = lightColor;
-
+		vec3 vlColorReducer = vec3(1.0);
 		float vlSceneIntensity = isEyeInWater != 1 ? vlFactor : 1.0;
 		float vlMult = 1.0;
 
@@ -105,8 +104,8 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 		vec4 viewPos = gbufferProjectionInverse * (vec4(texCoord, GetDistX(currentDist), 1.0) * 2.0 - 1.0);
 		viewPos /= viewPos.w;
 		vec4 wpos = gbufferModelViewInverse * viewPos;
+		vec3 playerPos = wpos.xyz / wpos.w;
 		#ifdef END
-			vec3 playerPos = wpos.xyz / wpos.w;
 			vec4 enderBeamSample = vec4(DrawEnderBeams(VdotU, playerPos), 1.0);
 			enderBeamSample /= sampleCount;
 		#endif
@@ -143,7 +142,10 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 							vlSample *= vlColorReducer;
 						#endif
 					}
-				} else if (isEyeInWater == 1 && translucentMult == vec3(1.0)) vlSample = vec3(0.0);
+				} else {
+					//if (translucentMult != vec3(1.0) && playerPos.y + cameraPosition.y > oceanAltitude) vlSample *= 0.25;
+					if (isEyeInWater == 1 && translucentMult == vec3(1.0)) vlSample = vec3(0.0);
+				}
 			}
 		#endif
 		

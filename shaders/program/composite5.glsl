@@ -57,33 +57,7 @@ float ph = 1.0 / viewHeight;
 #endif
 
 //Common Functions//
-void LottesTonemap(inout vec3 color) {
-	// Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
-	// http://32ipi028l5q82yhj72224m8j.wpengine.netdna-cdn.com/wp-content/uploads/2016/03/GdcVdrLottes.pdf
-    const vec3 a = vec3(1.3);
-    const vec3 d = vec3(0.8);
-    const vec3 hdrMax = vec3(2.2);
-    const vec3 midIn = vec3(0.26);
-    const vec3 midOut = vec3(0.337);
-
-	const vec3 a_d = a * d;
-    const vec3 hdrMaxA = pow(hdrMax, a);
-    const vec3 hdrMaxAD = pow(hdrMax, a_d);
-    const vec3 midInA = pow(midIn, a);
-    const vec3 midInAD = pow(midIn, a_d);
-	const vec3 HM1 = hdrMaxA * midOut;
-	const vec3 HM2 = hdrMaxAD - midInAD;
-
-    const vec3 b = (-midInA + HM1) / (HM2 * midOut);
-    const vec3 c = (hdrMaxAD * midInA - HM1 * midInAD) / (HM2 * midOut);
-
-    color = pow(color, a) / (pow(color, a_d) * b + c);
-
-	const vec3 k = vec3(0.055);
-	color = mix((vec3(1.0) + k) * pow(color, vec3(1.0 / 2.4)) - k, 12.92 * color, lessThan(color, vec3(0.0031308)));
-}
-
-void BSLTonemap(inout vec3 color) {
+void DoBSLTonemap(inout vec3 color) {
 	color = T_EXPOSURE * color;
 	color = color / pow(pow(color, vec3(TM_WHITE_CURVE)) + 1.0, vec3(1.0 / TM_WHITE_CURVE));
 	color = pow(color, mix(vec3(T_LOWER_CURVE), vec3(T_UPPER_CURVE), sqrt(color)));
@@ -91,7 +65,7 @@ void BSLTonemap(inout vec3 color) {
 	color = pow(color, vec3(1.0 / 2.2));
 }
 
-void BSLColorSaturation(inout vec3 color) {
+void DoBSLColorSaturation(inout vec3 color) {
 	float grayVibrance = (color.r + color.g + color.b) / 3.0;
 	float graySaturation = grayVibrance;
 	if (T_SATURATION < 1.00) graySaturation = dot(color, vec3(0.299, 0.587, 0.114));
@@ -118,7 +92,7 @@ vec3 GetBloomTile(float lod, vec2 coord, vec2 offset, vec2 ditherAdd) {
 	return bloom * 128.0;
 }
 
-void GetBloom(inout vec3 color, vec2 coord, float dither, float lViewPos) {
+void DoBloom(inout vec3 color, vec2 coord, float dither, float lViewPos) {
 	vec2 rescale = 1.0 / vec2(1920.0, 1080.0);
 	vec2 ditherAdd = vec2(0.0);
 	float ditherM = dither - 0.5;
@@ -159,14 +133,12 @@ void GetBloom(inout vec3 color, vec2 coord, float dither, float lViewPos) {
 
 //Program//
 void main() {
-	vec2 texCoordM = texCoord;
-
-	vec3 color = texture2D(colortex0, texCoordM).rgb;
+	vec3 color = texture2D(colortex0, texCoord).rgb;
 
 	#ifdef BLOOM_FOG
-		float z0 = texture2D(depthtex0, texCoordM).r;
+		float z0 = texture2D(depthtex0, texCoord).r;
 
-		vec4 screenPos = vec4(texCoordM, z0, 1.0);
+		vec4 screenPos = vec4(texCoord, z0, 1.0);
 		vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
 		viewPos /= viewPos.w;
 		float lViewPos = length(viewPos.xyz);
@@ -182,21 +154,20 @@ void main() {
 	#endif
 
 	#ifdef BLOOM
-		GetBloom(color, texCoordM, dither, lViewPos);
+		DoBloom(color, texCoord, dither, lViewPos);
 	#endif
 
-	/*vec3 colorBSL = color;
-	vec3 colorLottes = color;
-	BSLTonemap(colorBSL);
-	LottesTonemap(colorLottes);
-	color = mix(colorLottes, colorBSL, vec3(min1(lViewPos / 256.0)));*/
-	//if (fract(frameTimeCounter * 0.5) > 0.5)
-	//LottesTonemap(color);
-	//else
+	#ifdef COLORGRADING
+		color =
+			pow(color.r, GR_RC) * vec3(GR_RR, GR_RG, GR_RB) +
+			pow(color.g, GR_GC) * vec3(GR_GR, GR_GG, GR_GB) +
+			pow(color.b, GR_BC) * vec3(GR_BR, GR_BG, GR_BB);
+		color *= 0.01;
+	#endif
 
-	BSLTonemap(color);
+	DoBSLTonemap(color);
 	
-	BSLColorSaturation(color);
+	DoBSLColorSaturation(color);
 
 	#ifdef VIGNETTE_R
 		vec2 texCoordMin = texCoord.xy - 0.5;
