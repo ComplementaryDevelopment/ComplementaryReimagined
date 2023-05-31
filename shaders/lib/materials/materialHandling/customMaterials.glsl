@@ -109,7 +109,12 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
         #if RP_MODE == 2 // SEUSPBR
             emission = specularMap.b;
         #elif RP_MODE == 3 // labPBR
-            emission = specularMap.a < 1.0 ? specularMap.a : 0.0;
+            // Format is dumb it's a range of 0 to 254 so a value of 255 shouldn't be emissive
+			if (specularMap.a < 1.0 && specularMap.a > 255.0) {
+				emission = specularMap.a;
+			} else {
+				emission = 0.0;
+			}
         #endif
         emission *= 0.03 * CUSTOM_EMISSION_INTENSITY;
     #endif
