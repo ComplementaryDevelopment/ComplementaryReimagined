@@ -86,10 +86,11 @@ void main() {
 				color1.rgb *= vec3(0.6, 0.8, 1.1);
 				
 				vec2 waterWind = vec2(syncedTime * 0.01, 0.0);
-				float waterNoise = texture2D(noisetex, worldPos.xz * 0.012 + waterWind).g;
+				float waterNoise = texture2D(noisetex, worldPos.xz * 0.012 - waterWind).g;
+				      waterNoise += texture2D(noisetex, worldPos.xz * 0.05 + waterWind).g;
 
-				float factor = max(2.5 - 0.025 * length(position.xz), 0.8333);
-				waterNoise = pow(waterNoise, factor) * factor * 1.3;
+				float factor = max(2.5 - 0.025 * length(position.xz), 0.8333) * 1.3;
+				waterNoise = pow(waterNoise * 0.5, factor) * factor * 1.3;
 
 				#if MC_VERSION >= 11300
 					color2.rgb = normalize(sqrt1(glColor.rgb)) * vec3(0.24, 0.22, 0.26);

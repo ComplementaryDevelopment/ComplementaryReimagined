@@ -22,7 +22,6 @@ uniform int isEyeInWater;
 uniform float viewWidth, viewHeight;
 
 uniform vec3 skyColor;
-uniform vec3 fogColor;
 
 uniform mat4 gbufferProjectionInverse;
 

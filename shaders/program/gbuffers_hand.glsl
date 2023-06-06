@@ -39,7 +39,6 @@ uniform float viewWidth;
 uniform float viewHeight;
 uniform float nightVision;
 
-uniform vec3 fogColor;
 uniform vec3 skyColor;
 uniform vec3 cameraPosition;
 
@@ -152,6 +151,14 @@ void main() {
 		DoLighting(color, shadowMult, playerPos, viewPos, 0.0, normalM, lmCoordM,
 				   true, false, false, false,
 				   0, smoothnessG, highlightMult, emission);
+
+		#if defined CUSTOM_PBR && defined PBR_REFLECTIONS
+			#ifdef OVERWORLD
+				skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
+			#else
+				skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
+			#endif
+		#endif
 	}
 
 	/* DRAWBUFFERS:01 */

@@ -14,6 +14,8 @@ smoothnessD = factor4 * 0.75;
     smoothnessD /= 0.75;
 #endif
 
+color.rgb *= 0.7 + 0.4 * GetLuminance(color.rgb);
+
 #ifdef COATED_TEXTURES
     noiseFactor = 0.5;
 #endif

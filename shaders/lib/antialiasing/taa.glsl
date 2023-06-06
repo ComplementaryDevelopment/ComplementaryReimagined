@@ -57,7 +57,7 @@ void DoTAA(inout vec3 color, inout vec3 temp, float depth) {
 	#endif
 
 	#ifdef CUSTOM_PBR
-		if (depth <= 0.56) return; // materialMask is occupied, so we do the check manually
+		if (depth <= 0.56) return; // materialMask might be occupied, so we do the check manually
 	#endif
 
 	vec3 coord = vec3(texCoord, depth);

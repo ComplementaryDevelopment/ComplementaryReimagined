@@ -23,7 +23,6 @@ uniform float viewWidth, viewHeight;
 uniform float blindness;
 uniform float darknessFactor;
 
-uniform vec3 fogColor;
 uniform vec3 skyColor;
 
 uniform mat4 gbufferProjectionInverse;

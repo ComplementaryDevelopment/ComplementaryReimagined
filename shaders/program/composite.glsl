@@ -17,7 +17,8 @@ flat in vec3 upVec, sunVec;
 //Uniforms//
 uniform int isEyeInWater;
 
-uniform vec3 fogColor;
+uniform float viewWidth, viewHeight;
+
 uniform vec3 cameraPosition;
 
 uniform mat4 gbufferProjectionInverse;
@@ -36,12 +37,24 @@ uniform sampler2D depthtex1;
 	uniform mat4 shadowProjection;
 
 	uniform sampler2D noisetex;
+	
+	#if LIGHTSHAFT_BEHAVIOUR == 1
+		uniform mat4 shadowModelViewInverse;
+		uniform mat4 shadowProjectionInverse;
+
+		#include "/lib/util/textRendering.glsl"
+
+		void beginTextM(int textSize, vec2 offset) {
+			beginText(ivec2(vec2(viewWidth, viewHeight) * texCoord) / textSize, ivec2(0 + offset.x, viewHeight / textSize - offset.y));
+			text.bgCol = vec4(0.0);
+		}
+	#endif
 #endif
 
 #ifdef LIGHTSHAFTS_ACTIVE
 	uniform int frameCounter;
 
-	uniform float viewWidth, viewHeight;
+	//uniform float viewWidth, viewHeight;
 	uniform float blindness;
 	uniform float darknessFactor;
 	uniform float frameTime;
@@ -52,7 +65,7 @@ uniform sampler2D depthtex1;
 	uniform vec3 skyColor;
 
 	uniform sampler2D colortex3;
-	uniform sampler2DShadow shadowtex0;
+	uniform sampler2D shadowtex0;
 	uniform sampler2DShadow shadowtex1;
 	uniform sampler2D shadowcolor1;
 #endif
@@ -152,7 +165,7 @@ void main() {
 		viewPos1 /= viewPos1.w;
 		float lViewPos1 = length(viewPos1.xyz);
 
-		volumetricLight = GetVolumetricLight(vlFactorM, translucentMult, lViewPos1, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
+		volumetricLight = GetVolumetricLight(color, vlFactorM, translucentMult, lViewPos1, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
 		
 		#ifdef ATM_COLOR_MULTS
 			volumetricLight.rgb *= GetAtmColorMult();
@@ -191,6 +204,19 @@ void main() {
 		color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog moves between composite and composite2 depending on Motion Blur
 	#endif
 	
+	/*//if (texCoord.x < 0.25 && texCoord.y < 0.25)
+	vec4 wpos = vec4(shadowModelView[3][0], shadowModelView[3][1], shadowModelView[3][2], shadowModelView[3][3]);
+	wpos = shadowProjection * wpos;
+	wpos /= wpos.w;
+	vec4 shadowPosition = DistortShadow(wpos, 1.0 - shadowMapBias);
+	float checkS = texture2D(shadowtex0, texCoord).x;
+	vec3 checkColor = vec3(1.0 - checkS);
+	checkColor *= mix(vec3(0,1,0), vec3(0,0,1), clamp((checkS-shadowPosition.z)*65536.0,0.0,1.0));
+	if (checkS > 0.55) checkColor = vec3(checkColor.g + checkColor.b,0,0) * 3.0;
+	color += checkColor * 2.0;*/
+
+	//if (texCoord.y < 0.05 && vlFactor > texCoord.x) color = vec3(1,0,1);
+
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(color, 1.0);
 	

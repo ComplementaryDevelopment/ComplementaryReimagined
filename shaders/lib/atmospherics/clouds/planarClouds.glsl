@@ -31,7 +31,7 @@ vec4 DrawCloud(vec3 viewPos, float dither, float VdotS, float VdotU) {
     float dayNightFogBlend = pow(1.0 - nightFactor, 4.0 - VdotS - 3.0 * sunVisibility2);
     vec3 cloudRainColor = mix(nightMiddleSkyColor, dayUpSkyColor * 3.5, sunFactor);
     vec3 cloudClearAmbient = mix(nightClearAmbientColor * 0.3, 0.9 * dayAmbientColor, dayNightFogBlend);
-    vec3 cloudClearLight = mix(nightClearLightColor * 1.5, (1.3 + scatter) * dayLightColor, pow2(dayNightFogBlend));
+    vec3 cloudClearLight = mix(nightClearLightColor * (1.7 + scatter), (0.9 + 0.4 * noonFactor + scatter) * dayLightColor, pow2(dayNightFogBlend));
 
     vec3 cloudAmbientColor = mix(cloudClearAmbient, cloudRainColor * 0.3, rainFactor);
     vec3 cloudLightColor   = mix(cloudClearLight, cloudRainColor * (1.0 + scatter), rainFactor);

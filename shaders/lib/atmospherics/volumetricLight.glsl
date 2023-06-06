@@ -18,7 +18,7 @@ vec4 DistortShadow(vec4 shadowpos, float distortFactor) {
 	return shadowpos;
 }
 
-vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewPos, vec3 nViewPos, float VdotL, float VdotU, vec2 texCoord, float z0, float z1, float dither) {
+vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucentMult, float lViewPos, vec3 nViewPos, float VdotL, float VdotU, vec2 texCoord, float z0, float z1, float dither) {
 	if (max(blindness, darknessFactor) > 0.1) return vec4(0.0);
 	vec4 volumetricLight = vec4(0.0);
 
@@ -38,7 +38,8 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 		}
 
 		float VdotLM = max((VdotL + 1.0) / 2.0, 0.0);
-		float VdotUM = mix(pow2(1.0 - max(VdotU, 0.0)), 1.0, 0.5 * vlSceneIntensity);
+		float VdotUmax0 = max(VdotU, 0.0);
+		float VdotUM = mix(pow2(1.0 - VdotUmax0), 1.0, 0.5 * vlSceneIntensity);
 		      VdotUM = smoothstep1(VdotUM);
 			  VdotUM = pow(VdotUM, min(lViewPos / far, 1.0) * (3.0 - 2.0 * vlSceneIntensity));
 		vlMult *= mix(VdotUM * VdotLM, 0.5 + 0.5 * VdotLM, rainFactor2) * vlTime;
@@ -129,7 +130,8 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 			#endif
 
 			if (length(shadowPosition.xy * 2.0 - 1.0) < 1.0) {
-				shadowSample = shadow2D(shadowtex0, shadowPosition.xyz).z;
+				shadowSample = texture2D(shadowtex0, shadowPosition.xy).x;
+				shadowSample = clamp((shadowSample-shadowPosition.z)*65536.0,0.0,1.0);
 				vlSample = vec3(shadowSample);
 
 				if (shadowSample == 0.0) {
@@ -143,7 +145,16 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 						#endif
 					}
 				} else {
-					//if (translucentMult != vec3(1.0) && playerPos.y + cameraPosition.y > oceanAltitude) vlSample *= 0.25;
+					// For water-tinting the water surface when observed from below the surface
+					if (translucentMult != vec3(1.0) && currentDist > depth0) {
+						if (isEyeInWater == 1) {
+							vec3 translucentMultM = translucentMult * 2.8;
+							vlSample *= pow(translucentMultM, vec3(sunVisibility * 3.0 * clamp01(playerPos.y * 0.03)));
+						} else {
+							vlSample *= 0.1 + 0.9 * pow2(pow2(translucentMult * 1.7));
+						}
+					}
+					
 					if (isEyeInWater == 1 && translucentMult == vec3(1.0)) vlSample = vec3(0.0);
 				}
 			}
@@ -161,42 +172,75 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 	#if defined OVERWORLD && LIGHTSHAFT_BEHAVIOUR == 1
 		if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5) {
 			if (frameCounter % int(0.06666 / frameTimeSmooth + 0.5) == 0) { // Change speed is not too different above 10 fps
-				if (eyeBrightness.y < 180) {
-					vec4 wpos = vec4(shadowModelView[3][0], shadowModelView[3][1], shadowModelView[3][2], shadowModelView[3][3]);
-					wpos = shadowProjection * wpos;
-					wpos /= wpos.w;
-					vec4 shadowPosition = DistortShadow(wpos, 1.0 - shadowMapBias);
-					shadowPosition.z -= 0.0005;
-					float shadowSample = shadow2D(shadowtex0, shadowPosition.xyz).z;
+				int salsX = 5;
+				int salsY = 5;
+				vec2 viewM = 1.0 / vec2(salsX, salsY);
+				float salsSampleSum = 0.0;
+				int salsSampleCount = 0;
+				for (float i = 0.25; i < salsX; i++) {
+					for (float h = 0.45; h < salsY; h++) {
+						vec2 coord = 0.3 + 0.4 * viewM * vec2(i, h);
+						float salsSample = texture2D(shadowtex0, coord).x;
+						if (salsSample < 0.55) {
+							vec3 salsShadowNDC = vec3(coord, salsSample) * 2.0 - 1.0;
+							salsShadowNDC.z /= 0.2;
+								float distb = sqrt(salsShadowNDC.x * salsShadowNDC.x + salsShadowNDC.y * salsShadowNDC.y);
+								float distortFactor = 1.0 - shadowMapBias + distb * shadowMapBias;
+								salsShadowNDC.xy *= distortFactor;
 
-					if (shadowSample < 0.5) {
-						int salsX = 8;
-						int salsY = 5;
-						vec2 viewM = view / vec2(salsX, salsY);
-						float skySample = 0.0;
-						for (float i = 0.5; i < salsX; i++) {
-							for (float h = 0.9; h < salsY; h++) {
-								skySample += float(texelFetch(depthtex0, ivec2(viewM * vec2(i, h)), 0).r == 1.0);
-							}
+							vec4 salsShadowViewPos = shadowProjectionInverse * vec4(salsShadowNDC, 1.0);
+							salsShadowViewPos.xyz /= salsShadowViewPos.w;
+							salsSampleSum += (shadowModelViewInverse * vec4(salsShadowViewPos.xyz, 1.0)).y;
+							salsSampleCount++;
 						}
-						if (skySample < 1.5) {
-							vlFactor = min(vlFactor + OSIEBCA*2, 1.0);
-						} else vlFactor = max(vlFactor - OSIEBCA*3, 0.0);
-					} else vlFactor = max(vlFactor - OSIEBCA*3, 0.0);
-				} else vlFactor = max(vlFactor - OSIEBCA*3, 0.0);
+					}
+				}
+
+				float salsCheck = salsSampleSum / salsSampleCount;
+				int reduceAmount = 2;
+				
+				int skyCheck = 0;
+				for (float i = 0.1; i < 1.0; i += 0.2) {
+					skyCheck += int(texelFetch(depthtex0, ivec2(view.x * i, view.y * 0.9), 0).x == 1.0);
+				}
+				if (skyCheck >= 4) {
+					salsCheck = 0.0;
+					reduceAmount = 3;
+				}
+
+				if (salsCheck > 7.0) {
+					vlFactor = min(vlFactor + OSIEBCA, 1.0);
+				} else {
+					vlFactor = max(vlFactor - OSIEBCA * reduceAmount, 0.0);
+				}
 			}
 		} else vlFactor = 0.0;
 
-		/*for (float i = 0.5; i < salsX; i++) { // Show Scene Aware check positions
-			for (float h = 0.9; h < salsY; h++) {
-				vec2 dis = abs(viewM * vec2(i, h) - gl_FragCoord.xy);
-				if (dis.x + dis.y < 10.0) return vec4(1.0);
+		/*beginTextM(8, vec2(6, 10));
+		text.fgCol = vec4(1.0, 0.0, 0.0, 1.0);
+		printFloat(salsCheck);
+		endText(color);
+		
+		for (float i = 0.25; i < salsX; i++) {
+			for (float h = 0.45; h < salsY; h++) {
+				if (length(texCoord - (0.3 + 0.4 * viewM * vec2(i, h))) < 0.01) return vec4(1,0,1,1);
 			}
 		}*/
 	#endif
 
 	#ifdef OVERWORLD
 		volumetricLight.rgb *= vlMult * pow(vlColor, vec3(0.5 + 0.5 * mix(invNoonFactor, (1.0 + sunFactor), rainFactor)));
+
+		#if LIGHTSHAFT_DAY_I != 100 || LIGHTSHAFT_NIGHT_I != 100
+			#define LIGHTSHAFT_DAY_IM LIGHTSHAFT_DAY_I * 0.01
+			#define LIGHTSHAFT_NIGHT_IM LIGHTSHAFT_NIGHT_I * 0.01
+			volumetricLight.rgb *= mix(LIGHTSHAFT_NIGHT_IM, LIGHTSHAFT_DAY_IM, sunVisibility);
+		#endif
+
+		#if LIGHTSHAFT_RAIN_I != 100
+			#define LIGHTSHAFT_RAIN_IM LIGHTSHAFT_RAIN_I * 0.01
+			volumetricLight.rgb *= mix(1.0, LIGHTSHAFT_RAIN_IM, rainFactor);
+		#endif
 	#endif
 	
 	volumetricLight = max(volumetricLight, vec4(0.0));

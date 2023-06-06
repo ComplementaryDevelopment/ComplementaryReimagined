@@ -1,6 +1,6 @@
 #if MC_VERSION >= 11300
     vec3 glColorM = glColor.rgb;
-    glColorM.g = max(glColorM.g, 0.35);
+    //glColorM.g = max(glColorM.g, 0.35); Used to do this for unknown reasons but it breaks some custom biome colors
     glColorM = sqrt1(glColorM) * vec3(1.0, 0.85, 0.8);
 
     #if WATER_STYLE < 3
@@ -17,6 +17,13 @@
     #else
         color.rgb = vec3(0.13, 0.2, 0.27);
     #endif
+#endif
+
+#if WATERCOLOR_R != 100 || WATERCOLOR_G != 100 || WATERCOLOR_B != 100
+    #define WATERCOLOR_RM WATERCOLOR_R * 0.01
+    #define WATERCOLOR_GM WATERCOLOR_G * 0.01
+    #define WATERCOLOR_BM WATERCOLOR_B * 0.01
+    color.rgb *= vec3(WATERCOLOR_RM, WATERCOLOR_GM, WATERCOLOR_BM);
 #endif
 
 #define PHYSICS_OCEAN_INJECTION
@@ -48,33 +55,37 @@
             vec3 normalMap = vec3(0.0, 0.0, 1.0);
             vec2 waterPosM = waterPos;
 
+            #define WATER_BUMPINESS_M WATER_BUMPINESS * 0.8
+
             #if WATER_STYLE < 3
                 normalMap.xy += texture2D(noisetex, waterPosM + wind * 0.5).rg - 0.5;
                 waterPosM *= 0.5;
                 normalMap.xy -= texture2D(noisetex, waterPosM - wind).rg - 0.5;
                 waterPosM *= 0.5;
                 normalMap.xy -= texture2D(noisetex, waterPosM + wind).rg - 0.5;
-                normalMap.xy *= WATER_BUMPINESS * 0.8;
+                normalMap.xy *= WATER_BUMPINESS_M;
             #else
                 waterPosM *= 0.35;
                 vec2 parallaxMult = 0.0005 * viewVector.xy / lViewPos;
                 float normalOffset = 0.002;
-
+                
                 for (int i = 0; i < 4; i++) {
-                    float height = 0.5 - GetWaterHeightMap(waterPosM, nViewPos, wind);
+                    float height = 0.5 - GetWaterHeightMap(waterPosM, wind);
                     waterPosM += parallaxMult * pow2(height);
                 }
 
-                float h1 = GetWaterHeightMap(waterPosM + vec2( normalOffset, 0.0), nViewPos, wind);
-                float h2 = GetWaterHeightMap(waterPosM + vec2(-normalOffset, 0.0), nViewPos, wind);
-                float h3 = GetWaterHeightMap(waterPosM + vec2(0.0,  normalOffset), nViewPos, wind);
-                float h4 = GetWaterHeightMap(waterPosM + vec2(0.0, -normalOffset), nViewPos, wind);
+                float h1 = GetWaterHeightMap(waterPosM + vec2( normalOffset, 0.0), wind);
+                float h2 = GetWaterHeightMap(waterPosM + vec2(-normalOffset, 0.0), wind);
+                float h3 = GetWaterHeightMap(waterPosM + vec2(0.0,  normalOffset), wind);
+                float h4 = GetWaterHeightMap(waterPosM + vec2(0.0, -normalOffset), wind);
 
-                normalMap.xy = vec2(h1 - h2, h3 - h4) * WATER_BUMPINESS;
+                vec2 noiseG = vec2(texture2D(noisetex, waterPosM + wind).g, texture2D(noisetex, waterPosM * 1.5 - wind).g) - 0.5;
+                noiseG *= -1.75;
+
+                normalMap.xy = (vec2(h1 - h2, h3 - h4) + noiseG) * WATER_BUMPINESS_M;
             #endif
 
             normalMap.xy *= 0.03 * lmCoordM.y + 0.01;
-            vec3 minNormal = mix(normal, vec3(-1.0), pow2(1.0 - fresnel));
         #else
             float pNormalMult = 0.02 * rainFactor * isRainy * pow2(lmCoordM.y);
 
@@ -88,11 +99,9 @@
                 vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
                 
                 vec3 normalMap = vec3((pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult, 1.0);
-                vec3 minNormal = vec3(-1.0);
-
         #endif
 
-            normalM = clamp(normalize(normalMap * tbnMatrix), minNormal, vec3(1.0));
+            normalM = clamp(normalize(normalMap * tbnMatrix), vec3(-1.0), vec3(1.0));
 
         #if WATER_STYLE == 1
             }
@@ -105,15 +114,23 @@
 
     float fresnel2 = pow2(fresnel);
     float fresnel4 = pow2(fresnel2);
+    
+    #if MC_VERSION >= 11300
+        // Blending 
+        translucentMultCalculated = true;
+        translucentMult.rgb = normalize(sqrt2(glColor.rgb));
+        translucentMult.g *= 0.88;
+    #endif
 
     #if WATER_QUALITY >= 2
-        // Noise Coloring
-        float noise = texture2D(noisetex, (waterPos + wind) * 0.25).g;
-              noise = noise - 0.5;
-              noise *= 0.25;
-        color.rgb = pow(color.rgb, vec3(1.0 + noise));
-        
         if (isEyeInWater != 1) {
+            // Noise Coloring
+            float noise = texture2D(noisetex, (waterPos + wind) * 0.25).g;
+                noise = noise - 0.5;
+                noise *= 0.25;
+            color.rgb = pow(color.rgb, vec3(1.0 + noise));
+            //
+
             float depthT = texelFetch(depthtex1, texelCoord, 0).r;
             vec3 screenPosT = vec3(screenCoord, depthT);
             #ifdef TAA
@@ -132,6 +149,7 @@
 
             float waterFog = max0(1.0 - exp(lViewPosDif * 0.075));
             color.a *= 0.25 + 0.75 * waterFog;
+            color.rgb *= 2.0 - sqrt2(waterFog); // For better water visibility in caves
         
             // Water Foam
             if (NdotU > 0.99) {
@@ -146,8 +164,10 @@
                 #if WATER_STYLE < 3 && MC_VERSION >= 11300
                     float dotColorPM = dot(colorPM, colorPM);
                     float foamThreshold = min(pow2(dotColorPM) * 1.6, 1.2);
+                    vec4 foamColor = vec4(0.9, 0.95, 1.05, 1.0);
                 #else
-                    float foamThreshold = pow2(texture2D(noisetex, waterPos * 4.0 + wind * 0.5).g) * 1.2;
+                    float foamThreshold = pow2(texture2D(noisetex, waterPos * 4.0 + wind * 0.5).g) * 1.6;
+                    vec4 foamColor = vec4(0.45, 0.475, 0.525, 1.0);
                 #endif
                 float foam = pow2(clamp((foamThreshold + yPosDif) / foamThreshold, 0.0, 1.0));
                 #ifndef END
@@ -157,19 +177,25 @@
                 #endif
                 foam *= clamp((fract(worldPos.y) - 0.7) * 10.0, 0.0, 1.0);
 
-                color = mix(color, vec4(0.9, 0.95, 1.05, 1.0), foam);
+                color = mix(color, foamColor, foam);
                 reflectMult = 1.0 - foam;
             }
         } else {
             noDirectionalShading = true;
 
             reflectMult = 0.5;
-            //shadowMult = vec3(2.0);
             //color.a *= 0.5;
 
             #if MC_VERSION < 11300 && WATER_STYLE >= 3
                 color.a = 0.7;
             #endif
+
+            float snellWindow = 1.0 - max0(0.5 - fresnel4) * 2.0;
+            color.a = mix(color.a, 1.0, snellWindow);
+            //color.rgb = mix(color.rgb, waterFogColor * 2.0, snellWindow);
+            translucentMult.rgb *= 1.0 - 0.5 * snellWindow;
+            //translucentMult.rgb *= 0.5 + 0.5 * max0(0.1 - pow2(fresnel4)) * 10.0;
+            //subsurfaceMode = 2;
         }
     #else
         shadowMult = vec3(0.0); 
@@ -181,15 +207,8 @@
     #if WATER_STYLE >= 3
         color.rgb *= 1.0 + pow2(fresnel);
     #endif
-    
-    #if MC_VERSION >= 11300
-        // Blending 
-        translucentMultCalculated = true;
-        translucentMult.rgb = normalize(sqrt2(glColor.rgb));
-        translucentMult.g *= 0.88;
-        
-        color.a = mix(color.a, 1.0, fresnel4);
-    #endif
+
+    color.a = mix(color.a, 1.0, fresnel4);
 
     // Highlight
     #if WATER_STYLE < 3

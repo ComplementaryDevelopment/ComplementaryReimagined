@@ -88,7 +88,7 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
         float pwr = clamp(dot(normalM, dir), -1.0, 1.0);
         float absPwr = abs(pwr);
         if (absPwr > 0.0) pwr = pow(absPwr, 9.0 / DIRECTIONAL_BLOCKLIGHT) * sign(pwr) * lmCoordXDir;
-        if (length(deriv) > 0.001) lmCoordXDir = pow(lmCoordXDir, 1.0 - pwr);
+        if (length(deriv) > 0.001) lmCoordXDir = pow(max(lmCoordXDir, 0.00001), 1.0 - pwr);
         
         lmCoordM.x = mix(lmCoordM.x, lmCoordXDir, 0.01 * max0(100.0 - pow2(lViewPos)));
     #endif
@@ -110,6 +110,10 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
             emission = specularMap.b;
         #elif RP_MODE == 3 // labPBR
             emission = specularMap.a < 1.0 ? specularMap.a : 0.0;
+            
+            vec4 specularMapL0 = texture2DLod(specular, texCoordM, 0);
+	        float emissionL0 = specularMapL0.a < 1.0 ? specularMapL0.a : 0.0;
+            emission = min(emission, emissionL0); // Fixes issues caused by mipmaps
         #endif
         emission *= 0.03 * CUSTOM_EMISSION_INTENSITY;
     #endif

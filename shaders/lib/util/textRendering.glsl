@@ -204,7 +204,7 @@ void printUnsignedInt(uint value, int len) {
     // Write number backwards
     for (int i = 0; i < len; ++i) {
         printChar(digits[int(value) % text.base]); // Edited
-        value /= text.base;
+        value /= uint(text.base); // Edited
         text.charPos.x -= 2;
     }
  

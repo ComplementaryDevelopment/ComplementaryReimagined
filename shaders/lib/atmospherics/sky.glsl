@@ -53,7 +53,7 @@ vec3 GetSky(float VdotU, float VdotS, float dither, bool doGlare, bool doGround)
 
     // Apply Underwater Fog
     if (isEyeInWater == 1)
-        finalSky = mix(finalSky, waterFogColor, VdotUmax0M);
+        finalSky = mix(finalSky * 3.0, waterFogColor, VdotUmax0M);
 
     // Sun/Moon Glare
     if (doGlare) {
@@ -69,7 +69,7 @@ vec3 GetSky(float VdotU, float VdotS, float dither, bool doGlare, bool doGround)
 
             float glareWaterFactor = isEyeInWater * sunVisibility;
             vec3 glareColor = mix(vec3(0.38, 0.4, 0.5) * 0.7, sqrt(lightColor * 1.4), sunVisibility);
-                 glareColor = glareColor + glareWaterFactor * waterFogColor * 30.0;
+                 glareColor = glareColor + glareWaterFactor * vec3(7.0);
 
             finalSky += glare * shadowTime * glareColor;
         }

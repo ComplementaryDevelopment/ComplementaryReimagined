@@ -71,6 +71,9 @@ screen.RAIN_LIGHT_MULTS=Rainy/Snowy Weather
 screen.NETHER_LIGHT_MULTS=The Nether Dimension
 screen.END_LIGHT_MULTS=The End Dimension
 
+screen.WATER_SETTINGS=Water
+screen.WATER_SETTINGS.comment=Settings that are about water.
+
 screen.WAVING_SETTINGS=Waving Textures
 screen.WAVING_SETTINGS.comment=Settings that are about waving textures.
 
@@ -177,6 +180,10 @@ value.LIGHTSHAFT_BEHAVIOUR.1=Scene Aware §a[+]
 value.LIGHTSHAFT_BEHAVIOUR.2=Regular
 value.LIGHTSHAFT_BEHAVIOUR.3=Extreme §c[-]
 
+option.LIGHTSHAFT_DAY_I=Light Shaft Day Multiplier
+option.LIGHTSHAFT_NIGHT_I=Light Shaft Night Multiplier
+option.LIGHTSHAFT_RAIN_I=Light Shaft Rain Multiplier
+
 option.CLOUD_STYLE_DEFINE=Cloud Style
 option.CLOUD_STYLE_DEFINE.comment=Determines the style of clouds.
 value.CLOUD_STYLE_DEFINE.-1=Default Style
@@ -243,10 +250,14 @@ value.WATER_STYLE_DEFINE.2=Reimagined + Waves
 value.WATER_STYLE_DEFINE.3=Fantasy
 
 option.WATER_BUMPINESS=Water Wave Strength §e[*]§r
-option.WATER_BUMPINESS.comment=Adjusts the intensity of waves seen on water. §e[*]§r This setting only works when the Water Style is set to "Reimagined + Waves" or "Fantasy".
+option.WATER_BUMPINESS.comment=Adjusts the intensity of surface-direction waves (normals) seen on water. §e[*]§r This setting is not related to the "Waving Water Texture" option. §e[*]§r This setting only works when the Water Style is set to "Reimagined + Waves" or "Fantasy".
 
 option.WATER_REFRACTION_INTENSITY=Water Refraction Intensity §e[*]§r
 option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when the Water Quality is set to "High" or above, or else it will only affect the subtle underwater distortion.
+
+option.WATERCOLOR_R=Water Color Red Multiplier
+option.WATERCOLOR_G=Water Color Green Multiplier
+option.WATERCOLOR_B=Water Color Blue Multiplier
 
 option.SUN_ANGLE=Sun/Moon Angle
 option.SUN_ANGLE.comment=Adjusts the angle of sun/moon relative to the world during noon. §a[+]§r Reimagined's lighting model is specially designed to make the "0" sun angle work just as well as others.
@@ -366,6 +377,9 @@ value.MINIMUM_LIGHT_MODE.2=Default §a[+]
 value.MINIMUM_LIGHT_MODE.3=Bright
 value.MINIMUM_LIGHT_MODE.4=Very Bright
 
+option.AMBIENT_MULT=Shadow Light Multiplier
+option.AMBIENT_MULT.comment=Determines the amount of ambient lighting seen in shadows. §c[-]§r Drastically changing this setting can break the lighting balance.
+
 option.GENERATED_NORMALS=Generated Normals
 option.GENERATED_NORMALS.comment=Adds auto-generated bumpy details to surfaces. §e[*]§r RP Support option must be set to Integrated PBR+.
 
@@ -374,6 +388,12 @@ option.COATED_TEXTURES.comment=Adds auto-generated noise to textures. §e[*]§r 
 
 option.ENTITY_GN_AND_CT=GN and CT on Entities
 option.ENTITY_GN_AND_CT.comment=Decides if Generated Normals and Coated Textures can appear on entities. §e[*]§r This won't enable GN or CT on entities unless those options are already enabled.
+
+option.GENERATED_NORMAL_MULT=Generated Normal Strength
+option.GENERATED_NORMAL_MULT.comment=Adjusts the strength of auto-generated bumpy details on surfaces.
+
+option.COATED_TEXTURE_MULT=Coated Texture Strength
+option.COATED_TEXTURE_MULT.comment=Adjusts the strength of auto-generated noise on textures.
 
 option.GLOWING_ORES=Glowing Ores
 option.GLOWING_ORES.comment=Adds emission to ores. §e[*]§r RP Support option must be set to Integrated PBR+.
@@ -386,6 +406,12 @@ option.EMISSIVE_REDSTONE_BLOCK.comment=Adds emission to the Redstone Block. §e[
 
 option.EMISSIVE_LAPIS_BLOCK=Glowing Lapis Lazuli Block
 option.EMISSIVE_LAPIS_BLOCK.comment=Adds emission to the Lapis Lazuli Block. §e[*]§r RP Support option must be set to Integrated PBR+.
+
+option.GLOWING_AMETHYST=Glowing Amethyst
+option.GLOWING_AMETHYST.comment=Adds emission to amethyst buds/clusters/blocks. §e[*]§r RP Support option must be set to Integrated PBR+.
+value.GLOWING_AMETHYST.0=§cOFF
+value.GLOWING_AMETHYST.1=Crystal
+value.GLOWING_AMETHYST.2=Crystal & Block
 
 option.NORMAL_MAP_STRENGTH=Normal Map Strength
 option.NORMAL_MAP_STRENGTH.comment=Adjusts the strength of bumpy details on surfaces. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
@@ -402,7 +428,7 @@ option.POM_DEPTH=POM Depth
 option.POM_DEPTH.comment=Adjusts the depth of parallax occlusion mapping. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
 
 option.POM_QUALITY=POM Quality
-option.POM_QUALITY.comment=Adjusts the sharpness/accuracy of parallax occlusion mapping. §c[-]§r Values higher than 200 can severely impact performance. §e[*]§r Values lower than 100 will force "POM Lighting" to "Smooth". §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+option.POM_QUALITY.comment=Adjusts the sharpness/accuracy of parallax occlusion mapping. §c[-]§r Values higher than 200 can severely impact performance. §e[*]§r Values lower than 100 will force "POM Lighting Mode" to "Smooth". §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
 value.POM_QUALITY.16=16 §e[*]
 value.POM_QUALITY.32=32 §e[*]
 value.POM_QUALITY.64=64 §e[*]
@@ -447,7 +473,7 @@ value.BLOCKLIGHT_COLOR_MODE.10=Natural
 value.BLOCKLIGHT_COLOR_MODE.11=Warm
 
 option.NO_WAVING_INDOORS=No Waving in Closed Areas
-option.NO_WAVING_INDOORS.comment=Prevents blocks from waving in closed areas using skylight. §c[-]§r Can cause slight problems with some resource pack models.
+option.NO_WAVING_INDOORS.comment=Prevents blocks from waving in closed areas using skylight. §c[-]§r This setting being enabled can cause problems with some resource packs or mods.
 
 option.WAVING_FOLIAGE=Waving Foliage
 option.WAVING_FOLIAGE.comment=Adds movement to foliage to simulate wind.
@@ -456,7 +482,7 @@ option.WAVING_LEAVES=Waving Leaves
 option.WAVING_LEAVES.comment=Adds movement to leaves to simulate wind.
 
 option.WAVING_WATER_VERTEX=Waving Water Texture
-option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind.
+option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind. §e[*]§r This option is not related to the "Water Wave Strength" setting.
 
 option.WORLD_OUTLINE=World Outline
 option.WORLD_OUTLINE.comment=Adds outlines around blocks.
@@ -465,7 +491,7 @@ option.WORLD_OUTLINE_THICKNESS=World Outline Thickness
 option.WORLD_OUTLINE_THICKNESS.comment=Determines the thickness of the World Outline effect.
 
 option.RAIN_PUDDLES=Rain Puddles
-option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic. §c[-]§r Rain puddles can severely impact performance.
+option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic, and Block Reflection Quality must be set to Medium or above. §c[-]§r Rain puddles can severely impact performance.
 value.RAIN_PUDDLES.0=OFF
 value.RAIN_PUDDLES.1=§aON - Puddles
 value.RAIN_PUDDLES.2=§aON - Full Coverage

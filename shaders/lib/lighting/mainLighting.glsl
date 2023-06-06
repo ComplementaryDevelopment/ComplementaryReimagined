@@ -34,7 +34,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     float lightmapY2 = pow2(lightmap.y);
     float lightmapYM = smoothstep1(lightmap.y);
     float subsurfaceHighlight = 0.0;
-    vec3 ambientMult = vec3(1.0);
+    float ambientMult = 1.0;
     vec3 shadowLighting = lightColor;
     vec3 nViewPos = normalize(viewPos);
 
@@ -86,13 +86,13 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         float NdotLM = NdotLmax0 * 0.9999;
 
         #ifndef GBUFFERS_TEXTURED
-                #ifdef GBUFFERS_TERRAIN
-                    if (subsurfaceMode != 0) NdotLM = 1.0;
+            #if defined GBUFFERS_TERRAIN
+                if (subsurfaceMode != 0) NdotLM = 1.0;
+                #ifdef SIDE_SHADOWING
+                    else
                 #endif
+            #endif
             #ifdef SIDE_SHADOWING
-                #ifdef GBUFFERS_TERRAIN
-                     else
-                #endif
                 NdotLM = max0(NdotL + 0.4) * 0.714;
 
                 #ifdef END
@@ -137,6 +137,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                     bias *= 1.0 - lightmapYM;
                                 }
                             #endif
+                            
                             // Fix light leaking in caves
                             if (lightmapYM < 0.999) {
                                 #ifdef GBUFFERS_HAND
@@ -326,7 +327,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
     // Lighting Tweaks
     #ifdef OVERWORLD
-        ambientMult = vec3(mix(lightmapYM, pow2(lightmapYM) * lightmapYM, rainFactor));
+        ambientMult = mix(lightmapYM, pow2(lightmapYM) * lightmapYM, rainFactor);
 
         #ifndef REALTIME_SHADOWS
             float tweakFactor = 1.0 + 0.6 * (1.0 - pow2(pow2(pow2(noonFactor))));
@@ -335,6 +336,13 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             float bothTweak = 0.9;
             shadowLighting *= bothTweak;
             ambientMult *= bothTweak;
+        #endif
+
+        #if AMBIENT_MULT != 100
+            #define AMBIENT_MULT_M (AMBIENT_MULT - 100) * 0.006
+            vec3 shadowMultP = shadowMult / (0.1 + 0.9 * sqrt2(max0(NdotLM)));
+            ambientMult *= 1.0 + pow2(pow2(max0(1.0 - dot(shadowMultP, shadowMultP)))) * AMBIENT_MULT_M *
+                           (0.5 + 0.2 * sunFactor + 0.8 * noonFactor) * (1.0 - rainFactor * 0.5);
         #endif
 
         if (isEyeInWater != 1) {
@@ -451,7 +459,8 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #endif
 
     // Final Lighting
-    color.rgb *= directionShade * vanillaAO * (blockLighting + sceneLighting + minLighting + nightVisionLighting) + emission;
+    vec3 finalDiffuse = directionShade * vanillaAO * (blockLighting + sceneLighting + minLighting + nightVisionLighting) + emission;
+    color.rgb *= finalDiffuse;
     color.rgb += lightHighlight;
     
     // Darkness Pulse

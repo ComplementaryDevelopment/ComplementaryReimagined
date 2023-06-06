@@ -26,7 +26,6 @@ uniform float blindness;
 uniform float darknessFactor;
 uniform float frameTimeCounter;
 
-uniform vec3 fogColor;
 uniform vec3 skyColor;
 uniform vec3 cameraPosition;
 
@@ -327,24 +326,39 @@ void main() {
 				vec3 roughPos = playerPos + cameraPosition;
 				roughPos *= 256.0;
 				vec2 roughCoord = roughPos.xz + roughPos.y;
-				#ifdef TEMPORAL_FILTER
+				#ifndef TEMPORAL_FILTER
+					float noiseMult = 0.3;
+				#else
+					float noiseMult = 0.3;
+					float blendFactor = 1.0;
 					roughCoord += fract(frameTimeCounter);
 				#endif
 				vec3 roughNoise = vec3(texture2D(noisetex, roughCoord).r, texture2D(noisetex, roughCoord + 0.1).r, texture2D(noisetex, roughCoord + 0.2).r);
-				roughNoise = vec3(0.3, 0.3, 0.3) * (roughNoise - vec3(0.5));
+				roughNoise = noiseMult * (roughNoise - vec3(0.5));
 				roughNoise *= pow2(1.0 - smoothnessD);
 				#ifdef CUSTOM_PBR
-					if (z0 <= 0.56) roughNoise *= 0.25;
+					if (z0 <= 0.56) {
+						roughNoise *= 0.1;
+						#ifdef TEMPORAL_FILTER
+							blendFactor = 0.0;
+						#endif
+					}
 				#endif
 
 				normalM += roughNoise;
 
-				vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos,
+				vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, z0,
 				                                depthtex0, dither, skyLightFactor, fresnel,
 												smoothnessD, vec3(0.0), vec3(0.0), vec3(0.0), 0.0);
 
 				vec3 colorAdd = reflection.rgb * reflectColor;
-				float colorMultInv = (0.75 - intenseFresnel * 0.5) * max(reflection.a, skyLightFactor);
+				//float colorMultInv = (0.75 - intenseFresnel * 0.5) * max(reflection.a, skyLightFactor);
+				//float colorMultInv = max(reflection.a, skyLightFactor);
+				float colorMultInv = 1.0;
+
+				#ifdef IPBR
+					vec3 colorP = color;
+				#endif
 
 				#ifndef TEMPORAL_FILTER
 					color *= 1.0 - colorMultInv * fresnelM;
@@ -352,12 +366,26 @@ void main() {
 				#else
 					vec3 cameraOffset = cameraPosition - previousCameraPosition;
 					vec2 prvCoord = SHalfReprojection(playerPos, cameraOffset);
-					vec2 prvRefCoord = Reprojection(vec3(texCoord, max(refPos.z, z0)), cameraOffset);
+					#if defined IPBR && !defined GENERATED_NORMALS
+						vec2 prvRefCoord = Reprojection(vec3(texCoord, max(refPos.z, z0)), cameraOffset);
+						vec4 oldRef = texture2D(colortex7, prvRefCoord);
+					#else
+						vec2 prvRefCoord1 = Reprojection(vec3(texCoord, z0), cameraOffset);
+						vec2 prvRefCoord2 = Reprojection(vec3(texCoord, max(refPos.z, z0)), cameraOffset);
+						vec4 oldRef1 = texture2D(colortex7, prvRefCoord1);
+						vec4 oldRef2 = texture2D(colortex7, prvRefCoord2);
+						vec3 dif1 = colorAdd - oldRef1.rgb;
+						vec3 dif2 = colorAdd - oldRef2.rgb;
+						float dotDif1 = dot(dif1, dif1);
+						float dotDif2 = dot(dif2, dif2);
 
-					vec4 oldRef = texture2D(colortex7, prvRefCoord);
+						float oldRefMixer = clamp01((dotDif1 - dotDif2) * 500.0);
+						vec4 oldRef = mix(oldRef1, oldRef2, oldRefMixer);
+					#endif
+
 					vec4 newRef = vec4(colorAdd, colorMultInv);
 
-					float blendFactor = float(prvCoord.x > 0.0 && prvCoord.x < 1.0 && prvCoord.y > 0.0 && prvCoord.y < 1.0);
+					blendFactor *= float(prvCoord.x > 0.0 && prvCoord.x < 1.0 && prvCoord.y > 0.0 && prvCoord.y < 1.0);
 					float velocity = length(cameraOffset) * max(16.0 - lViewPos / gbufferProjection[1][1], 3.0);
 					blendFactor *= 0.7 + 0.3 * exp(-velocity);
 
@@ -367,19 +395,19 @@ void main() {
 					blendFactor *= exp(-dot(disChange, disChange) * 100.0);
 
 					blendFactor = max0(blendFactor); // Prevents first frame NaN
-					//newRef = max(newRef, vec4(0.0)); // Prevents other NaN
-					refToWrite = mix(newRef, oldRef, blendFactor * 0.9);
+					//newRef = max(newRef, vec4(0.0)); // Prevents some other NaN?
+					refToWrite = mix(newRef, oldRef, blendFactor * 0.95);
 
 					color.rgb *= 1.0 - refToWrite.a * fresnelM;
 					color.rgb += refToWrite.rgb * fresnelM;
 				#endif
 
+				#ifdef IPBR
+					color = max(colorP * intenseFresnel * 0.9, color);
+				#endif
+
 				//if (gl_FragCoord.x > 960) color = vec3(5.25,0,5.25);
 			}
-
-			#ifdef TEMPORAL_FILTER
-
-			#endif
 		#endif
 
 		#ifdef WORLD_OUTLINE

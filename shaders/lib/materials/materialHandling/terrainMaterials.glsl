@@ -173,9 +173,13 @@ if (mat < 10512) {
                                     #include "/lib/materials/specificMaterials/terrain/anvil.glsl"
                                 }
                             }
-                            else /*if (mat == 10060)*/ { // Bamboo
-                                if (absMidCoordPos.x > 0.005)
-                                    subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+                            else /*if (mat == 10060)*/ { // Lever
+                                if (color.r > color.g + color.b) {
+                                    color.rgb *= color.rgb;
+                                    emission = 4.0;
+                                } else {
+                                    #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
+                                }
                             }
                         }
                     }
@@ -363,7 +367,7 @@ if (mat < 10512) {
                                 }
                             }
                         } else {
-                            if (mat == 10152) { // Cobblestone+, Mossy Cobblestone+, Furnace:Unlit, Smoker:Unlit, Blast Furnace:Unlit, Moss Block+, Lodestone, Lever, Piston, Sticky Piston, Dispenser, Dropper
+                            if (mat == 10152) { // Cobblestone+, Mossy Cobblestone+, Furnace:Unlit, Smoker:Unlit, Blast Furnace:Unlit, Moss Block+, Lodestone, Piston, Sticky Piston, Dispenser, Dropper
                                 #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
                             }
                             else /*if (mat == 10156)*/ { // Oak Planks++:Clean Variants, Bookshelf, Crafting Table, Tripwire Hook
@@ -518,7 +522,7 @@ if (mat < 10512) {
                                 #endif
                             }
                         } else {
-                            if (mat == 10232) { // Sand
+                            if (mat == 10232) { // Sand, Suspicious Sand
                                 smoothnessG = pow(color.g, 16.0) * 2.0;
                                 smoothnessG = min1(smoothnessG);
                                 smoothnessD = smoothnessG * 0.7;
@@ -614,7 +618,6 @@ if (mat < 10512) {
                             else /*if (mat == 10260)*/ { // Iron Door
                                 noSmoothLighting = true;
                                 #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
-                                color.rgb *= 0.8;
                             }
                         } else {
                             if (mat == 10264) { // Iron Block, Iron Trapdoor, Heavy Weighted Pressure Plate
@@ -693,7 +696,8 @@ if (mat < 10512) {
                                 smoothnessG = pow2(pow2(color.r)) + pow2(max0(color.g - color.r * 0.5)) * 0.3;
                                 smoothnessG = min1(smoothnessG);
                                 smoothnessD = smoothnessG;
-                                color.rgb *= 0.8 + color.r * 0.3;
+
+                                color.rgb *= 0.6 + 0.7 * GetLuminance(color.rgb);
 
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.5;
@@ -789,6 +793,16 @@ if (mat < 10512) {
 
                                 smoothnessD = factor;
 
+                                #if GLOWING_AMETHYST >= 2
+                                    emission = dot(color.rgb, color.rgb) * 0.3;
+
+                                    /*vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
+                                    emission *= sqrt1(texture2D(noisetex, (worldPos.xz + worldPos.y) * 0.003 - frameTimeCounter * 0.006).r);
+                                    emission *= sqrt1(texture2D(noisetex, (worldPos.zx - worldPos.y) * 0.003 + frameTimeCounter * 0.006).r);*/
+                                #endif
+
+                                color.rgb *= 0.7 + 0.3 * GetLuminance(color.rgb);
+
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.66;
                                 #endif
@@ -797,15 +811,17 @@ if (mat < 10512) {
                                 noSmoothLighting = true;
                                 lmCoordM.x *= 0.85;
 
-                                vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
-                                vec3 blockPos = abs(fract(worldPos) - vec3(0.5));
-                                float maxBlockPos = max(blockPos.x, max(blockPos.y, blockPos.z));
-                                emission = pow2(max0(1.0 - maxBlockPos * 1.85) * color.g) * 7.0;
+                                #if GLOWING_AMETHYST >= 1
+                                    vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
+                                    vec3 blockPos = abs(fract(worldPos) - vec3(0.5));
+                                    float maxBlockPos = max(blockPos.x, max(blockPos.y, blockPos.z));
+                                    emission = pow2(max0(1.0 - maxBlockPos * 1.85) * color.g) * 7.0;
 
-                                if (CheckForColor(color.rgb, vec3(254, 203, 230)))
-                                    emission = pow(emission, max0(1.0 - 0.2 * max0(emission - 1.0)));
+                                    if (CheckForColor(color.rgb, vec3(254, 203, 230)))
+                                        emission = pow(emission, max0(1.0 - 0.2 * max0(emission - 1.0)));
 
-                                color.g *= 1.0 - emission * 0.07;
+                                    color.g *= 1.0 - emission * 0.07;
+                                #endif
 
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.66;
@@ -1125,16 +1141,18 @@ if (mat < 10512) {
                             }
                         } else {
                             if (mat == 10456) { // Command Block+
+	                            color = texture2DLod(tex, texCoord, 0);
+
                                 vec2 coord = signMidCoordPos;
                                 float blockRes = absMidCoordPos.x * atlasSize.x;
-                                if (blockRes < 8.5) coord -= 0.0625;
                                 vec2 absCoord = abs(coord);
                                 float maxCoord = max(absCoord.x, absCoord.y);
-                                if (maxCoord < 0.3125 && abs(color.r - color.g) > 0.1) {
+
+                                float dif = GetMaxColorDif(color.rgb);
+                                
+                                if (dif > 0.1 && maxCoord < 0.375 && !CheckForColor(color.rgb, vec3(111, 73, 43))) {
                                     emission = 6.0;
                                     color.rgb *= color.rgb;
-                                    smoothnessG = 1.0;
-                                    smoothnessD = 1.0;
                                     highlightMult = 2.0;
                                     maRecolor = vec3(0.5);
                                 } else {
@@ -1207,13 +1225,8 @@ if (mat < 10512) {
                                     highlightMult = factor;
                                 #endif
                             }
-                            else /*if (mat == 10492)*/ { // Weeping Vines, Twisting Vines, Crimson Fungus, Warped Fungus
-                                noSmoothLighting = true;
-                                if (color.r > 0.91) {
-                                    emission = 2.5 * color.g;
-                                    color.r *= 1.2;
-                                    maRecolor = vec3(0.1);
-                                }
+                            else /*if (mat == 10492)*/ { //
+
                             }
                         }
                     } else {
@@ -1462,9 +1475,9 @@ if (mat < 10512) {
                                 #endif
                             }
                         } else {
-                            if (mat == 10568) { // Turtle Egg
-                                smoothnessG = color.r * 0.7;
-                                smoothnessD = color.r * 0.5;
+                            if (mat == 10568) { // Turtle Egg, Sniffer Egg
+                                smoothnessG = (color.r + color.g) * 0.35;
+                                smoothnessD = (color.r + color.g) * 0.25;
                             }
                             else /*if (mat == 10572)*/ { // Dragon Egg
                                 emission = float(color.b > 0.1) * 10.0 + 0.6;
@@ -1865,7 +1878,7 @@ if (mat < 10512) {
                             if (mat == 10720) { // Ladder
                                 noSmoothLighting = true;
                             }
-                            else /*if (mat == 10724)*/ { // Gravel
+                            else /*if (mat == 10724)*/ { // Gravel, Suspicious Gravel
                                 #include "/lib/materials/specificMaterials/terrain/stone.glsl"
                                 
                                 DoOceanBlockTweaks(smoothnessD);
@@ -1875,15 +1888,15 @@ if (mat < 10512) {
                                 #endif
                             }
                         } else {
-                            if (mat == 10728) { // Flower Pot++
+                            if (mat == 10728) { // Flower Pot, Potted Stuff:Without Subsurface
                                 noSmoothLighting = true;
                             }
-                            else /*if (mat == 10732)*/ { // Lever
-                                if (color.r > color.g + color.b) {
-                                    color.rgb *= color.rgb;
-                                    emission = 4.0;
-                                } else {
-                                    #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
+                            else /*if (mat == 10732)*/ { // Potted Stuff:With Subsurface
+                                noSmoothLighting = true;
+                                
+                                float NdotE = dot(normalM, eastVec);
+                                if (abs(abs(NdotE) - 0.5) < 0.4) {
+                                    subsurfaceMode = 1, noDirectionalShading = true;
                                 }
                             }
                         }
@@ -1922,18 +1935,25 @@ if (mat < 10512) {
                         }
                     } else {
                         if (mat < 10760) {
-                            if (mat == 10752) { //
-                            
+                            if (mat == 10752) { // Bamboo
+                                if (absMidCoordPos.x > 0.005)
+                                    subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+                                // No further material properties as bamboo jungles are already slow
                             }
-                            else /*if (mat == 10756)*/ { //
-
+                            else /*if (mat == 10756)*/ { // Block of Bamboo, Bamboo Planks++
+                                #include "/lib/materials/specificMaterials/planks/bambooPlanks.glsl"
                             }
                         } else {
-                            if (mat == 10760) { //
-                            
+                            if (mat == 10760) { // Cherry Planks++
+                                #include "/lib/materials/specificMaterials/planks/cherryPlanks.glsl"
                             }
-                            else /*if (mat == 10764)*/ { //
-
+                            else /*if (mat == 10764)*/ { // Cherry Log, Cherry Wood
+                                if (color.g > 0.33) { // Cherry Log:Clean Part
+                                    #include "/lib/materials/specificMaterials/planks/cherryPlanks.glsl"
+                                } else { // Cherry Log:Wood Part, Cherry Wood
+                                    smoothnessG = pow2(color.r);
+                                    smoothnessD = smoothnessG;
+                                }
                             }
                         }
                     }
@@ -1946,68 +1966,153 @@ if (mat < 10512) {
                 if (mat < 10800) {
                     if (mat < 10784) {
                         if (mat < 10776) {
-                            if (mat == 10768) { //
-                            
-                            }
-                            else /*if (mat == 10772)*/ { //
+                            if (mat == 10768) { // Torchflower
+                                subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
+                                DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
 
+                                emission = (1.0 - abs(signMidCoordPos.x)) * max0(0.7 - abs(signMidCoordPos.y + 0.7));
+                                emission = pow2(emission) * 2.5;
+
+                                #ifndef REALTIME_SHADOWS
+                                    shadowMult *= 1.0 - 0.3 * (signMidCoordPos.y + 1.0) * (1.0 - abs(signMidCoordPos.x))
+                                    + 0.5 * (1.0 - signMidCoordPos.y) * invNoonFactor; // consistency357381
+                                #endif
+                            }
+                            else /*if (mat == 10772)*/ { // Potted Torchflower
+                                noSmoothLighting = true;
+                                
+                                float NdotE = dot(normalM, eastVec);
+                                if (abs(abs(NdotE) - 0.5) < 0.4) {
+                                    subsurfaceMode = 1, noDirectionalShading = true;
+
+                                    emission = (1.0 - abs(signMidCoordPos.x)) * max0(0.7 - abs(signMidCoordPos.y + 0.7));
+                                    emission = pow2(emission) * 2.5;
+                                }
                             }
                         } else {
-                            if (mat == 10776) { //
-                            
-                            }
-                            else /*if (mat == 10780)*/ { //
+                            if (mat == 10776) { // Weeping Vines, Twisting Vines, Crimson Fungus, Warped Fungus
+                                noSmoothLighting = true;
 
+                                if (color.r > 0.91) {
+                                    emission = 2.5 * color.g;
+                                    color.r *= 1.2;
+                                    maRecolor = vec3(0.1);
+                                }
+                            }
+                            else /*if (mat == 10780)*/ { // Potted Crimson Fungus, Potted Warped Fungus
+                                noSmoothLighting = true;
+
+                                float NdotE = dot(normalM, eastVec);
+                                if (abs(abs(NdotE) - 0.5) < 0.4) {
+                                    if (color.r > 0.91) {
+                                        emission = 2.5 * color.g;
+                                        color.r *= 1.2;
+                                        maRecolor = vec3(0.1);
+                                    }
+                                }
                             }
                         }
                     } else {
                         if (mat < 10792) {
-                            if (mat == 10784) { //
-                            
-                            }
-                            else /*if (mat == 10788)*/ { //
+                            if (mat == 10784) { // Calibrated Sculk Sensor:Unlit
+                                if (color.r + color.b > color.g * 2.2 || color.r > 0.99) { // Amethyst Part
+                                    #if GLOWING_AMETHYST >= 1
+                                        vec2 absCoord = abs(signMidCoordPos);
+                                        float maxBlockPos = max(absCoord.x, absCoord.y);
+                                        emission = pow2(max0(1.0 - maxBlockPos) * color.g) * 5.0 + color.g;
 
+                                        color.g *= 1.0 - emission * 0.07;
+                                        color.rgb *= color.g;
+                                    #endif
+
+                                    #ifdef COATED_TEXTURES
+                                        noiseFactor = 0.66;
+                                    #endif
+                                } else { // Sculk Part
+                                    float boneFactor = max0(color.r * 1.25 - color.b);
+
+                                    if (boneFactor < 0.0001) emission = pow2(max0(color.g - color.r));
+
+                                    smoothnessG = min1(boneFactor * 1.7);
+                                    smoothnessD = smoothnessG;
+                                }
+
+                                #ifdef SNOWY_WORLD
+                                    snowFactor = 0.0;
+                                #endif
+                            }
+                            else /*if (mat == 10788)*/ { // Calibrated Sculk Sensor:Lit
+                                lmCoordM = vec2(0.0, 0.0);
+
+                                if (color.r + color.b > color.g * 2.2 || color.r > 0.99) { // Amethyst Part
+                                    lmCoordM.x = 1.0;
+
+                                    #if GLOWING_AMETHYST >= 1
+                                        vec2 absCoord = abs(signMidCoordPos);
+                                        float maxBlockPos = max(absCoord.x, absCoord.y);
+                                        emission = pow2(max0(1.0 - maxBlockPos) * color.g) * 5.0 + color.g;
+
+                                        color.g *= 1.0 - emission * 0.07;
+                                        color.rgb *= color.g;
+                                    #endif
+
+                                    #ifdef COATED_TEXTURES
+                                        noiseFactor = 0.66;
+                                    #endif
+                                } else { // Sculk Part
+                                    emission = pow2(max0(color.g - color.r)) * 7.0 + 0.7;
+                                }
                             }
                         } else {
-                            if (mat == 10792) { //
-                            
+                            if (mat == 10792) { // Oak Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/oakPlanks.glsl"
                             }
-                            else /*if (mat == 10796)*/ { //
-
+                            else /*if (mat == 10796)*/ { // Spruce Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/sprucePlanks.glsl"
                             }
                         }
                     }
                 } else {
                     if (mat < 10816) {
                         if (mat < 10808) {
-                            if (mat == 10800) { //
-                            
+                            if (mat == 10800) { // Birch Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/birchPlanks.glsl"
                             }
-                            else /*if (mat == 10804)*/ { //
-
+                            else /*if (mat == 10804)*/ { // Jungle Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/junglePlanks.glsl"
                             }
                         } else {
-                            if (mat == 10808) { //
-                            
+                            if (mat == 10808) { // Acacia Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/acaciaPlanks.glsl"
                             }
-                            else /*if (mat == 10812)*/ { //
-
+                            else /*if (mat == 10812)*/ { // Dark Oak Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/darkOakPlanks.glsl"
                             }
                         }
                     } else {
                         if (mat < 10824) {
-                            if (mat == 10816) { //
-                            
+                            if (mat == 10816) { // Mangrove Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/mangrovePlanks.glsl"
                             }
-                            else /*if (mat == 10820)*/ { //
-
+                            else /*if (mat == 10820)*/ { // Crimson Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/crimsonPlanks.glsl"
                             }
                         } else {
-                            if (mat == 10824) { //
-                            
+                            if (mat == 10824) { // Warped Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/warpedPlanks.glsl"
                             }
-                            else /*if (mat == 10828)*/ { //
-
+                            else /*if (mat == 10828)*/ { // Bamboo Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/bambooPlanks.glsl"
                             }
                         }
                     }
@@ -2016,8 +2121,9 @@ if (mat < 10512) {
                 if (mat < 10864) {
                     if (mat < 10848) {
                         if (mat < 10840) {
-                            if (mat == 10832) { //
-                            
+                            if (mat == 10832) { // Cherry Door
+                                noSmoothLighting = true;
+                                #include "/lib/materials/specificMaterials/planks/cherryPlanks.glsl"
                             }
                             else /*if (mat == 10836)*/ { //
 

@@ -51,7 +51,7 @@ uniform sampler2D colortex3;
 #ifdef MC_ANISOTROPIC_FILTERING
 	#include "/lib/util/textRendering.glsl"
 
-	void beingTextM(int textSize, vec2 offset) {
+	void beginTextM(int textSize, vec2 offset) {
 		beginText(ivec2(vec2(viewWidth, viewHeight) * texCoord) / textSize, ivec2(0 + offset.x, viewHeight / textSize - offset.y));
 		text.bgCol = vec4(0.0);
 	}
@@ -75,12 +75,12 @@ void main() {
 	#ifdef MC_ANISOTROPIC_FILTERING
 		color.rgb = mix(color.rgb, vec3(0.0), 0.75);
 
-		beingTextM(8, vec2(6, 10));
+		beginTextM(8, vec2(6, 10));
 		text.fgCol = vec4(1.0, 0.0, 0.0, 1.0);
 		printString((_I, _m, _p, _o, _r, _t, _a, _n, _t, _space, _I, _s, _s, _u, _e, _space));
 		endText(color.rgb);
 
-		beingTextM(4, vec2(15, 30));
+		beginTextM(4, vec2(15, 30));
 		printLine();
 		text.fgCol = vec4(1.0, 1.0, 1.0, 1.0);
 		printString((
