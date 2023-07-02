@@ -130,7 +130,9 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 			#endif
 
 			if (length(shadowPosition.xy * 2.0 - 1.0) < 1.0) {
-				shadowSample = texture2D(shadowtex0, shadowPosition.xy).x;
+				//shadowSample = texture2D(shadowtex0, shadowPosition.xy).x;
+				// 28A3DK6 We need to use texelFetch here or a lot of Nvidia GPUs can't get a valid value
+				shadowSample = texelFetch(shadowtex0, ivec2(shadowPosition.xy * 2048.0), 0).x;
 				shadowSample = clamp((shadowSample-shadowPosition.z)*65536.0,0.0,1.0);
 				vlSample = vec3(shadowSample);
 
@@ -180,7 +182,8 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 				for (float i = 0.25; i < salsX; i++) {
 					for (float h = 0.45; h < salsY; h++) {
 						vec2 coord = 0.3 + 0.4 * viewM * vec2(i, h);
-						float salsSample = texture2D(shadowtex0, coord).x;
+						//float salsSample = texture2D(shadowtex0, coord).x;
+						float salsSample = texelFetch(shadowtex0, ivec2(coord * 2048.0), 0).x; // read 28A3DK6
 						if (salsSample < 0.55) {
 							vec3 salsShadowNDC = vec3(coord, salsSample) * 2.0 - 1.0;
 							salsShadowNDC.z /= 0.2;
