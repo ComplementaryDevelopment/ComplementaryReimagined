@@ -35,6 +35,10 @@ uniform sampler2D tex;
 	#include "/lib/util/jitter.glsl"
 #endif
 
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
+#endif
+
 //Program//
 void main() {
 	vec4 color = texture2D(tex, texCoord);
@@ -64,6 +68,10 @@ void main() {
 	#endif
 
 	color.rgb *= 0.5 + 0.5 * exp(- lViewPos * 0.04);
+
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
+	#endif
 
     /* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;

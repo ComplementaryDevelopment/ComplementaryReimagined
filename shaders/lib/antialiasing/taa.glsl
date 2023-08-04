@@ -40,7 +40,11 @@ void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float depth, inout 
 				edge *= extraEdgeMult;
 		}
 
-		vec3 clr = texelFetch(colortex3, texelCoordM, 0).rgb;
+		#ifndef LIGHT_COLORING
+			vec3 clr = texelFetch(colortex3, texelCoordM, 0).rgb;
+		#else
+			vec3 clr = texelFetch(colortex8, texelCoordM, 0).rgb;
+		#endif
 		minclr = min(minclr, clr); maxclr = max(maxclr, clr);
 	}
 

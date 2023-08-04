@@ -66,6 +66,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#include "/lib/util/jitter.glsl"
 #endif
 
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
+#endif
+
 //Program//
 void main() {
 	vec4 color = glColor;
@@ -99,6 +103,10 @@ void main() {
 			color.rgb = vec3(SELECT_OUTLINE_R, SELECT_OUTLINE_G, SELECT_OUTLINE_B) * SELECT_OUTLINE_I;
 		#endif
 	}
+	#endif
+
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
 	#endif
 
 	/* DRAWBUFFERS:01 */

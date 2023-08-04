@@ -72,7 +72,11 @@ void main() {
         #endif
     #endif
 
+    #ifndef LIGHT_COLORING
     /* DRAWBUFFERS:3 */
+    #else
+    /* DRAWBUFFERS:8 */
+    #endif
 	gl_FragData[0] = vec4(blur, 1.0);
 }
 

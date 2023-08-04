@@ -64,6 +64,10 @@ uniform sampler2D noisetex;
 	uniform int heldItemId2;
 #endif
 
+#ifdef IS_IRIS
+	uniform int currentRenderedItemId;
+#endif
+
 //Pipeline Constants//
 
 //Common Variables//
@@ -113,6 +117,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
 
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
+#endif
+
 //Program//
 void main() {
 	vec4 color = texture2D(tex, texCoord);
@@ -135,6 +143,10 @@ void main() {
 		vec2 lmCoordM = lmCoord;
 		vec3 shadowMult = vec3(0.4);
 		#ifdef IPBR
+			#ifdef IS_IRIS
+				#include "/lib/materials/materialHandling/irisMaterials.glsl"
+			#endif
+
 			#ifdef GENERATED_NORMALS
 				GenerateNormals(normalM, colorP);
 			#endif
@@ -161,11 +173,15 @@ void main() {
 		#endif
 	}
 
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
+	#endif
+
 	/* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;
 	gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
-	#if BLOCK_REFLECT_QUALITY >= 1 && RP_MODE >= 2
+	#if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 2
 		/* DRAWBUFFERS:015 */
 		gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
 	#endif

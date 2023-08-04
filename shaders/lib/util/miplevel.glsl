@@ -1,7 +1,7 @@
 vec2 midCoordPos = absMidCoordPos * signMidCoordPos;
 
-vec2 dcdx = dFdx(texCoord.xy);
-vec2 dcdy = dFdy(texCoord.xy);
+#include "/lib/util/dFdxdFdy.glsl"
+
 vec2 mipx = dcdx / absMidCoordPos * 8.0;
 vec2 mipy = dcdy / absMidCoordPos * 8.0;
 

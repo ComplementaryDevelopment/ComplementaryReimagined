@@ -39,11 +39,11 @@ uniform sampler2D colortex1;
 uniform sampler2D depthtex0;
 uniform sampler2D noisetex;
 
-#if SSAO > 0 || defined PBR_REFLECTIONS
+#if SSAO_QUALI > 0 || defined PBR_REFLECTIONS
 	uniform mat4 gbufferProjection;
 #endif
 
-#if SSAO > 0 || defined WORLD_OUTLINE
+#if SSAO_QUALI > 0 || defined WORLD_OUTLINE
 	uniform float aspectRatio;
 #endif
 
@@ -98,7 +98,7 @@ float farMinusNear = far - near;
 	vec3 lightVec = sunVec;
 #endif
 
-#if SSAO > 0 || defined WORLD_OUTLINE
+#if SSAO_QUALI > 0 || defined WORLD_OUTLINE
     vec2 view = vec2(viewWidth, viewHeight);
 #endif
 
@@ -112,7 +112,7 @@ float GetLinearDepth(float depth) {
 	return (2.0 * near) / (far + near - depth * farMinusNear);
 }
 
-#if SSAO > 0
+#if SSAO_QUALI > 0
     vec2 OffsetDist(float x, int s) {
         float n = fract(x * 1.414) * 3.1415;
         return pow2(vec2(cos(n), sin(n)) * x / s);
@@ -121,12 +121,21 @@ float GetLinearDepth(float depth) {
     float DoAmbientOcclusion(float z0, float linearZ0, float dither) {
 		if (z0 < 0.56) return 1.0;
         float ao = 0.0;
-        int samples = 12;
+
+		#if SSAO_QUALI == 2
+        	int samples = 4;
+			float scm = 0.4;
+		#elif SSAO_QUALI == 3
+        	int samples = 12;
+			float scm = 0.6;
+		#endif
+
+		#define SSAO_I_FACTOR 0.004
         
         float sampleDepth = 0.0, angle = 0.0, dist = 0.0;
-        float fovScale = gbufferProjection[1][1] / 1.37;
+        float fovScale = gbufferProjection[1][1];
         float distScale = max(farMinusNear * linearZ0 + near, 3.0);
-        vec2 scale = vec2(0.4 / aspectRatio, 0.5) * fovScale / distScale;
+        vec2 scale = vec2(scm / aspectRatio, scm) * fovScale / distScale;
 
         for (int i = 1; i <= samples; i++) {
             vec2 offset = OffsetDist(i + dither, samples) * scale;
@@ -149,11 +158,8 @@ float GetLinearDepth(float depth) {
         }
         ao /= samples;
         
-		#if SSAO == 2
-        	return pow(ao, 0.8);
-		#elif SSAO == 1
-        	return pow(ao, 0.4);
-		#endif
+		#define SSAO_IM SSAO_I * SSAO_I_FACTOR
+		return pow(ao, SSAO_IM);
     }
 #endif
 
@@ -208,7 +214,7 @@ float GetLinearDepth(float depth) {
 	#include "/lib/atmospherics/auroraBorealis.glsl"
 #endif
 
-#ifdef CLOUDS_ACTIVATE
+#ifdef SHADER_CLOUDS_ACTIVE
 	#include "/lib/atmospherics/clouds/mainClouds.glsl"
 #endif
 
@@ -224,6 +230,10 @@ float GetLinearDepth(float depth) {
     #include "/lib/colors/colorMultipliers.glsl"
 #endif
 
+#ifdef NIGHT_NEBULA
+	#include "/lib/atmospherics/nightNebula.glsl"
+#endif
+
 //Program//
 void main() {
 	vec3 color = texelFetch(colortex0, texelCoord, 0).rgb;
@@ -237,10 +247,8 @@ void main() {
 	vec3 playerPos = ViewToPlayer(viewPos.xyz);
 
 	float dither = texture2D(noisetex, texCoord * vec2(viewWidth, viewHeight) / 128.0).b;
-	#ifdef TAA
-		float ditherAnimate = 1.61803398875 * mod(float(frameCounter), 3600.0);
-		dither = fract(dither + ditherAnimate);
-	#endif
+	float ditherAnimate = 1.61803398875 * mod(float(frameCounter), 3600.0);
+	dither = fract(dither + ditherAnimate);
 
 	#ifdef ATM_COLOR_MULTS
 		atmColorMult = GetAtmColorMult();
@@ -254,23 +262,26 @@ void main() {
 	#if AURORA_STYLE > 0
 		vec3 auroraBorealis = vec3(0.0);
 	#endif
+	#ifdef NIGHT_NEBULA
+		vec3 nightNebula = vec3(0.0);
+	#endif
 
 	#ifdef TEMPORAL_FILTER
 		vec4 refToWrite = vec4(0.0);
 	#endif
 
-	#ifdef CLOUDS_ACTIVATE
+	#ifdef SHADER_CLOUDS_ACTIVE
 		bool sun = false;
 	#endif
 	
 	if (z0 < 1.0) {
 		vec3 texture5 = texelFetch(colortex1, texelCoord, 0).rgb;
 
-		#if SSAO > 0 || defined WORLD_OUTLINE
+		#if SSAO_QUALI > 0 || defined WORLD_OUTLINE
 			float linearZ0 = GetLinearDepth(z0);
 		#endif
 
-		#if SSAO > 0
+		#if SSAO_QUALI > 0
 			float ssao = DoAmbientOcclusion(z0, linearZ0, dither);
 		#else
 			float ssao = 1.0;
@@ -286,7 +297,7 @@ void main() {
 		#else
 			if (materialMaskInt <= 240) {
 				#ifdef CUSTOM_PBR
-					#if RP_MODE == 2 // SEUSPBR
+					#if RP_MODE == 2 // seuspbr
 						float metalness = materialMaskInt / 240.0;
 
 						intenseFresnel = metalness;
@@ -427,7 +438,17 @@ void main() {
 
 			#if AURORA_STYLE > 0
 				auroraBorealis = GetAuroraBorealis(viewPos.xyz, VdotU, dither);
+				#ifdef ATM_COLOR_MULTS
+					auroraBorealis *= atmColorMult;
+				#endif
 				color.rgb += auroraBorealis;
+			#endif
+			#ifdef NIGHT_NEBULA
+				nightNebula += GetNightNebula(viewPos.xyz, VdotU, VdotS);
+				#ifdef ATM_COLOR_MULTS
+					nightNebula *= atmColorMult;
+				#endif
+				color.rgb += nightNebula;
 			#endif
 		#endif
 		#ifdef NETHER
@@ -449,8 +470,8 @@ void main() {
 	
 	float cloudLinearDepth = 1.0;
 
-	if (z0 > 0.56) {
-		#ifdef CLOUDS_ACTIVATE
+	#ifdef SHADER_CLOUDS_ACTIVE
+		if (z0 > 0.56) {
 			vec4 clouds = GetClouds(cloudLinearDepth, skyFade, playerPos, viewPos.xyz, lViewPos, VdotS, VdotU, dither);
 
 			#ifdef ATM_COLOR_MULTS
@@ -460,10 +481,13 @@ void main() {
 			#if AURORA_STYLE > 0
 				clouds.rgb += auroraBorealis * 0.1;
 			#endif
+			#ifdef NIGHT_NEBULA
+				clouds.rgb += nightNebula * 0.2;
+			#endif
 
 			color = mix(color, clouds.rgb, clouds.a);
-		#endif
-	}
+		}
+	#endif
 
 	#if LIGHTSHAFT_BEHAVIOUR == 1 && defined LIGHTSHAFTS_ACTIVE
 		if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5)

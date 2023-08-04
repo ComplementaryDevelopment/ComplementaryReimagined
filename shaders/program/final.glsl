@@ -13,7 +13,12 @@ noperspective in vec2 texCoord;
 //Uniforms//
 uniform float viewWidth, viewHeight;
 
-uniform sampler2D colortex3;
+#ifndef LIGHT_COLORING
+	uniform sampler2D colortex3;
+#else
+	uniform sampler2D colortex3; /*test*//*test*//*test*//*test*/
+	uniform sampler2D colortex8;
+#endif
 
 #ifdef UNDERWATER_DISTORTION
 	uniform int isEyeInWater;
@@ -42,7 +47,11 @@ uniform sampler2D colortex3;
 		color *= 1.0 + 0.05 * IMAGE_SHARPENING;
 
 		for (int i = 0; i < 4; i++) {
-			color -= texture2D(colortex3, texCoordM + sharpenOffsets[i]).rgb * mult;
+			#ifndef LIGHT_COLORING
+				color -= texture2D(colortex3, texCoordM + sharpenOffsets[i]).rgb * mult;
+			#else
+				color -= texture2D(colortex8, texCoordM + sharpenOffsets[i]).rgb * mult;
+			#endif
 		}
 	}
 #endif
@@ -66,10 +75,28 @@ void main() {
 			texCoordM += WATER_REFRACTION_INTENSITY * 0.00035 * sin((texCoord.x + texCoord.y) * 25.0 + frameTimeCounter * 3.0);
 	#endif
 
-	vec3 color = texture2D(colortex3, texCoordM).rgb;
+	#ifndef LIGHT_COLORING
+		vec3 color = texture2D(colortex3, texCoordM).rgb;
+	#else
+		vec3 color = texture2D(colortex8, texCoordM).rgb;
+	#endif
+
+	#if CHROMA_ABERRATION > 0
+		vec2 scale = vec2(1.0, viewHeight / viewWidth);
+		vec2 aberration = (texCoordM - 0.5) * (2.0 / vec2(viewWidth, viewHeight)) * scale * CHROMA_ABERRATION;
+		#ifndef LIGHT_COLORING
+			color.rb = vec2(texture2D(colortex3, texCoordM + aberration).r, texture2D(colortex3, texCoordM - aberration).b);
+		#else
+			color.rb = vec2(texture2D(colortex8, texCoordM + aberration).r, texture2D(colortex8, texCoordM - aberration).b);
+		#endif
+	#endif
 
 	#if IMAGE_SHARPENING > 0
 		SharpenImage(color, texCoordM);
+	#endif
+
+	#ifdef LIGHT_COLORING
+		if (max(texCoordM.x, texCoordM.y) < 0.25) color = texture2D(colortex3, texCoordM * 4.0).rgb;
 	#endif
 
 	#ifdef MC_ANISOTROPIC_FILTERING

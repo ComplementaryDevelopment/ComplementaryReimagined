@@ -2,26 +2,70 @@
 
 #Profiles
 profile.POTATO=§4Potato
+profile.VERYLOW=§6Very Low
 profile.LOW=§eLow
 profile.MEDIUM=§aMedium
 profile.HIGH=§bHigh (Default)
 profile.VERYHIGH=§9Very High
 profile.ULTRA=§dUltra
-profile.comment=Shader profiles change performance settings with the most optimised visual fidelity to performance ratio. §e[*]§r It's recommended to use one of these profiles for your settings unless you know what you are doing. §e[*]§r All affected settings can all be found in the "Main Performance Settings" menu.
+profile.comment=Shader profiles change performance settings with the most optimised visual fidelity to performance ratio. §e[*]§r It's recommended to use one of these profiles for your settings unless you know what you are doing. §e[*]§r All affected settings can all be found in the "Performance Settings" menu.
 
-#CMPR
-option.CMPR=Complementary
-option.CMPR.comment=Complementary Reimagined is a creation of love and care, meant to complement the unique Minecraft experience in the best way possible. I hope you enjoy your time with Complementary Reimagined as much as I enjoyed developing it. Please feel free to join the lovely Complementary community here: www.complementary.dev/discord
-value.CMPR.0=§bReimagined
+#Information
+screen.INFORMATION=Information
+screen.INFORMATION.comment=This section contains buttons that only exist to provide information.
+
+option.info0=§bHover your mouse on a button
+value.info0.0=
+option.info0.comment=This section contains buttons that only exist to provide information.
+
+option.info1=How to get more performance
+value.info1.0=
+option.info1.comment=Performance is a complex topic in Minecraft because it gets affected by so many things, but you can try these:. Reduce your render distance, ideally it should be between 6 and 16 for almost every device. Reduce the "Profile" shader setting, these have been carefully tested for the best visual/performance ratio. More information will be added later.
+
+option.info2=What are the best settings
+value.info2.0=
+option.info2.comment=Best settings are subjective, but using the default settings will be the near-best for most people. The default settings have been shaped by years of community evaluations and feedback, while paying a lot of attention to the visual/performance ratio. But you should still feel free to tweak around and have fun doing so!
+
+option.info3=What is Profile or Visual Style
+value.info3.0=
+option.info3.comment="Profile" setting changes the setting founds in the "Performance Settings" menu, while not affecting any preference-based settings. "Visual Style" changes the "Default Style" values that exist on many preference-based settings, but it does not impact performance by an important amount.
+
+option.info4=What is RP Support
+value.info4.0=
+option.info4.comment=RP Support option determines how the shader pack treats the different blocks of Minecraft. For example, §bIntegratedPBR+§r treats gold blocks as reflective things, while §elabPBR§r or §eseuspbr§r require you to install a resource pack to tell that to the shader. Setting RP Support to §aBasic§r will make it so that no block is "special" other than a couple exceptions like water.
+
+option.info5=How to fix mod issues
+value.info5.0=
+option.info5.comment=Mod incompatibilities are inevitable with shader packs because of the way they work, but you can check out this information page about mod issues with Complementary to view a bunch of known fixes. www.complementary.dev/mod-issues
+
+option.info6=
+value.info6.0=
+option.info6.comment=
+
+option.info7=
+value.info7.0=
+option.info7.comment=
+
+option.info8=How to join the community
+value.info8.0=
+option.info8.comment=You can join the Complementary Discord server to join our friendly community, and be able to contact developers or experienced community members. www.complementary.dev/discord
+
+option.info9=How to support Complementary
+value.info9.0=
+option.info9.comment=Best way to support the development of Complementary is to share it with your friends or social media, but you can also directly support the developer on Patreon. www.patreon.com/emingt
+
+option.info10=Credits
+value.info10.0=
+option.info10.comment=EminGT: The main developer of Complementary. Capt Tatsu: Developer of BSL Shaders, his generosity is what made Complementary possible in the first place. Special Thanks: IMS212, sp614x, Chocapic13, Robobo1221, SixthSurge, null511, fayer3, catlikecoding, Builderb0y, Jessie, SpacEagle17, isuewo, flytrap
 
 #Style
 option.SHADER_STYLE=Visual Style
-option.SHADER_STYLE.comment=Determines the default visual style of the shaderpack. §bReimagined§r: Complementing Minecraft while preserving its unique visual elements. §dFantasy§r: Reworking the visuals of Minecraft with a semi-realistic fantasy style. §e[*]§r Following settings are affected: Water Style, Cloud Style, Sun/Moon Style, Sun/Moon Angle, Aurora Borealis Style.
+option.SHADER_STYLE.comment=Determines the default visual style of the shader pack. §bReimagined§r: Complementing Minecraft while preserving its unique visual elements. §dFantasy§r: Reworking the visuals of Minecraft with a semi-realistic fantasy style. §e[*]§r Affected settings: Water Style, Cloud Style, Sun/Moon Style, Sun/Moon Angle, Aurora Style.
 value.SHADER_STYLE.1=§bReimagined
 value.SHADER_STYLE.4=§dFantasy
 
 #Screens
-screen.PERFORMANCE_SETTINGS=Main Performance Settings
+screen.PERFORMANCE_SETTINGS=§ePerformance Settings§r
 screen.PERFORMANCE_SETTINGS.comment=Settings that directly relate to the performance, and get changed by the different shader profiles.
 
 screen.ATMOSPHERE_SETTINGS=Atmosphere
@@ -52,11 +96,17 @@ screen.TONEMAP_SETTINGS.comment=Settings that determine the color balance of the
 screen.MATERIAL_SETTINGS=Materials
 screen.MATERIAL_SETTINGS.comment=Settings that are related to the materials of Minecraft.
 
-screen.IPBR_SETTINGS=IntegratedPBR
+screen.IPBR_SETTINGS=Integrated Materials
 screen.IPBR_SETTINGS.comment=Settings that are related to the features of IntegratedPBR.
 
-screen.CUSTOM_PBR_SETTINGS=SEUSPBR / labPBR
-screen.CUSTOM_PBR_SETTINGS.comment=Settings that are related to the features of SEUSPBR / labPBR.
+screen.GLOWING_ORE_SETTINGS=Glowing Ores
+screen.GLOWING_ORE_SETTINGS.comment=Settings to adjust emission of ore blocks.
+
+screen.GLOWING_STUFF_SETTINGS=Glowing Stuff
+screen.GLOWING_STUFF_SETTINGS.comment=Settings to adjust emission of miscellaneous blocks.
+
+screen.CUSTOM_PBR_SETTINGS=labPBR/seuspbr Materials
+screen.CUSTOM_PBR_SETTINGS.comment=Settings that are related to the features of labPBR/seuspbr.
 
 screen.LIGHTING_SETTINGS=Lighting
 screen.LIGHTING_SETTINGS.comment=Settings that are related to lighting.
@@ -71,8 +121,17 @@ screen.RAIN_LIGHT_MULTS=Rainy/Snowy Weather
 screen.NETHER_LIGHT_MULTS=The Nether Dimension
 screen.END_LIGHT_MULTS=The End Dimension
 
+screen.BLOCKLIGHT_COLOR_SETTINGS=Blocklight Color
+screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Adjusts the color emited from light source blocks.
+
 screen.WATER_SETTINGS=Water
 screen.WATER_SETTINGS.comment=Settings that are about water.
+
+screen.WATER_COLOR_SETTINGS=Water Surface Color
+screen.UNDERWATER_COLOR_SETTINGS=Underwater Color
+
+screen.WATER_WAVE_SETTINGS=Waving Water Normals §e[*]§r
+screen.WATER_WAVE_SETTINGS.comment=Settings to customise the surface-direction waves (normals) seen on water. §e[*]§r These settings only work when the Water Style is set to "Reimagined + Waves" or "Fantasy".
 
 screen.WAVING_SETTINGS=Waving Textures
 screen.WAVING_SETTINGS.comment=Settings that are about waving textures.
@@ -88,14 +147,14 @@ screen.WORLD_OUTLINE_SETTINGS.comment=Settings that are about the optional outli
 
 #Settings
 option.RP_MODE=RP Support
-option.RP_MODE.comment=Changes many internal calculations to determine how different blocks and materials will be rendered. §bIntegrated PBR+§r: Calculated PBR and extra effects, highly recommended for most use cases. §aBasic§r: No PBR or extra effects. §eSEUSPBR/labPBR§r: Materials using the required PBR resource packs.
+option.RP_MODE.comment=Changes many internal calculations to determine how different blocks and materials will be rendered. §bIntegrated PBR+§r: Calculated PBR and extra effects, highly recommended for most use cases. §aBasic§r: No PBR or extra effects. §elabPBR/seuspbr§r: Materials using the required PBR resource packs.
 value.RP_MODE.0=§aBasic
 value.RP_MODE.1=§bIntegrated PBR+
-value.RP_MODE.2=§eSEUSPBR (RP Required)
+value.RP_MODE.2=§eseuspbr (RP Required)
 value.RP_MODE.3=§elabPBR (RP Required)
 
 option.WATER_QUALITY=Water Material Quality
-option.WATER_QUALITY.comment=Adjusts the visual quality of water. §bHigh§r: Enables water refraction. §aMedium§r: Default. §eLow§r: No edge foaming, no fancy alpha, no varying color intensity, and no surface shadows over Medium.
+option.WATER_QUALITY.comment=Adjusts the visual quality of water. §bHigh§r: Enables water refraction and allows for more detail on wavy water styles. §aMedium§r: Default. §eLow§r: No edge foaming, no fancy alpha, no varying color intensity, no surface shadows, and no wave parallax.
 value.WATER_QUALITY.1=§eLow
 value.WATER_QUALITY.2=§aMedium
 value.WATER_QUALITY.3=§bHigh
@@ -107,8 +166,9 @@ value.WATER_REFLECT_QUALITY.1=§4Potato
 value.WATER_REFLECT_QUALITY.2=§aMedium
 
 option.BLOCK_REFLECT_QUALITY=Block Reflection Quality §e[*]§r
-option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §bHigh§r: Smoother reflections using a temporal filter. §aMedium§r: Material-based reflections on all blocks. §e[*]§r RP Support option must be set to anything but Basic for any material reflections to appear.
+option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §bHigh§r: Sun/moon highlights + smoother specular reflections using a temporal filter. §aMedium§r: Sun/moon highlights + specular reflections. §eLow§r: Sun/moon highlights only. §e[*]§r RP Support option must be set to anything but Basic for any specular reflections to appear.
 value.BLOCK_REFLECT_QUALITY.0=§cOFF
+value.BLOCK_REFLECT_QUALITY.1=§eLow
 value.BLOCK_REFLECT_QUALITY.2=§aMedium
 value.BLOCK_REFLECT_QUALITY.3=§bHigh
 
@@ -118,20 +178,21 @@ value.REALTIME_SHADOWS.true=§bON
 value.REALTIME_SHADOWS.false=§cOFF
 
 option.SHADOW_QUALITY=Shadow Sample Quality
-option.SHADOW_QUALITY.comment=Adjusts the quality of shadows. Every tier further reduces the shadow noise artifacts, and options lower than §bHigh§r enable optimised shadows on leaves.
+option.SHADOW_QUALITY.comment=Adjusts the quality of shadows. Every tier further reduces the shadow noise artifacts, and options lower than §bHigh§r enable optimised shadows on leaves; meanwhile the §6Very Low§r option significantly downgrades shadows in multiple ways.
+value.SHADOW_QUALITY.0=§6Very Low
 value.SHADOW_QUALITY.1=§eLow
 value.SHADOW_QUALITY.2=§aMedium
 value.SHADOW_QUALITY.3=§bHigh
 value.SHADOW_QUALITY.4=§9Very High
 value.SHADOW_QUALITY.5=§dUltra
 
-option.LIGHTSHAFT_QUALITY=Light Shaft Quality
-option.LIGHTSHAFT_QUALITY.comment=Adjusts the quality of light shafts. Every tier further reduces the light shaft noise artifacts.
-value.LIGHTSHAFT_QUALITY.0=§cOFF
-value.LIGHTSHAFT_QUALITY.1=§eLow
-value.LIGHTSHAFT_QUALITY.2=§aMedium
-value.LIGHTSHAFT_QUALITY.3=§bHigh
-value.LIGHTSHAFT_QUALITY.4=§9Very High
+option.LIGHTSHAFT_QUALI_DEFINE=Light Shaft Quality
+option.LIGHTSHAFT_QUALI_DEFINE.comment=Adjusts the quality of light shafts. Every tier further reduces the light shaft noise artifacts.
+value.LIGHTSHAFT_QUALI_DEFINE.0=§cOFF
+value.LIGHTSHAFT_QUALI_DEFINE.1=§eLow
+value.LIGHTSHAFT_QUALI_DEFINE.2=§aMedium
+value.LIGHTSHAFT_QUALI_DEFINE.3=§bHigh
+value.LIGHTSHAFT_QUALI_DEFINE.4=§9Very High
 
 option.shadowDistance=Shadow Distance
 option.shadowDistance.comment=Adjusts the distance from the player which real-time shadows are rendered. §e[*]§r The value is internally capped at Render Distance. §c[-]§r Lower values may cause excessive Light Shaft leaking.
@@ -155,11 +216,26 @@ option.ENTITY_SHADOWS.comment=Enables the ability for entities and block entitie
 value.ENTITY_SHADOWS.true=§dON
 value.ENTITY_SHADOWS.false=§eOFF
 
-option.SSAO=SSAO
-option.SSAO.comment=Enables Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene.
-value.SSAO.0=§cOFF
-value.SSAO.1=Subtle
-value.SSAO.2=Normal
+option.DETAIL_QUALITY=Detail Quality
+option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: TAA, Reimagined clouds, lighting tweaks, night nebula.
+value.DETAIL_QUALITY.0=§4Potato
+value.DETAIL_QUALITY.2=§aMedium
+value.DETAIL_QUALITY.3=§bHigh
+
+option.SSAO_QUALI_DEFINE=Edge Shadow (SSAO) Quality
+option.SSAO_QUALI_DEFINE.comment=Adjusts the quality of Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene. Every tier further reduces the ssao noise artifacts.
+value.SSAO_QUALI_DEFINE.0=§cOFF
+value.SSAO_QUALI_DEFINE.2=§aMedium
+value.SSAO_QUALI_DEFINE.3=§bHigh
+value.SSAO_QUALI_DEFINE.5=§dUltra
+
+option.SSAO_I=Edge Shadow Intensity (SSAO)
+option.SSAO_I.comment=Determines the strength of Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene. §e[*]§r This setting won't work if SSAO is disabled in "Performance Settings".
+value.SSAO_I.0=§cOFF
+
+option.VANILLAAO_I=Edge Shadow Intensity (Vanilla)
+option.VANILLAAO_I.comment=Determines the strength of Minecraft's ambient occlusion which adds extra ambient shadowing to the edges of the scene.
+value.VANILLAAO_I.0=§cOFF
 
 option.BORDER_FOG=Border Fog
 option.BORDER_FOG.comment=Intense fog on the edges of the loaded world to hide chunk borders. §e[*]§r It's recommended to disable Border Fog when playing with less than 8 chunks of render distance.
@@ -171,11 +247,18 @@ value.ATM_FOG_MULT.0.65=Subtle
 value.ATM_FOG_MULT.0.80=Normal
 value.ATM_FOG_MULT.0.95=Intense
 
+option.ATM_FOG_DISTANCE=Atmospheric Fog Distance
+option.ATM_FOG_DISTANCE.comment=Adjusts the distance from the camera that the atmospheric fog starts to appear. §e[*]§r Note that the fog distance also gets automatically adjusted by the Render Distance video setting.
+
+option.ATM_FOG_ALTITUDE=Atmospheric Fog Altitude
+option.ATM_FOG_ALTITUDE.comment=Determines the altitude that the atmospheric fog appears the most prominently.
+
 option.CAVE_FOG=Cave Fog
 option.CAVE_FOG.comment=Enables extra fog in deep underground areas.
 
 option.LIGHTSHAFT_BEHAVIOUR=Light Shaft Mode
 option.LIGHTSHAFT_BEHAVIOUR.comment=Determines the behaviour of light shafts. §a[+]§r Scene Aware Light Shafts automatically transition between regular and extreme modes to provide the best results. §c[-]§r Extreme mode is not recommended for general gameplay, and it can severely impact performance.
+value.LIGHTSHAFT_BEHAVIOUR.0=§cOFF
 value.LIGHTSHAFT_BEHAVIOUR.1=Scene Aware §a[+]
 value.LIGHTSHAFT_BEHAVIOUR.2=Regular
 value.LIGHTSHAFT_BEHAVIOUR.3=Extreme §c[-]
@@ -185,29 +268,27 @@ option.LIGHTSHAFT_NIGHT_I=Light Shaft Night Multiplier
 option.LIGHTSHAFT_RAIN_I=Light Shaft Rain Multiplier
 
 option.CLOUD_STYLE_DEFINE=Cloud Style
-option.CLOUD_STYLE_DEFINE.comment=Determines the style of clouds.
+option.CLOUD_STYLE_DEFINE.comment=Determines the style of clouds. §e[*]§r "Default Style" means that the setting will be automatically determined by the "Visual Style" setting in the main menu of Shader Options. §e[*]§r The "Vanilla" style requires clouds to be enabled in Video Settings.
 value.CLOUD_STYLE_DEFINE.-1=Default Style
 value.CLOUD_STYLE_DEFINE.0=§cOFF
 value.CLOUD_STYLE_DEFINE.1=Reimagined
-value.CLOUD_STYLE_DEFINE.2=Double Reimagined
 value.CLOUD_STYLE_DEFINE.3=Fantasy
+value.CLOUD_STYLE_DEFINE.50=Vanilla §e[*]
 
 option.CLOUD_SHADOWS=Cloud Shadows
 option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds. §e[*]§r Cloud shadows will be randomly generated if Cloud Style is set to "Fantasy".
 
-option.CLOUD_HIGH_QUALITY=High Quality Clouds §e[*]§r
-option.CLOUD_HIGH_QUALITY.comment=Reduces noise and improves the integrity of the Reimagined Clouds. §e[*]§r This setting only works when the Cloud Style is set to "Reimagined" or "Double Reimagined". §c[-]§r This option can impact performance especially with double layer clouds.
-value.CLOUD_HIGH_QUALITY.1=OFF
-value.CLOUD_HIGH_QUALITY.2=ON §c[-]
+option.DOUBLE_REIM_CLOUDS=Double Reimagined Clouds §e[*]§r
+option.DOUBLE_REIM_CLOUDS.comment=Enables a secondary Reimagined cloud layer. §e[*]§r This setting only works with the "Reimagined" Cloud Style.
 
 option.CLOUD_CLOSED_AREA_CHECK=Prevent Clouds in Interiors §e[*]§r
-option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works when the Cloud Style is set to "Reimagined" or "Double Reimagined". §e[*]§r This setting will be treated as disabled if "Real-Time Shadows" are also disabled.
+option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works with the "Reimagined" Cloud Style. §e[*]§r This setting will be treated as disabled if "Real-Time Shadows" are also disabled.
 
 option.CLOUD_ALT1=Cloud Layer 1 Altitude §e[*]§r
-option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting only works when the Cloud Style is set to "Reimagined" or "Double Reimagined".
+option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting only works with the "Reimagined" Cloud Style.
 
 option.CLOUD_ALT2=Cloud Layer 2 Altitude §e[*]§r
-option.CLOUD_ALT2.comment=Determines the world height which the second layer clouds will appear at. §e[*]§r This setting only works when the Cloud Style is set to "Double Reimagined".
+option.CLOUD_ALT2.comment=Determines the world height which the second layer clouds will appear at. §e[*]§r This setting only works when the "Double Reimagined Clouds" option is enabled with the "Reimagined" Cloud Style.
 
 option.T_EXPOSURE=Tonemap Exposure
 option.T_EXPOSURE.comment=Adjusts the overall brightness of the image.
@@ -243,35 +324,77 @@ option.GR_BB=CG - Blue to Blue
 option.GR_BC=CG - Blue Curve
 
 option.WATER_STYLE_DEFINE=Water Style
-option.WATER_STYLE_DEFINE.comment=Determines the style of water. §c[-]§r Water waves can severely impact performance.
+option.WATER_STYLE_DEFINE.comment=Determines the style of water. §e[*]§r "Default Style" means that the setting will be automatically determined by the "Visual Style" setting in the main menu of Shader Options.
 value.WATER_STYLE_DEFINE.-1=Default Style
 value.WATER_STYLE_DEFINE.1=Reimagined
 value.WATER_STYLE_DEFINE.2=Reimagined + Waves
 value.WATER_STYLE_DEFINE.3=Fantasy
 
-option.WATER_BUMPINESS=Water Wave Strength §e[*]§r
-option.WATER_BUMPINESS.comment=Adjusts the intensity of surface-direction waves (normals) seen on water. §e[*]§r This setting is not related to the "Waving Water Texture" option. §e[*]§r This setting only works when the Water Style is set to "Reimagined + Waves" or "Fantasy".
+option.WATER_CAUSTIC_STYLE_DEFINE=Water Caustic Style
+option.WATER_CAUSTIC_STYLE_DEFINE.comment=Determines the style of water shadows, also known as water caustics.
+value.WATER_CAUSTIC_STYLE_DEFINE.-1=Same as Water
+value.WATER_CAUSTIC_STYLE_DEFINE.1=Reimagined
+value.WATER_CAUSTIC_STYLE_DEFINE.3=Fantasy
 
 option.WATER_REFRACTION_INTENSITY=Water Refraction Intensity §e[*]§r
 option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when the Water Quality is set to "High" or above, or else it will only affect the subtle underwater distortion.
 
-option.WATERCOLOR_R=Water Color Red Multiplier
-option.WATERCOLOR_G=Water Color Green Multiplier
-option.WATERCOLOR_B=Water Color Blue Multiplier
+option.WATER_FOAM_I=Water Foam Intensity
+option.WATER_FOAM_I.comment=Determines the opacity of foam seen on water edges. §e[*]§r This setting only works when the Water Material Quality is set to Medium or above.
+
+option.WATER_ALPHA_MULT=Water Opacity Factor
+option.WATER_ALPHA_MULT.comment=Adjusts how opaque the water looks. §c[-]§r Extreme values will break the balance of water lighting.
+
+option.WATER_FOG_MULT=Water Fog Factor
+option.WATER_FOG_MULT.comment=Adjusts how close the water fog looks. Higher values provide closer fog. §c[-]§r Extreme values will break the balance of water lighting.
+
+option.WATERCOLOR_R=Water Surface Red Multiplier
+option.WATERCOLOR_G=Water Surface Green Multiplier
+option.WATERCOLOR_B=Water Surface Blue Multiplier
+
+option.WATERCOLOR_MODE=Color Mode
+option.WATERCOLOR_MODE.comment=Determines how the water color will be handled. Constant: Water colors won't change between biomes. Biome Based: Color will change depending on the biome. Biome Based (Clamped): Biome based, but prevents the surface color from getting weird in certain biomes. §e[*]§r This setting won't work correctly on Minecraft versions below 1.13.
+value.WATERCOLOR_MODE.3=Biome Based (Clamped)
+value.WATERCOLOR_MODE.2=Biome Based
+value.WATERCOLOR_MODE.0=Constant
+
+option.BRIGHT_CAVE_WATER=Brighter Shallow/Cave Water
+option.BRIGHT_CAVE_WATER.comment=Makes shallow water or water in closed areas brighter to improve visibility in caves, and add some color detail to the shallow parts of oceans. §e[*]§r This effect won't work if Water Opacity Factor is set higher than 199 for technical reasons.
+
+option.UNDERWATERCOLOR_R=Underwater Red Multiplier
+option.UNDERWATERCOLOR_G=Underwater Green Multiplier
+option.UNDERWATERCOLOR_B=Underwater Blue Multiplier
+
+option.WATER_BUMPINESS=Wave Strength
+option.WATER_BUMPINESS.comment=Adjusts the intensity of surface-direction waves (normals) seen on water.
+
+option.WATER_BUMP_SMALL=Wave Strength - Small Waves
+option.WATER_BUMP_SMALL.comment=Adjusts the intensity of waves that are smaller than others.
+
+option.WATER_BUMP_MED=Wave Strength - Medium Waves
+option.WATER_BUMP_MED.comment=Adjusts the intensity of waves that are average-sized compared to others.
+
+option.WATER_BUMP_BIG=Wave Strength - Large Waves
+option.WATER_BUMP_BIG.comment=Adjusts the intensity of waves that are larger than others.
+
+option.WATER_SPEED_MULT=Wave Speed
+option.WATER_SPEED_MULT.comment=Adjusts the movement speed of surface-direction waves (normals) seen on water.
+
+option.WATER_SIZE_MULT=Wave Size
+option.WATER_SIZE_MULT.comment=Adjusts how big the surface-direction waves (normals) look on water.
 
 option.SUN_ANGLE=Sun/Moon Angle
 option.SUN_ANGLE.comment=Adjusts the angle of sun/moon relative to the world during noon. §a[+]§r Reimagined's lighting model is specially designed to make the "0" sun angle work just as well as others.
 value.SUN_ANGLE.-1=Default Style
-value.SUN_ANGLE.0=0 §a[+]
-value.SUN_ANGLE.-20=-20
-value.SUN_ANGLE.-30=-30
-value.SUN_ANGLE.-40=-40
+value.SUN_ANGLE.0=0 §r(§bReimagined§r)
+value.SUN_ANGLE.-40=-40 §r(§dFantasy§r)
 
 option.SUN_MOON_STYLE_DEFINE=Sun/Moon Style
 option.SUN_MOON_STYLE_DEFINE.comment=Determines the style of sun/moon. §e[*]§r This setting might interact incorrectly with some resource packs due to the limitations of sun/moon/skybox differentiation.
 value.SUN_MOON_STYLE_DEFINE.-1=Default Style
 value.SUN_MOON_STYLE_DEFINE.1=Reimagined
 value.SUN_MOON_STYLE_DEFINE.2=Fantasy
+value.SUN_MOON_STYLE_DEFINE.3=Fantasy - Smaller
 
 option.SUN_MOON_HORIZON=Sun/Moon Horizon
 option.SUN_MOON_HORIZON.comment=Prevents the sun/moon from appearing below the horizon line.
@@ -289,12 +412,21 @@ value.AURORA_STYLE_DEFINE.1=Reimagined
 value.AURORA_STYLE_DEFINE.2=Fantasy
 
 option.AURORA_CONDITION=Aurora
-option.AURORA_CONDITION.comment=Determines the condition(s) for the Aurora Borealis to appear.
-value.AURORA_CONDITION.0=No Condition
+option.AURORA_CONDITION.comment=Determines the condition(s) for the Aurora Borealis to appear. §e[*]§r Aurora Borealis will only appear during night regardless of this setting
+value.AURORA_CONDITION.0=Every Night
 value.AURORA_CONDITION.1=Full Moon
 value.AURORA_CONDITION.2=Snowy Biome
 value.AURORA_CONDITION.3=Full Moon in Snowy Biome
 value.AURORA_CONDITION.4=Full Moon or Snowy Biome
+
+option.NIGHT_NEBULA=Night Nebulae
+option.NIGHT_NEBULA.comment=Adds galaxy-style nebulae to the night sky. The nebulae are procedurally generated, and they will look different every night. §c[-]§r This effect can impact performance. §e[*]§r "Nebulae" isn't a typo, it's the plural of Nebula =D
+
+option.NIGHT_NEBULA_I=Night Nebula Brightness
+option.NIGHT_NEBULA_I.comment=Adjusts the brightness of Night Nebulae.
+
+option.WEATHER_TEX_OPACITY=Weather Texture Opacity
+option.WEATHER_TEX_OPACITY.comment=Adjusts the opacity of the rainfall/snowfall weather textures.
 
 option.PIXEL_SHADOW=Pixelated Shadows
 option.PIXEL_SHADOW.comment=Modifies the world coordinates on a grid to make shadows pixelated. §e[*]§r This setting does not affect performance.
@@ -326,8 +458,10 @@ value.BLOOM_STRENGTH.0.17=90% §c[-]
 value.BLOOM_STRENGTH.0.18=95% §c[-]
 value.BLOOM_STRENGTH.0.19=100% §c[-]
 
-option.FXAA=Anti-Aliasing
-option.FXAA.comment=Enables Fast Approximate Anti-Aliasing (FXAA), which is basically an effect that produces smoother image. §e[*]§r Disabling this option won't disable lite Temporal Anti Aliasing (TAA), because lite TAA is required for a lot of effects to perform well.
+option.FXAA=Anti-Aliasing (FXAA)
+option.FXAA.comment=Enables Fast Approximate Anti-Aliasing (FXAA), which is basically an effect that produces smoother image.
+value.FXAA.true=§aON
+value.FXAA.false=§eOFF
 
 option.IMAGE_SHARPENING=Image Sharpening
 option.IMAGE_SHARPENING.comment=Makes the image sharper using a filter. §c[-]§r Too much sharpening might cause visual artifacts like aliasing, flickering, noise, and subtle brightness changes.
@@ -346,8 +480,16 @@ option.MOTION_BLURRING_STRENGTH.comment=Adjusts the intensity of motion blur.
 option.VIGNETTE_R=Vignette
 option.VIGNETTE_R.comment=Applies darkening around the edges of the screen.
 
+option.CHROMA_ABERRATION=Chromatic Aberration
+option.CHROMA_ABERRATION.comment=Separates different color channels towards the edges of the screen. §c[-] Chromatic Aberration can cause the image to feel blurry; high values aren't recommended for gameplay.
+value.CHROMA_ABERRATION.4=4 §c[-]
+value.CHROMA_ABERRATION.5=5 §c[-]
+value.CHROMA_ABERRATION.6=6 §c[-]
+value.CHROMA_ABERRATION.7=7 §c[-]
+value.CHROMA_ABERRATION.8=8 §c[-]
+
 option.FANCY_GLASS=Improved Glass
-option.FANCY_GLASS.comment=Improves the regular glass by adding a translucent layer to it. §c[-]§r May cause problems on Iris because of a Sodium bug. §e[*]§r RP Support option must be set to Integrated PBR+.
+option.FANCY_GLASS.comment=Improves the regular glass by adding a translucent layer to it. §c[-]§r Does not work on Iris because of a Sodium bug. §e[*]§r RP Support option must be set to Integrated PBR+.
 
 option.HAND_SWAYING=Hand Sway
 option.HAND_SWAYING.comment=Adds slow movement to the player hand to simulate a breathing animation.
@@ -369,6 +511,9 @@ value.SHOW_LIGHT_LEVEL.1=Hold Spider Eye
 value.SHOW_LIGHT_LEVEL.2=Hold Light Source
 value.SHOW_LIGHT_LEVEL.3=Always ON
 
+option.COLOR_CODED_PROGRAMS=Color Coded Programs §c[-]§r
+option.COLOR_CODED_PROGRAMS.comment=Shows which shader programs are being used to render geometry. §c[-]§r This option is only for development purposes and shouldn't be used for gameplay. §e[*]§r Color values can be found in shaders\lib\misc\colorCodedPrograms.glsl
+
 option.MINIMUM_LIGHT_MODE=Cave Lighting
 option.MINIMUM_LIGHT_MODE.comment=Adds extra lighting to areas that don't have skylight. §a[+]§r "Default" option determines the lighting according to the "Brightness" slider in Video Settings.
 value.MINIMUM_LIGHT_MODE.0=Very Dark
@@ -384,51 +529,65 @@ option.GENERATED_NORMALS=Generated Normals
 option.GENERATED_NORMALS.comment=Adds auto-generated bumpy details to surfaces. §e[*]§r RP Support option must be set to Integrated PBR+.
 
 option.COATED_TEXTURES=Coated Textures
-option.COATED_TEXTURES.comment=Adds auto-generated noise to textures. §e[*]§r RP Support option must be set to Integrated PBR+.
+option.COATED_TEXTURES.comment=Adds auto-generated dusty details to textures. §e[*]§r RP Support option must be set to Integrated PBR+.
 
-option.ENTITY_GN_AND_CT=GN and CT on Entities
-option.ENTITY_GN_AND_CT.comment=Decides if Generated Normals and Coated Textures can appear on entities. §e[*]§r This won't enable GN or CT on entities unless those options are already enabled.
+option.ENTITY_GN_AND_CT=Allow GN and CT on Entities
+option.ENTITY_GN_AND_CT.comment=Decides if Generated Normals and Coated Textures can appear on entities. §e[*]§r This won't enable GN or CT on entities if the main GN or CT options are disabled.
 
 option.GENERATED_NORMAL_MULT=Generated Normal Strength
 option.GENERATED_NORMAL_MULT.comment=Adjusts the strength of auto-generated bumpy details on surfaces.
 
 option.COATED_TEXTURE_MULT=Coated Texture Strength
-option.COATED_TEXTURE_MULT.comment=Adjusts the strength of auto-generated noise on textures.
+option.COATED_TEXTURE_MULT.comment=Adjusts the strength of auto-generated dusty details on textures.
 
-option.GLOWING_ORES=Glowing Ores
-option.GLOWING_ORES.comment=Adds emission to ores. §e[*]§r RP Support option must be set to Integrated PBR+.
-value.GLOWING_ORES.0=OFF
-value.GLOWING_ORES.1=Overworld
-value.GLOWING_ORES.2=Overworld + Nether
+option.GLOWING_ORE_ACTIVE=§eEnable Glowing Ores
+option.GLOWING_ORE_ACTIVE.comment=Enables the functionality of glowing ores. §e[*]§r The settings below won't work if this option isn't enabled.
 
-option.EMISSIVE_REDSTONE_BLOCK=Glowing Redstone Block
-option.EMISSIVE_REDSTONE_BLOCK.comment=Adds emission to the Redstone Block. §e[*]§r RP Support option must be set to Integrated PBR+.
+option.GLOWING_ORE_MULT=Ore Glow Strength
+option.GLOWING_ORE_MULT.comment=Determines the emission strength of glowing ores.
 
-option.EMISSIVE_LAPIS_BLOCK=Glowing Lapis Lazuli Block
-option.EMISSIVE_LAPIS_BLOCK.comment=Adds emission to the Lapis Lazuli Block. §e[*]§r RP Support option must be set to Integrated PBR+.
+option.GLOWING_ORE_IRON=Glowing Iron Ore
+option.GLOWING_ORE_GOLD=Glowing Gold Ore
+option.GLOWING_ORE_COPPER=Glowing Copper Ore
+option.GLOWING_ORE_REDSTONE=Glowing Redstone Ore §e[*]§r
+option.GLOWING_ORE_REDSTONE.comment=§e[*]§r All redstone ores will still glow if they are "activated" regardless of this setting.
+option.GLOWING_ORE_LAPIS=Glowing Lapis Lazuli Ore
+option.GLOWING_ORE_EMERALD=Glowing Emerald Ore
+option.GLOWING_ORE_DIAMOND=Glowing Diamond Ore
+option.GLOWING_ORE_NETHERQUARTZ=Glowing Nether Quartz Ore
+option.GLOWING_ORE_NETHERGOLD=Glowing Nether Gold Ore
+option.GLOWING_ORE_GILDEDBLACKSTONE=Glowing Gilded Blackstone
+option.GLOWING_ORE_ANCIENTDEBRIS=Glowing Ancient Debris
+option.GLOWING_ORE_MODDED=Glowing Modded Ores §e[*]§r
+option.GLOWING_ORE_MODDED.comment=§e[*]§r You can add modded ore IDs to "Complementary\shaders\block.properties" file in order to make them glow. You can open block.properties using any text editor like notepad, and then add modded ore block IDs next to "block.10024=".
 
 option.GLOWING_AMETHYST=Glowing Amethyst
-option.GLOWING_AMETHYST.comment=Adds emission to amethyst buds/clusters/blocks. §e[*]§r RP Support option must be set to Integrated PBR+.
 value.GLOWING_AMETHYST.0=§cOFF
 value.GLOWING_AMETHYST.1=Crystal
 value.GLOWING_AMETHYST.2=Crystal & Block
+option.GLOWING_LICHEN=Glowing Glow Lichen
+value.GLOWING_LICHEN.0=§cOFF
+value.GLOWING_LICHEN.1=In Closed Areas
+value.GLOWING_LICHEN.2=Always
+option.EMISSIVE_REDSTONE_BLOCK=Glowing Redstone Block
+option.EMISSIVE_LAPIS_BLOCK=Glowing Lapis Lazuli Block
 
 option.NORMAL_MAP_STRENGTH=Normal Map Strength
-option.NORMAL_MAP_STRENGTH.comment=Adjusts the strength of bumpy details on surfaces. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+option.NORMAL_MAP_STRENGTH.comment=Adjusts the strength of bumpy details on surfaces. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 
 option.CUSTOM_EMISSION_INTENSITY=Custom Emission Intensity
-option.CUSTOM_EMISSION_INTENSITY.comment=Adjusts the intensity of glowing surfaces. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+option.CUSTOM_EMISSION_INTENSITY.comment=Adjusts the intensity of glowing surfaces. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 
 option.POM=Parallax Occlusion Mapping
-option.POM.comment=Enables 3D effect on surfaces. §c[-]§r This effect can severely impact performance. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+option.POM.comment=Enables 3D effect on surfaces. §c[-]§r This effect can severely impact performance. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 value.POM.false=OFF
 value.POM.true=ON §c[-]
 
 option.POM_DEPTH=POM Depth
-option.POM_DEPTH.comment=Adjusts the depth of parallax occlusion mapping. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+option.POM_DEPTH.comment=Adjusts the depth of parallax occlusion mapping. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 
 option.POM_QUALITY=POM Quality
-option.POM_QUALITY.comment=Adjusts the sharpness/accuracy of parallax occlusion mapping. §c[-]§r Values higher than 200 can severely impact performance. §e[*]§r Values lower than 100 will force "POM Lighting Mode" to "Smooth". §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+option.POM_QUALITY.comment=Adjusts the sharpness/accuracy of parallax occlusion mapping. §c[-]§r Values higher than 200 can severely impact performance. §e[*]§r Values lower than 100 will force "POM Lighting Mode" to "Smooth". §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 value.POM_QUALITY.16=16 §e[*]
 value.POM_QUALITY.32=32 §e[*]
 value.POM_QUALITY.64=64 §e[*]
@@ -436,7 +595,7 @@ value.POM_QUALITY.256=256 §c[-]
 value.POM_QUALITY.512=512 §c[-]
 
 option.POM_DISTANCE=POM Distance
-option.POM_DISTANCE.comment=Adjusts how far parallax occlusion mapping is calculated. §e[*]§r It's recommended to keep this value below 50 to get a small performance gain. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used.
+option.POM_DISTANCE.comment=Adjusts how far parallax occlusion mapping is calculated. §e[*]§r It's recommended to keep this value below 50 to get a small performance gain. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 value.POM_DISTANCE.64=64 §e[*]
 value.POM_DISTANCE.128=128 §e[*]
 value.POM_DISTANCE.256=256 §e[*]
@@ -448,29 +607,21 @@ option.POM_LIGHTING_MODE.comment=Adjusts the lighting style for POM-affected sur
 value.POM_LIGHTING_MODE.1=Smooth
 value.POM_LIGHTING_MODE.2=Sharp
 
-option.POM_ALLOW_CUTOUT=POM on Cutout Surfaces
+option.POM_ALLOW_CUTOUT=POM on Cutout Surfaces §c[-]§r
 option.POM_ALLOW_CUTOUT.comment=Makes POM be able to work on cutout block sections (like gaps of leaves). §c[-]§r This effect can severely impact performance.
-value.POM_ALLOW_CUTOUT.false=OFF
-value.POM_ALLOW_CUTOUT.true=ON §c[-]
 
 option.DIRECTIONAL_BLOCKLIGHT=Directional Blocklight
-option.DIRECTIONAL_BLOCKLIGHT.comment=Adds depth to blocklight depending on the surface normal. §e[*]§r RP Support option must be set to SEUSPBR/labPBR, and a compatible resource pack must be used. §c[-]§r This effect can impact performance.
+option.DIRECTIONAL_BLOCKLIGHT.comment=Adds depth to blocklight depending on the surface normal. §c[-]§r May cause visual artifacts in some situations. §c[-]§r This effect can impact performance. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used. 
 value.DIRECTIONAL_BLOCKLIGHT.0=OFF
-value.DIRECTIONAL_BLOCKLIGHT.3=Subtle
-value.DIRECTIONAL_BLOCKLIGHT.7=Normal
-value.DIRECTIONAL_BLOCKLIGHT.11=Intense
+value.DIRECTIONAL_BLOCKLIGHT.3=Subtle §c[-]
+value.DIRECTIONAL_BLOCKLIGHT.7=Normal §c[-]
+value.DIRECTIONAL_BLOCKLIGHT.11=Intense §c[-]
 
 option.HELD_LIGHTING_MODE=Dynamic Handheld Lighting
 option.HELD_LIGHTING_MODE.comment=Allows handheld light sources to cast light onto the scene.
 value.HELD_LIGHTING_MODE.0=§cOFF
 value.HELD_LIGHTING_MODE.1=Subtle
 value.HELD_LIGHTING_MODE.2=Normal
-
-option.BLOCKLIGHT_COLOR_MODE=Blocklight Color
-option.BLOCKLIGHT_COLOR_MODE.comment=Determines the color of the light cast from light sources.
-value.BLOCKLIGHT_COLOR_MODE.9=Cold
-value.BLOCKLIGHT_COLOR_MODE.10=Natural
-value.BLOCKLIGHT_COLOR_MODE.11=Warm
 
 option.NO_WAVING_INDOORS=No Waving in Closed Areas
 option.NO_WAVING_INDOORS.comment=Prevents blocks from waving in closed areas using skylight. §c[-]§r This setting being enabled can cause problems with some resource packs or mods.
@@ -480,6 +631,9 @@ option.WAVING_FOLIAGE.comment=Adds movement to foliage to simulate wind.
 
 option.WAVING_LEAVES=Waving Leaves
 option.WAVING_LEAVES.comment=Adds movement to leaves to simulate wind.
+
+option.WAVING_LAVA=Waving Lava Texture
+option.WAVING_LAVA.comment=Adds constant movement to lava. §e[*]§r Lava waving in particular is not affected by the "No Waving in Closed Areas" setting.
 
 option.WAVING_WATER_VERTEX=Waving Water Texture
 option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind. §e[*]§r This option is not related to the "Water Wave Strength" setting.
@@ -513,10 +667,10 @@ option.SELECT_OUTLINE_R=SO Red
 option.SELECT_OUTLINE_G=SO Green
 option.SELECT_OUTLINE_B=SO Blue
 
-option.LIGHT_COLOR_MULTS=Lighting Color Multipliers
+option.LIGHT_COLOR_MULTS=§eLighting Color Multipliers
 option.LIGHT_COLOR_MULTS.comment=Enables customization of lighting colors that are seen on all surfaces.
 
-option.ATM_COLOR_MULTS=Atmosphere Color Multipliers
+option.ATM_COLOR_MULTS=§eAtmosphere Color Multipliers
 option.ATM_COLOR_MULTS.comment=Enables customization of atmosphere colors that are mostly seen in the sky and fog.
 
 option.LIGHT_MORNING_R=Lighting Red Multiplier
@@ -567,3 +721,7 @@ option.ATM_END_R=Atmosphere Red Multiplier
 option.ATM_END_G=Atmosphere Green Multiplier
 option.ATM_END_B=Atmosphere Blue Multiplier
 option.ATM_END_I=Atmosphere Intensity Multiplier
+
+option.XLIGHT_R=Blocklight Red Multiplier
+option.XLIGHT_G=Blocklight Green Multiplier
+option.XLIGHT_B=Blocklight Blue Multiplier

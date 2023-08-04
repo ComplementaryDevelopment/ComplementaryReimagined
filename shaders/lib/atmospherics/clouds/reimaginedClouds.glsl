@@ -42,7 +42,7 @@ float InterleavedGradientNoise() {
 bool GetCloudNoise(vec3 tracePos, float cloudAltitude) {
     vec2 coord = GetRoundedCloudCoord(ModifyTracePos(tracePos.xyz, cloudAltitude).xz);
     
-    float noise = texture2D(colortex3, coord).r;
+    float noise = texture2D(colortex3, coord).b;
     float threshold = clamp(abs(cloudAltitude - tracePos.y) / cloudStretch, 0.001, 0.999);
     threshold = pow2(pow2(pow2(threshold)));
     return noise > (threshold * 0.5 + 0.25);
@@ -62,9 +62,9 @@ vec4 GetVolumetricClouds(float cloudAltitude, float distanceThreshold, inout flo
     if (maxPlaneDistance < 0.0) return vec4(0.0);
     float planeDistanceDif = maxPlaneDistance - minPlaneDistance;
 
-    #if CLOUD_HIGH_QUALITY == 1
+    #ifndef HQ_REIM_CLOUD
         int sampleCount = max(int(planeDistanceDif) / 8, 12);
-    #elif CLOUD_HIGH_QUALITY == 2
+    #else
         int sampleCount = max(int(planeDistanceDif), 12);
     #endif
 
@@ -109,16 +109,18 @@ vec4 GetVolumetricClouds(float cloudAltitude, float distanceThreshold, inout flo
             vec3 cLightPosAdd = normalize(ViewToPlayer(lightVec * 1000000000.0)) * vec3(0.08);
             cLightPosAdd *= shadowTime;
 
-            float light = 2.0;
-            cLightPos += (1.0 + gradientNoise) * cLightPosAdd;
-            light -= texture2D(colortex3, GetRoundedCloudCoord(cLightPos.xz)).r * cloudShadingM;
-            cLightPos += gradientNoise * cLightPosAdd;
-            light -= texture2D(colortex3, GetRoundedCloudCoord(cLightPos.xz)).r * cloudShadingM;
-
             float VdotSM1 = max0(sunVisibility > 0.5 ? VdotS : - VdotS);
-            float VdotSM2 = VdotSM1 * shadowTime * 0.25;
-                  VdotSM2 += 0.5 * cloudShading + 0.08;
-            cloudShading = VdotSM2 * light * lightMult;
+            #if DETAIL_QUALITY >= 1
+                float light = 2.0;
+                cLightPos += (1.0 + gradientNoise) * cLightPosAdd;
+                light -= texture2D(colortex3, GetRoundedCloudCoord(cLightPos.xz)).b * cloudShadingM;
+                cLightPos += gradientNoise * cLightPosAdd;
+                light -= texture2D(colortex3, GetRoundedCloudCoord(cLightPos.xz)).b * cloudShadingM;
+
+                float VdotSM2 = VdotSM1 * shadowTime * 0.25;
+                    VdotSM2 += 0.5 * cloudShading + 0.08;
+                cloudShading = VdotSM2 * light * lightMult;
+            #endif
             
             vec3 colorSample = cloudAmbientColor + cloudLightColor * (0.07 + cloudShading);
             vec3 cloudSkyColor = GetSky(VdotU, VdotS, dither, true, false);

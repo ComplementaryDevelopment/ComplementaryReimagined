@@ -62,6 +62,10 @@ uniform sampler2D noisetex;
 	uniform sampler2D specular;
 #endif
 
+#ifdef IS_IRIS
+	uniform int currentRenderedItemId;
+#endif
+
 //Pipeline Constants//
 
 //Common Variables//
@@ -112,6 +116,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
 
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
+#endif
+
 //Program//
 void main() {
 	vec4 color = texture2D(tex, texCoord);
@@ -139,6 +147,10 @@ void main() {
 		vec3 shadowMult = vec3(1.0);
 		#ifdef IPBR
 			#include "/lib/materials/materialHandling/entityMaterials.glsl"
+
+			#ifdef IS_IRIS
+				#include "/lib/materials/materialHandling/irisMaterials.glsl"
+			#endif
 
 			#ifdef GENERATED_NORMALS
 				GenerateNormals(normalM, colorP);
@@ -174,11 +186,15 @@ void main() {
 		#endif
 	}
 
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
+	#endif
+
 	/* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;
 	gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
-	#if BLOCK_REFLECT_QUALITY >= 1 && RP_MODE >= 2
+	#if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 2
 		/* DRAWBUFFERS:015 */
 		gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
 	#endif
@@ -241,8 +257,10 @@ void main() {
 	gl_Position = ftransform();
 
 	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-
 	lmCoord  = GetLightMapCoordinates();
+
+	lmCoord.x = min(lmCoord.x, 0.9);
+	//Fixes some servers/mods making entities insanely bright, while also slightly reducing the max blocklight on a normal entity
 
 	glColor = gl_Color;
 

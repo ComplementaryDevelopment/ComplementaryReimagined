@@ -64,10 +64,15 @@ uniform sampler2D depthtex1;
 
 	uniform vec3 skyColor;
 
-	uniform sampler2D colortex3;
 	uniform sampler2D shadowtex0;
 	uniform sampler2DShadow shadowtex1;
 	uniform sampler2D shadowcolor1;
+
+	#ifndef LIGHT_COLORING
+		uniform sampler2D colortex3;
+	#else
+		uniform sampler2D colortex8;
+	#endif
 #endif
 
 #if WATER_QUALITY >= 3
@@ -148,7 +153,11 @@ void main() {
 
 		/* The "1.0 - translucentMult" trick is done because of the default color attachment
 		value being vec3(0.0). This makes it vec3(1.0) to avoid issues especially on improved glass */
-		vec3 translucentMult = 1.0 - texelFetch(colortex3, texelCoord, 0).rgb;
+		#ifndef LIGHT_COLORING
+			vec3 translucentMult = 1.0 - texelFetch(colortex3, texelCoord, 0).rgb;
+		#else
+			vec3 translucentMult = 1.0 - texelFetch(colortex8, texelCoord, 0).rgb;
+		#endif
 
 		vec3 nViewPos = normalize(viewPos.xyz);
 
@@ -171,19 +180,12 @@ void main() {
 			volumetricLight.rgb *= GetAtmColorMult();
 		#endif
 	#endif
-
-	/*color.rgb = vec3(lViewPos);
-	if (gl_FragCoord.x > 960)
-	color.rgb = vec3(GetApproxDistance(z1));
-	color.rgb *= 0.02;
-	color.rgb = min(color.rgb, vec3(2.0));*/
 	
 	if (isEyeInWater == 1) {
 		if (z0 == 1.0) color.rgb = waterFogColor;
 
-		const vec3 underwaterMult = vec3(0.80, 0.87, 0.97);
+		vec3 underwaterMult = vec3(0.80, 0.87, 0.97);
 		color.rgb *= underwaterMult * 0.85;
-
 		volumetricLight.rgb *= pow2(underwaterMult * 0.71);
 	} else if (isEyeInWater == 2) {
 		if (z1 == 1.0) color.rgb = fogColor * 5.0;
@@ -203,24 +205,12 @@ void main() {
 	#if defined BLOOM_FOG && !defined MOTION_BLURRING
 		color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog moves between composite and composite2 depending on Motion Blur
 	#endif
-	
-	/*//if (texCoord.x < 0.25 && texCoord.y < 0.25)
-	vec4 wpos = vec4(shadowModelView[3][0], shadowModelView[3][1], shadowModelView[3][2], shadowModelView[3][3]);
-	wpos = shadowProjection * wpos;
-	wpos /= wpos.w;
-	vec4 shadowPosition = DistortShadow(wpos, 1.0 - shadowMapBias);
-	float checkS = texture2D(shadowtex0, texCoord).x;
-	vec3 checkColor = vec3(1.0 - checkS);
-	checkColor *= mix(vec3(0,1,0), vec3(0,0,1), clamp((checkS-shadowPosition.z)*65536.0,0.0,1.0));
-	if (checkS > 0.55) checkColor = vec3(checkColor.g + checkColor.b,0,0) * 3.0;
-	color += checkColor * 2.0;*/
-
-	//if (texCoord.y < 0.05 && vlFactor > texCoord.x) color = vec3(1,0,1);
 
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(color, 1.0);
 	
-	#if LIGHTSHAFT_QUALITY > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END // Can't use LIGHTSHAFTS_ACTIVE on Optifine
+	// Can't use LIGHTSHAFTS_ACTIVE on Optifine
+	#if LIGHTSHAFT_QUALI_DEFINE > 0 && LIGHTSHAFT_BEHAVIOUR > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
 		/* DRAWBUFFERS:04 */
 		gl_FragData[1] = vec4(vlFactorM, 0.0, 0.0, 1.0);
 	#endif

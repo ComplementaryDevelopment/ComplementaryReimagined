@@ -19,15 +19,24 @@ uniform vec3 cameraPosition, previousCameraPosition;
 uniform mat4 gbufferPreviousProjection, gbufferProjectionInverse;
 uniform mat4 gbufferPreviousModelView, gbufferModelViewInverse;
 
-uniform sampler2D colortex3;
 uniform sampler2D colortex2;
 uniform sampler2D colortex1;
 uniform sampler2D depthtex1;
 
+#ifndef LIGHT_COLORING
+    uniform sampler2D colortex3;
+#else
+    uniform sampler2D colortex8;
+#endif
+
 //Pipeline Constants//
 #include "/lib/pipelineSettings.glsl"
 
-const bool colortex3MipmapEnabled = true;
+#ifndef LIGHT_COLORING
+    const bool colortex3MipmapEnabled = true;
+#else
+    const bool colortex8MipmapEnabled = true;
+#endif
 
 //Common Variables//
 
@@ -43,7 +52,12 @@ float GetLinearDepth(float depth) {
 
 //Program//
 void main() {
-    vec3 color = texelFetch(colortex3, texelCoord, 0).rgb;
+    #ifndef LIGHT_COLORING
+        vec3 color = texelFetch(colortex3, texelCoord, 0).rgb;
+    #else
+        vec3 color = texelFetch(colortex8, texelCoord, 0).rgb;
+    #endif
+
     vec3 temp = vec3(0.0);
     float depth;
 
@@ -55,12 +69,20 @@ void main() {
         DoTAA(color, temp, depth);
     #endif
 
-    /*DRAWBUFFERS:32*/
+    #ifndef LIGHT_COLORING
+    /* DRAWBUFFERS:32 */
+    #else
+    /* DRAWBUFFERS:82 */
+    #endif
 	gl_FragData[0] = vec4(color, 1.0);
     gl_FragData[1] = vec4(temp, 1.0);
     
 	#ifdef TEMPORAL_FILTER
-        /*DRAWBUFFERS:326*/
+        #ifndef LIGHT_COLORING
+        /* DRAWBUFFERS:326 */
+        #else
+        /* DRAWBUFFERS:826 */
+        #endif
         gl_FragData[2] = vec4(depth, 0.0, 0.0, 1.0);
 	#endif
 }

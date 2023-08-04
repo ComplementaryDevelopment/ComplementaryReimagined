@@ -2,8 +2,7 @@
 
 vec2 vTexCoord = signMidCoordPos * 0.5 + 0.5;
 
-vec2 dcdx = dFdx(texCoord.xy);
-vec2 dcdy = dFdy(texCoord.xy);
+#include "/lib/util/dFdxdFdy.glsl"
 
 vec4 ReadNormal(vec2 coord) {
     coord = fract(coord) * vTexCoordAM.pq + vTexCoordAM.st;

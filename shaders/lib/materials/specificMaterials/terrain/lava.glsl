@@ -21,9 +21,9 @@ color.rgb /= max(GetLuminance(avgColor) * 0.0390625, 0.001);
 
 noDirectionalShading = true;
 lmCoordM = vec2(0.0);
-emission = GetLuminance(color.rgb) * 5.5;
+emission = GetLuminance(color.rgb) * 6.5;
 
-maRecolor = vec3(clamp(pow2(pow2(pow2(smoothstep1(emission * 0.35)))), 0.12, 0.4) * 1.3) * vec3(1.0, vec2(0.7));
+maRecolor = vec3(clamp(pow2(pow2(pow2(smoothstep1(emission * 0.28)))), 0.12, 0.4) * 1.3) * vec3(1.0, vec2(0.7));
 
 #if RAIN_PUDDLES >= 1
     noPuddles = 1.0;

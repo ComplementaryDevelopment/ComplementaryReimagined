@@ -106,7 +106,7 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
     #endif
 
     #if CUSTOM_EMISSION_INTENSITY > 0
-        #if RP_MODE == 2 // SEUSPBR
+        #if RP_MODE == 2 // seuspbr
             emission = specularMap.b;
         #elif RP_MODE == 3 // labPBR
             emission = specularMap.a < 1.0 ? specularMap.a : 0.0;
@@ -123,7 +123,7 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
             if (materialMask > OSIEBCA * 240.1) return;
         #endif
 
-        #if RP_MODE == 2 // SEUSPBR
+        #if RP_MODE == 2 // seuspbr
             materialMask = specularMap.g * OSIEBCA * 240.0;
         #elif RP_MODE == 3 // labPBR
             if (specularMap.g < OSIEBCA * 229.1) {

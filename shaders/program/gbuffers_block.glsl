@@ -115,6 +115,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
 
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
+#endif
+
 //Program//
 void main() {
 	vec4 color = texture2D(tex, texCoord);
@@ -169,11 +173,15 @@ void main() {
 	           noSmoothLighting, noDirectionalShading, false, false,
 			   0, smoothnessG, highlightMult, emission);
 
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
+	#endif
+
 	/* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;
 	gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
-	#if BLOCK_REFLECT_QUALITY >= 1 && RP_MODE >= 2
+	#if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 2
 		/* DRAWBUFFERS:015 */
 		gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
 	#endif

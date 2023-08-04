@@ -86,6 +86,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/colors/colorMultipliers.glsl"
 #endif
 
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
+#endif
+
 //Program//
 void main() {
 	vec4 color = texture2D(tex, texCoord);
@@ -163,8 +167,11 @@ void main() {
 		DoFog(color.rgb, sky, lViewPos, playerPos, VdotU, VdotS, dither);
 	#endif
 
-	// Blending
-	vec3 translucentMult = mix(vec3(1.0), normalize(pow2(color.rgb)) * pow2(color.rgb), sqrt1(color.a)) * (1.0 - pow(color.a, 64.0));
+	vec3 translucentMult = mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a);
+
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
+	#endif
 	
 	/* DRAWBUFFERS:013 */
 	gl_FragData[0] = color;

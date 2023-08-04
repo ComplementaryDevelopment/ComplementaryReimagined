@@ -26,7 +26,11 @@ uniform sampler2D colortex0;
 uniform sampler2D noisetex;
 
 #ifdef BLOOM
-	uniform sampler2D colortex3;
+	#ifndef LIGHT_COLORING
+		uniform sampler2D colortex3;
+	#else
+		uniform sampler2D colortex8;
+	#endif
 #endif
 
 #ifdef BLOOM_FOG
@@ -86,7 +90,11 @@ vec3 GetBloomTile(float lod, vec2 coord, vec2 offset, vec2 ditherAdd) {
 	bloomCoord += ditherAdd;
 	bloomCoord = clamp(bloomCoord, offset, 1.0 / scale + offset);
 
-	vec3 bloom = texture2D(colortex3, bloomCoord).rgb;
+	#ifndef LIGHT_COLORING
+		vec3 bloom = texture2D(colortex3, bloomCoord).rgb;
+	#else
+		vec3 bloom = texture2D(colortex8, bloomCoord).rgb;
+	#endif
 	bloom *= bloom;
 	bloom *= bloom;
 	return bloom * 128.0;
@@ -178,7 +186,11 @@ void main() {
 	float filmGrain = dither;
 	color += vec3((filmGrain - 0.25) / 128.0);
 
-	/* DRAWBUFFERS:3 */
+    #ifndef LIGHT_COLORING
+    /* DRAWBUFFERS:3 */
+    #else
+    /* DRAWBUFFERS:8 */
+    #endif
 	gl_FragData[0] = vec4(color, 1.0);
 }
 

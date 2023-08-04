@@ -4,7 +4,7 @@ highlightMult *= 0.5;
 
 float factor0 = sqrt2(max0(color.b - color.g * 6.0));
 float factor1 = pow2(color.b);
-emission = 0.9 + pow2(pow2(factor1)) * 7.5;
+emission = 1.35 + pow2(pow2(factor1)) * 7.5;
 emission *= factor0;
 color.r *= 1.15;
 

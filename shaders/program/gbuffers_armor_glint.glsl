@@ -22,11 +22,18 @@ uniform sampler2D tex;
 //Common Functions//
 
 //Includes//
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
+#endif
 
 //Program//
 void main() {
 	vec4 color = texture2D(tex, texCoord);
 	color *= glColor;
+
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
+	#endif
 
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = color;

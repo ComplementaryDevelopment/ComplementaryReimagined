@@ -50,7 +50,7 @@
 #elif defined NETHER
     vec3 netherColor  = max(normalize(sqrt(fogColor)), vec3(0.0));
     vec3 lightColor   = vec3(0.0);
-    vec3 ambientColor = netherColor * (0.35 + 0.1 * vsBrightness);
+    vec3 ambientColor = netherColor * (0.44 + 0.22 * vsBrightness);
 #elif defined END
     vec3 endLightColor = vec3(0.68, 0.51, 1.07);
     float endLightBalancer = 0.2 * vsBrightness;

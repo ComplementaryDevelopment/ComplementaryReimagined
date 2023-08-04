@@ -68,7 +68,7 @@
     // SRATA: Atm. fog starts reducing above this altitude
     // CRFTM: Atm. fog continues reducing for this meters
     #ifdef OVERWORLD
-        float atmFogSRATA = 63.1;
+        #define atmFogSRATA ATM_FOG_ALTITUDE + 0.1
         float atmFogCRFTM = 60.0;
     #else
         float atmFogSRATA = 55.1;
@@ -77,14 +77,21 @@
 
     float GetAtmFogAltitudeFactor(float altitude) {
         float altitudeFactor = pow2(1.0 - clamp(altitude - atmFogSRATA, 0.0, atmFogCRFTM) / atmFogCRFTM);
-        #if LIGHTSHAFT_QUALITY == 0
+        #if LIGHTSHAFT_QUALI == 0
             altitudeFactor = mix(altitudeFactor, 1.0, rainFactor * 0.5);
         #endif
         return altitudeFactor;
     }
 
     void DoAtmosphericFog(inout vec3 color, vec3 playerPos, float lViewPos, float VdotS) {
-        float fog = 1.0 - exp(-pow(lViewPos * (0.001 - 0.0007 * rainFactor), 2.0 - rainFactor2) * lViewPos);
+        float renDisFactor = min1(192.0 / far);
+
+        #if ATM_FOG_DISTANCE != 100
+            #define ATM_FOG_DISTANCE_M 100.0 / ATM_FOG_DISTANCE;
+            renDisFactor *= ATM_FOG_DISTANCE_M;
+        #endif
+
+        float fog = 1.0 - exp(-pow(lViewPos * (0.001 - 0.0007 * rainFactor), 2.0 - rainFactor2) * lViewPos * renDisFactor);
               fog *= ATM_FOG_MULT - 0.25 * invRainFactor;
         
         float altitudeFactorP = GetAtmFogAltitudeFactor(playerPos.y + cameraPosition.y);

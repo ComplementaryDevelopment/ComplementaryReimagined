@@ -25,8 +25,10 @@ uniform vec3 cameraPosition;
 uniform sampler2D tex;
 uniform sampler2D noisetex;
 
-#if WATER_STYLE >= 3
+#if WATER_CAUSTIC_STYLE >= 3
 	uniform float frameTimeCounter;
+	
+	uniform sampler2D gaux4;
 #endif
 
 //Pipeline Constants//
@@ -50,76 +52,103 @@ void DoNaturalShadowCalculation(inout vec4 color1, inout vec4 color2) {
 //Program//
 void main() {
 	vec4 color1 = texture2DLod(tex, texCoord, 0); // Shadow Color
-	vec4 color2 = color1; // Light Shaft Color
-	
-	color2.rgb *= 0.25; // Natural Strength
 
-	if (mat < 31008) {
-		if (mat < 31000) {
-			DoNaturalShadowCalculation(color1, color2);
-		} else {
-			if (mat == 31000) { // Water
-				vec3 worldPos = position.xyz + cameraPosition;
+	#if SHADOW_QUALITY >= 1
+		vec4 color2 = color1; // Light Shaft Color
+		
+		color2.rgb *= 0.25; // Natural Strength
 
-				#if WATER_STYLE < 3
-					#if MC_VERSION >= 11300
-						float wcl = GetLuminance(color1.rgb);
-						color1.rgb = color1.rgb * pow2(wcl) * wcl * 1.2;
+		if (mat < 31008) {
+			if (mat < 31000) {
+				DoNaturalShadowCalculation(color1, color2);
+			} else {
+				if (mat == 31000) { // Water
+					vec3 worldPos = position.xyz + cameraPosition;
+
+					// Water Caustics
+					#if WATER_CAUSTIC_STYLE < 3
+						#if MC_VERSION >= 11300
+							float wcl = GetLuminance(color1.rgb);
+							color1.rgb = color1.rgb * pow2(wcl) * wcl * 1.2;
+						#else
+							color1.rgb = mix(color1.rgb, vec3(GetLuminance(color1.rgb)), 0.88);
+							color1.rgb = pow2(color1.rgb) * vec3(2.5, 3.0, 3.0) * 0.96;
+						#endif
 					#else
-						color1.rgb = mix(color1.rgb, vec3(GetLuminance(color1.rgb)), 0.88);
-						color1.rgb = pow2(color1.rgb) * vec3(2.5, 3.0, 3.0) * 0.96;
+						#define WATER_SPEED_MULT_M WATER_SPEED_MULT * 0.035
+						vec2 causticWind = vec2(frameTimeCounter * WATER_SPEED_MULT_M, 0.0);
+						float caustic = dot(texture2D(gaux4, worldPos.xz * 0.08 + causticWind).rg, vec2(0.4));
+						caustic += dot(texture2D(gaux4, worldPos.xz * 0.04 - causticWind).rg, vec2(0.4));
+						color1.rgb = vec3(pow2(pow2(min1(caustic))));
+
+						#if MC_VERSION < 11300
+							color1.rgb *= vec3(0.3, 0.45, 0.9);
+						#endif
 					#endif
-				#else
-					vec2 causticWind = vec2(frameTimeCounter * 0.04, 0.0);
-					float caustic = texture2D(noisetex, worldPos.xz * 0.05 + causticWind).g;
-					      caustic += texture2D(noisetex, worldPos.xz * 0.1 - causticWind).g;
-					color1.rgb = vec3(pow2(caustic) * 0.3);
 
-					#if MC_VERSION < 11300
-						color1.rgb *= vec3(0.3, 0.45, 0.9);
+					#if MC_VERSION >= 11300
+						#if WATERCOLOR_MODE >= 2
+							color1.rgb *= glColor.rgb;
+						#else
+							color1.rgb *= vec3(0.3, 0.45, 0.9);
+						#endif
 					#endif
-				#endif
+					color1.rgb *= vec3(0.6, 0.8, 1.1);
+					////
 
-				#if MC_VERSION >= 11300
-					color1.rgb *= glColor.rgb;
-				#endif
-				color1.rgb *= vec3(0.6, 0.8, 1.1);
-				
-				vec2 waterWind = vec2(syncedTime * 0.01, 0.0);
-				float waterNoise = texture2D(noisetex, worldPos.xz * 0.012 - waterWind).g;
-				      waterNoise += texture2D(noisetex, worldPos.xz * 0.05 + waterWind).g;
+					// Underwater Light Shafts
+					vec3 worldPosM = worldPos;
+					
+					#if WATER_FOG_MULT > 100
+						#define WATER_FOG_MULT_M WATER_FOG_MULT * 0.01;
+						worldPosM *= WATER_FOG_MULT_M;
+					#endif
+					
+					vec2 waterWind = vec2(syncedTime * 0.01, 0.0);
+					float waterNoise = texture2D(noisetex, worldPosM.xz * 0.012 - waterWind).g;
+						waterNoise += texture2D(noisetex, worldPosM.xz * 0.05 + waterWind).g;
 
-				float factor = max(2.5 - 0.025 * length(position.xz), 0.8333) * 1.3;
-				waterNoise = pow(waterNoise * 0.5, factor) * factor * 1.3;
+					float factor = max(2.5 - 0.025 * length(position.xz), 0.8333) * 1.3;
+					waterNoise = pow(waterNoise * 0.5, factor) * factor * 1.3;
 
-				#if MC_VERSION >= 11300
-					color2.rgb = normalize(sqrt1(glColor.rgb)) * vec3(0.24, 0.22, 0.26);
-				#else
-					color2.rgb = vec3(0.1, 0.2, 0.3) * 0.65;
-				#endif
-				color2.rgb *= waterNoise * (1.0 + sunVisibility - rainFactor);
-			} else /*if (mat == 31004)*/ { // Ice
-				color1.rgb *= color1.rgb;
-				color1.rgb *= color1.rgb;
-				color1.rgb = mix(vec3(1.0), color1.rgb, pow(color1.a, (1.0 - color1.a) * 0.5) * 1.05);
-				color1.rgb *= 1.0 - pow(color1.a, 64.0);
-				color1.rgb *= 0.28;
+					#if MC_VERSION >= 11300 && WATERCOLOR_MODE >= 2
+						color2.rgb = normalize(sqrt1(glColor.rgb)) * vec3(0.24, 0.22, 0.26);
+					#else
+						color2.rgb = vec3(0.08, 0.12, 0.195);
+					#endif
+					color2.rgb *= waterNoise * (1.0 + sunVisibility - rainFactor);
+					////
 
-				color2.rgb = normalize(pow(color1.rgb, vec3(0.25))) * 0.5;
+					#ifdef UNDERWATERCOLOR_CHANGED
+						color1.rgb *= vec3(UNDERWATERCOLOR_RM, UNDERWATERCOLOR_GM, UNDERWATERCOLOR_BM);
+						color2.rgb *= vec3(UNDERWATERCOLOR_RM, UNDERWATERCOLOR_GM, UNDERWATERCOLOR_BM);
+					#endif
+				} else /*if (mat == 31004)*/ { // Ice
+					color1.rgb *= color1.rgb;
+					color1.rgb *= color1.rgb;
+					color1.rgb = mix(vec3(1.0), color1.rgb, pow(color1.a, (1.0 - color1.a) * 0.5) * 1.05);
+					color1.rgb *= 1.0 - pow(color1.a, 64.0);
+					color1.rgb *= 0.28;
+
+					color2.rgb = normalize(pow(color1.rgb, vec3(0.25))) * 0.5;
+				}
+			}
+		} else {
+			if (mat < 31020) { // Glass, Glass Pane, Beacon (31008, 31012, 31016)
+				if (color1.a > 0.5) color1 = vec4(0.0, 0.0, 0.0, 1.0);
+				else color1 = vec4(vec3(0.2 * (1.0 - GLASS_OPACITY)), 1.0);
+				color2.rgb = vec3(0.3);
+			} else {
+				DoNaturalShadowCalculation(color1, color2);
 			}
 		}
-	} else {
-		if (mat < 31020) { // Glass, Glass Pane, Beacon (31008, 31012, 31016)
-			if (color1.a > 0.5) color1 = vec4(0.0, 0.0, 0.0, 1.0);
-			else color1 = vec4(vec3(0.2 * (1.0 - GLASS_OPACITY)), 1.0);
-			color2.rgb = vec3(0.3);
-		} else {
-			DoNaturalShadowCalculation(color1, color2);
-		}
-	}
+	#endif
 
     gl_FragData[0] = color1; // Shadow Color
-    gl_FragData[1] = color2; // Light Shaft Color
+
+	#if SHADOW_QUALITY >= 1
+    	gl_FragData[1] = color2; // Light Shaft Color
+	#endif
 }
 
 #endif
@@ -199,6 +228,10 @@ void main() {
 			}
 		}
 	#endif
+
+	if (mat == 31000) { // Water
+		position.y += 0.015 * max0(length(position.xyz) - 50.0);
+	}
 
 	gl_Position = shadowProjection * shadowModelView * position;
 

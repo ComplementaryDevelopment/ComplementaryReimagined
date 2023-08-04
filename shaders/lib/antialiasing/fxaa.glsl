@@ -10,10 +10,17 @@ void FXAA311(inout vec3 color) {
 	vec2 view = 1.0 / vec2(viewWidth, viewHeight);
 	
 	float lumaCenter = GetLuminance(color);
-	float lumaDown  = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 0, -1), 0).rgb);
-	float lumaUp    = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 0,  1), 0).rgb);
-	float lumaLeft  = GetLuminance(texelFetch(colortex3, texelCoord + ivec2(-1,  0), 0).rgb);
-	float lumaRight = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 1,  0), 0).rgb);
+	#ifndef LIGHT_COLORING
+		float lumaDown  = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 0, -1), 0).rgb);
+		float lumaUp    = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 0,  1), 0).rgb);
+		float lumaLeft  = GetLuminance(texelFetch(colortex3, texelCoord + ivec2(-1,  0), 0).rgb);
+		float lumaRight = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 1,  0), 0).rgb);
+	#else
+		float lumaDown  = GetLuminance(texelFetch(colortex8, texelCoord + ivec2( 0, -1), 0).rgb);
+		float lumaUp    = GetLuminance(texelFetch(colortex8, texelCoord + ivec2( 0,  1), 0).rgb);
+		float lumaLeft  = GetLuminance(texelFetch(colortex8, texelCoord + ivec2(-1,  0), 0).rgb);
+		float lumaRight = GetLuminance(texelFetch(colortex8, texelCoord + ivec2( 1,  0), 0).rgb);
+	#endif
 	
 	float lumaMin = min(lumaCenter, min(min(lumaDown, lumaUp), min(lumaLeft, lumaRight)));
 	float lumaMax = max(lumaCenter, max(max(lumaDown, lumaUp), max(lumaLeft, lumaRight)));
@@ -21,10 +28,17 @@ void FXAA311(inout vec3 color) {
 	float lumaRange = lumaMax - lumaMin;
 	
 	if (lumaRange > max(edgeThresholdMin, lumaMax * edgeThresholdMax)) {
-		float lumaDownLeft  = GetLuminance(texelFetch(colortex3, texelCoord + ivec2(-1, -1), 0).rgb);
-		float lumaUpRight   = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 1,  1), 0).rgb);
-		float lumaUpLeft    = GetLuminance(texelFetch(colortex3, texelCoord + ivec2(-1,  1), 0).rgb);
-		float lumaDownRight = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 1, -1), 0).rgb);
+		#ifndef LIGHT_COLORING
+			float lumaDownLeft  = GetLuminance(texelFetch(colortex3, texelCoord + ivec2(-1, -1), 0).rgb);
+			float lumaUpRight   = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 1,  1), 0).rgb);
+			float lumaUpLeft    = GetLuminance(texelFetch(colortex3, texelCoord + ivec2(-1,  1), 0).rgb);
+			float lumaDownRight = GetLuminance(texelFetch(colortex3, texelCoord + ivec2( 1, -1), 0).rgb);
+		#else
+			float lumaDownLeft  = GetLuminance(texelFetch(colortex8, texelCoord + ivec2(-1, -1), 0).rgb);
+			float lumaUpRight   = GetLuminance(texelFetch(colortex8, texelCoord + ivec2( 1,  1), 0).rgb);
+			float lumaUpLeft    = GetLuminance(texelFetch(colortex8, texelCoord + ivec2(-1,  1), 0).rgb);
+			float lumaDownRight = GetLuminance(texelFetch(colortex8, texelCoord + ivec2( 1, -1), 0).rgb);
+		#endif
 		
 		float lumaDownUp    = lumaDown + lumaUp;
 		float lumaLeftRight = lumaLeft + lumaRight;
@@ -74,8 +88,13 @@ void FXAA311(inout vec3 color) {
 		vec2 uv1 = currentUv - offset;
 		vec2 uv2 = currentUv + offset;
 
-		float lumaEnd1 = GetLuminance(texture2D(colortex3, uv1).rgb);
-		float lumaEnd2 = GetLuminance(texture2D(colortex3, uv2).rgb);
+		#ifndef LIGHT_COLORING
+			float lumaEnd1 = GetLuminance(texture2D(colortex3, uv1).rgb);
+			float lumaEnd2 = GetLuminance(texture2D(colortex3, uv2).rgb);
+		#else
+			float lumaEnd1 = GetLuminance(texture2D(colortex8, uv1).rgb);
+			float lumaEnd2 = GetLuminance(texture2D(colortex8, uv2).rgb);
+		#endif
 		lumaEnd1 -= lumaLocalAverage;
 		lumaEnd2 -= lumaLocalAverage;
 		
@@ -93,11 +112,19 @@ void FXAA311(inout vec3 color) {
 		if (!reachedBoth) {
 			for (int i = 2; i < iterations; i++) {
 				if (!reached1) {
-					lumaEnd1 = GetLuminance(texture2D(colortex3, uv1).rgb);
+					#ifndef LIGHT_COLORING
+						lumaEnd1 = GetLuminance(texture2D(colortex3, uv1).rgb);
+					#else
+						lumaEnd1 = GetLuminance(texture2D(colortex8, uv1).rgb);
+					#endif
 					lumaEnd1 = lumaEnd1 - lumaLocalAverage;
 				}
 				if (!reached2) {
-					lumaEnd2 = GetLuminance(texture2D(colortex3, uv2).rgb);
+					#ifndef LIGHT_COLORING
+						lumaEnd2 = GetLuminance(texture2D(colortex3, uv2).rgb);
+					#else
+						lumaEnd2 = GetLuminance(texture2D(colortex8, uv2).rgb);
+					#endif
 					lumaEnd2 = lumaEnd2 - lumaLocalAverage;
 				}
 				
@@ -147,6 +174,10 @@ void FXAA311(inout vec3 color) {
 			finalUv.x += finalOffset * stepLength;
 		}
 
-		color = texture2D(colortex3, finalUv).rgb;
+		#ifndef LIGHT_COLORING
+			color = texture2D(colortex3, finalUv).rgb;
+		#else
+			color = texture2D(colortex8, finalUv).rgb;
+		#endif
 	}
 }

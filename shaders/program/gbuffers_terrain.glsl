@@ -19,7 +19,7 @@ flat in vec2 midCoord;
 flat in vec3 upVec, sunVec, northVec, eastVec;
 in vec3 normal;
 
-in vec4 glColor;
+in vec4 glColorRaw;
 
 #if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
 	flat in vec3 binormal, tangent;
@@ -80,6 +80,10 @@ uniform sampler2D noisetex;
 	uniform sampler2D specular;
 #endif
 
+#ifdef LIGHT_COLORING
+	layout (rgba8) uniform image2D colorimg3;
+#endif
+
 //Pipeline Constants//
 
 //Common Variables//
@@ -92,6 +96,8 @@ float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
 float shadowTime = shadowTimeVar2 * shadowTimeVar2;
+
+vec4 glColor = glColorRaw;
 
 #ifdef OVERWORLD
 	vec3 lightVec = sunVec * ((timeAngle < 0.5325 || timeAngle > 0.9675) ? 1.0 : -1.0);
@@ -160,6 +166,10 @@ float GetMaxColorDif(vec3 color) {
 
 #ifdef CUSTOM_PBR
 	#include "/lib/materials/materialHandling/customMaterials.glsl"
+#endif
+
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 //Program//
@@ -330,11 +340,15 @@ void main() {
 		#endif
 	#endif
 
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
+	#endif
+
 	/* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;
 	gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
-	#if BLOCK_REFLECT_QUALITY >= 1 && RP_MODE != 0
+	#if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE != 0
 		/* DRAWBUFFERS:015 */
 		gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
 	#endif
@@ -356,7 +370,7 @@ flat out vec2 midCoord;
 flat out vec3 upVec, sunVec, northVec, eastVec;
 out vec3 normal;
 
-out vec4 glColor;
+out vec4 glColorRaw;
 
 #if RAIN_PUDDLES >= 1 || defined GENERATED_NORMALS || defined CUSTOM_PBR
 	flat out vec3 binormal, tangent;
@@ -390,6 +404,7 @@ attribute vec4 mc_midTexCoord;
 #endif
 
 //Common Variables//
+vec4 glColor = vec4(1.0);
 
 //Common Functions//
 
@@ -407,8 +422,9 @@ void main() {
 	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 	lmCoord  = GetLightMapCoordinates();
 
-	glColor = gl_Color;
-	if (glColor.a < 0.1) glColor.a = 1.0;
+	glColorRaw = gl_Color;
+	if (glColorRaw.a < 0.1) glColorRaw.a = 1.0;
+	glColor = glColorRaw;
 
 	normal = normalize(gl_NormalMatrix * gl_Normal);
 	upVec = normalize(gbufferModelView[1].xyz);
@@ -435,6 +451,11 @@ void main() {
 		gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
 	#else
 		gl_Position = ftransform();
+
+		#ifndef WAVING_LAVA
+			// G8FL735 Fixes Optifine-Iris parity. Optifine has 0.9 gl_Color.rgb on a lot of versions
+			glColorRaw.rgb = min(glColorRaw.rgb, vec3(0.9));
+		#endif
 	
 		#ifdef FLICKERING_FIX
 			//if (mat == 10256) gl_Position.z -= 0.00001; // Iron Bars

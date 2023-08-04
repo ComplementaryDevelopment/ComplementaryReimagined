@@ -63,6 +63,18 @@ void DoWave_Water(inout vec3 playerPos, vec3 worldPos) {
     }
 }
 
+void DoWave_Lava(inout vec3 playerPos, vec3 worldPos) {
+	if (fract(worldPos.y + 0.005) > 0.06) {
+        float lavaWaveTime = frameTimeCounter * 3.0;
+        worldPos.xz *= 14.0;
+        
+        float wave  = sin(lavaWaveTime * 0.7 + worldPos.x * 0.14 + worldPos.z * 0.07);
+              wave += sin(lavaWaveTime * 0.5 + worldPos.x * 0.05 + worldPos.z * 0.10);
+
+        playerPos.y += wave * 0.0125;
+    }
+}
+
 void DoWave(inout vec3 playerPos, int mat) {
     vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
 
@@ -74,7 +86,7 @@ void DoWave(inout vec3 playerPos, int mat) {
                 DoWave_Foliage(playerPos.xyz, worldPos);
             }
             
-            #ifdef WAVING_LEAVES
+            #if defined WAVING_LEAVES || defined WAVING_LAVA
                 else
             #endif
         #endif
@@ -82,6 +94,21 @@ void DoWave(inout vec3 playerPos, int mat) {
         #ifdef WAVING_LEAVES
             if (mat == 10008 || mat == 10012) { // Leaves, Vine
                 DoWave_Leaves(playerPos.xyz, worldPos);
+            }
+            
+            #ifdef WAVING_LAVA
+                else
+            #endif
+        #endif
+
+        #ifdef WAVING_LAVA
+            if (mat == 10068) { // Lava
+                DoWave_Lava(playerPos.xyz, worldPos);
+
+                #ifdef GBUFFERS_TERRAIN
+                    // G8FL735 Fixes Optifine-Iris parity. Optifine has 0.9 gl_Color.rgb on a lot of versions
+                    glColor.rgb = min(glColor.rgb, vec3(0.9));
+                #endif
             }
         #endif
     #endif

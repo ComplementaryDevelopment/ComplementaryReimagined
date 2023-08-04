@@ -19,7 +19,7 @@ vec4 GetClouds(inout float cloudLinearDepth, float skyFade, vec3 playerPos, vec3
         float lViewPosM = lViewPos < far * 1.5 ? lViewPos - 1.0 : 1000000000.0;
         float skyMult0 = pow2(skyFade * 3.333333 - 2.333333);
 
-        #if CLOUD_STYLE == 1
+        #ifndef DOUBLE_REIM_CLOUDS
             clouds =
             GetVolumetricClouds(CLOUD_ALT1, threshold1, cloudLinearDepth, skyFade, skyMult0, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
         #else

@@ -32,7 +32,7 @@ uniform mat4 gbufferModelViewInverse;
 	uniform vec3 cameraPosition;
 #endif
 
-#if SUN_MOON_STYLE == 2
+#if SUN_MOON_STYLE >= 2
 	uniform int moonPhase;
 	
 	uniform mat4 gbufferModelView;
@@ -59,8 +59,16 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#include "/lib/atmospherics/stars.glsl"
 #endif
 
+#ifdef CAVE_FOG
+    #include "/lib/atmospherics/fog/caveFactor.glsl"
+#endif
+
 #ifdef ATM_COLOR_MULTS
     #include "/lib/colors/colorMultipliers.glsl"
+#endif
+
+#ifdef COLOR_CODED_PROGRAMS
+	#include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 //Program//
@@ -82,12 +90,31 @@ void main() {
 		
 		color.rgb += GetStars(viewPos.xyz, VdotU, VdotS);
 
-		#if SUN_MOON_STYLE == 2
+		#if SUN_MOON_STYLE >= 2
 			float absVdotS = abs(VdotS);
-			if (absVdotS > 0.9965) {
-				float sunMoonMixer = 285.714 * (absVdotS - 0.9965) * invRainFactor;
+			#if SUN_MOON_STYLE == 2
+				float sunSizeFactor1 = 0.9965;
+				float sunSizeFactor2 = 285.714;
+				float moonCrescentOffset = 0.0055;
+				float moonPhaseFactor1 = 3.0;
+				float moonPhaseFactor2 = 750.0;
+			#else
+				float sunSizeFactor1 = 0.998;
+				float sunSizeFactor2 = 500.0;
+				float moonCrescentOffset = 0.0042;
+				float moonPhaseFactor1 = 2.2;
+				float moonPhaseFactor2 = 1000.0;
+			#endif
+			if (absVdotS > sunSizeFactor1) {
+				float sunMoonMixer = sunSizeFactor2 * (absVdotS - sunSizeFactor1) * invRainFactor;
+
 				if (VdotS > 0.0) {
 					sunMoonMixer = pow2(sunMoonMixer) * GetHorizonFactor(SdotU);
+
+					#ifdef CAVE_FOG
+						sunMoonMixer *= 1.0 - 0.65 * GetCaveFactor();
+					#endif
+
 					color.rgb = mix(color.rgb, vec3(0.9, 0.5, 0.3) * 10.0, sunMoonMixer);
 				} else {
 					vec3 moonColor = vec3(0.38, 0.4, 0.5);
@@ -96,7 +123,7 @@ void main() {
 					if (moonPhase >= 1) {
 						float moonPhaseOffset = 0.0;
 						if (moonPhase != 4) {
-							moonPhaseOffset = 0.0055;
+							moonPhaseOffset = moonCrescentOffset;
 							moonColor *= 8.5;
 						} else moonColor *= 10.0;
 						if (moonPhase > 4) {
@@ -110,8 +137,12 @@ void main() {
 					
 						float moonPhaseVdosS = dot(nViewPos, normalize(rawSunVec2.xyz));
 
-						sunMoonMixer *= pow2(1.0 - min1(pow(abs(moonPhaseVdosS), 750.0) * 3.0));
+						sunMoonMixer *= pow2(1.0 - min1(pow(abs(moonPhaseVdosS), moonPhaseFactor2) * moonPhaseFactor1));
 					} else moonColor *= 4.0;
+
+					#ifdef CAVE_FOG
+						sunMoonMixer *= 1.0 - 0.5 * GetCaveFactor();
+					#endif
 
 					color.rgb = mix(color.rgb, moonColor, sunMoonMixer);
 				}
@@ -125,6 +156,10 @@ void main() {
     #endif
 
 	if (max(blindness, darknessFactor) > 0.1) color.rgb = vec3(0.0);
+
+	#ifdef COLOR_CODED_PROGRAMS
+		ColorCodeProgram(color);
+	#endif
 
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = color;
