@@ -337,6 +337,12 @@ void main() {
 	DoFog(color.rgb, sky, lViewPos, playerPos, VdotU, VdotS, dither);
 	color.a *= 1.0 - sky;
 
+	// Distant Horizons water blending
+	vec3 localPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
+	localPos.y = 0;
+	float fragDistance = length(localPos);
+	color.a *= 1.0 - smoothstep(0.6 * far, far, fragDistance);
+
     #ifndef LIGHT_COLORING
     /* DRAWBUFFERS:03 */
     #else
