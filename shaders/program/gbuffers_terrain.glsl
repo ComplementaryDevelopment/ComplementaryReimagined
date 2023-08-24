@@ -35,6 +35,7 @@ in vec4 glColorRaw;
 uniform int isEyeInWater;
 uniform int frameCounter;
 
+uniform float far;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform float nightVision;
