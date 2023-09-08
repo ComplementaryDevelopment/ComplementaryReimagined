@@ -149,7 +149,7 @@ void main() {
 			GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
 		#endif
 
-		if (blockEntityId == 60000) { // End Portal, End Gateway
+		if (blockEntityId == 60024) { // End Portal
 			#include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
 		} else if (blockEntityId == 60004) { // Signs
 			noSmoothLighting = true;
@@ -220,9 +220,11 @@ out vec4 glColor;
 	uniform float viewWidth, viewHeight;
 #endif
 
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
+#if defined IPBR || defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 	uniform int blockEntityId;
+#endif
 
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 	uniform vec3 cameraPosition;
 
 	uniform mat4 gbufferModelViewInverse;
@@ -267,6 +269,12 @@ void main() {
 	sunVec = GetSunVector();
 
 	if (normal != normal) normal = -upVec; // Mod Fix: Fixes Better Nether Fireflies
+
+	#ifdef IPBR
+		if (blockEntityId == 60024) { // End Portal, End Gateway
+			gl_Position.z -= 0.002;
+		}
+	#endif
 
 	#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
 		if (blockEntityId == 60008) { // Chest

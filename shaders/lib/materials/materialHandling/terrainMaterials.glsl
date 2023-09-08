@@ -10,7 +10,10 @@ if (mat < 10512) {
                             } 
                             else if (mat == 10004) { // Grounded Waving Foliage
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-                                DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+                                #endif
 
                                 #ifndef REALTIME_SHADOWS
                                     shadowMult *= 1.0 - 0.3 * (signMidCoordPos.y + 1.0) * (1.0 - abs(signMidCoordPos.x))
@@ -33,7 +36,10 @@ if (mat < 10512) {
                             }
                             else /*if (mat == 10020)*/ { // Upper Waving Foliage
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-                                DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+                                #endif
 
                                 #ifndef REALTIME_SHADOWS
                                     shadowMult *= 1.0 + invNoonFactor; // consistency357381
@@ -228,7 +234,9 @@ if (mat < 10512) {
                                 smoothnessG = pow2(color.g) * 0.5;
                                 smoothnessD = smoothnessG;
 
-                                DoBrightBlockTweaks(color.rgb, 0.75, shadowMult, highlightMult);
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoBrightBlockTweaks(color.rgb, 0.75, shadowMult, highlightMult);
+                                #endif
                             }
                             else /*if (mat == 10092)*/ { // Andesite+
                                 smoothnessG = pow2(pow2(color.g));
@@ -250,8 +258,10 @@ if (mat < 10512) {
                             else /*if (mat == 10100)*/ { // Polished Diorite+
                                 smoothnessG = pow2(color.g) * 0.7;
                                 smoothnessD = smoothnessG;
-                                
-                                DoBrightBlockTweaks(color.rgb, 0.75, shadowMult, highlightMult);
+
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoBrightBlockTweaks(color.rgb, 0.75, shadowMult, highlightMult);
+                                #endif
 
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.77;
@@ -286,7 +296,9 @@ if (mat < 10512) {
                                 smoothnessG = 1.0 - color.g * 0.5;
                                 smoothnessD = smoothnessG;
 
-                                DoBrightBlockTweaks(color.rgb, 0.75, shadowMult, highlightMult);
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoBrightBlockTweaks(color.rgb, 0.75, shadowMult, highlightMult);
+                                #endif
                             }
                         } else {
                             if (mat == 10120) { // Dripstone+, Daylight Detector
@@ -536,9 +548,11 @@ if (mat < 10512) {
                                 smoothnessD = smoothnessG * 0.7;
                                 highlightMult = 2.0;
 
-                                DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
 
-                                DoOceanBlockTweaks(smoothnessD);
+                                    DoOceanBlockTweaks(smoothnessD);
+                                #endif
 
                                 #if RAIN_PUDDLES >= 1
                                     noPuddles = 1.0;
@@ -567,7 +581,9 @@ if (mat < 10512) {
                                 smoothnessG = min1(smoothnessG);
                                 smoothnessD = smoothnessG * 0.7;
 
-                                DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+                                #endif
 
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.77;
@@ -585,14 +601,7 @@ if (mat < 10512) {
                             }
                         } else {
                             if (mat == 10248) { // Netherite Block
-                                smoothnessG = pow2(color.r * 2.0);
-                                smoothnessG = min1(smoothnessG);
-                                highlightMult = smoothnessG * 2.0;
-                                smoothnessD = smoothnessG;
-
-                                #ifdef COATED_TEXTURES
-                                    noiseFactor = 0.33;
-                                #endif
+                                #include "/lib/materials/specificMaterials/terrain/netheriteBlock.glsl"
                             }
                             else /*if (mat == 10252)*/ { // Ancient Debris
                                 smoothnessG = pow2(color.r);
@@ -803,20 +812,13 @@ if (mat < 10512) {
                         } else {
                             if (mat == 10328) { // Amethyst Block, Budding Amethyst
                                 materialMask = OSIEBCA; // Intense Fresnel
-
                                 float factor = pow2(color.r);
-
                                 smoothnessG = 0.8 - factor * 0.3;
                                 highlightMult = factor * 3.0;
-
                                 smoothnessD = factor;
 
                                 #if GLOWING_AMETHYST >= 2
                                     emission = dot(color.rgb, color.rgb) * 0.3;
-
-                                    /*vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
-                                    emission *= sqrt1(texture2D(noisetex, (worldPos.xz + worldPos.y) * 0.003 - frameTimeCounter * 0.006).r);
-                                    emission *= sqrt1(texture2D(noisetex, (worldPos.zx - worldPos.y) * 0.003 + frameTimeCounter * 0.006).r);*/
                                 #endif
 
                                 color.rgb *= 0.7 + 0.3 * GetLuminance(color.rgb);
@@ -826,10 +828,16 @@ if (mat < 10512) {
                                 #endif
                             }
                             else /*if (mat == 10332)*/ { // Amethyst Cluster, Amethyst Buds
+                                materialMask = OSIEBCA; // Intense Fresnel
+                                float factor = pow2(color.r);
+                                smoothnessG = 0.8 - factor * 0.3;
+                                highlightMult = factor * 3.0;
+                                smoothnessD = factor;
+                                
                                 noSmoothLighting = true;
                                 lmCoordM.x *= 0.85;
 
-                                #if GLOWING_AMETHYST >= 1
+                                #if GLOWING_AMETHYST >= 1 && defined GBUFFERS_TERRAIN
                                     vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
                                     vec3 blockPos = abs(fract(worldPos) - vec3(0.5));
                                     float maxBlockPos = max(blockPos.x, max(blockPos.y, blockPos.z));
@@ -1021,8 +1029,10 @@ if (mat < 10512) {
                             if (mat == 10400) { // Sea Pickle
                                 noSmoothLighting = true;
                                 if (color.b > 0.5) { // Sea Pickle:Emissive Part
-                                    color.g *= 1.1;
-                                    emission = 7.0;
+                                    #ifdef GBUFFERS_TERRAIN
+                                        color.g *= 1.1;
+                                        emission = 5.0;
+                                    #endif
                                 }
                             }
                             else /*if (mat == 10404)*/ { // Soul Sand, Soul Soil
@@ -1177,7 +1187,16 @@ if (mat < 10512) {
 
                                 float dif = GetMaxColorDif(color.rgb);
                                 
-                                if (dif > 0.1 && maxCoord < 0.375 && !CheckForColor(color.rgb, vec3(111, 73, 43))) {
+                                if ( // This mess exists because Iris' midCoord is slightly inaccurate
+                                    dif > 0.1 && maxCoord < 0.375 &&
+                                    !CheckForColor(color.rgb, vec3(111, 73, 43)) &&
+                                    !CheckForColor(color.rgb, vec3(207, 166, 139)) &&
+                                    !CheckForColor(color.rgb, vec3(155, 139, 207)) &&
+                                    !CheckForColor(color.rgb, vec3(161, 195, 180)) &&
+                                    !CheckForColor(color.rgb, vec3(201, 143, 107)) &&
+                                    !CheckForColor(color.rgb, vec3(135, 121, 181)) &&
+                                    !CheckForColor(color.rgb, vec3(131, 181, 145))
+                                ) {
                                     emission = 6.0;
                                     color.rgb *= color.rgb;
                                     highlightMult = 2.0;
@@ -1187,7 +1206,7 @@ if (mat < 10512) {
                                     smoothnessD = smoothnessG;
                                 }
                             }
-                            else /*if (mat == 10460)*/ { // Concrete+
+                            else /*if (mat == 10460)*/ { // Concrete+ except Lime
                                 smoothnessG = 0.4;
                                 highlightMult = 1.5;
                                 smoothnessD = 0.3;
@@ -1255,7 +1274,9 @@ if (mat < 10512) {
                             }
                             else /*if (mat == 10492)*/ { // Dirt Path
                                 #include "/lib/materials/specificMaterials/terrain/dirt.glsl"
-                                glColor.a = sqrt(glColor.a);
+                                #ifdef GBUFFERS_TERRAIN
+                                    glColor.a = sqrt(glColor.a);
+                                #endif
                             }
                         }
                     } else {
@@ -1269,16 +1290,28 @@ if (mat < 10512) {
                                     emission = GetLuminance(color.rgb) * 4.1;
                                     color.r *= 1.4;
                                     color.b *= 0.5;
-                                } else if (abs(NdotU) < 0.5) {
-                                    lmCoordM.x = min1(0.7 + 0.3 * pow2(1.0 - signMidCoordPos.y));
-                                }
+                                } else
+                                #ifdef GBUFFERS_TERRAIN
+                                    if (abs(NdotU) < 0.5) {
+                                        lmCoordM.x = min1(0.7 + 0.3 * pow2(1.0 - signMidCoordPos.y));
+                                    }
+                                #else
+                                    noSmoothLighting = false;
+                                    lmCoordM.x = 0.9;
+                                #endif
+
                                 emission += 0.0001; // No light reducing during noon
                             }
                             else /*if (mat == 10500)*/ { // End Rod
                                 noDirectionalShading = true;
-                                vec3 fractPos = abs(fract(playerPos + cameraPosition) - 0.5);
-                                float maxCoord = max(fractPos.x, max(fractPos.y, fractPos.z));
-                                lmCoordM.x = maxCoord < 0.4376 ? 0.97 : 0.8;
+
+                                #ifdef GBUFFERS_TERRAIN
+                                    vec3 fractPos = abs(fract(playerPos + cameraPosition) - 0.5);
+                                    float maxCoord = max(fractPos.x, max(fractPos.y, fractPos.z));
+                                    lmCoordM.x = maxCoord < 0.4376 ? 0.97 : 0.8;
+                                #else
+                                    lmCoordM.x = 0.9;
+                                #endif
 
                                 float dotColor = dot(color.rgb, color.rgb);
                                 if (dotColor > 2.0) {
@@ -1740,8 +1773,10 @@ if (mat < 10512) {
                                 emission = min(pow2(pow2(pow2(dotColor * 0.6))), 6.0) * 0.8 + 0.5;
                             }
                             else /*if (mat == 10652)*/ { // Campfire:Lit
-                                vec3 fractPos = fract(playerPos + cameraPosition) - 0.5;
-                                lmCoordM.x = pow2(pow2(smoothstep1(1.0 - 0.4 * dot(fractPos.xz, fractPos.xz))));
+                                #ifdef GBUFFERS_TERRAIN
+                                    vec3 fractPos = fract(playerPos + cameraPosition) - 0.5;
+                                    lmCoordM.x = pow2(pow2(smoothstep1(1.0 - 0.4 * dot(fractPos.xz, fractPos.xz))));
+                                #endif
 
                                 float dotColor = dot(color.rgb, color.rgb);
                                 if (color.r > color.b && color.r - color.g < 0.15 && dotColor < 1.4) {
@@ -1786,7 +1821,7 @@ if (mat < 10512) {
                                     #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
                                 }
                             }
-                            else /*if (mat == 10668)*/ { // Wool+, Carpet+
+                            else /*if (mat == 10668)*/ { // Wool+, Carpet+ except Lime
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.77;
                                 #endif
@@ -1800,7 +1835,9 @@ if (mat < 10512) {
                                 smoothnessG = color.r * 0.2;
                                 smoothnessD = smoothnessG;
 
-                                DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+                                #endif
 
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.33;
@@ -1860,9 +1897,11 @@ if (mat < 10512) {
                                 if (boneFactor < 0.0001) {
                                     emission = pow2(max0(color.g - color.r)) * 2.0;
 
-                                    vec2 coordFactor = abs(fract(playerPos.xz + cameraPosition.xz) - 0.5);
-                                    float coordFactorM = max(coordFactor.x, coordFactor.y);
-                                    if (coordFactorM < 0.43) emission += color.g * 7.0;
+                                    #ifdef GBUFFERS_TERRAIN
+                                        vec2 coordFactor = abs(fract(playerPos.xz + cameraPosition.xz) - 0.5);
+                                        float coordFactorM = max(coordFactor.x, coordFactor.y);
+                                        if (coordFactorM < 0.43) emission += color.g * 7.0;
+                                    #endif
                                 }
 
                                 smoothnessG = min1(boneFactor * 1.7);
@@ -1900,7 +1939,9 @@ if (mat < 10512) {
                                 smoothnessG = min1(smoothnessG);
                                 smoothnessD = smoothnessG * 0.7;
 
-                                DoOceanBlockTweaks(smoothnessD);
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoOceanBlockTweaks(smoothnessD);
+                                #endif
 
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 0.77;
@@ -1914,8 +1955,10 @@ if (mat < 10512) {
                             }
                             else /*if (mat == 10724)*/ { // Gravel, Suspicious Gravel
                                 #include "/lib/materials/specificMaterials/terrain/stone.glsl"
-                                
-                                DoOceanBlockTweaks(smoothnessD);
+
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoOceanBlockTweaks(smoothnessD);
+                                #endif
 
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 1.25;
@@ -2002,10 +2045,13 @@ if (mat < 10512) {
                         if (mat < 10776) {
                             if (mat == 10768) { // Torchflower
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-                                DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
 
-                                emission = (1.0 - abs(signMidCoordPos.x)) * max0(0.7 - abs(signMidCoordPos.y + 0.7));
-                                emission = pow1_5(emission) * 2.5;
+                                #ifdef GBUFFERS_TERRAIN
+                                    DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+
+                                    emission = (1.0 - abs(signMidCoordPos.x)) * max0(0.7 - abs(signMidCoordPos.y + 0.7));
+                                    emission = pow1_5(emission) * 2.5;
+                                #endif
 
                                 #ifndef REALTIME_SHADOWS
                                     shadowMult *= 1.0 - 0.3 * (signMidCoordPos.y + 1.0) * (1.0 - abs(signMidCoordPos.x))
@@ -2019,8 +2065,10 @@ if (mat < 10512) {
                                 if (abs(abs(NdotE) - 0.5) < 0.4) {
                                     subsurfaceMode = 1, noDirectionalShading = true;
 
-                                    emission = (1.0 - abs(signMidCoordPos.x)) * max0(0.7 - abs(signMidCoordPos.y + 0.7));
-                                    emission = pow1_5(emission) * 2.5;
+                                    #ifdef GBUFFERS_TERRAIN
+                                        emission = (1.0 - abs(signMidCoordPos.x)) * max0(0.7 - abs(signMidCoordPos.y + 0.7));
+                                        emission = pow1_5(emission) * 2.5;
+                                    #endif
                                 }
                             }
                         } else {
@@ -2050,7 +2098,7 @@ if (mat < 10512) {
                         if (mat < 10792) {
                             if (mat == 10784) { // Calibrated Sculk Sensor:Unlit
                                 if (color.r + color.b > color.g * 2.2 || color.r > 0.99) { // Amethyst Part
-                                    #if GLOWING_AMETHYST >= 1
+                                    #if GLOWING_AMETHYST >= 1 && defined GBUFFERS_TERRAIN
                                         vec2 absCoord = abs(signMidCoordPos);
                                         float maxBlockPos = max(absCoord.x, absCoord.y);
                                         emission = pow2(max0(1.0 - maxBlockPos) * color.g) * 5.4 + 1.2 * color.g;
@@ -2081,7 +2129,7 @@ if (mat < 10512) {
                                 if (color.r + color.b > color.g * 2.2 || color.r > 0.99) { // Amethyst Part
                                     lmCoordM.x = 1.0;
 
-                                    #if GLOWING_AMETHYST >= 1
+                                    #if GLOWING_AMETHYST >= 1 && defined GBUFFERS_TERRAIN
                                         vec2 absCoord = abs(signMidCoordPos);
                                         float maxBlockPos = max(absCoord.x, absCoord.y);
                                         emission = pow2(max0(1.0 - maxBlockPos) * color.g) * 5.4 + 1.2 * color.g;
@@ -2160,32 +2208,52 @@ if (mat < 10512) {
                                 #include "/lib/materials/specificMaterials/planks/cherryPlanks.glsl"
                             }
                             else /*if (mat == 10836)*/ { // Brewing Stand
-                                vec3 worldPos = playerPos + cameraPosition;
-                                vec3 fractPos = fract(worldPos.xyz);
-                                vec3 coordM = abs(fractPos.xyz - 0.5);
-                                float cLength = dot(coordM, coordM) * 1.3333333;
-                                cLength = pow2(1.0 - cLength);
+                                #ifdef GBUFFERS_TERRAIN
+                                    vec3 worldPos = playerPos + cameraPosition;
+                                    vec3 fractPos = fract(worldPos.xyz);
+                                    vec3 coordM = abs(fractPos.xyz - 0.5);
+                                    float cLength = dot(coordM, coordM) * 1.3333333;
+                                    cLength = pow2(1.0 - cLength);
 
-                                if (color.r + color.g > color.b * 3.0 && max(coordM.x, coordM.z) < 0.07) {
-                                    emission = 2.5 * pow1_5(cLength);
-                                } else {
-                                    lmCoordM.x = max(lmCoordM.x * 0.9, cLength);
-                                    
-                                    #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
-                                }
+                                    if (color.r + color.g > color.b * 3.0 && max(coordM.x, coordM.z) < 0.07) {
+                                        emission = 2.5 * pow1_5(cLength);
+                                    } else {
+                                        lmCoordM.x = max(lmCoordM.x * 0.9, cLength);
+                                        
+                                        #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
+                                    }
+                                #else
+                                    emission = max0(color.r + color.g - color.b * 1.8 - 0.3) * 2.2;
+                                #endif
                             }
                         } else {
-                            if (mat == 10840) { //
-                            
-                            }
-                            else /*if (mat == 10844)*/ { //
+                            if (mat == 10840) { // Lime Concrete
+                                smoothnessG = 0.4;
+                                highlightMult = 1.5;
+                                smoothnessD = 0.3;
 
+                                #ifdef COATED_TEXTURES
+                                    noiseFactor = 0.2;
+                                #endif
+
+                                #ifdef GREEN_SCREEN_LIME
+                                    materialMask = OSIEBCA * 240.0; // Green Screen Lime Blocks
+                                #endif
+                            }
+                            else /*if (mat == 10844)*/ { // Lime Carpet, Lime Wool
+                                #ifdef COATED_TEXTURES
+                                    noiseFactor = 0.77;
+                                #endif
+
+                                #ifdef GREEN_SCREEN_LIME
+                                    materialMask = OSIEBCA * 240.0; // Green Screen Lime Blocks
+                                #endif
                             }
                         }
                     } else {
                         if (mat < 10856) {
                             if (mat == 10848) { //
-                            
+
                             }
                             else /*if (mat == 10852)*/ { //
 

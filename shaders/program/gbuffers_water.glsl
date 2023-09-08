@@ -52,6 +52,7 @@ uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 uniform float viewWidth;
 uniform float viewHeight;
+uniform float aspectRatio;
 
 uniform sampler2D tex;
 uniform sampler2D noisetex;
@@ -60,7 +61,7 @@ uniform sampler2D noisetex;
 	uniform sampler2D gaux4;
 #endif
 
-#ifdef CLOUDS_REIMAGINED
+#ifdef VL_CLOUDS_ACTIVE
 	uniform sampler2D gaux1;
 #endif
 
@@ -68,17 +69,19 @@ uniform sampler2D noisetex;
 	uniform sampler2D depthtex1;
 #endif
 
-#if WATER_REFLECT_QUALITY >= 1
+#if WATER_REFLECT_QUALITY >= 1 || defined FANCY_NETHERPORTAL
 	uniform mat4 gbufferProjection;
+#endif
 
+#if WATER_REFLECT_QUALITY >= 1
 	uniform sampler2D gaux2;
 #endif
 
 #if RAIN_PUDDLES >= 1
 	#if RAIN_PUDDLES < 3
-		uniform float isRainy;
+		uniform float inRainy;
 	#else
-		float isRainy = 1.0;
+		float inRainy = 1.0;
 	#endif
 #endif
 
@@ -187,7 +190,7 @@ void main() {
 		atmColorMult = GetAtmColorMult();
 	#endif
 
-	#ifdef CLOUDS_REIMAGINED
+	#ifdef VL_CLOUDS_ACTIVE
 		float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
 
 		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < min(lViewPos, far)) discard;
@@ -231,7 +234,11 @@ void main() {
 		
 		if (mat == 31000) { // Water
 			#include "/lib/materials/specificMaterials/translucents/water.glsl"
-		} 
+		} else if (mat == 30020) { // Nether Portal
+			#ifdef FANCY_NETHERPORTAL
+				#include "/lib/materials/specificMaterials/translucents/netherPortal.glsl"
+			#endif
+		}
 	#endif
 
 	// Blending
@@ -250,13 +257,16 @@ void main() {
 		#ifdef LIGHT_COLOR_MULTS
 			highlightColor *= lightColorMult;
 		#endif
+        #ifdef MOON_PHASE_INF_REFLECTION
+            highlightColor *= pow2(moonPhaseInfluence);
+        #endif
 
 		float fresnelM = (pow2(pow2(fresnel)) * 0.85 + 0.15) * reflectMult;
 		
 		float skyLightFactor = pow2(max(lmCoordM.y - 0.7, 0.0) * 3.33333);
 
 		#if WATER_REFLECT_QUALITY >= 2
-			#if defined REALTIME_SHADOWS && defined WATER_QUALITY >= 2
+			#if defined REALTIME_SHADOWS && WATER_QUALITY >= 2
 				skyLightFactor = max(skyLightFactor, min1(dot(shadowMult, shadowMult)));
 			#endif
 		

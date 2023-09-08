@@ -26,6 +26,10 @@ uniform float darknessLightFactor;
     #include "/lib/colors/colorMultipliers.glsl"
 #endif
 
+#if defined MOON_PHASE_INF_LIGHT || defined MOON_PHASE_INF_REFLECTION
+	#include "/lib/colors/moonPhaseInfluence.glsl"
+#endif
+
 //
 vec3 highlightColor = normalize(pow(lightColor, vec3(0.37))) * (0.3 + 1.5 * sunVisibility2) * (1.0 - 0.85 * rainFactor);
 
@@ -147,8 +151,10 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                     playerPosM = mix(vec3(0.0), playerPosM, 0.2 + 0.8 * lightmapYM);
                                 #else
                                     if (centerShadowBias) {
-                                        vec3 centerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
-                                        playerPosM = mix(centerPos, playerPosM, 0.5 + 0.5 * lightmapYM);
+                                        #ifdef OVERWORLD
+                                            vec3 centerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
+                                            playerPosM = mix(centerPos, playerPosM, 0.5 + 0.5 * lightmapYM);
+                                        #endif
                                     } else {
                                         vec3 edgeFactor = 0.2 * (0.5 - fract(playerPosM + cameraPosition + worldNormal * 0.01));
 
@@ -198,7 +204,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             }
                         #endif
 
-                        shadowMult *= GetShadow(shadowPos, lightmap.y, offset, leaves);
+                        shadowMult *= GetShadow(shadowPos, lViewPos, lightmap.y, offset, leaves);
                     }
 
                     float shadowSmooth = 16.0;
@@ -231,22 +237,22 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                     float NVdotLM = tan(acos(dot(northVec, lightVec)));
                                 #endif
 
-                                float distToCloudLayer1 = CLOUD_ALT1 - worldPos.y;
+                                float distToCloudLayer1 = cloudAlt1i - worldPos.y;
                                 vec3 cloudOffset1 = vec3(distToCloudLayer1 / EdotLM, 0.0, 0.0);
                                 #if SUN_ANGLE != 0
                                     cloudOffset1.z += distToCloudLayer1 / NVdotLM;
                                 #endif
-                                vec2 cloudPos1 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset1, CLOUD_ALT1).xz);
+                                vec2 cloudPos1 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset1, cloudAlt1i).xz);
                                 float cloudSample = texture2D(gaux4, cloudPos1).b;
                                 cloudSample *= clamp(distToCloudLayer1 * 0.1, 0.0, 1.0);
 
                                 #ifdef DOUBLE_REIM_CLOUDS
-                                    float distToCloudLayer2 = CLOUD_ALT2 - worldPos.y;
+                                    float distToCloudLayer2 = cloudAlt2i - worldPos.y;
                                     vec3 cloudOffset2 = vec3(distToCloudLayer2 / EdotLM, 0.0, 0.0);
                                     #if SUN_ANGLE != 0
                                         cloudOffset2.z += distToCloudLayer2 / NVdotLM;
                                     #endif
-                                    vec2 cloudPos2 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset2, CLOUD_ALT2).xz);
+                                    vec2 cloudPos2 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset2, cloudAlt2i).xz);
                                     float cloudSample2 = texture2D(gaux4, cloudPos2).b;
                                     cloudSample2 *= clamp(distToCloudLayer2 * 0.1, 0.0, 1.0);
 
@@ -349,7 +355,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
         if (isEyeInWater != 1) {
             float lxFactor = (sunVisibility2 * 0.4 + (0.6 - 0.6 * pow2(invNoonFactor))) * (6.0 - 5.0 * rainFactor);
-            lxFactor *= lightmapY2 + 2.0 * shadowMult.r;
+            lxFactor *= lightmapY2 + lightmapY2 * 2.0 * pow2(shadowMult.r);
             lxFactor = max0(lxFactor - emission * 1000000.0);
             lightmapXM *= pow(max(lightmap.x, 0.001), lxFactor);
 
@@ -373,10 +379,10 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             float absNdotE = abs(NdotE);
             float absNdotE2 = pow2(absNdotE);
 
-            #if !defined NETHER || MC_VERSION < 11600
+            #if !defined NETHER
                 float NdotUM = 0.75 + NdotU * 0.25;
             #else
-                float NdotUM = 0.75 + abs(NdotU + 0.25) * 0.2;
+                float NdotUM = 0.75 + abs(NdotU + 0.5) * 0.16666;
             #endif
             float NdotNM = 1.0 + 0.075 * absNdotN;
             float NdotEM = 1.0 - 0.1 * absNdotE2;
@@ -384,8 +390,9 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
             #ifdef OVERWORLD
                 lightColorM *= 1.0 + absNdotE2 * 0.75;
-            #elif defined NETHER && MC_VERSION >= 11600
-                directionShade = pow(directionShade, 1.75);
+            #elif defined NETHER
+                directionShade *= directionShade;
+                ambientColorM += lavaLightColor * pow2(absNdotN * 0.5 + max0(-NdotU)) * (0.7 + 0.35 * vsBrightness);
             #endif
 
             #if defined CUSTOM_PBR || defined GENERATED_NORMALS
@@ -412,6 +419,9 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
     #ifdef LIGHT_COLOR_MULTS
         sceneLighting *= lightColorMult;
+    #endif
+    #ifdef MOON_PHASE_INF_LIGHT
+        sceneLighting *= moonPhaseInfluence;
     #endif
     
     // Vanilla Ambient Occlusion
@@ -461,6 +471,9 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
         #ifdef LIGHT_COLOR_MULTS
             lightHighlight *= lightColorMult;
+        #endif
+        #ifdef MOON_PHASE_INF_REFLECTION
+            lightHighlight *= pow2(moonPhaseInfluence);
         #endif
     #endif
 

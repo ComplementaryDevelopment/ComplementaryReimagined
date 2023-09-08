@@ -3,7 +3,7 @@
 
 #if defined OVERWORLD
     #ifndef COMPOSITE
-	    vec3 noonClearLightColor = vec3(0.7, 0.55, 0.5) * 1.9; //ground and cloud color
+	    vec3 noonClearLightColor = vec3(0.7, 0.55, 0.4) * 1.9; //ground and cloud color
     #else
         vec3 noonClearLightColor = vec3(0.4, 0.7, 1.4); //light shaft color
     #endif
@@ -25,11 +25,11 @@
     #endif
     vec3 nightClearAmbientColor   = vec3(0.09, 0.12, 0.17) * (1.55 + vsBrightness * 0.77);
 
-    vec3 dayRainLightColor   = vec3(0.1, 0.12, 0.24) * (0.75 + vsBrightness * 0.25);
-    vec3 dayRainAmbientColor = vec3(0.17, 0.21, 0.3) * (1.5 + vsBrightness);
+    vec3 dayRainLightColor   = vec3(0.21, 0.16, 0.13) * 0.85;
+    vec3 dayRainAmbientColor = vec3(0.2, 0.2, 0.25) * 2.3;
 
-    vec3 nightRainLightColor   = vec3(0.008, 0.009, 0.024) * (0.5 + vsBrightness);
-    vec3 nightRainAmbientColor = vec3(0.16, 0.20, 0.3) * (0.75 + vsBrightness * 0.6);
+    vec3 nightRainLightColor   = vec3(0.03, 0.035, 0.05) * (0.5 + 0.5 * vsBrightness);
+    vec3 nightRainAmbientColor = vec3(0.16, 0.20, 0.3) * (0.75 + 0.6 * vsBrightness);
 
     #ifndef COMPOSITE
         float noonFactorDM = noonFactor; //ground and cloud factor
@@ -48,9 +48,8 @@
     vec3 lightColor   = mix(clearLightColor, rainLightColor, rainFactor);
     vec3 ambientColor = mix(clearAmbientColor, rainAmbientColor, rainFactor);
 #elif defined NETHER
-    vec3 netherColor  = max(normalize(sqrt(fogColor)), vec3(0.0));
     vec3 lightColor   = vec3(0.0);
-    vec3 ambientColor = netherColor * (0.44 + 0.22 * vsBrightness);
+    vec3 ambientColor = (netherColor + 0.5 * lavaLightColor) * (0.9 + 0.45 * vsBrightness);
 #elif defined END
     vec3 endLightColor = vec3(0.68, 0.51, 1.07);
     float endLightBalancer = 0.2 * vsBrightness;

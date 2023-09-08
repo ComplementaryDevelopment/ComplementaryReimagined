@@ -1,54 +1,19 @@
 #include "/lib/atmospherics/clouds/cloudCoord.glsl"
 
-vec3 cloudRainColor = mix(nightMiddleSkyColor, dayMiddleSkyColor, sunFactor) * 0.7;
-vec3 cloudAmbientColor = mix(ambientColor * (sunVisibility2 * (0.55 + 0.1 * noonFactor) + 0.35), cloudRainColor * 0.5, rainFactor);
-vec3 cloudLightColor   = mix(lightColor * (0.9 + 0.2 * noonFactor), cloudRainColor, rainFactor);
-
-const float cloudStretch = CLOUD_STRETCH;
+const float cloudStretch = 5.5;
 const float cloudHeight  = cloudStretch * 2.0;
 
-float InterleavedGradientNoise() {
-    float n = 52.9829189 * fract(0.06711056 * gl_FragCoord.x + 0.00583715 * gl_FragCoord.y);
-    #ifdef TAA
-        return fract(n + 1.61803398875 * mod(float(frameCounter), 3600.0));
-    #else
-        return fract(n);
-    #endif
-}
-
-#ifdef REALTIME_SHADOWS
-    vec3 GetShadowOnCloudPosition(vec3 tracePos) {
-        vec3 wpos = PlayerToShadow(tracePos - cameraPosition);
-        float distb = sqrt(wpos.x * wpos.x + wpos.y * wpos.y);
-        float distortFactor = 1.0 - shadowMapBias + distb * shadowMapBias;
-        vec3 shadowPosition = vec3(vec2(wpos.xy / distortFactor), wpos.z * 0.2);
-        return shadowPosition * 0.5 + 0.5;
-    }
-
-    bool GetShadowOnCloud(vec3 tracePos, float cloudAltitude, float lowerPlaneAltitude, float higherPlaneAltitude) {
-        const float cloudShadowOffset = 0.5;
-
-        vec3 shadowPosition0 = GetShadowOnCloudPosition(tracePos);
-        if (length(shadowPosition0.xy * 2.0 - 1.0) < 1.0) {
-            float shadowsample0 = shadow2D(shadowtex0, shadowPosition0).z;
-
-            if (shadowsample0 == 0.0) return true;
-        }
-
-        return false;
-    }
-#endif
-
-bool GetCloudNoise(vec3 tracePos, float cloudAltitude) {
-    vec2 coord = GetRoundedCloudCoord(ModifyTracePos(tracePos.xyz, cloudAltitude).xz);
-    
+bool GetCloudNoise(vec3 tracePos, inout vec3 tracePosM, int cloudAltitude) {
+    tracePosM = ModifyTracePos(tracePos, cloudAltitude);
+    vec2 coord = GetRoundedCloudCoord(tracePosM.xz);
     float noise = texture2D(colortex3, coord).b;
+
     float threshold = clamp(abs(cloudAltitude - tracePos.y) / cloudStretch, 0.001, 0.999);
     threshold = pow2(pow2(pow2(threshold)));
-    return noise > (threshold * 0.5 + 0.25);
+    return noise > threshold * 0.5 + 0.25;
 }
 
-vec4 GetVolumetricClouds(float cloudAltitude, float distanceThreshold, inout float cloudLinearDepth, float skyFade, float skyMult0, vec3 nPlayerPos, float lViewPosM, float VdotS, float VdotU, float dither) {
+vec4 GetVolumetricClouds(int cloudAltitude, float distanceThreshold, inout float cloudLinearDepth, float skyFade, float skyMult0, vec3 nPlayerPos, float lViewPosM, float VdotS, float VdotU, float dither) {
 	vec4 volumetricClouds = vec4(0.0);
 
     float higherPlaneAltitude = cloudAltitude + cloudStretch;
@@ -62,15 +27,17 @@ vec4 GetVolumetricClouds(float cloudAltitude, float distanceThreshold, inout flo
     if (maxPlaneDistance < 0.0) return vec4(0.0);
     float planeDistanceDif = maxPlaneDistance - minPlaneDistance;
 
-    #ifndef HQ_REIM_CLOUD
+    #if CLOUD_QUALITY == 1
+        int sampleCount = max(int(planeDistanceDif) / 16, 6);
+    #elif CLOUD_QUALITY == 2
         int sampleCount = max(int(planeDistanceDif) / 8, 12);
-    #else
+    #elif CLOUD_QUALITY == 3
         int sampleCount = max(int(planeDistanceDif), 12);
     #endif
 
     float stepMult = planeDistanceDif / sampleCount;
-    vec3 tracePos = cameraPosition + minPlaneDistance * nPlayerPos;
     vec3 traceAdd = nPlayerPos * stepMult;
+    vec3 tracePos = cameraPosition + minPlaneDistance * nPlayerPos;
     tracePos += traceAdd * dither;
     tracePos.y -= traceAdd.y;
 
@@ -87,7 +54,8 @@ vec4 GetVolumetricClouds(float cloudAltitude, float distanceThreshold, inout flo
             else cloudMult = skyMult0;
         }
 
-        if (GetCloudNoise(tracePos.xyz, cloudAltitude)) {
+        vec3 tracePosM;
+        if (GetCloudNoise(tracePos, tracePosM, cloudAltitude)) {
             float lightMult = 1.0;
 
             #ifdef REALTIME_SHADOWS
@@ -101,16 +69,17 @@ vec4 GetVolumetricClouds(float cloudAltitude, float distanceThreshold, inout flo
             #endif
 
             float cloudShading = 1.0 - (higherPlaneAltitude - tracePos.y) / cloudHeight;
-            float cloudShadingM = 1.0 - pow2(cloudShading);
-
-            float gradientNoise = InterleavedGradientNoise();
-
-            vec3 cLightPos = ModifyTracePos(tracePos.xyz, cloudAltitude);
-            vec3 cLightPosAdd = normalize(ViewToPlayer(lightVec * 1000000000.0)) * vec3(0.08);
-            cLightPosAdd *= shadowTime;
-
             float VdotSM1 = max0(sunVisibility > 0.5 ? VdotS : - VdotS);
-            #if DETAIL_QUALITY >= 1
+
+            #if CLOUD_QUALITY >= 2
+                float cloudShadingM = 1.0 - pow2(cloudShading);
+
+                float gradientNoise = InterleavedGradientNoise();
+
+                vec3 cLightPos = tracePosM;
+                vec3 cLightPosAdd = normalize(ViewToPlayer(lightVec * 1000000000.0)) * vec3(0.08);
+                cLightPosAdd *= shadowTime;
+
                 float light = 2.0;
                 cLightPos += (1.0 + gradientNoise) * cLightPosAdd;
                 light -= texture2D(colortex3, GetRoundedCloudCoord(cLightPos.xz)).b * cloudShadingM;

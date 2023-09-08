@@ -60,7 +60,7 @@ vec3 GetNightNebula(vec3 viewPos, float VdotU, float VdotS) {
     float nebulaFactor = pow2(max0(VdotU) * min1(nightFactor * 2.0)) * invRainFactor;
     if (nebulaFactor < 0.001) return vec3(0.0);
 
-    vec2 UV = GetStarCoord(viewPos);
+    vec2 UV = GetStarCoord(viewPos, 0.5);
     float TIME = syncedTime * 0.003 + 15.0;
 
 	float timescaled = TIME * timescale;

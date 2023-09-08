@@ -36,6 +36,10 @@ uniform mat4 gbufferModelViewInverse;
 	uniform int moonPhase;
 	
 	uniform mat4 gbufferModelView;
+	uniform mat4 shadowModelView;
+	uniform mat4 shadowProjection;
+
+	uniform sampler2D noisetex;
 #endif
 
 //Pipeline Constants//
@@ -71,6 +75,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 	#include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
+#if SUN_MOON_STYLE >= 2
+	#include "/lib/util/spaceConversion.glsl"
+#endif
+
 //Program//
 void main() {
 	vec4 color = vec4(glColor.rgb, 1.0);
@@ -88,25 +96,26 @@ void main() {
 
 		color.rgb = GetSky(VdotU, VdotS, dither, true, false);
 		
-		color.rgb += GetStars(viewPos.xyz, VdotU, VdotS);
+		vec2 starCoord = GetStarCoord(viewPos.xyz, 0.5);
+		color.rgb += GetStars(starCoord, VdotU, VdotS);
 
 		#if SUN_MOON_STYLE >= 2
 			float absVdotS = abs(VdotS);
 			#if SUN_MOON_STYLE == 2
-				float sunSizeFactor1 = 0.9965;
-				float sunSizeFactor2 = 285.714;
+				float sunSizeFactor1 = 0.9975;
+				float sunSizeFactor2 = 400.0;
 				float moonCrescentOffset = 0.0055;
-				float moonPhaseFactor1 = 3.0;
+				float moonPhaseFactor1 = 2.45;
 				float moonPhaseFactor2 = 750.0;
 			#else
-				float sunSizeFactor1 = 0.998;
-				float sunSizeFactor2 = 500.0;
+				float sunSizeFactor1 = 0.9983;
+				float sunSizeFactor2 = 588.235;
 				float moonCrescentOffset = 0.0042;
 				float moonPhaseFactor1 = 2.2;
 				float moonPhaseFactor2 = 1000.0;
 			#endif
 			if (absVdotS > sunSizeFactor1) {
-				float sunMoonMixer = sunSizeFactor2 * (absVdotS - sunSizeFactor1) * invRainFactor;
+				float sunMoonMixer = sqrt1(sunSizeFactor2 * (absVdotS - sunSizeFactor1)) * (1.0 - 0.4 * rainFactor2);
 
 				if (VdotS > 0.0) {
 					sunMoonMixer = pow2(sunMoonMixer) * GetHorizonFactor(SdotU);
@@ -117,8 +126,15 @@ void main() {
 
 					color.rgb = mix(color.rgb, vec3(0.9, 0.5, 0.3) * 10.0, sunMoonMixer);
 				} else {
-					vec3 moonColor = vec3(0.38, 0.4, 0.5);
-					sunMoonMixer = max0(sunMoonMixer - 0.25) * 1.33333 * GetHorizonFactor(-SdotU);
+					float horizonFactor = GetHorizonFactor(-SdotU);
+					sunMoonMixer = max0(sunMoonMixer - 0.25) * 1.33333 * horizonFactor;
+
+					starCoord = GetStarCoord(viewPos.xyz, 1.0) * 0.5 + 0.617;
+					float moonNoise = texture2D(noisetex, starCoord).g
+					                + texture2D(noisetex, starCoord * 2.5).g * 0.7
+					                + texture2D(noisetex, starCoord * 5.0).g * 0.5;
+					moonNoise = max0(moonNoise - 0.75) * 1.7;
+					vec3 moonColor = vec3(0.38, 0.4, 0.5) * (1.2 - (0.2 + 0.2 * sqrt1(nightFactor)) * moonNoise);
 
 					if (moonPhase >= 1) {
 						float moonPhaseOffset = 0.0;

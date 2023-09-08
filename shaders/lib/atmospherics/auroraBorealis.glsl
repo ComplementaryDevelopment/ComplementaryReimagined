@@ -6,10 +6,10 @@ vec3 GetAuroraBorealis(vec3 viewPos, float VdotU, float dither) {
         visibility -= moonPhase;
     #endif
     #if AURORA_CONDITION == 2 || AURORA_CONDITION == 3
-        visibility *= isSnowy;
+        visibility *= inSnowy;
     #endif
     #if AURORA_CONDITION == 4
-        visibility = max(visibility * isSnowy, visibility - moonPhase);
+        visibility = max(visibility * inSnowy, visibility - moonPhase);
     #endif
 
     if (visibility > 0.0) {

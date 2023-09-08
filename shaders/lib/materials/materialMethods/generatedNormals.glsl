@@ -2,6 +2,12 @@ const float normalThreshold = 0.05;
 const float normalClamp = 0.2;
 const float packSizeGN = 128.0;
 
+#ifndef GBUFFERS_HAND
+    const float normalMult = GENERATED_NORMAL_MULT * 0.025;
+#else
+    const float normalMult = GENERATED_NORMAL_MULT * 0.015;
+#endif
+
 float GetDif(float lOriginalAlbedo, vec2 offsetCoord) {
     #ifndef GBUFFERS_WATER
         float lNearbyAlbedo = length(texture2D(tex, offsetCoord).rgb);    
@@ -39,8 +45,7 @@ void GenerateNormals(inout vec3 normalM, vec3 color) {
     vec2 absMidCoordPos2 = absMidCoordPos * 2.0;
     float lOriginalAlbedo = length(color.rgb);
 
-    #define GENERATED_NORMAL_MULT_M GENERATED_NORMAL_MULT * 0.025
-    float normalMult = max0(1.0 - mipDelta) * GENERATED_NORMAL_MULT_M;
+    float normalMult = max0(1.0 - mipDelta) * normalMult;
 
     #ifndef SAFER_GENERATED_NORMALS
         vec2 offsetR = 16.0 / atlasSizeM;

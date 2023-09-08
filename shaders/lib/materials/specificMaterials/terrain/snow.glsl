@@ -3,7 +3,9 @@ highlightMult = 2.0;
 
 smoothnessD = smoothnessG;
 
-DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+#ifdef GBUFFERS_TERRAIN
+    DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+#endif
 
 #if RAIN_PUDDLES >= 1
     noPuddles = 1.0;

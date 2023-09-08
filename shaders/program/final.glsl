@@ -95,6 +95,21 @@ void main() {
 		SharpenImage(color, texCoordM);
 	#endif
 
+	/*ivec2 boxOffsets[8] = ivec2[8](
+		ivec2( 1, 0),
+		ivec2( 0, 1),
+		ivec2(-1, 0),
+		ivec2( 0,-1),
+		ivec2( 1, 1),
+		ivec2( 1,-1),
+		ivec2(-1, 1),
+		ivec2(-1,-1)
+	);
+
+	for (int i = 0; i < 8; i++) {
+		color = max(color, texelFetch(colortex3, texelCoord + boxOffsets[i], 0).rgb);
+	}*/
+
 	#ifdef LIGHT_COLORING
 		if (max(texCoordM.x, texCoordM.y) < 0.25) color = texture2D(colortex3, texCoordM * 4.0).rgb;
 	#endif
@@ -126,6 +141,8 @@ void main() {
 		));
 		endText(color.rgb);
 	#endif
+
+	//if (gl_FragCoord.x < 479 || gl_FragCoord.x > 1441) color = vec3(0.0);
 
 	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(color, 1.0);

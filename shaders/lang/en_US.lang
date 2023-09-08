@@ -60,9 +60,9 @@ option.info10.comment=EminGT: The main developer of Complementary. Capt Tatsu: D
 
 #Style
 option.SHADER_STYLE=Visual Style
-option.SHADER_STYLE.comment=Determines the default visual style of the shader pack. §bReimagined§r: Complementing Minecraft while preserving its unique visual elements. §dFantasy§r: Reworking the visuals of Minecraft with a semi-realistic fantasy style. §e[*]§r Affected settings: Water Style, Cloud Style, Sun/Moon Style, Sun/Moon Angle, Aurora Style.
+option.SHADER_STYLE.comment=Determines the default visual style of the shader pack. §bReimagined§r: Complementing Minecraft while preserving its unique visual elements. §dUnbound§r: Reworking the visuals of Minecraft with a semi-realistic fantasy style. §e[*]§r Affected settings: Water Style, Cloud Style, Sun/Moon Style, Sun/Moon Angle, Aurora Style.
 value.SHADER_STYLE.1=§bReimagined
-value.SHADER_STYLE.4=§dFantasy
+value.SHADER_STYLE.4=§dUnbound
 
 #Screens
 screen.PERFORMANCE_SETTINGS=§ePerformance Settings§r
@@ -84,8 +84,14 @@ screen.END_ATM_MULTS=The End Dimension
 screen.CLOUD_SETTINGS=Clouds
 screen.CLOUD_SETTINGS.comment=Settings that relate to the clouds.
 
-screen.FOG_SETTINGS=Fog Settings
+screen.CLOUD_UNBOUND_SETTINGS=Unbound Cloud Settings
+screen.CLOUD_REIMAGINED_SETTINGS=Reimagined Cloud Settings
+
+screen.FOG_SETTINGS=Fog
 screen.FOG_SETTINGS.comment=Settings that relate to the various types of fog.
+
+screen.NETHER_SETTINGS=The Nether Dimension
+screen.NETHER_SETTINGS.comment=Settings that relate to the Nether dimension.
 
 screen.CAMERA_SETTINGS=Camera
 screen.CAMERA_SETTINGS.comment=Settings that relate to the view/camera.
@@ -93,17 +99,26 @@ screen.CAMERA_SETTINGS.comment=Settings that relate to the view/camera.
 screen.TONEMAP_SETTINGS=Color Balance
 screen.TONEMAP_SETTINGS.comment=Settings that determine the color balance of the visuals.
 
+screen.COLORGRADING_SETTINGS=Color Grading
+screen.COLORGRADING_SETTINGS.comment=Settings to mix up the final color channels.
+
+screen.WORLD_BLUR_SETTINGS=World Blur
+screen.WORLD_BLUR_SETTINGS.comment=Settings that relate to fancy world blurring effects.
+
 screen.MATERIAL_SETTINGS=Materials
 screen.MATERIAL_SETTINGS.comment=Settings that are related to the materials of Minecraft.
 
 screen.IPBR_SETTINGS=Integrated Materials
-screen.IPBR_SETTINGS.comment=Settings that are related to the features of IntegratedPBR.
+screen.IPBR_SETTINGS.comment=Settings that are related to the features of IntegratedPBR+.
 
 screen.GLOWING_ORE_SETTINGS=Glowing Ores
 screen.GLOWING_ORE_SETTINGS.comment=Settings to adjust emission of ore blocks.
 
 screen.GLOWING_STUFF_SETTINGS=Glowing Stuff
 screen.GLOWING_STUFF_SETTINGS.comment=Settings to adjust emission of miscellaneous blocks.
+
+screen.OTHER_IPBR_SETTINGS=Other
+screen.OTHER_IPBR_SETTINGS.comment=Miscellaneous IntegratedPBR+ settings.
 
 screen.CUSTOM_PBR_SETTINGS=labPBR/seuspbr Materials
 screen.CUSTOM_PBR_SETTINGS.comment=Settings that are related to the features of labPBR/seuspbr.
@@ -122,7 +137,10 @@ screen.NETHER_LIGHT_MULTS=The Nether Dimension
 screen.END_LIGHT_MULTS=The End Dimension
 
 screen.BLOCKLIGHT_COLOR_SETTINGS=Blocklight Color
-screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Adjusts the color emited from light source blocks.
+screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Settings to adjust the color emited from light source blocks.
+
+screen.MOON_PHASE_INF_SETTINGS=Moon Phase Influence
+screen.MOON_PHASE_INF_SETTINGS.comment=Settings to determine how different moon phases affect the night lighting.
 
 screen.WATER_SETTINGS=Water
 screen.WATER_SETTINGS.comment=Settings that are about water.
@@ -131,7 +149,7 @@ screen.WATER_COLOR_SETTINGS=Water Surface Color
 screen.UNDERWATER_COLOR_SETTINGS=Underwater Color
 
 screen.WATER_WAVE_SETTINGS=Waving Water Normals §e[*]§r
-screen.WATER_WAVE_SETTINGS.comment=Settings to customise the surface-direction waves (normals) seen on water. §e[*]§r These settings only work when the Water Style is set to "Reimagined + Waves" or "Fantasy".
+screen.WATER_WAVE_SETTINGS.comment=Settings to customise the surface-direction waves (normals) seen on water. §e[*]§r These settings only work when the Water Style is set to "Reimagined + Waves" or "Unbound".
 
 screen.WAVING_SETTINGS=Waving Textures
 screen.WAVING_SETTINGS.comment=Settings that are about waving textures.
@@ -139,11 +157,11 @@ screen.WAVING_SETTINGS.comment=Settings that are about waving textures.
 screen.OTHER_SETTINGS=Other
 screen.OTHER_SETTINGS.comment=Settings that don't fit into any other category.
 
-screen.SELECT_OUTLINE_SETTINGS=Selection Outline Settings
+screen.SELECT_OUTLINE_SETTINGS=Selection Outline
 screen.SELECT_OUTLINE_SETTINGS.comment=Settings that change the block selection outline.
 
-screen.WORLD_OUTLINE_SETTINGS=World Outline Settings
-screen.WORLD_OUTLINE_SETTINGS.comment=Settings that are about the optional outline effect.
+screen.WORLD_OUTLINE_SETTINGS=World Outline
+screen.WORLD_OUTLINE_SETTINGS.comment=Settings that are about optional outline effects.
 
 #Settings
 option.RP_MODE=RP Support
@@ -217,10 +235,17 @@ value.ENTITY_SHADOWS.true=§dON
 value.ENTITY_SHADOWS.false=§eOFF
 
 option.DETAIL_QUALITY=Detail Quality
-option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: TAA, Reimagined clouds, lighting tweaks, night nebula.
+option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: TAA, lighting tweaks, Night Nebula, Nether Storm, Ender Beams.
 value.DETAIL_QUALITY.0=§4Potato
 value.DETAIL_QUALITY.2=§aMedium
 value.DETAIL_QUALITY.3=§bHigh
+
+option.CLOUD_QUALITY=Cloud Quality
+option.CLOUD_QUALITY.comment=Adjusts the lighting, detail, and sample quality of Reimagined/Unbound cloud styles. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
+value.CLOUD_QUALITY.0=§cOFF
+value.CLOUD_QUALITY.1=§eLow
+value.CLOUD_QUALITY.2=§aMedium
+value.CLOUD_QUALITY.3=§bHigh
 
 option.SSAO_QUALI_DEFINE=Edge Shadow (SSAO) Quality
 option.SSAO_QUALI_DEFINE.comment=Adjusts the quality of Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene. Every tier further reduces the ssao noise artifacts.
@@ -248,7 +273,7 @@ value.ATM_FOG_MULT.0.80=Normal
 value.ATM_FOG_MULT.0.95=Intense
 
 option.ATM_FOG_DISTANCE=Atmospheric Fog Distance
-option.ATM_FOG_DISTANCE.comment=Adjusts the distance from the camera that the atmospheric fog starts to appear. §e[*]§r Note that the fog distance also gets automatically adjusted by the Render Distance video setting.
+option.ATM_FOG_DISTANCE.comment=Adjusts the distance from the camera that the atmospheric fog starts to appear. §e[*]§r Note that the fog distance also gets automatically adjusted by the Render Distance setting in Video Settings.
 
 option.ATM_FOG_ALTITUDE=Atmospheric Fog Altitude
 option.ATM_FOG_ALTITUDE.comment=Determines the altitude that the atmospheric fog appears the most prominently.
@@ -272,69 +297,97 @@ option.CLOUD_STYLE_DEFINE.comment=Determines the style of clouds. §e[*]§r "Def
 value.CLOUD_STYLE_DEFINE.-1=Default Style
 value.CLOUD_STYLE_DEFINE.0=§cOFF
 value.CLOUD_STYLE_DEFINE.1=Reimagined
-value.CLOUD_STYLE_DEFINE.3=Fantasy
+value.CLOUD_STYLE_DEFINE.3=Unbound
 value.CLOUD_STYLE_DEFINE.50=Vanilla §e[*]
 
 option.CLOUD_SHADOWS=Cloud Shadows
-option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds. §e[*]§r Cloud shadows will be randomly generated if Cloud Style is set to "Fantasy".
+option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r Cloud shadows will be randomly generated if Cloud Style is set to "Unbound", because of the extra complexity of Unbound clouds.
 
-option.DOUBLE_REIM_CLOUDS=Double Reimagined Clouds §e[*]§r
+option.CLOUD_CLOSED_AREA_CHECK=Prevent Clouds in Interiors
+option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r This setting will be treated as disabled if "Real-Time Shadows" are also disabled.
+
+option.CLOUD_ALT1=Cloud Altitude
+option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
+
+option.CLOUD_SPEED_MULT=Cloud Speed
+option.CLOUD_SPEED_MULT.comment=Determines how fast the clouds are going to move. "Synced to World Time" setting uses Minecraft world time to advance the cloud positions; this allows for clouds to appear the same between players in the same server. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
+value.CLOUD_SPEED_MULT.100=Synced to World Time
+
+option.CLOUD_UNBOUND_AMOUNT=Cloud Amount
+option.CLOUD_UNBOUND_AMOUNT.comment=Adjusts the amount of Unbound clouds.
+
+option.CLOUD_UNBOUND_SIZE_MULT=Cloud Size
+option.CLOUD_UNBOUND_SIZE_MULT.comment=Adjusts the size of Unbound clouds. Higher values produce smaller clouds.
+
+option.DOUBLE_REIM_CLOUDS=Double Reimagined Clouds
 option.DOUBLE_REIM_CLOUDS.comment=Enables a secondary Reimagined cloud layer. §e[*]§r This setting only works with the "Reimagined" Cloud Style.
 
-option.CLOUD_CLOSED_AREA_CHECK=Prevent Clouds in Interiors §e[*]§r
-option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works with the "Reimagined" Cloud Style. §e[*]§r This setting will be treated as disabled if "Real-Time Shadows" are also disabled.
-
-option.CLOUD_ALT1=Cloud Layer 1 Altitude §e[*]§r
-option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting only works with the "Reimagined" Cloud Style.
-
-option.CLOUD_ALT2=Cloud Layer 2 Altitude §e[*]§r
+option.CLOUD_ALT2=Cloud Layer 2 Altitude
 option.CLOUD_ALT2.comment=Determines the world height which the second layer clouds will appear at. §e[*]§r This setting only works when the "Double Reimagined Clouds" option is enabled with the "Reimagined" Cloud Style.
 
-option.T_EXPOSURE=Tonemap Exposure
-option.T_EXPOSURE.comment=Adjusts the overall brightness of the image.
+option.NETHER_STORM=Nether Storm
+option.NETHER_STORM.comment=Adds a smoke-like volumetric effect to the Nether dimension. §c[-]§r This effect can impact performance.
 
-option.TM_WHITE_CURVE=Tonemap White Curve
-option.TM_WHITE_CURVE.comment=Adjusts how easily the colors reach to full white.
+option.NETHER_STORM_I=Nether Storm Opacity
+option.NETHER_STORM_I.comment=Adjusts the opacity of the Nether Storm.
 
-option.T_LOWER_CURVE=Tonemap Lower Curve
-option.T_LOWER_CURVE.comment=Adjusts contrast of darker colors.
+option.NETHER_STORM_LOWER_ALT=Nether Storm Lower Altitude
+option.NETHER_STORM_LOWER_ALT.comment=Determines the lower starting point of the Nether Storm. The Nether Storm won't appear below this altitude, and it will look the most bright right above this altitude.
 
-option.T_UPPER_CURVE=Tonemap Upper Curve
-option.T_UPPER_CURVE.comment=Adjusts contrast of brighter colors.
+option.NETHER_STORM_HEIGHT=Nether Storm Height
+option.NETHER_STORM_HEIGHT.comment=Determines how tall the Nether Storm will form. Decrasing this value will result in the Nether Storm gathering near the "Nether Storm Lower Altitude".
+
+option.NETHER_COLOR_MODE=Color Mode
+option.NETHER_COLOR_MODE.comment=Determines how the ambience colors will be handled in the Nether. Constant: Colors won't change between biomes. Biome Based: Colors will change depending on the biome. Biome Based (Modified): Biome based, but the colors have been rebalanced to better suit the default visual direction of Complementary.
+value.NETHER_COLOR_MODE.3=Biome Based (Modified)
+value.NETHER_COLOR_MODE.2=Biome Based
+value.NETHER_COLOR_MODE.0=Constant
+
+option.T_EXPOSURE=General Brightness
+option.T_EXPOSURE.comment=Also known as "Tonemap Exposure". Adjusts the overall brightness of the whole image.
+
+option.TM_WHITE_CURVE=White Brightness
+option.TM_WHITE_CURVE.comment=Also known as "Tonemap White Curve". Adjusts how easily the colors reach to full white.
+
+option.T_UPPER_CURVE=Contrast of Brighter Colors
+option.T_UPPER_CURVE.comment=Also known as "Tonemap Upper Curve". Adjusts contrast of brighter colors.
+
+option.T_LOWER_CURVE=Contrast of Darker Colors
+option.T_LOWER_CURVE.comment=Also known as "Tonemap Lower Curve". Adjusts contrast of darker colors.
 
 option.T_SATURATION=Saturation
 option.T_SATURATION.comment=Adjusts overall colorfulness of the image.
 
-option.T_VIBRANCE=Vibrance
-option.T_VIBRANCE.comment=Adjusts the colorfulness of the image, but already colorful pixels are less affected.
+option.T_VIBRANCE=Saturation of Paler Colors
+option.T_VIBRANCE.comment=Also known as "Vibrance". Adjusts the colorfulness of the image, but already colorful pixels are less affected.
 
-option.COLORGRADING=Color Grading
+option.COLORGRADING=§eColor Grading
 option.COLORGRADING.comment=Enables settings to freely mix up the final color channels.
-option.GR_RR=CG - Red to Red
-option.GR_RG=CG - Red to Green
-option.GR_RB=CG - Red to Blue
-option.GR_RC=CG - Red Curve
-option.GR_GR=CG - Green to Red
-option.GR_GG=CG - Green to Green
-option.GR_GB=CG - Green to Blue
-option.GR_GC=CG - Green Curve
-option.GR_BR=CG - Blue to Red
-option.GR_BG=CG - Blue to Green
-option.GR_BB=CG - Blue to Blue
-option.GR_BC=CG - Blue Curve
+option.GR_RR=Red to Red
+option.GR_RG=Red to Green
+option.GR_RB=Red to Blue
+option.GR_RC=Red Curve
+option.GR_GR=Green to Red
+option.GR_GG=Green to Green
+option.GR_GB=Green to Blue
+option.GR_GC=Green Curve
+option.GR_BR=Blue to Red
+option.GR_BG=Blue to Green
+option.GR_BB=Blue to Blue
+option.GR_BC=Blue Curve
 
 option.WATER_STYLE_DEFINE=Water Style
 option.WATER_STYLE_DEFINE.comment=Determines the style of water. §e[*]§r "Default Style" means that the setting will be automatically determined by the "Visual Style" setting in the main menu of Shader Options.
 value.WATER_STYLE_DEFINE.-1=Default Style
 value.WATER_STYLE_DEFINE.1=Reimagined
 value.WATER_STYLE_DEFINE.2=Reimagined + Waves
-value.WATER_STYLE_DEFINE.3=Fantasy
+value.WATER_STYLE_DEFINE.3=Unbound
 
 option.WATER_CAUSTIC_STYLE_DEFINE=Water Caustic Style
 option.WATER_CAUSTIC_STYLE_DEFINE.comment=Determines the style of water shadows, also known as water caustics.
 value.WATER_CAUSTIC_STYLE_DEFINE.-1=Same as Water
 value.WATER_CAUSTIC_STYLE_DEFINE.1=Reimagined
-value.WATER_CAUSTIC_STYLE_DEFINE.3=Fantasy
+value.WATER_CAUSTIC_STYLE_DEFINE.3=Unbound
 
 option.WATER_REFRACTION_INTENSITY=Water Refraction Intensity §e[*]§r
 option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when the Water Quality is set to "High" or above, or else it will only affect the subtle underwater distortion.
@@ -387,14 +440,14 @@ option.SUN_ANGLE=Sun/Moon Angle
 option.SUN_ANGLE.comment=Adjusts the angle of sun/moon relative to the world during noon. §a[+]§r Reimagined's lighting model is specially designed to make the "0" sun angle work just as well as others.
 value.SUN_ANGLE.-1=Default Style
 value.SUN_ANGLE.0=0 §r(§bReimagined§r)
-value.SUN_ANGLE.-40=-40 §r(§dFantasy§r)
+value.SUN_ANGLE.-40=-40 §r(§dUnbound§r)
 
 option.SUN_MOON_STYLE_DEFINE=Sun/Moon Style
 option.SUN_MOON_STYLE_DEFINE.comment=Determines the style of sun/moon. §e[*]§r This setting might interact incorrectly with some resource packs due to the limitations of sun/moon/skybox differentiation.
 value.SUN_MOON_STYLE_DEFINE.-1=Default Style
 value.SUN_MOON_STYLE_DEFINE.1=Reimagined
-value.SUN_MOON_STYLE_DEFINE.2=Fantasy
-value.SUN_MOON_STYLE_DEFINE.3=Fantasy - Smaller
+value.SUN_MOON_STYLE_DEFINE.2=Unbound
+value.SUN_MOON_STYLE_DEFINE.3=Unbound - Smaller
 
 option.SUN_MOON_HORIZON=Sun/Moon Horizon
 option.SUN_MOON_HORIZON.comment=Prevents the sun/moon from appearing below the horizon line.
@@ -404,12 +457,18 @@ option.NIGHT_STAR_AMOUNT.comment=Determines the amount of stars in the night sky
 value.NIGHT_STAR_AMOUNT.2=Medium
 value.NIGHT_STAR_AMOUNT.3=High
 
+option.RAINBOWS=Rainbows
+option.RAINBOWS.comment=Enables rainbows that appear at the opposite side of the sun during the morning/evening.
+value.RAINBOWS.0=OFF
+value.RAINBOWS.1=After Rain
+value.RAINBOWS.3=Always
+
 option.AURORA_STYLE_DEFINE=Aurora Borealis Style
 option.AURORA_STYLE_DEFINE.comment=Determines the style of northern lights that appear in the night sky.
 value.AURORA_STYLE_DEFINE.-1=Default Style
 value.AURORA_STYLE_DEFINE.0=§cOFF
 value.AURORA_STYLE_DEFINE.1=Reimagined
-value.AURORA_STYLE_DEFINE.2=Fantasy
+value.AURORA_STYLE_DEFINE.2=Unbound
 
 option.AURORA_CONDITION=Aurora
 option.AURORA_CONDITION.comment=Determines the condition(s) for the Aurora Borealis to appear. §e[*]§r Aurora Borealis will only appear during night regardless of this setting
@@ -437,8 +496,11 @@ value.PIXEL_SHADOW.32=32x32 §e[*]
 value.PIXEL_SHADOW.64=64x64 §e[*]
 value.PIXEL_SHADOW.128=128x128 §e[*]
 
+option.BLOOM=Bloom
+option.BLOOM.comment=Enables blurry glow from bright objects and humidity.
+
 option.BLOOM_STRENGTH=Bloom Strength
-option.BLOOM_STRENGTH.comment=Determines the intensity of glow on bright things, and the bloom from rain/cave humidity. §c[-]§r Too much bloom will cause the image to get brighter than intended, especially in humid conditions.
+option.BLOOM_STRENGTH.comment=Determines the intensity of glow on bright things, and the bloom from rain/cave humidity. §c[-]§r Too much bloom will cause the image to get blurrier and brighter than intended, especially in humid conditions.
 value.BLOOM_STRENGTH.0.027=15%
 value.BLOOM_STRENGTH.0.036=20%
 value.BLOOM_STRENGTH.0.045=25%
@@ -457,6 +519,12 @@ value.BLOOM_STRENGTH.0.16=85% §c[-]
 value.BLOOM_STRENGTH.0.17=90% §c[-]
 value.BLOOM_STRENGTH.0.18=95% §c[-]
 value.BLOOM_STRENGTH.0.19=100% §c[-]
+value.BLOOM_STRENGTH.0.21=110% §c[-]
+value.BLOOM_STRENGTH.0.23=120% §c[-]
+value.BLOOM_STRENGTH.0.25=130% §c[-]
+value.BLOOM_STRENGTH.0.28=150% §c[-]
+value.BLOOM_STRENGTH.0.32=180% §c[-]
+value.BLOOM_STRENGTH.10.00=§cInsane
 
 option.FXAA=Anti-Aliasing (FXAA)
 option.FXAA.comment=Enables Fast Approximate Anti-Aliasing (FXAA), which is basically an effect that produces smoother image.
@@ -471,17 +539,51 @@ value.IMAGE_SHARPENING.8=8 §c[-]
 value.IMAGE_SHARPENING.9=9 §c[-]
 value.IMAGE_SHARPENING.10=10 §c[-]
 
+option.LENSFLARE=Lens Flare
+option.LENSFLARE.comment=Adds camera lens reflection effect when towards the sun or moon. §c[-]§r This effect can severely impact performance.
+
+option.LENSFLARE_I=Lens Flare Intensity
+option.LENSFLARE_I.comment=Adjusts the strength of the Lens Flare effect.
+
 option.MOTION_BLURRING=Motion Blur
 option.MOTION_BLURRING.comment=Applies blur to the image when moving the camera.
 
 option.MOTION_BLURRING_STRENGTH=Motion Blur Strength
 option.MOTION_BLURRING_STRENGTH.comment=Adjusts the intensity of motion blur.
 
+option.WORLD_BLUR=§eWorld Blur
+option.WORLD_BLUR.comment=Enables world blurring. Distance Blur: Blur gets applied like fog, depending on the distance from the camera. Depth of Field: Blurring happens depending on the focus point of the camera. §c[-]§r This effect can severely impact performance.
+value.WORLD_BLUR.0=OFF
+value.WORLD_BLUR.1=Distance Blur
+value.WORLD_BLUR.2=Depth of Field
+
+option.WB_FOV_SCALED=FOV Scaled Blur
+option.WB_FOV_SCALED.comment=Scales World Blur to the camera Field of View. World Blur will get more intense if you zoom in with this enabled.
+
+option.WB_CHROMATIC=Chromatic Blur
+option.WB_CHROMATIC.comment=Applies chromatic aberration to the blurry areas, separating different colors in blurred areas.
+
+option.WB_ANAMORPHIC=Anamorphic Blur
+option.WB_ANAMORPHIC.comment=Stretches the blur in one direction. §c[-]§r This option can reduce the quality of the World Blur
+
+option.WB_DOF_I=Depth of Field Strength
+option.WB_DOF_FOCUS=Depth of Field Focus
+option.WB_DOF_FOCUS.comment=Determines the focus distance of the camera. Automatic: The focus point will be adjusted according to the center point of the screen. Brightness: The focus point will be determined by the "Brightness" slider in Video Settings.
+value.WB_DOF_FOCUS.-1=Brightness §e[*]
+value.WB_DOF_FOCUS.0=Automatic
+
+option.WB_DB_DAY_I=Dis. Blur - Day
+option.WB_DB_NIGHT_I=Dis. Blur - Night & Interiors
+option.WB_DB_RAIN_I=Dis. Blur - Rain & Snow
+option.WB_DB_WATER_I=Dis. Blur - Underwater
+option.WB_DB_NETHER_I=Dis. Blur - The Nether
+option.WB_DB_END_I=Dis. Blur - The End
+
 option.VIGNETTE_R=Vignette
 option.VIGNETTE_R.comment=Applies darkening around the edges of the screen.
 
 option.CHROMA_ABERRATION=Chromatic Aberration
-option.CHROMA_ABERRATION.comment=Separates different color channels towards the edges of the screen. §c[-] Chromatic Aberration can cause the image to feel blurry; high values aren't recommended for gameplay.
+option.CHROMA_ABERRATION.comment=Separates different colors towards the edges of the screen. §c[-] Chromatic Aberration can cause the image to feel blurry; high values aren't recommended for gameplay.
 value.CHROMA_ABERRATION.4=4 §c[-]
 value.CHROMA_ABERRATION.5=5 §c[-]
 value.CHROMA_ABERRATION.6=6 §c[-]
@@ -490,6 +592,9 @@ value.CHROMA_ABERRATION.8=8 §c[-]
 
 option.FANCY_GLASS=Improved Glass
 option.FANCY_GLASS.comment=Improves the regular glass by adding a translucent layer to it. §c[-]§r Does not work on Iris because of a Sodium bug. §e[*]§r RP Support option must be set to Integrated PBR+.
+
+option.GREEN_SCREEN_LIME=Green Screen Lime Blocks
+option.GREEN_SCREEN_LIME.comment=Turns "Lime Concrete", "Lime Wool", and "Lime Carpet" into green screens for video editing. Tip 1: Turn off "Bloom" option to improve separation. Tip 2: Put lights under lime carpets for lighting. Tip 3: You can turn off Anti-Aliasing (FXAA) and set Detail Quality to Potato in Performance Settings to disable all filtering and get pixel-perfect separation.
 
 option.HAND_SWAYING=Hand Sway
 option.HAND_SWAYING.comment=Adds slow movement to the player hand to simulate a breathing animation.
@@ -500,6 +605,9 @@ value.HAND_SWAYING.3=Intense
 
 option.LESS_LAVA_FOG=Better Visibility Inside Lava
 option.LESS_LAVA_FOG.comment=Reduces the lava fog to improve visibility inside lava.
+
+option.REDUCE_CLOSE_PARTICLES=Reduce Close-up Particles
+option.REDUCE_CLOSE_PARTICLES.comment=Reduces the opacity of particles that are close to the camera to improve visibility.
 
 option.SNOWY_WORLD=Snowy World
 option.SNOWY_WORLD.comment=Makes the entire world covered with snow.
@@ -512,7 +620,7 @@ value.SHOW_LIGHT_LEVEL.2=Hold Light Source
 value.SHOW_LIGHT_LEVEL.3=Always ON
 
 option.COLOR_CODED_PROGRAMS=Color Coded Programs §c[-]§r
-option.COLOR_CODED_PROGRAMS.comment=Shows which shader programs are being used to render geometry. §c[-]§r This option is only for development purposes and shouldn't be used for gameplay. §e[*]§r Color values can be found in shaders\lib\misc\colorCodedPrograms.glsl
+option.COLOR_CODED_PROGRAMS.comment=Shows which shader programs are being used to render geometry. §c[-]§r This option is only for development purposes and shouldn't be used for gameplay. §e[*]§r Color values can be found in the shader pack files: shaders/lib/misc/colorCodedPrograms.glsl
 
 option.MINIMUM_LIGHT_MODE=Cave Lighting
 option.MINIMUM_LIGHT_MODE.comment=Adds extra lighting to areas that don't have skylight. §a[+]§r "Default" option determines the lighting according to the "Brightness" slider in Video Settings.
@@ -540,8 +648,11 @@ option.GENERATED_NORMAL_MULT.comment=Adjusts the strength of auto-generated bump
 option.COATED_TEXTURE_MULT=Coated Texture Strength
 option.COATED_TEXTURE_MULT.comment=Adjusts the strength of auto-generated dusty details on textures.
 
-option.GLOWING_ORE_ACTIVE=§eEnable Glowing Ores
-option.GLOWING_ORE_ACTIVE.comment=Enables the functionality of glowing ores. §e[*]§r The settings below won't work if this option isn't enabled.
+option.GLOWING_ORE_MASTER=§eEnable Glowing Ores
+option.GLOWING_ORE_MASTER.comment=Enables the functionality of glowing ores. §e[*]§r Choosing "Default" will only enable glowing ores if the "Visual Style" is set to "Unbound". §e[*]§r The settings below won't work if this option isn't enabled.
+value.GLOWING_ORE_MASTER.0=§cOFF
+value.GLOWING_ORE_MASTER.1=Default [*]
+value.GLOWING_ORE_MASTER.2=§aON
 
 option.GLOWING_ORE_MULT=Ore Glow Strength
 option.GLOWING_ORE_MULT.comment=Determines the emission strength of glowing ores.
@@ -559,18 +670,24 @@ option.GLOWING_ORE_NETHERGOLD=Glowing Nether Gold Ore
 option.GLOWING_ORE_GILDEDBLACKSTONE=Glowing Gilded Blackstone
 option.GLOWING_ORE_ANCIENTDEBRIS=Glowing Ancient Debris
 option.GLOWING_ORE_MODDED=Glowing Modded Ores §e[*]§r
-option.GLOWING_ORE_MODDED.comment=§e[*]§r You can add modded ore IDs to "Complementary\shaders\block.properties" file in order to make them glow. You can open block.properties using any text editor like notepad, and then add modded ore block IDs next to "block.10024=".
+option.GLOWING_ORE_MODDED.comment=§e[*]§r You can add modded ore IDs to "Complementary-->shaders-->block.properties" file in order to make them glow. You can open block.properties using any text editor like notepad, and then add modded ore block IDs next to "block.10024=".
 
 option.GLOWING_AMETHYST=Glowing Amethyst
 value.GLOWING_AMETHYST.0=§cOFF
 value.GLOWING_AMETHYST.1=Crystal
 value.GLOWING_AMETHYST.2=Crystal & Block
+
 option.GLOWING_LICHEN=Glowing Glow Lichen
 value.GLOWING_LICHEN.0=§cOFF
 value.GLOWING_LICHEN.1=In Closed Areas
 value.GLOWING_LICHEN.2=Always
+
 option.EMISSIVE_REDSTONE_BLOCK=Glowing Redstone Block
+
 option.EMISSIVE_LAPIS_BLOCK=Glowing Lapis Lazuli Block
+
+option.GLOWING_ARMOR_TRIM=Glowing Armor Trim §e[*]§r
+option.GLOWING_ARMOR_TRIM.comment=Makes armor trims emissive. §e[*]§r This feature only works on Iris, as Optifine doesn't support armor trim detection.
 
 option.NORMAL_MAP_STRENGTH=Normal Map Strength
 option.NORMAL_MAP_STRENGTH.comment=Adjusts the strength of bumpy details on surfaces. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
@@ -623,6 +740,17 @@ value.HELD_LIGHTING_MODE.0=§cOFF
 value.HELD_LIGHTING_MODE.1=Subtle
 value.HELD_LIGHTING_MODE.2=Normal
 
+option.WAVING_SPEED=Waving Speed
+option.WAVING_SPEED.comment=Adjusts how quickly the waving effects happen.
+
+option.WAVING_I=Waving Intensity
+option.WAVING_I.comment=Adjusts how much the blocks move when waving. §c[-]§r Too much waving intensity can cause waving blocks to clip in and out of other blocks.
+value.WAVING_I.1.25=1.25 §c[-]
+value.WAVING_I.1.50=1.50 §c[-]
+value.WAVING_I.1.75=1.75 §c[-]
+value.WAVING_I.2.00=2.00 §c[-]
+value.WAVING_I.50.0=§cInsane
+
 option.NO_WAVING_INDOORS=No Waving in Closed Areas
 option.NO_WAVING_INDOORS.comment=Prevents blocks from waving in closed areas using skylight. §c[-]§r This setting being enabled can cause problems with some resource packs or mods.
 
@@ -638,11 +766,23 @@ option.WAVING_LAVA.comment=Adds constant movement to lava. §e[*]§r Lava waving
 option.WAVING_WATER_VERTEX=Waving Water Texture
 option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind. §e[*]§r This option is not related to the "Water Wave Strength" setting.
 
+option.WAVING_RAIN=Waving Rain/Snow Texture
+option.WAVING_RAIN.comment=Adds movement to falling rain and snow textures to make it look more dynamic.
+
 option.WORLD_OUTLINE=World Outline
-option.WORLD_OUTLINE.comment=Adds outlines around blocks.
+option.WORLD_OUTLINE.comment=Adds bright outlines around blocks. §c[-]§r This effect can impact performance.
 
 option.WORLD_OUTLINE_THICKNESS=World Outline Thickness
-option.WORLD_OUTLINE_THICKNESS.comment=Determines the thickness of the World Outline effect.
+option.WORLD_OUTLINE_THICKNESS.comment=Determines the thickness of the World Outline effect. §c[-]§r Increasing this setting can impact performance.
+
+option.WORLD_OUTLINE_I=World Outline Brightness
+option.WORLD_OUTLINE_I.comment=Determines how intense the World Outline effect will be.
+
+option.DARK_OUTLINE=Dark Outline
+option.DARK_OUTLINE.comment=Adds dark outlines around blocks. §c[-]§r This effect can impact performance.
+
+option.DARK_OUTLINE_THICKNESS=Dark Outline Thickness
+option.DARK_OUTLINE_THICKNESS.comment=Determines the thickness of the Dark Outline effect. §c[-]§r Increasing this setting can impact performance.
 
 option.RAIN_PUDDLES=Rain Puddles
 option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic, and Block Reflection Quality must be set to Medium or above. §c[-]§r Rain puddles can severely impact performance.
@@ -661,11 +801,27 @@ value.SELECT_OUTLINE.0=§cOFF
 value.SELECT_OUTLINE.1=Default
 value.SELECT_OUTLINE.2=Rainbow
 value.SELECT_OUTLINE.3=Select Color
+value.SELECT_OUTLINE.4=Versatile
 
 option.SELECT_OUTLINE_I=SO Brightness
 option.SELECT_OUTLINE_R=SO Red
 option.SELECT_OUTLINE_G=SO Green
 option.SELECT_OUTLINE_B=SO Blue
+
+option.MOON_PHASE_INF_LIGHT=Moon Phased Night Lighting
+option.MOON_PHASE_INF_LIGHT.comment=Enables different moon phases to change the night lighting brightness.
+
+option.MOON_PHASE_INF_REFLECTION=Moon Phased Moon Reflection
+option.MOON_PHASE_INF_REFLECTION.comment=Enables different moon phases to change the brightness of moon reflections.
+
+option.MOON_PHASE_FULL=Full Moon Intensity
+option.MOON_PHASE_FULL.comment=Adjusts the moon phase influence during the Full Moon phase (brightest phase).
+
+option.MOON_PHASE_PARTIAL=Partial Moon Intensity
+option.MOON_PHASE_PARTIAL.comment=Adjusts the moon phase influence during all moon phases between Full Moon and Dark Moon. This is the phase you will see the most in Minecraft.
+
+option.MOON_PHASE_DARK=Dark Moon Intensity
+option.MOON_PHASE_DARK.comment=Adjusts the moon phase influence during New Moon (darkest phase).
 
 option.LIGHT_COLOR_MULTS=§eLighting Color Multipliers
 option.LIGHT_COLOR_MULTS.comment=Enables customization of lighting colors that are seen on all surfaces.

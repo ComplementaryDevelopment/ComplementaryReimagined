@@ -22,28 +22,26 @@ vec3 GetSky(float VdotU, float VdotS, float dither, bool doGlare, bool doGround)
     // Prepare colors
     vec3 upColor = mix(nightUpSkyColor * (1.0 + nightFactorM * VdotSM3 * 1.5), dayUpSkyColor, sunFactor);
     vec3 middleColor = mix(nightMiddleSkyColor, dayMiddleSkyColor * (1.0 + VdotSM2 * 0.3), sunFactor);
-    vec3 downColor = mix(nightDownSkyColor, dayDownSkyColor, sunFactor);
-         downColor = mix(upColor, downColor, invRainFactor);
+    vec3 downColor = mix(nightDownSkyColor, dayDownSkyColor, (sunFactor + sunVisibility) * 0.5);
 
     // Mix the colors
         // Set sky gradient
         float VdotUM1 = pow2(1.0 - VdotUmax0);
               VdotUM1 = pow(VdotUM1, 1.0 - VdotSM2 * 0.4);
-              VdotUM1 = mix(VdotUM1, 1.0, rainFactor2 * 0.2);
+              VdotUM1 = mix(VdotUM1, 1.0, rainFactor2 * 0.15);
         vec3 finalSky = mix(upColor, middleColor, VdotUM1);
 
         // Add sunset color
         float VdotUM2 = pow2(1.0 - abs(VdotU));
               VdotUM2 = VdotUM2 * VdotUM2 * (3.0 - 2.0 * VdotUM2);
               VdotUM2 *= (0.7 - nightFactorM + VdotSM1 * (0.3 + nightFactorM)) * invNoonFactor * sunFactor;
-        finalSky = mix(finalSky, sunsetDownSkyColor * (1.0 + VdotSM1 * 0.3), VdotUM2 * invRainFactor);
+        finalSky = mix(finalSky, sunsetDownSkyColorP * (1.0 + VdotSM1 * 0.3), VdotUM2 * invRainFactor);
 
         // Add sky ground with fake light scattering
-        float VdotUM3 = min(max(-VdotU + 0.1, 0.0) / 0.35, 1.0);
+        float VdotUM3 = min(max0(-VdotU + 0.08) / 0.35, 1.0);
               VdotUM3 = smoothstep1(VdotUM3);
         vec3 scatteredGroundMixer = vec3(VdotUM3 * VdotUM3, sqrt1(VdotUM3), sqrt3(VdotUM3));
-             scatteredGroundMixer = mix(vec3(VdotUM3), scatteredGroundMixer, 0.75);
-             scatteredGroundMixer *= 0.42 * invRainFactor;
+             scatteredGroundMixer = mix(vec3(VdotUM3), scatteredGroundMixer, 0.75 - 0.5 * rainFactor);
         finalSky = mix(finalSky, downColor, scatteredGroundMixer);
     //
 
@@ -58,17 +56,17 @@ vec3 GetSky(float VdotU, float VdotS, float dither, bool doGlare, bool doGround)
     // Sun/Moon Glare
     if (doGlare) {
         if (0.0 < VdotSML) {
-            float glareScatter = (4.0 - 3.5 * rainFactor2) * (2.0 - clamp01(VdotS * 1000.0));
+            float glareScatter = 4.0 * (2.0 - clamp01(VdotS * 1000.0));
             float VdotSM4 = pow(abs(VdotS), glareScatter);
 
             float visfactor = 0.075;
             float glare = visfactor / (1.0 - (1.0 - visfactor) * VdotSM4) - visfactor;
 
-            glare *= 0.5 - sunVisibility * 0.25 + noonFactor * 0.35;
-            glare *= 1.0 - rainFactor * (0.96 - sqrt1(nightFactor) * 0.2 - 0.2 * sunVisibility);
+            glare *= 0.5 + pow2(noonFactor) * 1.2;
+            glare *= 1.0 - rainFactor * 0.5;
 
             float glareWaterFactor = isEyeInWater * sunVisibility;
-            vec3 glareColor = mix(vec3(0.38, 0.4, 0.5) * 0.7, sqrt(lightColor * 1.4), sunVisibility);
+            vec3 glareColor = mix(vec3(0.38, 0.4, 0.5) * 0.7, vec3(0.5), sunVisibility);
                  glareColor = glareColor + glareWaterFactor * vec3(7.0);
 
             finalSky += glare * shadowTime * glareColor;
@@ -94,8 +92,6 @@ vec3 GetLowQualitySky(float VdotU, float VdotS, float dither, bool doGlare, bool
     // Prepare colors
     vec3 upColor = mix(nightUpSkyColor, dayUpSkyColor, sunFactor);
     vec3 middleColor = mix(nightMiddleSkyColor, dayMiddleSkyColor, sunFactor);
-    vec3 downColor = mix(nightDownSkyColor, dayDownSkyColor, sunFactor);
-         downColor = mix(upColor, downColor, invRainFactor);
 
     // Mix the colors
         // Set sky gradient
@@ -106,7 +102,7 @@ vec3 GetLowQualitySky(float VdotU, float VdotS, float dither, bool doGlare, bool
         // Add sunset color
         float VdotUM2 = pow2(1.0 - abs(VdotU));
               VdotUM2 *= invNoonFactor * sunFactor * (0.8 + 0.2 * VdotS);
-        finalSky = mix(finalSky, sunsetDownSkyColor * (shadowTime * 0.6 + 0.2), VdotUM2 * invRainFactor);
+        finalSky = mix(finalSky, sunsetDownSkyColorP * (shadowTime * 0.6 + 0.2), VdotUM2 * invRainFactor);
     //
 
     // Sky Ground

@@ -58,10 +58,10 @@ uniform sampler2D noisetex;
 #if RAIN_PUDDLES >= 1
 	#if RAIN_PUDDLES < 3
 		uniform float wetness;
-		uniform float isRainy;
+		uniform float inRainy;
 	#else
 		float wetness = 1.0;
-		float isRainy = 1.0;
+		float inRainy = 1.0;
 	#endif
 #endif
 
@@ -139,11 +139,6 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
 	smoothnessD *= max0(lmCoord.y - 0.95) * 20.0;
 }
 
-float GetMaxColorDif(vec3 color) {
-	vec3 dif = abs(vec3(color.r - color.g, color.g - color.b, color.r - color.b));
-	return max(dif.r, max(dif.g, dif.b));
-}
-
 //Includes//
 #include "/lib/util/spaceConversion.glsl"
 #include "/lib/lighting/mainLighting.glsl"
@@ -196,17 +191,8 @@ void main() {
 	vec3 playerPos = ViewToPlayer(viewPos);
 
 	int subsurfaceMode = 0;
-	bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false, centerShadowBias = false;
-	#ifdef SNOWY_WORLD
-		float snowFactor = 1.0;
-	#endif
-	#if RAIN_PUDDLES >= 1
-		float noPuddles = 0.0;
-	#endif
-	#ifdef GENERATED_NORMALS
-		bool noGeneratedNormals = false;
-	#endif
-	float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0, snowMinNdotU = 0.0;
+	bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false, centerShadowBias = false, noGeneratedNormals = false;
+	float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0, snowMinNdotU = 0.0, snowFactor = 1.0, noPuddles = 0.0;
 	vec2 lmCoordM = lmCoord;
 	vec3 shadowMult = vec3(1.0);
 	#ifdef IPBR
@@ -278,15 +264,14 @@ void main() {
 	#if RAIN_PUDDLES >= 1
 		float puddleLightFactor = max0(lmCoord.y * 32.0 - 31.0) * clamp((1.0 - 1.15 * lmCoord.x) * 10.0, 0.0, 1.0);
 		float puddleNormalFactor = pow2(max0(NdotUmax0 - 0.5) * 2.0);
-		float puddleMixer = puddleLightFactor * isRainy * puddleNormalFactor;
+		float puddleMixer = puddleLightFactor * inRainy * puddleNormalFactor;
 		if (pow2(pow2(wetness)) * puddleMixer - noPuddles > 0.00001) {
 			vec2 worldPosXZ = playerPos.xz + cameraPosition.xz;
+			vec2 puddleWind = vec2(frameTimeCounter) * 0.03;
 			#if WATER_STYLE == 1
 				vec2 puddlePosNormal = floor(worldPosXZ * 16.0) * 0.0625;
-				vec2 puddleWind = vec2(frameTimeCounter) * 0.015;
 			#else
 				vec2 puddlePosNormal = worldPosXZ;
-				vec2 puddleWind = vec2(frameTimeCounter) * 0.03;
 			#endif
 
 			puddlePosNormal *= 0.1;
@@ -301,18 +286,18 @@ void main() {
 
 			#if RAIN_PUDDLES == 1 || RAIN_PUDDLES == 3
 				vec2 puddlePosForm = puddlePosNormal * 0.05;
-				float pFormNoise  = texture2D(noisetex, puddlePosForm).b   * 3.0;
-						pFormNoise += texture2D(noisetex, puddlePosForm * 0.5).b  * 5.0;
-						pFormNoise += texture2D(noisetex, puddlePosForm * 0.25).b * 8.0;
-						pFormNoise *= sqrt1(wetness) * 0.5625 + 0.4375;
-						pFormNoise  = clamp(pFormNoise - 7.0, 0.0, 1.0);
+				float pFormNoise  = texture2D(noisetex, puddlePosForm).b        * 3.0;
+					  pFormNoise += texture2D(noisetex, puddlePosForm * 0.5).b  * 5.0;
+					  pFormNoise += texture2D(noisetex, puddlePosForm * 0.25).b * 8.0;
+					  pFormNoise *= sqrt1(wetness) * 0.5625 + 0.4375;
+					  pFormNoise  = clamp(pFormNoise - 7.0, 0.0, 1.0);
 			#else
 				float pFormNoise = wetness;
 			#endif
 			puddleMixer *= pFormNoise;
 
 			float puddleSmoothnessG = 0.7 - rainFactor * 0.3;
-			float puddleHighlight = (1.5 - subsurfaceMode * 0.6 * (1.0 - noonFactor));
+			float puddleHighlight = (1.5 - subsurfaceMode * 0.6 * invNoonFactor);
 			smoothnessG = mix(smoothnessG, puddleSmoothnessG, puddleMixer);
 			highlightMult = mix(highlightMult, puddleHighlight, puddleMixer);
 			smoothnessD = mix(smoothnessD, 1.0, sqrt1(puddleMixer));

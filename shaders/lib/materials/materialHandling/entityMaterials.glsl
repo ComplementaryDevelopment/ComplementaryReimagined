@@ -16,7 +16,7 @@ if (entityId < 50064) {
                 if (entityId == 50008) { // Item Frame, Glow Item Frame
                     noSmoothLighting = true;
                 } else /*if (entityId == 50012)*/ { //
-                
+
                 }
             }
         } else {
@@ -63,7 +63,7 @@ if (entityId < 50064) {
                 if (entityId == 50032) { // Guardian        
                     vec3 absDif = abs(vec3(color.r - color.g, color.g - color.b, color.r - color.b));
                     float maxDif = max(absDif.r, max(absDif.g, absDif.b));
-                    if (maxDif < 0.1 && color.b > 0.5) {
+                    if (maxDif < 0.1 && color.b > 0.5 && color.b < 0.88) {
                         emission = pow2(pow1_5(color.b)) * 5.0;
                         color.rgb *= color.rgb;
                     }
@@ -135,14 +135,17 @@ if (entityId < 50064) {
                     } else {
                         lmCoordM.x = 0.8;
                     }
-                } else /*if (entityId == 50084)*/ { //
-
+                } else /*if (entityId == 50084)*/ { // Slime
+                    //only slime code is in Vertex Shader for now
                 }
             } else {
-                if (entityId == 50088) { // 
-                
-                } else /*if (entityId == 50092)*/ { //
-
+                if (entityId == 50088) { // Entity Flame (Iris Feature)
+                    emission = 1.3;
+                } else /*if (entityId == 50092)*/ { // Trident Entity
+                    #ifdef IS_IRIS
+                        // Only on Iris, because otherwise it would be inconsistent with the Trident item
+                        #include "/lib/materials/specificMaterials/others/trident.glsl"
+                    #endif
                 }
             }
         }

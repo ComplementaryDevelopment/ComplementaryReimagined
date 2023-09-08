@@ -58,6 +58,10 @@ void main() {
 		
 		color2.rgb *= 0.25; // Natural Strength
 
+		#if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
+			float positionYM = position.y;
+		#endif
+
 		if (mat < 31008) {
 			if (mat < 31000) {
 				DoNaturalShadowCalculation(color1, color2);
@@ -65,11 +69,16 @@ void main() {
 				if (mat == 31000) { // Water
 					vec3 worldPos = position.xyz + cameraPosition;
 
+					#if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
+						// For scene-aware light shafts to be more prone to get extreme near water
+						positionYM += 3.5;
+					#endif
+
 					// Water Caustics
 					#if WATER_CAUSTIC_STYLE < 3
 						#if MC_VERSION >= 11300
 							float wcl = GetLuminance(color1.rgb);
-							color1.rgb = color1.rgb * pow2(wcl) * wcl * 1.2;
+							color1.rgb = color1.rgb * pow2(wcl) * 1.2;
 						#else
 							color1.rgb = mix(color1.rgb, vec3(GetLuminance(color1.rgb)), 0.88);
 							color1.rgb = pow2(color1.rgb) * vec3(2.5, 3.0, 3.0) * 0.96;
@@ -77,9 +86,18 @@ void main() {
 					#else
 						#define WATER_SPEED_MULT_M WATER_SPEED_MULT * 0.035
 						vec2 causticWind = vec2(frameTimeCounter * WATER_SPEED_MULT_M, 0.0);
-						float caustic = dot(texture2D(gaux4, worldPos.xz * 0.08 + causticWind).rg, vec2(0.4));
-						caustic += dot(texture2D(gaux4, worldPos.xz * 0.04 - causticWind).rg, vec2(0.4));
-						color1.rgb = vec3(pow2(pow2(min1(caustic))));
+						vec2 cPos1 = worldPos.xz * 0.10 - causticWind;
+						vec2 cPos2 = worldPos.xz * 0.05 + causticWind;
+
+						float cMult = 14.0;
+						float offset = 0.001;
+						
+						float caustic = 0.0;
+						caustic += dot(texture2D(gaux4, cPos1 + vec2(offset, 0.0)).rg, vec2(cMult))
+						         - dot(texture2D(gaux4, cPos1 - vec2(offset, 0.0)).rg, vec2(cMult));
+						caustic += dot(texture2D(gaux4, cPos2 + vec2(0.0, offset)).rg, vec2(cMult))
+						         - dot(texture2D(gaux4, cPos2 - vec2(0.0, offset)).rg, vec2(cMult));
+						color1.rgb = vec3(max0(min1(caustic * 0.8 + 0.35)) * 0.65 + 0.35);
 
 						#if MC_VERSION < 11300
 							color1.rgb *= vec3(0.3, 0.45, 0.9);
@@ -147,6 +165,10 @@ void main() {
     gl_FragData[0] = color1; // Shadow Color
 
 	#if SHADOW_QUALITY >= 1
+		#if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
+			color2.a = 0.25 + max0(positionYM * 0.05); // consistencyMEJHRI7DG
+		#endif
+
     	gl_FragData[1] = color2; // Light Shaft Color
 	#endif
 }

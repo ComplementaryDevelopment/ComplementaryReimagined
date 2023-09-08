@@ -71,9 +71,11 @@ void main() {
 	#else
 		vec4 color = texture2D(tex, texCoord) * glColor;
 
+		vec4 translucentMult = vec4(mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a), 1.0);
+
 		#ifdef OVERWORLD
-			vec3 cloudLight = mix(vec3(0.7, 1.3, 1.2) * nightFactor, mix(dayDownSkyColor, dayMiddleSkyColor, 0.1), sunFactor);
-			color.rgb *= sqrt(cloudLight) * (1.4 + 0.2 * noonFactor - rainFactor);
+			vec3 cloudLight = mix(vec3(0.8, 1.6, 1.5) * sqrt1(nightFactor), mix(dayDownSkyColor, dayMiddleSkyColor, 0.1), sunFactor);
+			color.rgb *= sqrt(cloudLight) * (1.2 + 0.4 * noonFactor * invRainFactor);
 
 			#ifdef ATM_COLOR_MULTS
 				atmColorMult = GetAtmColorMult();
@@ -100,9 +102,14 @@ void main() {
 			ColorCodeProgram(color);
 		#endif
 
-		/* DRAWBUFFERS:01 */
+    	#ifndef LIGHT_COLORING
+		/* DRAWBUFFERS:013 */
+    	#else
+		/* DRAWBUFFERS:018 */
+    	#endif
 		gl_FragData[0] = color;
 		gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
+		gl_FragData[2] = vec4(1.0 - translucentMult.rgb, translucentMult.a);
 	#endif
 }
 

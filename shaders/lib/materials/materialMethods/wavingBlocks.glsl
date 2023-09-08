@@ -1,5 +1,5 @@
 vec3 GetWave(in vec3 pos, float waveSpeed) {
-    float wind = frameTimeCounter * waveSpeed;
+    float wind = frameTimeCounter * waveSpeed * WAVING_SPEED;
 
     float magnitude = sin(wind * 0.0027 + pos.z + pos.y) * 0.04 + 0.04;
     float d0 = sin(wind * 0.0127);
@@ -16,7 +16,7 @@ vec3 GetWave(in vec3 pos, float waveSpeed) {
         wave *= 0.1;
     #endif
 
-    return wave;
+    return wave * WAVING_I;
 }
 
 void DoWave_Foliage(inout vec3 playerPos, vec3 worldPos) {
@@ -36,18 +36,18 @@ void DoWave_GroundedFoliage(inout vec3 playerPos, vec3 worldPos) {
     }
 }
 
-void DoWave_Leaves(inout vec3 playerPos, vec3 worldPos) {
+void DoWave_Leaves(inout vec3 playerPos, vec3 worldPos, float waveMult) {
     worldPos *= vec3(0.5, 0.25, 0.5);
 
     vec3 wave = GetWave(worldPos, 170.0);
     wave *= vec3(8.0, 3.0, 4.0);
 
-    playerPos.xyz += wave;
+    playerPos.xyz += wave * waveMult;
 }
 
 void DoWave_Water(inout vec3 playerPos, vec3 worldPos) {
 	if (fract(worldPos.y + 0.005) > 0.06) {
-        float waterWaveTime = frameTimeCounter * 6.0;
+        float waterWaveTime = frameTimeCounter * 6.0 * WAVING_SPEED;
         worldPos.xz *= 18.0;
         
         float wave  = sin(waterWaveTime * 0.7 + worldPos.x * 0.14 + worldPos.z * 0.07);
@@ -65,7 +65,7 @@ void DoWave_Water(inout vec3 playerPos, vec3 worldPos) {
 
 void DoWave_Lava(inout vec3 playerPos, vec3 worldPos) {
 	if (fract(worldPos.y + 0.005) > 0.06) {
-        float lavaWaveTime = frameTimeCounter * 3.0;
+        float lavaWaveTime = frameTimeCounter * 3.0 * WAVING_SPEED;
         worldPos.xz *= 14.0;
         
         float wave  = sin(lavaWaveTime * 0.7 + worldPos.x * 0.14 + worldPos.z * 0.07);
@@ -92,8 +92,11 @@ void DoWave(inout vec3 playerPos, int mat) {
         #endif
 
         #ifdef WAVING_LEAVES
-            if (mat == 10008 || mat == 10012) { // Leaves, Vine
-                DoWave_Leaves(playerPos.xyz, worldPos);
+            if (mat == 10008) { // Leaves
+                DoWave_Leaves(playerPos.xyz, worldPos, 1.0);
+            } else if (mat == 10012) { // Vine
+                // Reduced waving on vines to prevent clipping through blocks
+                DoWave_Leaves(playerPos.xyz, worldPos, 0.75);
             }
             
             #ifdef WAVING_LAVA
@@ -107,7 +110,7 @@ void DoWave(inout vec3 playerPos, int mat) {
 
                 #ifdef GBUFFERS_TERRAIN
                     // G8FL735 Fixes Optifine-Iris parity. Optifine has 0.9 gl_Color.rgb on a lot of versions
-                    glColor.rgb = min(glColor.rgb, vec3(0.9));
+                    glColorRaw.rgb = min(glColorRaw.rgb, vec3(0.9));
                 #endif
             }
         #endif

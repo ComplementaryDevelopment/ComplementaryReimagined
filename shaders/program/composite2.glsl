@@ -11,7 +11,7 @@
 #ifdef MOTION_BLURRING
     noperspective in vec2 texCoord;
 
-    #ifdef BLOOM_FOG
+    #ifdef BLOOM_FOG_COMPOSITE2
         flat in vec3 upVec, sunVec;
     #endif
 #endif
@@ -29,17 +29,21 @@ uniform sampler2D colortex0;
 
     uniform sampler2D depthtex1;
 
-    #ifdef BLOOM_FOG
+    #ifdef BLOOM_FOG_COMPOSITE2
         uniform int isEyeInWater;
 
         uniform sampler2D depthtex0;
+
+        #ifdef NETHER
+            uniform float far;
+        #endif
     #endif
 #endif
 
 //Pipeline Constants//
 
 //Common Variables//
-#if defined MOTION_BLURRING && defined BLOOM_FOG
+#if defined MOTION_BLURRING && defined BLOOM_FOG_COMPOSITE2
 	float SdotU = dot(sunVec, upVec);
 	float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 #endif
@@ -85,7 +89,7 @@ uniform sampler2D colortex0;
 #ifdef MOTION_BLURRING
 	#include "/lib/util/dither.glsl"
 
-    #ifdef BLOOM_FOG
+    #ifdef BLOOM_FOG_COMPOSITE2
 	    #include "/lib/atmospherics/fog/bloomFog.glsl"
     #endif
 #endif
@@ -100,15 +104,14 @@ void main() {
 
 		color = MotionBlur(color, z, dither);
 
-        #ifdef BLOOM_FOG
+        #ifdef BLOOM_FOG_COMPOSITE2
 	        float z0 = texelFetch(depthtex0, texelCoord, 0).r;
-
             vec4 screenPos = vec4(texCoord, z0, 1.0);
             vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
             viewPos /= viewPos.w;
             float lViewPos = length(viewPos.xyz);
-
-            color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog moves between composite and composite2 depending on Motion Blur
+            
+            color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog can move between composite1-2-3
         #endif
     #endif
 
@@ -124,7 +127,7 @@ void main() {
 #ifdef MOTION_BLURRING
     noperspective out vec2 texCoord;
 
-    #ifdef BLOOM_FOG
+    #ifdef BLOOM_FOG_COMPOSITE2
         flat out vec3 upVec, sunVec;
     #endif
 #endif
@@ -146,7 +149,7 @@ void main() {
     #ifdef MOTION_BLURRING
 	    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-        #ifdef BLOOM_FOG
+        #ifdef BLOOM_FOG_COMPOSITE2
             upVec = normalize(gbufferModelView[1].xyz);
             sunVec = GetSunVector();
         #endif

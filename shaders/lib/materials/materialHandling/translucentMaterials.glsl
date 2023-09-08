@@ -13,22 +13,22 @@ if (mat < 31008) {
                 reflectMult = 0.75;
             } else /*if (mat == 30012)*/ { // Slime Block
                 translucentMultCalculated = true;
-                reflectMult = 0.25;
+                reflectMult = 0.7;
                 translucentMult.rgb = pow2(color.rgb) * 0.2;
 
-                smoothnessG = color.g * 0.5;
-                highlightMult = 3.5;
+                smoothnessG = color.g * 0.7;
+                highlightMult = 2.5;
             }
         }
     } else {
         if (mat < 31000) {
             if (mat == 30016) { // Honey Block
                 translucentMultCalculated = true;
-                reflectMult = 0.25;
+                reflectMult = 1.0;
                 translucentMult.rgb = pow2(color.rgb) * 0.2;
 
                 smoothnessG = color.r * 0.7;
-                highlightMult = 3.5;
+                highlightMult = 2.5;
             } else /*if (mat == 30020)*/ { // Nether Portal
                 #ifdef FANCY_NETHERPORTAL
                     #include "/lib/materials/specificMaterials/translucents/netherPortal.glsl"

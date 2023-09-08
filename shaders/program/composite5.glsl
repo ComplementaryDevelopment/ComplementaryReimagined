@@ -10,7 +10,7 @@
 
 noperspective in vec2 texCoord;
 
-#ifdef BLOOM_FOG
+#if defined BLOOM_FOG || defined LENSFLARE
 	flat in vec3 upVec, sunVec;
 #endif
 
@@ -33,20 +33,35 @@ uniform sampler2D noisetex;
 	#endif
 #endif
 
-#ifdef BLOOM_FOG
+#if defined BLOOM_FOG || defined LENSFLARE
 	uniform int isEyeInWater;
+#endif
 
-	#ifdef NETHER
-		uniform float far;
-	#endif
+#if defined BLOOM_FOG && defined NETHER
+	uniform float far;
+#endif
+
+#if defined BLOOM_FOG || defined LENSFLARE
+	uniform mat4 gbufferProjectionInverse;
+	
+	uniform sampler2D depthtex0;
 #endif
 
 #ifdef BLOOM_FOG
 	uniform vec3 cameraPosition;
+#endif
 
-	uniform mat4 gbufferProjectionInverse;
-	
-	uniform sampler2D depthtex0;
+#ifdef LENSFLARE
+	uniform float aspectRatio;
+	uniform mat4 gbufferProjection;
+
+	#ifdef VL_CLOUDS_ACTIVE
+		uniform sampler2D colortex4;
+	#endif
+#endif
+
+#if defined GREEN_SCREEN_LIME || SELECT_OUTLINE == 4
+	uniform sampler2D colortex1;
 #endif
 
 //Pipeline Constants//
@@ -55,7 +70,7 @@ uniform sampler2D noisetex;
 float pw = 1.0 / viewWidth;
 float ph = 1.0 / viewHeight;
 
-#ifdef BLOOM_FOG
+#if defined BLOOM_FOG || defined LENSFLARE
 	float SdotU = dot(sunVec, upVec);
 	float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 #endif
@@ -84,51 +99,53 @@ void DoBSLColorSaturation(inout vec3 color) {
 	color = color * T_SATURATION - graySaturation * (T_SATURATION - 1.0);
 }
 
-vec3 GetBloomTile(float lod, vec2 coord, vec2 offset, vec2 ditherAdd) {
-	float scale = exp2(lod);
-	vec2 bloomCoord = coord / scale + offset;
-	bloomCoord += ditherAdd;
-	bloomCoord = clamp(bloomCoord, offset, 1.0 / scale + offset);
+#ifdef BLOOM
+	vec3 GetBloomTile(float lod, vec2 coord, vec2 offset, vec2 ditherAdd) {
+		float scale = exp2(lod);
+		vec2 bloomCoord = coord / scale + offset;
+		bloomCoord += ditherAdd;
+		bloomCoord = clamp(bloomCoord, offset, 1.0 / scale + offset);
 
-	#ifndef LIGHT_COLORING
-		vec3 bloom = texture2D(colortex3, bloomCoord).rgb;
-	#else
-		vec3 bloom = texture2D(colortex8, bloomCoord).rgb;
-	#endif
-	bloom *= bloom;
-	bloom *= bloom;
-	return bloom * 128.0;
-}
+		#ifndef LIGHT_COLORING
+			vec3 bloom = texture2D(colortex3, bloomCoord).rgb;
+		#else
+			vec3 bloom = texture2D(colortex8, bloomCoord).rgb;
+		#endif
+		bloom *= bloom;
+		bloom *= bloom;
+		return bloom * 128.0;
+	}
 
-void DoBloom(inout vec3 color, vec2 coord, float dither, float lViewPos) {
-	vec2 rescale = 1.0 / vec2(1920.0, 1080.0);
-	vec2 ditherAdd = vec2(0.0);
-	float ditherM = dither - 0.5;
-	if (rescale.x > pw) ditherAdd.x += ditherM * pw;
-	if (rescale.y > ph) ditherAdd.y += ditherM * ph;
+	void DoBloom(inout vec3 color, vec2 coord, float dither, float lViewPos) {
+		vec2 rescale = 1.0 / vec2(1920.0, 1080.0);
+		vec2 ditherAdd = vec2(0.0);
+		float ditherM = dither - 0.5;
+		if (rescale.x > pw) ditherAdd.x += ditherM * pw;
+		if (rescale.y > ph) ditherAdd.y += ditherM * ph;
 
-	vec3 blur1 = GetBloomTile(2.0, coord, vec2(0.0      , 0.0   ), ditherAdd);
-	vec3 blur2 = GetBloomTile(3.0, coord, vec2(0.0      , 0.26  ), ditherAdd);
-	vec3 blur3 = GetBloomTile(4.0, coord, vec2(0.135    , 0.26  ), ditherAdd);
-	vec3 blur4 = GetBloomTile(5.0, coord, vec2(0.2075   , 0.26  ), ditherAdd);
-	vec3 blur5 = GetBloomTile(6.0, coord, vec2(0.135    , 0.3325), ditherAdd);
-	vec3 blur6 = GetBloomTile(7.0, coord, vec2(0.160625 , 0.3325), ditherAdd);
-	vec3 blur7 = GetBloomTile(8.0, coord, vec2(0.1784375, 0.3325), ditherAdd);
+		vec3 blur1 = GetBloomTile(2.0, coord, vec2(0.0      , 0.0   ), ditherAdd);
+		vec3 blur2 = GetBloomTile(3.0, coord, vec2(0.0      , 0.26  ), ditherAdd);
+		vec3 blur3 = GetBloomTile(4.0, coord, vec2(0.135    , 0.26  ), ditherAdd);
+		vec3 blur4 = GetBloomTile(5.0, coord, vec2(0.2075   , 0.26  ), ditherAdd);
+		vec3 blur5 = GetBloomTile(6.0, coord, vec2(0.135    , 0.3325), ditherAdd);
+		vec3 blur6 = GetBloomTile(7.0, coord, vec2(0.160625 , 0.3325), ditherAdd);
+		vec3 blur7 = GetBloomTile(8.0, coord, vec2(0.1784375, 0.3325), ditherAdd);
 
-	vec3 blur = (blur1 + blur2 + blur3 + blur4 + blur5 + blur6 + blur7) * 0.14;
+		vec3 blur = (blur1 + blur2 + blur3 + blur4 + blur5 + blur6 + blur7) * 0.14;
 
-	float bloomStrength = BLOOM_STRENGTH + 0.2 * darknessFactor;
+		float bloomStrength = BLOOM_STRENGTH + 0.2 * darknessFactor;
 
-	#if defined BLOOM_FOG && defined NETHER
-		float netherBloom = lViewPos / max(far, 160.0);
-		netherBloom *= netherBloom;
-		netherBloom *= netherBloom;
-		netherBloom = 1.0 - exp(-8.0 * netherBloom);
-		bloomStrength = mix(bloomStrength, bloomStrength * 3.0, netherBloom);
-	#endif
+		#if defined BLOOM_FOG && defined NETHER && defined BORDER_FOG
+			float netherBloom = lViewPos / clamp(far, 192.0, 256.0); // consistency9023HFUE85JG
+			netherBloom *= netherBloom;
+			netherBloom *= netherBloom;
+			netherBloom = 1.0 - exp(-8.0 * netherBloom);
+			bloomStrength = mix(bloomStrength * 0.7, bloomStrength * 1.8, netherBloom);
+		#endif
 
-	color = mix(color, blur, bloomStrength);
-}
+		color = mix(color, blur, bloomStrength);
+	}
+#endif
 
 //Includes//
 #ifdef BLOOM_FOG
@@ -139,19 +156,21 @@ void DoBloom(inout vec3 color, vec2 coord, float dither, float lViewPos) {
 	#include "/lib/util/dither.glsl"
 #endif
 
+#ifdef LENSFLARE
+	#include "/lib/misc/lensFlare.glsl"
+#endif
+
 //Program//
 void main() {
 	vec3 color = texture2D(colortex0, texCoord).rgb;
 
-	#ifdef BLOOM_FOG
+	#if defined BLOOM_FOG || defined LENSFLARE
 		float z0 = texture2D(depthtex0, texCoord).r;
 
 		vec4 screenPos = vec4(texCoord, z0, 1.0);
 		vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
 		viewPos /= viewPos.w;
 		float lViewPos = length(viewPos.xyz);
-
-		color /= GetBloomFog(lViewPos);
 	#else
 		float lViewPos = 0.0;
 	#endif
@@ -159,6 +178,10 @@ void main() {
 	float dither = texture2D(noisetex, texCoord * vec2(viewWidth, viewHeight) / 128.0).b;
 	#ifdef TAA
 		dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+	#endif
+
+	#ifdef BLOOM_FOG
+		color /= GetBloomFog(lViewPos);
 	#endif
 
 	#ifdef BLOOM
@@ -174,6 +197,28 @@ void main() {
 	#endif
 
 	DoBSLTonemap(color);
+
+	#if defined GREEN_SCREEN_LIME || SELECT_OUTLINE == 4
+		int materialMaskInt = int(texelFetch(colortex1, texelCoord, 0).g * 255.1);
+	#endif
+
+	#ifdef GREEN_SCREEN_LIME
+		if (materialMaskInt == 240) { // Green Screen Lime Blocks
+			color = vec3(0.0, 1.0, 0.0);
+		}
+	#endif
+
+	#if SELECT_OUTLINE == 4
+		if (materialMaskInt == 252) { // Versatile Selection Outline
+			float colorMF = 1.0 - dot(color, vec3(0.25, 0.45, 0.1));
+			colorMF = smoothstep1(smoothstep1(smoothstep1(smoothstep1(smoothstep1(colorMF)))));
+			color = mix(color, 3.0 * (color + 0.2) * vec3(colorMF * SELECT_OUTLINE_I), 0.3);
+		}
+	#endif
+
+	#ifdef LENSFLARE
+		DoLensFlare(color, viewPos.xyz, dither);
+	#endif
 	
 	DoBSLColorSaturation(color);
 
@@ -201,7 +246,7 @@ void main() {
 
 noperspective out vec2 texCoord;
 
-#ifdef BLOOM_FOG
+#if defined BLOOM_FOG || defined LENSFLARE
 	flat out vec3 upVec, sunVec;
 #endif
 
@@ -221,7 +266,7 @@ void main() {
 
 	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 		
-	#ifdef BLOOM_FOG
+	#if defined BLOOM_FOG || defined LENSFLARE
 		upVec = normalize(gbufferModelView[1].xyz);
 		sunVec = GetSunVector();
 	#endif

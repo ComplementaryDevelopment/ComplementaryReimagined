@@ -104,9 +104,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
         #ifdef OVERWORLD
             vec3 skyReflection = GetSky(RVdotU, RVdotS, dither, true, true);
 
-            /**/
-            vec3 vlColorApprox = pow(lightColor, vec3(0.8)) * 0.6;
-            skyReflection += vlColorApprox * rainFactor2;
+            //skyReflection += pow(lightColor, vec3(0.8)) * 0.6 * rainFactor2; // Add approximate light shaft color
 
             #ifdef ATM_COLOR_MULTS
                 skyReflection *= atmColorMult;

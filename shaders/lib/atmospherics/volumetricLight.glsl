@@ -40,14 +40,14 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 			vlColorReducer = 1.0 / sqrt(vlColor);
 		}
 
+		float rainyNight = (1.0 - sunVisibility) * rainFactor;
 		float VdotLM = max((VdotL + 1.0) / 2.0, 0.0);
 		float VdotUmax0 = max(VdotU, 0.0);
 		float VdotUM = mix(pow2(1.0 - VdotUmax0), 1.0, 0.5 * vlSceneIntensity);
 		      VdotUM = smoothstep1(VdotUM);
 			  VdotUM = pow(VdotUM, min(lViewPos / far, 1.0) * (3.0 - 2.0 * vlSceneIntensity));
-		vlMult *= mix(VdotUM * VdotLM, 0.5 + 0.5 * VdotLM, rainFactor2) * vlTime;
-		vlMult *= mix(pow2(invNoonFactor) * 0.875 + 0.125, 1.0, max(vlSceneIntensity, rainFactor2));
-		vlMult *= mix(0.25, 1.0, max(sunVisibility, invRainFactor));
+		vlMult *= mix(VdotUM * VdotLM, 1.0, 0.4 * rainyNight) * vlTime;
+		vlMult *= mix(invNoonFactor2 * 0.875 + 0.125, 1.0, max(vlSceneIntensity, rainFactor2));
 
 		#if LIGHTSHAFT_QUALI == 4
 			int sampleCount = vlSceneIntensity < 0.5 ? 30 : 50;
@@ -59,21 +59,17 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 			int sampleCount = vlSceneIntensity < 0.5 ? 6 : 12;
 		#endif
 		#ifndef TAA
-			sampleCount *= 2;
+			//sampleCount *= 2;
 		#endif
 	#else
+		translucentMult = sqrt(translucentMult); // Because we pow2() the vl result in composite for the End dimension
+
 		float vlSceneIntensity = 0.0;
 
-		#if LIGHTSHAFT_QUALI == 4
-			int sampleCount = 20;
-		#elif LIGHTSHAFT_QUALI == 3
+		#ifndef LOW_QUALITY_ENDER_NEBULA
 			int sampleCount = 16;
-		#elif LIGHTSHAFT_QUALI == 2
-			int sampleCount = 12;
-		#elif LIGHTSHAFT_QUALI == 1
+		#else
 			int sampleCount = 10;
-		#elif LIGHTSHAFT_QUALI == 0
-			int sampleCount = 8;
 		#endif
 	#endif
 
@@ -90,6 +86,8 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 	float distMult = maxDist / (sampleCount + addition);
 	float sampleMultIntense = isEyeInWater != 1 ? 1.0 : 0.85;
 
+	float viewFactor = 1.0 - 0.7 * pow2(dot(nViewPos.xy, nViewPos.xy));
+
 	float depth0 = GetDepth(z0);
 	float depth1 = GetDepth(z1);
 	#ifdef END
@@ -98,7 +96,6 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 	#endif
 
 	// Fast but inaccurate perspective distortion approximation
-	float viewFactor = 1.0 - 0.7 * pow2(dot(nViewPos.xy, nViewPos.xy));
 	maxDist *= viewFactor;
 	distMult *= viewFactor;
 	
@@ -158,15 +155,17 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 							#endif
 						}
 					} else {
-						// For water-tinting the water surface when observed from below the surface
-						if (translucentMult != vec3(1.0) && currentDist > depth0) {
-							if (isEyeInWater == 1) {
-								vec3 translucentMultM = translucentMult * 2.8;
-								vlSample *= pow(translucentMultM, vec3(sunVisibility * 3.0 * clamp01(playerPos.y * 0.03)));
-							} else {
-								vlSample *= 0.1 + 0.9 * pow2(pow2(translucentMult * 1.7));
+						#ifdef OVERWORLD
+							// For water-tinting the water surface when observed from below the surface
+							if (translucentMult != vec3(1.0) && currentDist > depth0) {
+								if (isEyeInWater == 1) {
+									vec3 translucentMultM = translucentMult * 2.8;
+									vlSample *= pow(translucentMultM, vec3(sunVisibility * 3.0 * clamp01(playerPos.y * 0.03)));
+								} else {
+									vlSample *= 0.1 + 0.9 * pow2(pow2(translucentMult * 1.7));
+								}
 							}
-						}
+						#endif
 						
 						if (isEyeInWater == 1 && translucentMult == vec3(1.0)) vlSample = vec3(0.0);
 					}
@@ -183,29 +182,24 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 		#endif
 	}
 
-	#if defined OVERWORLD && LIGHTSHAFT_BEHAVIOUR == 1
+	#if defined OVERWORLD && LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1
 		if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5) {
 			if (frameCounter % int(0.06666 / frameTimeSmooth + 0.5) == 0) { // Change speed is not too different above 10 fps
 				int salsX = 5;
 				int salsY = 5;
+				float heightThreshold = 6.0;
+				
 				vec2 viewM = 1.0 / vec2(salsX, salsY);
 				float salsSampleSum = 0.0;
 				int salsSampleCount = 0;
 				for (float i = 0.25; i < salsX; i++) {
 					for (float h = 0.45; h < salsY; h++) {
 						vec2 coord = 0.3 + 0.4 * viewM * vec2(i, h);
-						//float salsSample = texture2D(shadowtex0, coord).x;
-						float salsSample = texelFetch(shadowtex0, ivec2(coord * shadowMapResolutionM), 0).x; // read 28A3DK6
+						ivec2 icoord = ivec2(coord * shadowMapResolutionM);
+						float salsSample = texelFetch(shadowtex0, icoord, 0).x; // read 28A3DK6
 						if (salsSample < 0.55) {
-							vec3 salsShadowNDC = vec3(coord, salsSample) * 2.0 - 1.0;
-							salsShadowNDC.z /= 0.2;
-								float distb = sqrt(salsShadowNDC.x * salsShadowNDC.x + salsShadowNDC.y * salsShadowNDC.y);
-								float distortFactor = 1.0 - shadowMapBias + distb * shadowMapBias;
-								salsShadowNDC.xy *= distortFactor;
-
-							vec4 salsShadowViewPos = shadowProjectionInverse * vec4(salsShadowNDC, 1.0);
-							salsShadowViewPos.xyz /= salsShadowViewPos.w;
-							salsSampleSum += (shadowModelViewInverse * vec4(salsShadowViewPos.xyz, 1.0)).y;
+							float sampledHeight = max0(texture2D(shadowcolor1, coord).a - 0.25) / 0.05; // consistencyMEJHRI7DG
+							salsSampleSum += sampledHeight;
 							salsSampleCount++;
 						}
 					}
@@ -223,20 +217,16 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 					reduceAmount = 3;
 				}
 
-				if (salsCheck > 7.0) {
+				if (salsCheck > heightThreshold) {
 					vlFactor = min(vlFactor + OSIEBCA, 1.0);
 				} else {
 					vlFactor = max(vlFactor - OSIEBCA * reduceAmount, 0.0);
 				}
 			}
 		} else vlFactor = 0.0;
+		//if (gl_FragCoord.y < 50) color.rgb = vec3(1,0,1) * float(salsCheck / heightThreshold > gl_FragCoord.x / 1920.0);
 
-		/*beginTextM(8, vec2(6, 10));
-		text.fgCol = vec4(1.0, 0.0, 0.0, 1.0);
-		printFloat(salsCheck);
-		endText(color);
-		
-		for (float i = 0.25; i < salsX; i++) {
+		/*for (float i = 0.25; i < salsX; i++) {
 			for (float h = 0.45; h < salsY; h++) {
 				if (length(texCoord - (0.3 + 0.4 * viewM * vec2(i, h))) < 0.01) return vec4(1,0,1,1);
 			}
@@ -244,18 +234,21 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 	#endif
 
 	#ifdef OVERWORLD
-		volumetricLight.rgb *= vlMult * pow(vlColor, vec3(0.5 + 0.5 * mix(invNoonFactor, (1.0 + sunFactor), rainFactor)));
+		vlColor = pow(vlColor, vec3(0.5 + 0.5 * invNoonFactor * invRainFactor + 0.3 * rainFactor));
+		vlColor *= 1.0 - (0.3 + 0.3 * noonFactor) * rainFactor - 0.5 * rainyNight;
 
 		#if LIGHTSHAFT_DAY_I != 100 || LIGHTSHAFT_NIGHT_I != 100
 			#define LIGHTSHAFT_DAY_IM LIGHTSHAFT_DAY_I * 0.01
 			#define LIGHTSHAFT_NIGHT_IM LIGHTSHAFT_NIGHT_I * 0.01
-			volumetricLight.rgb *= mix(LIGHTSHAFT_NIGHT_IM, LIGHTSHAFT_DAY_IM, sunVisibility);
+			vlColor.rgb *= mix(LIGHTSHAFT_NIGHT_IM, LIGHTSHAFT_DAY_IM, sunVisibility);
 		#endif
 
 		#if LIGHTSHAFT_RAIN_I != 100
 			#define LIGHTSHAFT_RAIN_IM LIGHTSHAFT_RAIN_I * 0.01
-			volumetricLight.rgb *= mix(1.0, LIGHTSHAFT_RAIN_IM, rainFactor);
+			vlColor.rgb *= mix(1.0, LIGHTSHAFT_RAIN_IM, rainFactor);
 		#endif
+
+		volumetricLight.rgb *= vlMult * vlColor;
 	#endif
 	
 	volumetricLight = max(volumetricLight, vec4(0.0));

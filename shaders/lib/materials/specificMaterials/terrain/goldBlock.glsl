@@ -1,6 +1,10 @@
 materialMask = OSIEBCA * 3.0; // Gold Fresnel
 
-float colorG2 = pow2(color.g);
+#ifdef GBUFFERS_TERRAIN
+    float colorG2 = pow2(color.g);
+#else
+    float colorG2 = color.g;
+#endif
 float colorG4 = pow2(colorG2);
 float factor = max(color.g, 0.8);
 
