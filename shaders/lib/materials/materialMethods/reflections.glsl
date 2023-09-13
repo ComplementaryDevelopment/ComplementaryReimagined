@@ -44,7 +44,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
 
         float err = length(viewPosRT - rfragpos);
         
-		if (err < length(vector) * 3.0) {
+		if (err < length(vector) * 3.0 || refPos.z < 0.9) {
             sr++;
             if (sr >= 6) break;
             tvector -= vector;
@@ -60,7 +60,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
     float border = clamp(1.0 - pow(max(cdist.x, cdist.y), 50.0), 0.0, 1.0);
 
     vec4 reflection = vec4(0.0);
-    if (refPos.z < 0.99997) {
+    // if (refPos.z < 0.99997) {
         reflection.a = border;
 
         float lViewPosRT = length(rfragpos);
@@ -95,9 +95,9 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
 
         float posDif = lViewPosRT - lViewPos;
         reflection.a *= clamp(posDif + 3.0, 0.0, 1.0);
-    }
+    // }
     #if defined DEFERRED1 && defined TEMPORAL_FILTER
-        else refPos.z = 1.0;
+        refPos.z = 1.0;
     #endif
 
     if (reflection.a < 1.0) {
