@@ -44,7 +44,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
 
         float err = length(viewPosRT - rfragpos);
         
-		if (err < length(vector) * 3.0 || refPos.z < 0.9) {
+		if (err < length(vector) * 3.0 || refPos.z > 0.9999) {
             sr++;
             if (sr >= 6) break;
             tvector -= vector;
