@@ -172,6 +172,8 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
 void main() {
 	vec4 color = texture2D(tex, texCoord);
 
+	if (color.a < (1.5/255.0)) {discard; return;}
+
 	float smoothnessD = 0.0, materialMask = 0.0, skyLightFactor = 0.0;
 	vec3 normalM = normal;
 
