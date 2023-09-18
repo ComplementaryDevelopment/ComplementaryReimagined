@@ -330,11 +330,13 @@ void main() {
 		ColorCodeProgram(color);
 	#endif
 
-	// Distant Horizons blending
-	vec3 localPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
-	localPos.y = 0;
-	float fragDistance = length(localPos);
-	color.a *= 1.0 - smoothstep(0.5 * far, far, fragDistance);
+	#if DISTANT_HORIZONS_BLENDING == 1
+		// Distant Horizons blending
+		vec3 localPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
+		localPos.y = 0;
+		float fragDistance = length(localPos);
+		color.a *= 1.0 - smoothstep(DISTANT_HORIZONS_BLENDING_VIEW_DISTANCE_FACTOR * far, far, fragDistance);
+	#endif
 
 	/* DRAWBUFFERS:01 */
 	gl_FragData[0] = color;

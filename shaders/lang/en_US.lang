@@ -163,6 +163,8 @@ screen.SELECT_OUTLINE_SETTINGS.comment=Settings that change the block selection 
 screen.WORLD_OUTLINE_SETTINGS=World Outline
 screen.WORLD_OUTLINE_SETTINGS.comment=Settings that are about optional outline effects.
 
+screen.COMPAT_SETTINGS=Compatibility Settings
+
 #Settings
 option.RP_MODE=RP Support
 option.RP_MODE.comment=Changes many internal calculations to determine how different blocks and materials will be rendered. §bIntegrated PBR+§r: Calculated PBR and extra effects, highly recommended for most use cases. §aBasic§r: No PBR or extra effects. §elabPBR/seuspbr§r: Materials using the required PBR resource packs.
@@ -783,6 +785,14 @@ option.DARK_OUTLINE.comment=Adds dark outlines around blocks. §c[-]§r This eff
 
 option.DARK_OUTLINE_THICKNESS=Dark Outline Thickness
 option.DARK_OUTLINE_THICKNESS.comment=Determines the thickness of the Dark Outline effect. §c[-]§r Increasing this setting can impact performance.
+
+option.DISTANT_HORIZONS_BLENDING=Distant Horizons Blending
+option.DISTANT_HORIZONS_BLENDING.comment=Blends chunks into Distant Horizons LODs, creating a seamless transition.
+value.DISTANT_HORIZONS_BLENDING.0=OFF
+value.DISTANT_HORIZONS_BLENDING.1=ON
+
+option.DISTANT_HORIZONS_BLENDING_VIEW_DISTANCE_FACTOR=Blend View Distance Factor
+option.DISTANT_HORIZONS_BLENDING_VIEW_DISTANCE_FACTOR.comment=The factor that determines how close to the camera blending occurs between chunks and Distant Horizons LODs. 0.00 means no blending will occur, and 1.00 means the blending will start at the camera's position.
 
 option.RAIN_PUDDLES=Rain Puddles
 option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic, and Block Reflection Quality must be set to Medium or above. §c[-]§r Rain puddles can severely impact performance.
