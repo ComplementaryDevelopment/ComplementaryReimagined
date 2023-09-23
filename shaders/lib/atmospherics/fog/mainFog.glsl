@@ -194,7 +194,7 @@ void DoFog(inout vec3 color, inout float skyFade, float lViewPos, vec3 playerPos
     #ifdef ATMOSPHERIC_FOG
         DoAtmosphericFog(color, playerPos, lViewPos, VdotS);
     #endif
-    #ifdef BORDER_FOG
+    #if defined BORDER_FOG && DISTANT_HORIZONS_BLENDING == 0
         DoBorderFog(color, skyFade, length(playerPos.xz), VdotU, VdotS, dither);
     #endif
 

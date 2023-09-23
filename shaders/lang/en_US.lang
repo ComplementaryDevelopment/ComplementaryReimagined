@@ -787,7 +787,7 @@ option.DARK_OUTLINE_THICKNESS=Dark Outline Thickness
 option.DARK_OUTLINE_THICKNESS.comment=Determines the thickness of the Dark Outline effect. §c[-]§r Increasing this setting can impact performance.
 
 option.DISTANT_HORIZONS_BLENDING=Distant Horizons Blending
-option.DISTANT_HORIZONS_BLENDING.comment=Blends chunks into Distant Horizons LODs, creating a seamless transition.
+option.DISTANT_HORIZONS_BLENDING.comment=Blends chunks into Distant Horizons LODs, creating a seamless transition. Disables border fog.
 value.DISTANT_HORIZONS_BLENDING.0=OFF
 value.DISTANT_HORIZONS_BLENDING.1=ON
 
