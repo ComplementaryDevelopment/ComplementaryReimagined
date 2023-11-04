@@ -474,14 +474,18 @@ void main() {
 			#endif
 		#endif
 		#ifdef NETHER
-			color.rgb = netherColor;
+			#if DISTANT_HORIZONS_BLENDING == 0
+				color.rgb = netherColor;
+			#endif
 
 			#ifdef ATM_COLOR_MULTS
 				color.rgb *= atmColorMult;
 			#endif
 		#endif
 		#ifdef END
-			color.rgb = endSkyColor;
+			#if DISTANT_HORIZONS_BLENDING == 0
+				color.rgb = endSkyColor;
+			#endif
 			color.rgb += GetEnderStars(viewPos.xyz, VdotU);
 
 			#ifdef ATM_COLOR_MULTS
