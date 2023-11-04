@@ -317,7 +317,9 @@ void main() {
 		#if DISTANT_HORIZONS_BLENDING == 1
 			// Distant Horizons blending (SSAO)
 			vec3 localPos = (gbufferModelViewInverse * vec4(viewPos)).xyz;
-			localPos.y = 0;
+			#if DISTANT_HORIZONS_BLENDING_RADIUS_TYPE == 0
+				localPos.y = 0.0;
+			#endif
 			float fragDistance = length(localPos);
 			ssao = mix(ssao, 1.0, smoothstep(DISTANT_HORIZONS_BLENDING_VIEW_DISTANCE_FACTOR * far, far, fragDistance));
 		#endif

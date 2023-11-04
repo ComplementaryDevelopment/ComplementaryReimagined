@@ -335,7 +335,9 @@ void main() {
 	#if DISTANT_HORIZONS_BLENDING == 1
 		// Distant Horizons blending
 		vec3 localPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
-		localPos.y = 0;
+		#if DISTANT_HORIZONS_BLENDING_RADIUS_TYPE == 0
+			localPos.y = 0.0;
+		#endif
 		float fragDistance = length(localPos);
 		color.a = 1.0 - smoothstep(DISTANT_HORIZONS_BLENDING_VIEW_DISTANCE_FACTOR * far, far, fragDistance);
 	#endif

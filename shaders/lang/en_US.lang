@@ -794,6 +794,11 @@ value.DISTANT_HORIZONS_BLENDING.1=ON
 option.DISTANT_HORIZONS_BLENDING_VIEW_DISTANCE_FACTOR=Blend View Distance Factor
 option.DISTANT_HORIZONS_BLENDING_VIEW_DISTANCE_FACTOR.comment=The factor that determines how close to the camera blending occurs between chunks and Distant Horizons LODs. 0.00 means no blending will occur, and 1.00 means the blending will start at the camera's position.
 
+option.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE=Blend Radius Type
+option.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE.comment=The radius type of blending to use. Some mods, such as Sodium, change the chunk loading radius to a sphere, so you'll have to set the blending radius type to Sphere to blend properly vertically.
+value.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE.0=Cylinder
+value.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE.1=Sphere
+
 option.RAIN_PUDDLES=Rain Puddles
 option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic, and Block Reflection Quality must be set to Medium or above. §c[-]§r Rain puddles can severely impact performance.
 value.RAIN_PUDDLES.0=OFF
