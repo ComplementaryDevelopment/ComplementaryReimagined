@@ -53,7 +53,7 @@ void main() {
 	#endif
 	float lViewPos = length(viewPos);
 
-	#if defined BEACON_BEAM_EMISSION && defined IPBR
+	#if defined IPBR && defined BEACON_BEAM_EMISSION
 		float emission = dot(colorP, colorP);
 
 		if (color.a < 0.5) {
@@ -63,7 +63,7 @@ void main() {
 
 		color.rgb *= color.rgb * emission * 1.75;
 		color.rgb += emission * 0.05;
-	#else
+	#elif not defined IPBR
 		color.rgb *= color.rgb * 4.0;
 	#endif
 
