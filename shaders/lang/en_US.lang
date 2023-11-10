@@ -596,6 +596,9 @@ option.FANCY_GLASS.comment=Improves the regular glass by adding a translucent la
 option.GREEN_SCREEN_LIME=Green Screen Lime Blocks
 option.GREEN_SCREEN_LIME.comment=Turns "Lime Concrete", "Lime Wool", and "Lime Carpet" into green screens for video editing. Tip 1: Turn off "Bloom" option to improve separation. Tip 2: Put lights under lime carpets for lighting. Tip 3: You can turn off Anti-Aliasing (FXAA) and set Detail Quality to Potato in Performance Settings to disable all filtering and get pixel-perfect separation.
 
+option.BEACON_BEAM_EMISSION=Beacon Beam Emission
+option.BEACON_BEAM_EMISSION.comment=Turns on an emissive effect for the beacon beam. This should be on in most cases unless a mod specifically notes that there's a conflict with it.
+
 option.HAND_SWAYING=Hand Sway
 option.HAND_SWAYING.comment=Adds slow movement to the player hand to simulate a breathing animation.
 value.HAND_SWAYING.0=OFF

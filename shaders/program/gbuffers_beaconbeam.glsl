@@ -53,7 +53,7 @@ void main() {
 	#endif
 	float lViewPos = length(viewPos);
 
-	#ifdef IPBR
+	#if defined BEACON_BEAM_EMISSION && defined IPBR
 		float emission = dot(colorP, colorP);
 
 		if (color.a < 0.5) {

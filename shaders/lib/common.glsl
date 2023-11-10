@@ -20,6 +20,7 @@
         //#define COATED_TEXTURES
         //#define FANCY_GLASS
         //#define GREEN_SCREEN_LIME
+        #define BEACON_BEAM_EMISSION
     #endif
     #if RP_MODE >= 2
         #define CUSTOM_PBR
@@ -518,6 +519,8 @@
     #ifdef CLOUD_CLOSED_AREA_CHECK
     #endif
     #ifdef BRIGHT_CAVE_WATER
+    #endif
+    #ifdef BEACON_BEAM_EMISSION
     #endif
 
 //Very Common Uniforms//
