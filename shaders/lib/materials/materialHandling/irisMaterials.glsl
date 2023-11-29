@@ -36,7 +36,7 @@ if (currentRenderedItemId < 45064) {
                     } else {
                         #include "/lib/materials/specificMaterials/terrain/stone.glsl"
                     }
-                } else /*if (currentRenderedItemId == 45012)*/ { // Iron Tools, Iron Armor, Iron Ingot, Iron Nugget, Iron Horse Armor, Flint and Steel, Flint, Spyglass, Shears
+                } else /*if (currentRenderedItemId == 45012)*/ { // Iron Tools, Iron Armor, Iron Ingot, Iron Nugget, Iron Horse Armor, Flint and Steel, Flint, Spyglass, Shears, Chainmail Armor
                     if (CheckForStick(color.rgb)) {
                         #include "/lib/materials/specificMaterials/planks/sprucePlanks.glsl"
                     } else {
@@ -61,10 +61,11 @@ if (currentRenderedItemId < 45064) {
                 }
             } else {
                 if (currentRenderedItemId == 45024) { // Netherite Tools, Netherite Armor, Netherite Ingot
-                    smoothnessG = color.r * 2.0;
+                    materialMask = OSIEBCA; // Intense Fresnel
+                    smoothnessG = color.r * 1.5;
                     smoothnessG = min1(smoothnessG);
                     highlightMult = smoothnessG * 2.0;
-                    smoothnessD = smoothnessG * 0.5 + 0.5;
+                    smoothnessD = smoothnessG * smoothnessG * 0.5;
 
                     #ifdef COATED_TEXTURES
                         noiseFactor = 0.33;
@@ -121,7 +122,7 @@ if (currentRenderedItemId < 45064) {
                     highlightMult = factor * 3.0;
                     smoothnessD = factor;
                 } else /*if (currentRenderedItemId == 45060)*/ { // Shield
-                    float factor = min(color.r * color.g * color.b * 4.0, 0.7);
+                    float factor = min(color.r * color.g * color.b * 4.0, 0.7) * 0.7;
                     smoothnessG = factor;
                     highlightMult = factor * 3.0;
                     smoothnessD = factor;
@@ -182,38 +183,41 @@ if (currentRenderedItemId < 45064) {
             } else {
                 if (currentRenderedItemId == 45088) { // Nether Star
                     emission = pow2(color.r + color.g) * 0.5;
-                } else /*if (currentRenderedItemId == 45092)*/ { //
-                
+                } else /*if (currentRenderedItemId == 45092)*/ { // End Crystal
+                    if (color.g < color.r) {
+                        emission = 3.0;
+                        color.r *= 1.1;
+                    }
                 }
             }
         }
     } else {
         if (currentRenderedItemId < 45112) {
             if (currentRenderedItemId < 45104) {
-                if (currentRenderedItemId == 45096) { // 
-
-                } else /*if (currentRenderedItemId == 45100)*/ { // 
-                
+                if (currentRenderedItemId == 45096) { // Glow Berries
+                    // iris needs to add support
+                } else /*if (currentRenderedItemId == 45100)*/ { // Glowstone Dust
+                    emission = dot(color.rgb, color.rgb) * 0.5 + 1.0;
                 }
             } else {
-                if (currentRenderedItemId == 45104) { // 
-                
-                } else /*if (currentRenderedItemId == 45108)*/ { // 
-                
+                if (currentRenderedItemId == 45104) { // Prismarine Crystals
+                    emission = pow1_5(color.r) * 2.5 + 0.2;
+                } else /*if (currentRenderedItemId == 45108)*/ { // Totem of Undying
+                    #include "/lib/materials/specificMaterials/terrain/goldBlock.glsl"
                 }
             }
         } else {
             if (currentRenderedItemId < 45120) {
-                if (currentRenderedItemId == 45112) { // 
-                
-                } else /*if (currentRenderedItemId == 45116)*/ { // 
-                
+                if (currentRenderedItemId == 45112) { //
+
+                } else /*if (currentRenderedItemId == 45116)*/ { //
+
                 }
             } else {
-                if (currentRenderedItemId == 45120) { // 
-                
-                } else /*if (currentRenderedItemId == 45124)*/ { // 
-                
+                if (currentRenderedItemId == 45120) { //
+
+                } else /*if (currentRenderedItemId == 45124)*/ { //
+
                 }
             }
         }

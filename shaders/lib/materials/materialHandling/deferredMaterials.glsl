@@ -1,3 +1,8 @@
+if (abs(materialMaskInt - 149.5) < 50.0) {
+    materialMaskInt -= 100;
+    entityOrHand = true;
+}
+
 if (materialMaskInt != 0) {
     if (materialMaskInt < 9) {
         if (materialMaskInt < 5) {
@@ -22,13 +27,13 @@ if (materialMaskInt != 0) {
                     intenseFresnel = 1.0;
                     reflectColor = vec3(1.0, 0.3, 0.2);
                 } else /*if (materialMaskInt == 6)*/ { //
-                
+
                 }
             } else {
                 if (materialMaskInt == 7) { //
-                
+
                 } else /*if (materialMaskInt == 8)*/ { //
-                
+
                 }
             }
         }
@@ -36,13 +41,13 @@ if (materialMaskInt != 0) {
         if (materialMaskInt < 13) {
             if (materialMaskInt < 11) {
                 if (materialMaskInt == 9) { //
-                
+
                 } else /*if (materialMaskInt == 10)*/ { //
-                
+
                 }
             } else {
                 if (materialMaskInt == 11) { //
-                
+
                 } else /*if (materialMaskInt == 12)*/ { //
 
                 }
@@ -50,15 +55,16 @@ if (materialMaskInt != 0) {
         } else {
             if (materialMaskInt < 15) {
                 if (materialMaskInt == 13) { //
-                
+
                 } else /*if (materialMaskInt == 14)*/ { //
-                
+
                 }
             } else {
                 if (materialMaskInt == 254) { // No SSAO, No TAA
                     ssao = 1.0;
+                    entityOrHand = true;
                 } else /*if (materialMaskInt == "15 to 255 except 254")*/ { //
-                
+
                 }
             }
         }

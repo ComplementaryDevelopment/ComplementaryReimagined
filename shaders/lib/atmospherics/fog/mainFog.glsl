@@ -1,6 +1,9 @@
 #ifdef ATM_COLOR_MULTS
     #include "/lib/colors/colorMultipliers.glsl"
 #endif
+#ifdef MOON_PHASE_INF_ATMOSPHERE
+    #include "/lib/colors/moonPhaseInfluence.glsl"
+#endif
 
 #ifdef BORDER_FOG
     #ifdef OVERWORLD
@@ -19,9 +22,9 @@
             fog = 1.0 - exp(-3.0 * fog);
         #endif
         #ifdef NETHER
-            float farM = min(far, 256.0); // consistency9023HFUE85JG
+            float farM = min(far, NETHER_VIEW_LIMIT); // consistency9023HFUE85JG
             float fog = lPlayerPosXZ / farM;
-            fog = pow(fog, 2.0 - farM / 256.0);
+            fog = fog * 0.3 + 0.7 * pow(fog, 256.0 / max(farM, 256.0));
         #endif
 
         if (fog > 0.0) {
@@ -31,12 +34,15 @@
                 vec3 fogColorM = GetSky(VdotU, VdotS, dither, true, false);
             #elif defined NETHER
                 vec3 fogColorM = netherColor;
-            #else 
+            #else
                 vec3 fogColorM = endSkyColor;
             #endif
 
             #ifdef ATM_COLOR_MULTS
                 fogColorM *= atmColorMult;
+            #endif
+            #ifdef MOON_PHASE_INF_ATMOSPHERE
+                fogColorM *= moonPhaseInfluence;
             #endif
 
             color = mix(color, fogColorM, fog);
@@ -52,7 +58,7 @@
 
 #ifdef CAVE_FOG
     #include "/lib/atmospherics/fog/caveFactor.glsl"
-    
+
     void DoCaveFog(inout vec3 color, float lViewPos) {
         float fog = GetCaveFactor() * (0.9 - 0.9 * exp(- lViewPos * 0.015));
 
@@ -92,7 +98,7 @@
 
         float fog = 1.0 - exp(-pow(lViewPos * (0.001 - 0.0007 * rainFactor), 2.0 - rainFactor2) * lViewPos * renDisFactor);
               fog *= ATM_FOG_MULT - 0.1 - 0.15 * invRainFactor;
-        
+
         float altitudeFactorP = GetAtmFogAltitudeFactor(playerPos.y + cameraPosition.y);
         float altitudeFactor = altitudeFactorP;
 
@@ -127,6 +133,9 @@
             #ifdef ATM_COLOR_MULTS
                 fogColorM *= atmColorMult;
             #endif
+            #ifdef MOON_PHASE_INF_ATMOSPHERE
+                fogColorM *= moonPhaseInfluence;
+            #endif
 
             color = mix(color, fogColorM, fog);
         }
@@ -156,6 +165,11 @@ void DoLavaFog(inout vec3 color, float lViewPos) {
 
 void DoPowderSnowFog(inout vec3 color, float lViewPos) {
     float fog = lViewPos;
+
+    #ifdef LESS_LAVA_FOG
+        fog = sqrt(fog) * 0.4;
+    #endif
+
     fog *= fog;
     fog = 1.0 - exp(-fog);
 
@@ -193,7 +207,7 @@ void DoFog(inout vec3 color, inout float skyFade, float lViewPos, vec3 playerPos
     if (isEyeInWater == 1) DoWaterFog(color, lViewPos);
     else if (isEyeInWater == 2) DoLavaFog(color, lViewPos);
     else if (isEyeInWater == 3) DoPowderSnowFog(color, lViewPos);
-    
+
     if (blindness > 0.00001) DoBlindnessFog(color, lViewPos);
     if (darknessFactor > 0.00001) DoDarknessFog(color, lViewPos);
 }

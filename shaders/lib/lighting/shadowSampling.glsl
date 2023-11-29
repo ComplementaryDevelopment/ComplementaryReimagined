@@ -28,7 +28,7 @@ vec3 SampleShadow(vec3 shadowPos, float colorMult, float colorPow) {
     return shadowcol * (1.0 - shadow0) + shadow0;
 }
 
-float InterleavedGradientNoise() {
+float InterleavedGradientNoiseForShadows() {
     float n = 52.9829189 * fract(0.06711056 * gl_FragCoord.x + 0.00583715 * gl_FragCoord.y);
     #if !defined GBUFFERS_ENTITIES && !defined GBUFFERS_HAND && !defined GBUFFERS_TEXTURED
         return fract(n + 1.61803398875 * mod(float(frameCounter), 3600.0));
@@ -44,8 +44,8 @@ vec2 offsetDist(float x, int s) {
 
 vec3 SampleTAAFilteredShadow(vec3 shadowPos, float lViewPos, float offset, bool leaves, float colorMult, float colorPow) {
     vec3 shadow = vec3(0.0);
-    float gradientNoise = InterleavedGradientNoise();
-    
+    float gradientNoise = InterleavedGradientNoiseForShadows();
+
     #if SHADOW_QUALITY == 0
         int shadowSamples = 0; // We don't use SampleTAAFilteredShadow on Shadow Quality 0
     #elif SHADOW_QUALITY == 1
@@ -66,7 +66,7 @@ vec3 SampleTAAFilteredShadow(vec3 shadowPos, float lViewPos, float offset, bool 
         shadowSamples *= 2;
         offset *= 0.69375;
     #endif
-    
+
     float shadowPosZM = shadowPos.z;
     for (int i = 0; i < shadowSamples; i++) {
         vec2 offset2 = offsetDist(gradientNoise + i, shadowSamples) * offset;
@@ -74,7 +74,7 @@ vec3 SampleTAAFilteredShadow(vec3 shadowPos, float lViewPos, float offset, bool 
         shadow += SampleShadow(vec3(shadowPos.st + offset2, shadowPosZM), colorMult, colorPow);
         shadow += SampleShadow(vec3(shadowPos.st - offset2, shadowPosZM), colorMult, colorPow);
     }
-    
+
     shadow /= shadowSamples * 2.0;
 
     return shadow;
@@ -88,7 +88,7 @@ vec2 shadowOffsets[4] = vec2[4](
 
 vec3 SampleBasicFilteredShadow(vec3 shadowPos, float offset) {
     float shadow = 0.0;
-    
+
     for (int i = 0; i < 4; i++) {
         shadow += shadow2D(shadowtex0, vec3(offset * shadowOffsets[i] + shadowPos.st, shadowPos.z)).x;
     }

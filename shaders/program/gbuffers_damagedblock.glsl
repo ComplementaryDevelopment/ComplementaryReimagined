@@ -23,20 +23,20 @@ uniform sampler2D tex;
 
 //Includes//
 #ifdef COLOR_CODED_PROGRAMS
-	#include "/lib/misc/colorCodedPrograms.glsl"
+    #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 //Program//
 void main() {
-	vec4 color = texture2D(tex, texCoord);
-	color.rgb *= glColor.rgb;
+    vec4 color = texture2D(tex, texCoord);
+    color.rgb *= glColor.rgb;
 
-	#ifdef COLOR_CODED_PROGRAMS
-		ColorCodeProgram(color);
-	#endif
+    #ifdef COLOR_CODED_PROGRAMS
+        ColorCodeProgram(color);
+    #endif
 
-	/* DRAWBUFFERS:0 */
-	gl_FragData[0] = color;
+    /* DRAWBUFFERS:0 */
+    gl_FragData[0] = color;
 }
 
 #endif
@@ -60,9 +60,9 @@ flat out vec4 glColor;
 
 //Program//
 void main() {
-	gl_Position = ftransform();
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	glColor = gl_Color;
+    gl_Position = ftransform();
+    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    glColor = gl_Color;
 }
 
 #endif

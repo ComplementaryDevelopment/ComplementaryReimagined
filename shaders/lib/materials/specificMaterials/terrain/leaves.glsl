@@ -5,7 +5,7 @@ materialMask = OSIEBCA * 253.0; // Reduced Edge TAA
     float factor = min1(pow2(color.g - 0.15 * (color.r + color.b)) * 2.5);
     smoothnessG = factor * 0.5;
     highlightMult = factor * 4.0 + 2.0;
-	float fresnel = clamp(1.0 + dot(normalM, normalize(viewPos)), 0.0, 1.0);
+    float fresnel = clamp(1.0 + dot(normalM, normalize(viewPos)), 0.0, 1.0);
     highlightMult *= 1.0 - pow2(pow2(fresnel));
 #endif
 

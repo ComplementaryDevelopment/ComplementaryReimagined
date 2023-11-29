@@ -15,8 +15,10 @@ if (entityId < 50064) {
             } else {
                 if (entityId == 50008) { // Item Frame, Glow Item Frame
                     noSmoothLighting = true;
-                } else /*if (entityId == 50012)*/ { //
+                } else /*if (entityId == 50012)*/ { // Iron Golem
+                    #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
 
+                    smoothnessD *= 0.6;
                 }
             }
         } else {
@@ -60,7 +62,7 @@ if (entityId < 50064) {
     } else {
         if (entityId < 50048) {
             if (entityId < 50040) {
-                if (entityId == 50032) { // Guardian        
+                if (entityId == 50032) { // Guardian
                     vec3 absDif = abs(vec3(color.r - color.g, color.g - color.b, color.r - color.b));
                     float maxDif = max(absDif.r, max(absDif.g, absDif.b));
                     if (maxDif < 0.1 && color.b > 0.5 && color.b < 0.88) {
@@ -152,28 +154,32 @@ if (entityId < 50064) {
     } else {
         if (entityId < 50112) {
             if (entityId < 50104) {
-                if (entityId == 50096) { // 
-                
+                if (entityId == 50096) { // Minecart++
+                    if (atlasSize.x < 900 && color.r * color.g * color.b + color.b > 0.3) {
+                        #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
+
+                        smoothnessD *= 0.6;
+                    }
                 } else /*if (entityId == 50100)*/ { //
 
                 }
             } else {
-                if (entityId == 50104) { // 
-                
+                if (entityId == 50104) { //
+
                 } else /*if (entityId == 50108)*/ { //
 
                 }
             }
         } else {
             if (entityId < 50120) {
-                if (entityId == 50112) { // 
-                
+                if (entityId == 50112) { //
+
                 } else /*if (entityId == 50116)*/ { //
 
                 }
             } else {
-                if (entityId == 50120) { // 
-                
+                if (entityId == 50120) { //
+
                 } else /*if (entityId == 50124)*/ { //
 
                 }

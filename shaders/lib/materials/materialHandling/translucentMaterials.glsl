@@ -58,10 +58,10 @@ if (mat < 31008) {
         } else {
             if (mat == 31016) { // Beacon
                 lmCoordM.x = 0.88;
-                
+
                 translucentMultCalculated = true;
                 translucentMult = vec4(0.0, 0.0, 0.0, 1.0);
-                
+
                 if (color.b > 0.5) {
                     if (color.g - color.b < 0.01 && color.g < 0.99) {
                         #include "/lib/materials/specificMaterials/translucents/glass.glsl"
@@ -84,23 +84,23 @@ if (mat < 31008) {
                     highlightMult = 2.0 + min1(smoothnessG * 2.0) * 1.5;
                     smoothnessG = min1(smoothnessG);
                 }
-            
+
             } else /*if (mat == 31020)*/ { //
-            
+
             }
         }
     } else {
         if (mat < 31032) {
             if (mat == 31024) { //
-            
+
             } else /*if (mat == 31028)*/ { //
-            
+
             }
         } else {
             if (mat == 31032) { //
-            
+
             } else /*if (mat == 31036)*/ { //
-            
+
             }
         }
     }

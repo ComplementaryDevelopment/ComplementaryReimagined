@@ -18,7 +18,7 @@ float BeamNoise(vec2 planeCoord, vec2 wind) {
 
 vec3 DrawEnderBeams(float VdotU, vec3 playerPos) {
     int sampleCount = 8;
-    
+
     float VdotUM = 1.0 - VdotU * VdotU;
     float VdotUM2 = VdotUM + smoothstep1(pow2(pow2(1.0 - abs(VdotU)))) * 0.2;
 

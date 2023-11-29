@@ -18,7 +18,7 @@ void CoatTextures(inout vec3 color, float noiseFactor, vec3 playerPos) {
         vec3 floorWorldPos = floor(playerPos + cameraPosition + 0.001);
         noiseCoord += 0.84 * (floorWorldPos.xz + floorWorldPos.y);
     #endif
-    
+
     float noiseTexture = texture2D(noisetex, noiseCoord).r;
     noiseTexture = noiseTexture + 0.6;
     float colorBrightness = dot(color, color) * 0.3;

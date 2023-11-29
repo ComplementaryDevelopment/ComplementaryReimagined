@@ -1,4 +1,4 @@
-#version 130 
+#version 130
 
 #define FRAGMENT_SHADER
 #define OVERWORLD

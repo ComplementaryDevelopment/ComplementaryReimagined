@@ -20,21 +20,23 @@ in vec3 viewVector;
 in vec4 glColor;
 
 #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && WATER_QUALITY >= 2 || defined GENERATED_NORMALS || defined CUSTOM_PBR
-	flat in vec3 binormal, tangent;
+    flat in vec3 binormal, tangent;
 #endif
 
 #if WATER_STYLE >= 2 || defined FANCY_NETHERPORTAL || defined GENERATED_NORMALS || defined POM
-	in vec2 signMidCoordPos;
-	flat in vec2 absMidCoordPos;
+    in vec2 signMidCoordPos;
+    flat in vec2 absMidCoordPos;
 #endif
 
 #ifdef POM
-	in vec4 vTexCoordAM;
+    in vec4 vTexCoordAM;
 #endif
 
 //Uniforms//
 uniform int isEyeInWater;
 uniform int frameCounter;
+uniform int heldItemId;
+uniform int heldItemId2;
 
 uniform float near;
 uniform float far;
@@ -42,6 +44,8 @@ uniform float nightVision;
 uniform float blindness;
 uniform float darknessFactor;
 uniform float frameTimeCounter;
+
+uniform ivec2 eyeBrightness;
 
 uniform vec3 skyColor;
 uniform vec3 cameraPosition;
@@ -57,41 +61,50 @@ uniform float aspectRatio;
 uniform sampler2D tex;
 uniform sampler2D noisetex;
 
-#if WATER_STYLE >= 2
-	uniform sampler2D gaux4;
+#if WATER_STYLE >= 2 || defined CLOUDS_REIMAGINED && defined CLOUD_SHADOWS || WATER_REFLECT_QUALITY >= 1 && defined SKY_EFFECT_REFLECTION && defined VL_CLOUDS_ACTIVE
+    uniform sampler2D gaux4;
 #endif
 
 #ifdef VL_CLOUDS_ACTIVE
-	uniform sampler2D gaux1;
+    uniform sampler2D gaux1;
 #endif
 
 #if WATER_QUALITY >= 2 || WATER_REFLECT_QUALITY >= 1
-	uniform sampler2D depthtex1;
+    uniform sampler2D depthtex1;
 #endif
 
 #if WATER_REFLECT_QUALITY >= 1 || defined FANCY_NETHERPORTAL
-	uniform mat4 gbufferProjection;
+    uniform mat4 gbufferProjection;
 #endif
 
 #if WATER_REFLECT_QUALITY >= 1
-	uniform sampler2D gaux2;
+    uniform sampler2D gaux2;
 #endif
 
 #if RAIN_PUDDLES >= 1
-	#if RAIN_PUDDLES < 3
-		uniform float inRainy;
-	#else
-		float inRainy = 1.0;
-	#endif
+    #if RAIN_PUDDLES < 3
+        uniform float inRainy;
+    #else
+        float inRainy = 1.0;
+    #endif
 #endif
 
 #if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM || WATER_STYLE >= 2
-	uniform ivec2 atlasSize;
+    uniform ivec2 atlasSize;
 #endif
 
 #ifdef CUSTOM_PBR
-	uniform sampler2D normals;
-	uniform sampler2D specular;
+    uniform sampler2D normals;
+    uniform sampler2D specular;
+#endif
+
+#if WATER_REFLECT_QUALITY >= 1 && defined SKY_EFFECT_REFLECTION && AURORA_STYLE > 0
+    uniform float inSnowy;
+
+    #ifndef UNIFORM_MOONPHASE
+    #define UNIFORM_MOONPHASE
+    uniform int moonPhase;
+    #endif
 #endif
 
 //Pipeline Constants//
@@ -108,22 +121,22 @@ float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
 float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 
 #ifdef OVERWORLD
-	vec3 lightVec = sunVec * ((timeAngle < 0.5325 || timeAngle > 0.9675) ? 1.0 : -1.0);
+    vec3 lightVec = sunVec * ((timeAngle < 0.5325 || timeAngle > 0.9675) ? 1.0 : -1.0);
 #else
-	vec3 lightVec = sunVec;
+    vec3 lightVec = sunVec;
 #endif
 
 #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && WATER_QUALITY >= 2 || defined GENERATED_NORMALS || defined CUSTOM_PBR
-	mat3 tbnMatrix = mat3(
-		tangent.x, binormal.x, normal.x,
-		tangent.y, binormal.y, normal.y,
-		tangent.z, binormal.z, normal.z
-	);
+    mat3 tbnMatrix = mat3(
+        tangent.x, binormal.x, normal.x,
+        tangent.y, binormal.y, normal.y,
+        tangent.z, binormal.z, normal.z
+    );
 #endif
 
 //Common Functions//
 float GetLinearDepth(float depth) {
-	return (2.0 * near) / (far + near - depth * (far - near));
+    return (2.0 * near) / (far + near - depth * (far - near));
 }
 
 //Includes//
@@ -133,226 +146,193 @@ float GetLinearDepth(float depth) {
 #include "/lib/atmospherics/fog/mainFog.glsl"
 
 #ifdef OVERWORLD
-	#include "/lib/atmospherics/sky.glsl"
+    #include "/lib/atmospherics/sky.glsl"
 #endif
 
-#if WATER_REFLECT_QUALITY >= 2
-	#include "/lib/materials/materialMethods/reflections.glsl"
+#if WATER_REFLECT_QUALITY >= 1
+    #if defined SKY_EFFECT_REFLECTION && defined OVERWORLD
+        #if AURORA_STYLE > 0
+            #include "/lib/atmospherics/auroraBorealis.glsl"
+        #endif
+
+        #ifdef NIGHT_NEBULA
+            #include "/lib/atmospherics/nightNebula.glsl"
+        #else
+            #include "/lib/atmospherics/stars.glsl"
+        #endif
+
+        #ifdef VL_CLOUDS_ACTIVE 
+            #include "/lib/atmospherics/clouds/mainClouds.glsl"
+        #endif
+    #endif
+
+    #include "/lib/materials/materialMethods/reflections.glsl"
 #endif
 
 #ifdef TAA
-	#include "/lib/util/jitter.glsl"
+    #include "/lib/antialiasing/jitter.glsl"
 #endif
 
 #if defined GENERATED_NORMALS || defined COATED_TEXTURES || WATER_STYLE >= 2
-	#include "/lib/util/miplevel.glsl"
+    #include "/lib/util/miplevel.glsl"
 #endif
 
 #ifdef GENERATED_NORMALS
-	#include "/lib/materials/materialMethods/generatedNormals.glsl"
+    #include "/lib/materials/materialMethods/generatedNormals.glsl"
 #endif
 
 #ifdef CUSTOM_PBR
-	#include "/lib/materials/materialHandling/customMaterials.glsl"
+    #include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
 
 #ifdef ATM_COLOR_MULTS
     #include "/lib/colors/colorMultipliers.glsl"
 #endif
+#ifdef MOON_PHASE_INF_ATMOSPHERE
+    #include "/lib/colors/moonPhaseInfluence.glsl"
+#endif
 
 #ifdef COLOR_CODED_PROGRAMS
-	#include "/lib/misc/colorCodedPrograms.glsl"
+    #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 //Program//
 void main() {
-	vec4 colorP = texture2D(tex, texCoord);
-	vec4 color = colorP * vec4(glColor.rgb, 1.0);
+    vec4 colorP = texture2D(tex, texCoord);
+    vec4 color = colorP * vec4(glColor.rgb, 1.0);
 
-	vec2 screenCoord = gl_FragCoord.xy / vec2(viewWidth, viewHeight);
-	vec3 screenPos = vec3(screenCoord, gl_FragCoord.z);
-	#ifdef TAA
-		vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
-	#else
-		vec3 viewPos = ScreenToView(screenPos);
+    vec2 screenCoord = gl_FragCoord.xy / vec2(viewWidth, viewHeight);
+    vec3 screenPos = vec3(screenCoord, gl_FragCoord.z);
+    #ifdef TAA
+        vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
+    #else
+        vec3 viewPos = ScreenToView(screenPos);
     #endif
-	float lViewPos = length(viewPos);
+    float lViewPos = length(viewPos);
 
-	float dither = Bayer64(gl_FragCoord.xy);
-	#ifdef TAA
-		dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
-	#endif
+    float dither = Bayer64(gl_FragCoord.xy);
+    #ifdef TAA
+        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+    #endif
 
     #ifdef LIGHT_COLOR_MULTS
         lightColorMult = GetLightColorMult();
     #endif
-	#ifdef ATM_COLOR_MULTS
-		atmColorMult = GetAtmColorMult();
-	#endif
+    #ifdef ATM_COLOR_MULTS
+        atmColorMult = GetAtmColorMult();
+        sqrtAtmColorMult = sqrt(atmColorMult);
+    #endif
 
-	#ifdef VL_CLOUDS_ACTIVE
-		float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
+    #ifdef VL_CLOUDS_ACTIVE
+        float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
 
-		if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < min(lViewPos, far)) discard;
-	#endif
+        if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < min(lViewPos, far)) discard;
+    #endif
 
-	#if WATER_QUALITY >= 3
-		float materialMask = 0.0;
-	#endif
+    #if WATER_QUALITY >= 3
+        float materialMask = 0.0;
+    #endif
 
-	vec3 nViewPos = normalize(viewPos);
+    vec3 nViewPos = normalize(viewPos);
     vec3 playerPos = ViewToPlayer(viewPos);
-	float VdotU = dot(nViewPos, upVec);
-	float VdotS = dot(nViewPos, sunVec);
-	float VdotN = dot(nViewPos, normal);
+    float VdotU = dot(nViewPos, upVec);
+    float VdotS = dot(nViewPos, sunVec);
+    float VdotN = dot(nViewPos, normal);
 
-	// Materials
-	vec4 translucentMult = vec4(1.0);
-	bool noSmoothLighting = false, noDirectionalShading = false, translucentMultCalculated = false;
-	#ifdef GENERATED_NORMALS
-		bool noGeneratedNormals = false;
-	#endif
-	int subsurfaceMode = 0;
-	float smoothnessG = 0.0, highlightMult = 1.0, reflectMult = 0.0, emission = 0.0;
-	vec2 lmCoordM = lmCoord;
-	vec3 normalM = VdotN > 0.0 ? -normal : normal; // Inverted Iris Water Normal Workaround
-	vec3 geoNormal = normalM;
-	vec3 shadowMult = vec3(1.0);
-	float fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
-	#ifdef IPBR
-		#include "/lib/materials/materialHandling/translucentMaterials.glsl"
+    // Materials
+    vec4 translucentMult = vec4(1.0);
+    bool noSmoothLighting = false, noDirectionalShading = false, translucentMultCalculated = false;
+    #ifdef GENERATED_NORMALS
+        bool noGeneratedNormals = false;
+    #endif
+    int subsurfaceMode = 0;
+    float smoothnessG = 0.0, highlightMult = 1.0, reflectMult = 0.0, emission = 0.0;
+    vec2 lmCoordM = lmCoord;
+    vec3 normalM = VdotN > 0.0 ? -normal : normal; // Inverted Iris Water Normal Workaround
+    vec3 geoNormal = normalM;
+    vec3 shadowMult = vec3(1.0);
+    float fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
+    #ifdef IPBR
+        #include "/lib/materials/materialHandling/translucentMaterials.glsl"
 
-		#ifdef GENERATED_NORMALS
-			if (!noGeneratedNormals) GenerateNormals(normalM, colorP.rgb * colorP.a * 1.5);
-		#endif
-	#else
-		#ifdef CUSTOM_PBR
-			float smoothnessD, materialMaskPh;
-			GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMaskPh, viewPos, lViewPos);
-			reflectMult = smoothnessD;
-		#endif
-		
-		if (mat == 31000) { // Water
-			#include "/lib/materials/specificMaterials/translucents/water.glsl"
-		} else if (mat == 30020) { // Nether Portal
-			#ifdef FANCY_NETHERPORTAL
-				#include "/lib/materials/specificMaterials/translucents/netherPortal.glsl"
-			#endif
-		}
-	#endif
+        #ifdef GENERATED_NORMALS
+            if (!noGeneratedNormals) GenerateNormals(normalM, colorP.rgb * colorP.a * 1.5);
+        #endif
+    #else
+        #ifdef CUSTOM_PBR
+            float smoothnessD, materialMaskPh;
+            GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMaskPh, viewPos, lViewPos);
+            reflectMult = smoothnessD;
+        #endif
 
-	// Blending
-	if (!translucentMultCalculated)
-		translucentMult = vec4(mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a), 1.0);
+        if (mat == 31000) { // Water
+            #include "/lib/materials/specificMaterials/translucents/water.glsl"
+        } else if (mat == 30020) { // Nether Portal
+            #ifdef FANCY_NETHERPORTAL
+                #include "/lib/materials/specificMaterials/translucents/netherPortal.glsl"
+            #endif
+        }
+    #endif
 
-	translucentMult.rgb = mix(translucentMult.rgb, vec3(1.0), min1(pow2(pow2(lViewPos / far))));
-	
-	// Lighting
-	DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-	           noSmoothLighting, noDirectionalShading, false, false,
-			   subsurfaceMode, smoothnessG, highlightMult, emission);
+    // Blending
+    if (!translucentMultCalculated)
+        translucentMult = vec4(mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a), 1.0);
 
-	// Reflections
-	#if WATER_REFLECT_QUALITY > 0
-		#ifdef LIGHT_COLOR_MULTS
-			highlightColor *= lightColorMult;
-		#endif
+    translucentMult.rgb = mix(translucentMult.rgb, vec3(1.0), min1(pow2(pow2(lViewPos / far))));
+
+    // Lighting
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
+               noSmoothLighting, noDirectionalShading, false, false,
+               subsurfaceMode, smoothnessG, highlightMult, emission);
+
+    // Reflections
+    #if WATER_REFLECT_QUALITY >= 1
+        #ifdef LIGHT_COLOR_MULTS
+            highlightColor *= lightColorMult;
+        #endif
         #ifdef MOON_PHASE_INF_REFLECTION
             highlightColor *= pow2(moonPhaseInfluence);
         #endif
 
-		float fresnelM = (pow2(pow2(fresnel)) * 0.85 + 0.15) * reflectMult;
-		
-		float skyLightFactor = pow2(max(lmCoordM.y - 0.7, 0.0) * 3.33333);
+        float fresnelM = (pow3(fresnel) * 0.85 + 0.15) * reflectMult;
 
-		#if WATER_REFLECT_QUALITY >= 2
-			#if defined REALTIME_SHADOWS && WATER_QUALITY >= 2
-				skyLightFactor = max(skyLightFactor, min1(dot(shadowMult, shadowMult)));
-			#endif
-		
-			vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
-			                                depthtex1, dither, skyLightFactor, fresnel,
-											smoothnessG, geoNormal, color.rgb, shadowMult, highlightMult);
+        float skyLightFactor = pow2(max(lmCoordM.y - 0.7, 0.0) * 3.33333);
+        #if defined REALTIME_SHADOWS && WATER_REFLECT_QUALITY >= 2 && WATER_QUALITY >= 2
+            skyLightFactor = max(skyLightFactor, min1(dot(shadowMult, shadowMult)));
+        #endif
 
-			color.rgb = mix(color.rgb, reflection.rgb, fresnelM);
-		#elif WATER_REFLECT_QUALITY == 1
-			#ifdef OVERWORLD
-				vec4 reflection = vec4(0.0);
+        vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
+                                        depthtex1, dither, skyLightFactor, fresnel,
+                                        smoothnessG, geoNormal, color.rgb, shadowMult, highlightMult);
 
-				vec3 normalMR = normalM;
-				#ifdef GENERATED_NORMALS
-					normalMR = mix(geoNormal, normalM, 0.05);
-				#endif
-				vec3 nViewPosR = reflect(nViewPos, normalMR);
-				float RVdotU = dot(normalize(nViewPosR), upVec);
-				float RVdotS = dot(normalize(nViewPosR), sunVec);
-
-				vec4 clipPosR = gbufferProjection * vec4(nViewPosR + 0.013 * viewPos, 1.0);
-				vec3 screenPosR = clipPosR.xyz / clipPosR.w * 0.5 + 0.5;
-
-				vec2 rEdge = vec2(0.6, 0.53);
-				vec2 screenPosRM = abs(screenPosR.xy - 0.5);
-
-				if (screenPosRM.x < rEdge.x && screenPosRM.y < rEdge.y) {
-					vec2 edgeFactor = pow2(pow2(pow2(screenPosRM / rEdge)));
-					screenPosR.y += (dither - 0.5) * (0.03 * (edgeFactor.x + edgeFactor.y) + 0.004);
-
-					screenPosR.z = texture2D(depthtex1, screenPosR.xy).x;
-					vec3 viewPosR = ScreenToView(screenPosR);
-					if (lViewPos <= 2.0 + length(viewPosR)) {
-						reflection = texture2D(gaux2, screenPosR.xy);
-						reflection.rgb = pow2(reflection.rgb + 1.0);
-					}
-
-					edgeFactor.x = pow2(edgeFactor.x);
-					edgeFactor = 1.0 - edgeFactor;
-					reflection.a *= edgeFactor.x * edgeFactor.y;
-				}
-
-				reflection.a *= reflection.a;
-				reflection.a *= clamp01((dot(nViewPos, nViewPosR) - 0.45) * 10.0); // Fixes perpendicular ref
-
-				if (reflection.a < 1.0) {
-					vec3 skyReflection = GetLowQualitySky(RVdotU, RVdotS, dither, true, true);
-					skyReflection = mix(color.rgb * 0.5, skyReflection, skyLightFactor);
-					
-					#ifdef ATM_COLOR_MULTS
-						skyReflection *= atmColorMult;
-					#endif
-
-					reflection.rgb = mix(skyReflection, reflection.rgb, reflection.a);
-				}
-
-				color.rgb = mix(color.rgb, reflection.rgb, fresnelM);
-			#endif
-		#endif
-	#endif
+        color.rgb = mix(color.rgb, reflection.rgb, fresnelM);
+    #endif
     ////
 
-	#ifdef COLOR_CODED_PROGRAMS
-		ColorCodeProgram(color);
-	#endif
+    #ifdef COLOR_CODED_PROGRAMS
+        ColorCodeProgram(color);
+    #endif
 
-	float sky = 0.0;
-	DoFog(color.rgb, sky, lViewPos, playerPos, VdotU, VdotS, dither);
-	color.a *= 1.0 - sky;
+    float sky = 0.0;
+    DoFog(color.rgb, sky, lViewPos, playerPos, VdotU, VdotS, dither);
+    color.a *= 1.0 - sky;
 
     #ifndef LIGHT_COLORING
     /* DRAWBUFFERS:03 */
     #else
     /* DRAWBUFFERS:08 */
     #endif
-	gl_FragData[0] = color;
-	gl_FragData[1] = vec4(1.0 - translucentMult.rgb, translucentMult.a);
+    gl_FragData[0] = color;
+    gl_FragData[1] = vec4(1.0 - translucentMult.rgb, translucentMult.a);
 
-	#if WATER_QUALITY >= 3
-		#ifndef LIGHT_COLORING
-		/* DRAWBUFFERS:031 */
-		#else
-		/* DRAWBUFFERS:081 */
-		#endif
-		gl_FragData[2] = vec4(0.0, materialMask, 0.0, 1.0);
-	#endif
+    #if WATER_QUALITY >= 3
+        #ifndef LIGHT_COLORING
+        /* DRAWBUFFERS:031 */
+        #else
+        /* DRAWBUFFERS:081 */
+        #endif
+        gl_FragData[2] = vec4(0.0, materialMask, 0.0, 1.0);
+    #endif
 }
 
 #endif
@@ -372,29 +352,29 @@ out vec3 viewVector;
 out vec4 glColor;
 
 #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && WATER_QUALITY >= 2 || defined GENERATED_NORMALS || defined CUSTOM_PBR
-	flat out vec3 binormal, tangent;
+    flat out vec3 binormal, tangent;
 #endif
 
 #if WATER_STYLE >= 2 || defined FANCY_NETHERPORTAL || defined GENERATED_NORMALS || defined POM
-	out vec2 signMidCoordPos;
-	flat out vec2 absMidCoordPos;
+    out vec2 signMidCoordPos;
+    flat out vec2 absMidCoordPos;
 #endif
 
 #ifdef POM
-	out vec4 vTexCoordAM;
+    out vec4 vTexCoordAM;
 #endif
 
 //Uniforms//
 #ifdef TAA
-	uniform float viewWidth, viewHeight;
+    uniform float viewWidth, viewHeight;
 #endif
 
 #ifdef WAVING_WATER_VERTEX
-	uniform float frameTimeCounter;
+    uniform float frameTimeCounter;
 
-	uniform vec3 cameraPosition;
+    uniform vec3 cameraPosition;
 
-	uniform mat4 gbufferModelViewInverse;
+    uniform mat4 gbufferModelViewInverse;
 #endif
 
 //Attributes//
@@ -403,76 +383,76 @@ attribute vec4 mc_midTexCoord;
 attribute vec4 at_tangent;
 
 //Common Variables//
+#if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && WATER_QUALITY >= 2 || defined GENERATED_NORMALS || defined CUSTOM_PBR
+#else
+    vec3 binormal;
+    vec3 tangent;
+#endif
 
 //Common Functions//
 
 //Includes//
 #ifdef TAA
-	#include "/lib/util/jitter.glsl"
+    #include "/lib/antialiasing/jitter.glsl"
 #endif
 
 #ifdef WAVING_WATER_VERTEX
-	#include "/lib/materials/materialMethods/wavingBlocks.glsl"
+    #include "/lib/materials/materialMethods/wavingBlocks.glsl"
 #endif
 
 //Program//
 void main() {
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	lmCoord  = GetLightMapCoordinates();
+    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    lmCoord  = GetLightMapCoordinates();
 
-	glColor = gl_Color;
+    glColor = gl_Color;
 
-	mat = int(mc_Entity.x + 0.5);
+    mat = int(mc_Entity.x + 0.5);
 
-	#ifdef WAVING_WATER_VERTEX
-		vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
+    normal = normalize(gl_NormalMatrix * gl_Normal);
+    upVec = normalize(gbufferModelView[1].xyz);
+    eastVec = normalize(gbufferModelView[0].xyz);
+    northVec = normalize(gbufferModelView[2].xyz);
+    sunVec = GetSunVector();
 
-		DoWave(position.xyz, mat);
-		
-		gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
-	#else
-		gl_Position = ftransform();
-	#endif
+    binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
+    tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
 
-	#ifdef TAA
-		gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
-	#endif
+    mat3 tbnMatrix = mat3(
+        tangent.x, binormal.x, normal.x,
+        tangent.y, binormal.y, normal.y,
+        tangent.z, binormal.z, normal.z
+    );
 
-	normal = normalize(gl_NormalMatrix * gl_Normal);
-	upVec = normalize(gbufferModelView[1].xyz);
-	eastVec = normalize(gbufferModelView[0].xyz);
-	northVec = normalize(gbufferModelView[2].xyz);
-	sunVec = GetSunVector();
+    viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
 
-	#if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && WATER_QUALITY >= 2 || defined GENERATED_NORMALS || defined CUSTOM_PBR
-		binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
-		tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
-	#else
-		vec3 binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
-		vec3 tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
-	#endif
+    #if WATER_STYLE >= 2 || defined FANCY_NETHERPORTAL || defined GENERATED_NORMALS || defined POM
+        vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
+        vec2 texMinMidCoord = texCoord - midCoord;
+        signMidCoordPos = sign(texMinMidCoord);
+        absMidCoordPos  = abs(texMinMidCoord);
 
-	mat3 tbnMatrix = mat3(
-		tangent.x, binormal.x, normal.x,
-		tangent.y, binormal.y, normal.y,
-		tangent.z, binormal.z, normal.z
-	);
+        #ifdef POM
+            vTexCoordAM.zw  = abs(texMinMidCoord) * 2;
+            vTexCoordAM.xy  = min(texCoord, midCoord - texMinMidCoord);
+        #endif
+    #endif
 
-	viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
+    #ifdef WAVING_WATER_VERTEX
+        vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
 
-	#if WATER_STYLE >= 2 || defined FANCY_NETHERPORTAL || defined GENERATED_NORMALS || defined POM
-		vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
-		vec2 texMinMidCoord = texCoord - midCoord;
-		signMidCoordPos = sign(texMinMidCoord);
-		absMidCoordPos  = abs(texMinMidCoord);
+        DoWave(position.xyz, mat);
 
-		#ifdef POM
-			vTexCoordAM.zw  = abs(texMinMidCoord) * 2;
-			vTexCoordAM.xy  = min(texCoord, midCoord - texMinMidCoord);
-		#endif
-	#endif
+        gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+    #else
+        gl_Position = ftransform();
+    #endif
 
-	gl_Position.z -= 0.0001;
+    #ifdef TAA
+        gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    gl_Position.z -= 0.0001;
 }
 
 #endif

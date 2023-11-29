@@ -1,54 +1,54 @@
 /*
 --------------------------------------------------------------------------------
- 
+
   GLSL Debug Text Renderer by SixthSurge (updated 2023-04-08)
- 
+
   Character set based on Monocraft by IdreesInc
   https://github.com/IdreesInc/Monocraft
- 
+
   With additional characters added by WoMspace
- 
+
   Usage:
- 
+
   // Call beginText to initialize the text renderer. You can scale the fragment position to adjust the size of the text
   beginText(ivec2(gl_FragCoord.xy), ivec2(0, viewHeight));
             ^ fragment position     ^ text box position (upper left corner)
- 
+
   // You can print various data types
   printBool(false);
   printFloat(sqrt(-1.0)); // Prints "NaN"
   printInt(42);
   printVec3(skyColor);
- 
+
   // ...or arbitrarily long strings
   printString((_H, _e, _l, _l, _o, _comma, _space, _w, _o, _r, _l, _d));
- 
+
   // To start a new line, use
   printLine();
- 
+
   // You can also configure the text color on the fly
   text.fgCol = vec4(1.0, 0.0, 0.0, 1.0);
   text.bgCol = vec4(0.0, 0.0, 0.0, 1.0);
- 
+
   // ...as well as the number base and number of decimal places to print
   text.base = 16;
   text.fpPrecision = 4;
- 
+
   // Finally, call endText to blend the current fragment color with the text
   endText(fragColor);
- 
+
   Important: any variables you display must be the same for all fragments, or
   at least all of the fragments that the text covers. Otherwise, different
   fragments will try to print different values, resulting in, well, a mess
- 
+
 --------------------------------------------------------------------------------
 */
- 
+
 #if !defined UTILITY_TEXTRENDERING_INCLUDED
 #define UTILITY_TEXTRENDERING_INCLUDED
- 
+
 // Characters
- 
+
 const uint _A     = 0x747f18c4u;
 const uint _B     = 0xf47d18f8u;
 const uint _C     = 0x746108b8u;
@@ -116,7 +116,7 @@ const uint _dot   = 0x000010u;
 const uint _minus = 0x0000e000u;
 const uint _comma = 0x00000220u;
 const uint _colon = 0x02000020u;
- 
+
 // Additional characters added by WoMspace <3
 const uint _under = 0x000007Cu;  // _
 const uint _quote = 0x52800000u; // "
@@ -129,17 +129,17 @@ const uint _opprn = 0x11084208u; // (
 const uint _clprn = 0x41084220u; // )
 const uint _block = 0xFFFFFFFCu; // █
 const uint _copyr = 0x03AB9AB8u; // ©️
- 
+
 const int charWidth   = 5;
 const int charHeight  = 6;
 const int charSpacing = 1;
 const int lineSpacing = 1;
- 
+
 const ivec2 charSize  = ivec2(charWidth, charHeight);
 const ivec2 spaceSize = charSize + ivec2(charSpacing, lineSpacing);
- 
+
 // Text renderer
- 
+
 struct Text {
     vec4 result;     // Output color from the text renderer
     vec4 fgCol;      // Text foreground color
@@ -150,7 +150,7 @@ struct Text {
     int base;        // Number base
     int fpPrecision; // Number of decimal places to print
 } text;
- 
+
 // Fills the global text object with default values
 void beginText(ivec2 fragPos, ivec2 textPos) {
     text.result      = vec4(0.0);
@@ -162,34 +162,34 @@ void beginText(ivec2 fragPos, ivec2 textPos) {
     text.base        = 10;
     text.fpPrecision = 2;
 }
- 
+
 // Applies the rendered text to the fragment
 void endText(inout vec3 fragColor) {
     fragColor = mix(fragColor.rgb, text.result.rgb, text.result.a);
 }
- 
+
 void printChar(uint character) {
     ivec2 pos = text.fragPos - text.textPos - spaceSize * text.charPos * ivec2(1, -1) + ivec2(0, spaceSize.y);
- 
+
     uint index = uint(charWidth - pos.x + pos.y * charWidth + 1); // Edited
- 
+
     // Draw background
     if (clamp(pos, ivec2(0), spaceSize - 1) == pos)
         text.result = mix(text.result, text.bgCol, text.bgCol.a);
- 
+
     // Draw character
     if (clamp(pos, ivec2(0), charSize - 1) == pos)
         text.result = mix(text.result, text.fgCol, text.fgCol.a * float(character >> index & 1u));
- 
+
     // Advance to next character
     text.charPos.x++;
 }
- 
+
 #define printString(string) {                                               \
     uint[] characters = uint[] string;                                     \
     for (int i = 0; i < characters.length(); ++i) printChar(characters[i]); \
 }
- 
+
 void printUnsignedInt(uint value, int len) {
     const uint[36] digits = uint[](
         _0, _1, _2, _3, _4, _5, _6, _7, _8, _9,
@@ -197,55 +197,55 @@ void printUnsignedInt(uint value, int len) {
         _k, _l, _m, _n, _o, _p, _q, _r, _s, _t,
         _u, _v, _w, _x, _y, _z
     );
- 
+
     // Advance to end of the number
     text.charPos.x += len - 1;
- 
+
     // Write number backwards
     for (int i = 0; i < len; ++i) {
         printChar(digits[int(value) % text.base]); // Edited
         value /= uint(text.base); // Edited
         text.charPos.x -= 2;
     }
- 
+
     // Return to end of the number
     text.charPos.x += len + 1;
 }
- 
+
 void printUnsignedInt(uint value) {
     float logValue = log(float(value)) + 1e-6;
     float logBase  = log(float(text.base));
- 
+
     int len = int(ceil(logValue / logBase));
         len = max(len, 1);
- 
+
     printUnsignedInt(value, len);
 }
- 
+
 void printInt(int value) {
     if (value < 0) printChar(_minus);
     printUnsignedInt(uint(abs(value)));
 }
- 
+
 void printFloat(float value) {
     if (value < 0.0) printChar(_minus);
- 
+
     if (isnan(value)) {
         printString((_N, _a, _N));
     } else if (isinf(value)) {
         printString((_i, _n, _f));
     } else {
         float i, f = modf(abs(value), i);
- 
+
         uint integralPart   = uint(i);
         uint fractionalPart = uint(f * pow(float(text.base), float(text.fpPrecision)) + 0.5);
- 
+
         printUnsignedInt(integralPart);
         printChar(_dot);
         printUnsignedInt(fractionalPart, text.fpPrecision);
     }
 }
- 
+
 void printBool(bool value) {
     if (value) {
         printString((_t, _r, _u, _e));
@@ -253,7 +253,7 @@ void printBool(bool value) {
         printString((_f, _a, _l, _s, _e));
     }
 }
- 
+
 void printVec2(vec2 value) {
     printFloat(value.x);
     printString((_comma, _space));
@@ -275,7 +275,7 @@ void printVec4(vec4 value) {
     printString((_comma, _space));
     printFloat(value.w);
 }
- 
+
 void printIvec2(ivec2 value) {
     printInt(value.x);
     printString((_comma, _space));
@@ -297,7 +297,7 @@ void printIvec4(ivec4 value) {
     printString((_comma, _space));
     printInt(value.w);
 }
- 
+
 void printUvec2(uvec2 value) {
     printUnsignedInt(value.x);
     printString((_comma, _space));
@@ -319,10 +319,10 @@ void printUvec4(uvec4 value) {
     printString((_comma, _space));
     printUnsignedInt(value.w);
 }
- 
+
 void printLine() {
     text.charPos.x = 0;
     ++text.charPos.y;
 }
- 
+
 #endif // UTILITY_TEXTRENDERING_INCLUDED

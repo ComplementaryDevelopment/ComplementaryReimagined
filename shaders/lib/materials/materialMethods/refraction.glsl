@@ -4,11 +4,11 @@ float GetApproxDistance(float depth) {
 
 void DoRefraction(inout vec3 color, inout float z0, inout float z1, vec3 viewPos, float lViewPos) {
     // Prep
-    if (int(texelFetch(colortex1, texelCoord, 0).g * 255.1) != 241) return;
+    if (int(texelFetch(colortex6, texelCoord, 0).g * 255.1) != 241) return;
 
-	float fovScale = gbufferProjection[1][1];
+    float fovScale = gbufferProjection[1][1];
 
-	vec3 playerPos = ViewToPlayer(viewPos.xyz);
+    vec3 playerPos = ViewToPlayer(viewPos.xyz);
     vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
     vec2 worldPosRM = worldPos.xz * 0.02 + worldPos.y * 0.01 + 0.01 * frameTimeCounter;
 
@@ -20,14 +20,14 @@ void DoRefraction(inout vec3 color, inout float z0, inout float z1, vec3 viewPos
     #else
         refractNoise *= 0.02;
     #endif
-    
+
     // Check
     float approxDif = GetApproxDistance(z1) - GetApproxDistance(z0);
     refractNoise *= clamp(approxDif, 0.0, 1.0);
 
     vec2 refractCoord = texCoord.xy + refractNoise;
 
-    if (int(texture2D(colortex1, refractCoord).g * 255.1) != 241) return;
+    if (int(texture2D(colortex6, refractCoord).g * 255.1) != 241) return;
 
     float z0check = texture2D(depthtex0, refractCoord).r;
     float z1check = texture2D(depthtex1, refractCoord).r;
