@@ -27,7 +27,7 @@ uniform float viewWidth, viewHeight;
 
 //Includes//
 #ifdef FXAA
-	#include "/lib/antialiasing/fxaa.glsl"
+    #include "/lib/antialiasing/fxaa.glsl"
 #endif
 
 //Program//
@@ -38,16 +38,16 @@ void main() {
         vec3 color = texelFetch(colortex8, texelCoord, 0).rgb;
     #endif
 
-	#ifdef FXAA
-		FXAA311(color);
-	#endif
+    #ifdef FXAA
+        FXAA311(color);
+    #endif
 
     #ifndef LIGHT_COLORING
     /* DRAWBUFFERS:3 */
     #else
     /* DRAWBUFFERS:8 */
     #endif
-	gl_FragData[0] = vec4(color, 1.0);
+    gl_FragData[0] = vec4(color, 1.0);
 }
 
 #endif
@@ -69,9 +69,9 @@ noperspective out vec2 texCoord;
 
 //Program//
 void main() {
-	gl_Position = ftransform();
+    gl_Position = ftransform();
 
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 }
 
 #endif

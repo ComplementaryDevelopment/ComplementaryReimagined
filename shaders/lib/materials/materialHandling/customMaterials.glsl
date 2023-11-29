@@ -6,44 +6,65 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
     vec2 texCoordM = texCoord;
 
     #ifdef POM
-        texCoordM = vTexCoord.xy * vTexCoordAM.zw + vTexCoordAM.xy;
+        float parallaxFade, parallaxTexDepth;
+        vec2 parallaxLocalCoord;
+        vec3 parallaxTraceCoordDepth;
+        vec4 normalMap;
 
-        float parallaxFade = pow2(lViewPos / POM_DISTANCE); // Still enabled to test: Lava, Painting
-        #ifdef GBUFFERS_ENTITIES
-            if (entityId == 50008) parallaxFade = 1.1; // Item Frame, Glow Item Frame
+        #if defined GBUFFERS_TERRAIN
+            bool skipPom = (mat == 20000);
+        #elif defined GBUFFERS_BLOCK
+            bool skipPom = (blockEntityId == 20000);
+        #else
+            bool skipPom = false;
         #endif
-        #ifdef GBUFFERS_BLOCK
-            if (blockEntityId == 60004) parallaxFade = 1.1; // Signs
-        #endif
-        #ifdef GBUFFERS_HAND
-            if (heldItemId == 40004 || heldItemId2 == 40004) parallaxFade = 1.1; // Filled Map
-        #endif
 
-        vec3 parallaxTraceCoordDepth = vec3(texCoordM, 1.0);
-        float parallaxTexDepth = 1.0;
-        vec2 parallaxLocalCoord = vTexCoord.st;
+        if (!skipPom) {
+            texCoordM = vTexCoord.xy * vTexCoordAM.zw + vTexCoordAM.xy;
 
-        vec4 normalMap = ReadNormal(vTexCoord.st);
-        parallaxFade += pow(normalMap.a, 64.0);
-        
-        if (parallaxFade < 1.0) {
-            parallaxLocalCoord = GetParallaxCoord(parallaxFade, texCoordM, parallaxTexDepth, parallaxTraceCoordDepth);
-
-            normalMap = textureGrad(normals, texCoordM, dcdx, dcdy);
-            color = textureGrad(tex, texCoordM, dcdx, dcdy);
-            #if !defined GBUFFERS_ENTITIES && !defined GBUFFERS_BLOCK
-                color.rgb *= glColor.rgb;
-            #else
-                color *= glColor;
+            parallaxFade = pow2(lViewPos / POM_DISTANCE); // Still enabled to test: Lava, Painting
+            #ifdef GBUFFERS_ENTITIES
+                if (entityId == 50008) parallaxFade = 1.1; // Item Frame, Glow Item Frame
+            #endif
+            #ifdef GBUFFERS_BLOCK
+                if (blockEntityId == 60004) parallaxFade = 1.1; // Signs
+            #endif
+            #ifdef GBUFFERS_HAND
+                if (heldItemId == 40004 || heldItemId2 == 40004) parallaxFade = 1.1; // Filled Map
             #endif
 
-            shadowMult *= GetParallaxShadow(parallaxFade, normalMap.a, parallaxLocalCoord, lightVec, tbnMatrix);
+            parallaxTraceCoordDepth = vec3(texCoordM, 1.0);
+            parallaxLocalCoord = vTexCoord.st;
+
+            normalMap = ReadNormal(vTexCoord.st);
+            parallaxFade += pow(normalMap.a, 64.0);
+
+            if (parallaxFade < 1.0) {
+                float dither = Bayer64(gl_FragCoord.xy);
+                #ifdef TAA
+                    dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+                #endif
+
+                parallaxLocalCoord = GetParallaxCoord(parallaxFade, dither, texCoordM, parallaxTexDepth, parallaxTraceCoordDepth);
+
+                normalMap = textureGrad(normals, texCoordM, dcdx, dcdy);
+                color = textureGrad(tex, texCoordM, dcdx, dcdy);
+                #if !defined GBUFFERS_ENTITIES && !defined GBUFFERS_BLOCK
+                    color.rgb *= glColor.rgb;
+                #else
+                    color *= glColor;
+                #endif
+
+                shadowMult *= GetParallaxShadow(parallaxFade, dither, normalMap.a, parallaxLocalCoord, lightVec, tbnMatrix);
+            }
         }
     #endif
 
     // Normal Map
     #if NORMAL_MAP_STRENGTH != 0
-        #ifndef POM
+        #ifdef POM
+            else normalMap = texture2D(normals, texCoordM);
+        #else
             vec4 normalMap = texture2D(normals, texCoordM);
         #endif
 
@@ -62,13 +83,15 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
         #endif
 
         #if defined POM && POM_QUALITY >= 128 && POM_LIGHTING_MODE == 2
-            float slopeThreshold = max(1.0 / POM_QUALITY, 1.0/255.0);
-            if (parallaxTexDepth - parallaxTraceCoordDepth.z > slopeThreshold) {
-                vec3 slopeNormal = GetParallaxSlopeNormal(parallaxLocalCoord, parallaxTraceCoordDepth.z, viewVector);
-                normalM = mix(normalM, slopeNormal, 0.5 * pow2(max0(1.0 - parallaxFade * 2.0)));
+            if (!skipPom) {
+                float slopeThreshold = max(1.0 / POM_QUALITY, 1.0/255.0);
+                if (parallaxTexDepth - parallaxTraceCoordDepth.z > slopeThreshold) {
+                    vec3 slopeNormal = GetParallaxSlopeNormal(parallaxLocalCoord, parallaxTraceCoordDepth.z, viewVector);
+                    normalM = mix(normalM, slopeNormal, 0.5 * pow2(max0(1.0 - parallaxFade * 2.0)));
+                }
             }
         #endif
-        
+
         normalM = clamp(normalize(normalM * tbnMatrix), vec3(-1.0), vec3(1.0));
 
         NdotU = dot(normalM, upVec);
@@ -89,7 +112,7 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
         float absPwr = abs(pwr);
         if (absPwr > 0.0) pwr = pow(absPwr, 9.0 / DIRECTIONAL_BLOCKLIGHT) * sign(pwr) * lmCoordXDir;
         if (length(deriv) > 0.001) lmCoordXDir = pow(max(lmCoordXDir, 0.00001), 1.0 - pwr);
-        
+
         lmCoordM.x = mix(lmCoordM.x, lmCoordXDir, 0.01 * max0(100.0 - pow2(lViewPos)));
     #endif
 
@@ -100,7 +123,7 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
     smoothnessG = smoothnessM;
     smoothnessD = smoothnessM;
     highlightMult = 1.0 + 2.5 * specularMap.r;
-    
+
     #if RP_MODE == 3 // labPBR
         highlightMult *= 0.5 + 0.5 * specularMap.g;
     #endif
@@ -110,9 +133,9 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
             emission = specularMap.b;
         #elif RP_MODE == 3 // labPBR
             emission = specularMap.a < 1.0 ? specularMap.a : 0.0;
-            
+
             vec4 specularMapL0 = texture2DLod(specular, texCoordM, 0);
-	        float emissionL0 = specularMapL0.a < 1.0 ? specularMapL0.a : 0.0;
+            float emissionL0 = specularMapL0.a < 1.0 ? specularMapL0.a : 0.0;
             emission = min(emission, emissionL0); // Fixes issues caused by mipmaps
         #endif
         emission *= 0.03 * CUSTOM_EMISSION_INTENSITY;
@@ -125,11 +148,15 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
 
         #if RP_MODE == 2 // seuspbr
             materialMask = specularMap.g * OSIEBCA * 240.0;
+
+            color.rgb *= 1.0 - 0.25 * specularMap.g;
         #elif RP_MODE == 3 // labPBR
             if (specularMap.g < OSIEBCA * 229.1) {
                 materialMask = specularMap.g * OSIEBCA * 214.0;
             } else {
                 materialMask = specularMap.g - OSIEBCA * 15.0;
+
+                color.rgb *= 0.75;
             }
         #endif
     #endif

@@ -2,8 +2,8 @@
 uniform float darknessLightFactor;
 
 #if HELD_LIGHTING_MODE >= 1
-	uniform int heldBlockLightValue;
-	uniform int heldBlockLightValue2;
+    uniform int heldBlockLightValue;
+    uniform int heldBlockLightValue2;
 #endif
 
 //Lighting Includes//
@@ -15,11 +15,14 @@ uniform float darknessLightFactor;
 #endif
 
 #if defined CLOUDS_REIMAGINED && defined CLOUD_SHADOWS
-    #if !defined GBUFFERS_WATER || WATER_STYLE == 1
+    #if !defined GBUFFERS_WATER
         uniform sampler2D gaux4;
     #endif
 
-    #include "/lib/atmospherics/clouds/cloudCoord.glsl"
+    #ifndef INCLUDE_CLOUD_COORD
+        #include "/lib/atmospherics/clouds/cloudCoord.glsl"
+        #define INCLUDE_CLOUD_COORD
+    #endif
 #endif
 
 #ifdef LIGHT_COLOR_MULTS
@@ -27,7 +30,7 @@ uniform float darknessLightFactor;
 #endif
 
 #if defined MOON_PHASE_INF_LIGHT || defined MOON_PHASE_INF_REFLECTION
-	#include "/lib/colors/moonPhaseInfluence.glsl"
+    #include "/lib/colors/moonPhaseInfluence.glsl"
 #endif
 
 //
@@ -66,15 +69,15 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
     // Shadows
     #if defined OVERWORLD || defined END
-	    float NdotL = dot(normalM, lightVec);
+        float NdotL = dot(normalM, lightVec);
         #ifdef GBUFFERS_WATER
             //NdotL = mix(NdotL, 1.0, 1.0 - color.a);
         #endif
         #ifdef CUSTOM_PBR
-            float geoNdotLM = dot(normal, lightVec);
-            if (geoNdotLM > 0.0) geoNdotLM *= 10.0;
+            float geoNdotL = dot(normal, lightVec);
+            float geoNdotLM = geoNdotL > 0.0 ? geoNdotL * 10.0 : geoNdotL;
             NdotL = min(geoNdotLM, NdotL);
-            
+
             NdotL *= 1.0 - 0.7 * (1.0 - pow2(pow2(NdotUmax0))) * NPdotU;
         #endif
         #if !defined REALTIME_SHADOWS && defined GBUFFERS_TERRAIN
@@ -94,7 +97,12 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
         #ifndef GBUFFERS_TEXTURED
             #if defined GBUFFERS_TERRAIN
-                if (subsurfaceMode != 0) NdotLM = 1.0;
+                if (subsurfaceMode != 0) {
+                    #if defined CUSTOM_PBR && defined POM && POM_QUALITY >= 128 && POM_LIGHTING_MODE == 2
+                        shadowMult *= max(pow2(pow2(dot(normalM, normal))), sqrt2(NdotLmax0));
+                    #endif
+                    NdotLM = 1.0;
+                }
                 #ifdef SIDE_SHADOWING
                     else
                 #endif
@@ -122,17 +130,25 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                     float shadowLength = shadowDistance * 0.9166667 - length(vec4(playerPos.x, playerPos.y, playerPos.y, playerPos.z));
 
                     if (shadowLength > 0.000001) {
-                        float offset = 0.0009765;
+                        #if SHADOW_SMOOTHING == 4 || SHADOW_QUALITY == 0
+                            float offset = 0.00098;
+                        #elif SHADOW_SMOOTHING == 3
+                            float offset = 0.00075;
+                        #elif SHADOW_SMOOTHING == 2
+                            float offset = 0.0005;
+                        #elif SHADOW_SMOOTHING == 1
+                            float offset = 0.0003;
+                        #endif
 
                         vec3 playerPosM = playerPos;
-                        
+
                         #if PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
                             playerPosM = floor((playerPosM + cameraPosition) * PIXEL_SHADOW + 0.001) / PIXEL_SHADOW - cameraPosition + 0.5 / PIXEL_SHADOW;
                         #endif
 
                         #ifndef GBUFFERS_TEXTURED
                             // Shadow bias without peter-panning
-                            vec3 worldNormal = normalize(ViewToPlayer(normal*1000.0));
+                            vec3 worldNormal = normalize(ViewToPlayer(normal * 10000.0));
                             float distanceBias = pow(dot(playerPos, playerPos), 0.75);
                             distanceBias = 0.12 + 0.0008 * distanceBias;
                             vec3 bias = worldNormal * distanceBias * (2.0 - 0.95 * NdotLmax0); // 0.95 fixes pink petals noon shadows
@@ -141,10 +157,11 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                 if (subsurfaceMode == 2) {
                                     bias *= vec3(0.0, 0.0, -0.75);
                                 } else if (subsurfaceMode == 1) {
-                                    bias *= 1.0 - lightmapYM;
+                                    bias = vec3(0.0);
+                                    centerShadowBias = true;
                                 }
                             #endif
-                            
+
                             // Fix light leaking in caves
                             if (lightmapYM < 0.999) {
                                 #ifdef GBUFFERS_HAND
@@ -173,7 +190,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             vec3 centerplayerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
                             playerPosM = mix(centerplayerPos, playerPosM + vec3(0.0, 0.02, 0.0), lightmapYM);
                         #endif
-                            
+
                         vec3 shadowPos = GetShadowPos(playerPosM);
 
                         bool leaves = false;
@@ -210,7 +227,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                     float shadowSmooth = 16.0;
                     if (shadowLength < shadowSmooth) {
                         float shadowMixer = max0(shadowLength / shadowSmooth);
-                        
+
                         #ifdef GBUFFERS_TERRAIN
                             if (subsurfaceMode != 0) {
                                 float shadowMixerM = pow2(shadowMixer);
@@ -242,7 +259,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                 #if SUN_ANGLE != 0
                                     cloudOffset1.z += distToCloudLayer1 / NVdotLM;
                                 #endif
-                                vec2 cloudPos1 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset1, cloudAlt1i).xz);
+                                vec2 cloudPos1 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset1, cloudAlt1i).xz, 0.35);
                                 float cloudSample = texture2D(gaux4, cloudPos1).b;
                                 cloudSample *= clamp(distToCloudLayer1 * 0.1, 0.0, 1.0);
 
@@ -252,7 +269,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                     #if SUN_ANGLE != 0
                                         cloudOffset2.z += distToCloudLayer2 / NVdotLM;
                                     #endif
-                                    vec2 cloudPos2 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset2, cloudAlt2i).xz);
+                                    vec2 cloudPos2 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset2, cloudAlt2i).xz, 0.35);
                                     float cloudSample2 = texture2D(gaux4, cloudPos2).b;
                                     cloudSample2 *= clamp(distToCloudLayer2 * 0.1, 0.0, 1.0);
 
@@ -302,6 +319,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #if HELD_LIGHTING_MODE >= 1
         float heldLight = max(heldBlockLightValue, heldBlockLightValue2);
         float lViewPosL = lViewPos;
+        if (heldItemId == 45032 || heldItemId2 == 45032) heldLight = 15; // Lava Bucket
         #if HELD_LIGHTING_MODE == 1
             heldLight *= 0.75;
             lViewPosL *= 1.5;
@@ -317,6 +335,11 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         lightmapXM = pow(lightmapXMSteep + lightmapXMCalm, 2.25);
     } else lightmapXM = pow2(lightmap.x) * lightmap.x * 10.0;
 
+    #if BLOCKLIGHT_FLICKERING > 0
+        vec2 flickerNoise = texture2D(noisetex, vec2(frameTimeCounter * 0.06)).rb;
+        lightmapXM *= mix(1.0, min1(max(flickerNoise.r, flickerNoise.g) * 1.7), pow2(BLOCKLIGHT_FLICKERING * 0.1));
+    #endif
+
     // Minimum Light
     #if !defined END && MINIMUM_LIGHT_MODE > 0
         #if MINIMUM_LIGHT_MODE == 1
@@ -325,8 +348,8 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             vec3 minLighting = vec3(0.005625 + vsBrightness * 0.043);
         #elif MINIMUM_LIGHT_MODE == 3
             vec3 minLighting = vec3(0.0625);
-        #elif MINIMUM_LIGHT_MODE == 4
-            vec3 minLighting = vec3(0.25);
+        #elif MINIMUM_LIGHT_MODE >= 4
+            vec3 minLighting = vec3(0.015625 * pow2(MINIMUM_LIGHT_MODE));
         #endif
 
         minLighting *= 1.0 - lightmapYM; //AAA
@@ -423,7 +446,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #ifdef MOON_PHASE_INF_LIGHT
         sceneLighting *= moonPhaseInfluence;
     #endif
-    
+
     // Vanilla Ambient Occlusion
     float vanillaAO = 1.0;
     #if VANILLAAO_I > 0
@@ -451,7 +474,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                 vanillaAO = glColor.a;
             #endif
             vanillaAO = vanillaAO * 0.9 + 0.1;
-            
+
             #if VANILLAAO_I != 100
                 #define VANILLAAO_IM VANILLAAO_I * 0.01
                 vanillaAO = pow(vanillaAO, VANILLAAO_IM);

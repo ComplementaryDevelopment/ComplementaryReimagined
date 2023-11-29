@@ -20,7 +20,7 @@ uniform mat4 gbufferPreviousProjection, gbufferProjectionInverse;
 uniform mat4 gbufferPreviousModelView, gbufferModelViewInverse;
 
 uniform sampler2D colortex2;
-uniform sampler2D colortex1;
+uniform sampler2D colortex6;
 uniform sampler2D depthtex1;
 
 #ifndef LIGHT_COLORING
@@ -39,6 +39,7 @@ uniform sampler2D depthtex1;
 #endif
 
 //Common Variables//
+vec2 view = vec2(viewWidth, viewHeight);
 
 //Common Functions//
 float GetLinearDepth(float depth) {
@@ -47,7 +48,7 @@ float GetLinearDepth(float depth) {
 
 //Includes//
 #ifdef TAA
-	#include "/lib/antialiasing/taa.glsl"
+    #include "/lib/antialiasing/taa.glsl"
 #endif
 
 //Program//
@@ -61,9 +62,9 @@ void main() {
     vec3 temp = vec3(0.0);
     float depth;
 
-	#ifdef TEMPORAL_FILTER
-		depth = texelFetch(depthtex1, texelCoord, 0).r;
-	#endif
+    #ifdef TEMPORAL_FILTER
+        depth = texelFetch(depthtex1, texelCoord, 0).r;
+    #endif
 
     #ifdef TAA
         DoTAA(color, temp, depth);
@@ -74,17 +75,17 @@ void main() {
     #else
     /* DRAWBUFFERS:82 */
     #endif
-	gl_FragData[0] = vec4(color, 1.0);
+    gl_FragData[0] = vec4(color, 1.0);
     gl_FragData[1] = vec4(temp, 1.0);
-    
-	#ifdef TEMPORAL_FILTER
+
+    #ifdef TEMPORAL_FILTER
         #ifndef LIGHT_COLORING
-        /* DRAWBUFFERS:326 */
+        /* DRAWBUFFERS:321 */
         #else
-        /* DRAWBUFFERS:826 */
+        /* DRAWBUFFERS:821 */
         #endif
         gl_FragData[2] = vec4(depth, 0.0, 0.0, 1.0);
-	#endif
+    #endif
 }
 
 #endif
@@ -106,9 +107,9 @@ noperspective out vec2 texCoord;
 
 //Program//
 void main() {
-	gl_Position = ftransform();
+    gl_Position = ftransform();
 
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 }
 
 #endif

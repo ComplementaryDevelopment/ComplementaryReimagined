@@ -53,5 +53,6 @@ vec3 GetAtmColorMult() {
 
 vec3 lightColorMult;
 vec3 atmColorMult;
+vec3 sqrtAtmColorMult;
 
 #endif

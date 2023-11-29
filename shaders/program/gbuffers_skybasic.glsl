@@ -13,7 +13,7 @@ flat in vec3 upVec, sunVec;
 flat in vec4 glColor;
 
 #ifdef OVERWORLD
-	flat in float vanillaStars;
+    flat in float vanillaStars;
 #endif
 
 //Uniforms//
@@ -29,17 +29,20 @@ uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
 
 #ifdef CAVE_FOG
-	uniform vec3 cameraPosition;
+    uniform vec3 cameraPosition;
 #endif
 
 #if SUN_MOON_STYLE >= 2
-	uniform int moonPhase;
-	
-	uniform mat4 gbufferModelView;
-	uniform mat4 shadowModelView;
-	uniform mat4 shadowProjection;
+    uniform mat4 gbufferModelView;
+    uniform mat4 shadowModelView;
+    uniform mat4 shadowProjection;
 
-	uniform sampler2D noisetex;
+    uniform sampler2D noisetex;
+
+    #ifndef UNIFORM_MOONPHASE
+    #define UNIFORM_MOONPHASE
+    uniform int moonPhase;
+    #endif
 #endif
 
 //Pipeline Constants//
@@ -59,8 +62,8 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #include "/lib/util/dither.glsl"
 
 #ifdef OVERWORLD
-	#include "/lib/atmospherics/sky.glsl"
-	#include "/lib/atmospherics/stars.glsl"
+    #include "/lib/atmospherics/sky.glsl"
+    #include "/lib/atmospherics/stars.glsl"
 #endif
 
 #ifdef CAVE_FOG
@@ -70,115 +73,127 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #ifdef ATM_COLOR_MULTS
     #include "/lib/colors/colorMultipliers.glsl"
 #endif
+#ifdef MOON_PHASE_INF_ATMOSPHERE
+    #include "/lib/colors/moonPhaseInfluence.glsl"
+#endif
 
 #ifdef COLOR_CODED_PROGRAMS
-	#include "/lib/misc/colorCodedPrograms.glsl"
+    #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 #if SUN_MOON_STYLE >= 2
-	#include "/lib/util/spaceConversion.glsl"
+    #include "/lib/util/spaceConversion.glsl"
 #endif
 
 //Program//
 void main() {
-	vec4 color = vec4(glColor.rgb, 1.0);
-	
-	#ifdef OVERWORLD
-	if (vanillaStars < 0.5) {
-		vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
-		vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
-		viewPos /= viewPos.w;
-		vec3 nViewPos = normalize(viewPos.xyz);
+    vec4 color = vec4(glColor.rgb, 1.0);
 
-		float VdotU = dot(nViewPos, upVec);
-		float VdotS = dot(nViewPos, sunVec);
-		float dither = Bayer8(gl_FragCoord.xy);
+    #ifdef OVERWORLD
+    if (vanillaStars < 0.5) {
+        vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
+        vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+        viewPos /= viewPos.w;
+        vec3 nViewPos = normalize(viewPos.xyz);
 
-		color.rgb = GetSky(VdotU, VdotS, dither, true, false);
-		
-		vec2 starCoord = GetStarCoord(viewPos.xyz, 0.5);
-		color.rgb += GetStars(starCoord, VdotU, VdotS);
+        float VdotU = dot(nViewPos, upVec);
+        float VdotS = dot(nViewPos, sunVec);
+        float dither = Bayer8(gl_FragCoord.xy);
 
-		#if SUN_MOON_STYLE >= 2
-			float absVdotS = abs(VdotS);
-			#if SUN_MOON_STYLE == 2
-				float sunSizeFactor1 = 0.9975;
-				float sunSizeFactor2 = 400.0;
-				float moonCrescentOffset = 0.0055;
-				float moonPhaseFactor1 = 2.45;
-				float moonPhaseFactor2 = 750.0;
-			#else
-				float sunSizeFactor1 = 0.9983;
-				float sunSizeFactor2 = 588.235;
-				float moonCrescentOffset = 0.0042;
-				float moonPhaseFactor1 = 2.2;
-				float moonPhaseFactor2 = 1000.0;
-			#endif
-			if (absVdotS > sunSizeFactor1) {
-				float sunMoonMixer = sqrt1(sunSizeFactor2 * (absVdotS - sunSizeFactor1)) * (1.0 - 0.4 * rainFactor2);
+        color.rgb = GetSky(VdotU, VdotS, dither, true, false);
 
-				if (VdotS > 0.0) {
-					sunMoonMixer = pow2(sunMoonMixer) * GetHorizonFactor(SdotU);
+        vec2 starCoord = GetStarCoord(viewPos.xyz, 0.75);
+        color.rgb += GetStars(starCoord, VdotU, VdotS);
 
-					#ifdef CAVE_FOG
-						sunMoonMixer *= 1.0 - 0.65 * GetCaveFactor();
-					#endif
+        #if SUN_MOON_STYLE >= 2
+            float absVdotS = abs(VdotS);
+            #if SUN_MOON_STYLE == 2
+                float sunSizeFactor1 = 0.9975;
+                float sunSizeFactor2 = 400.0;
+                float moonCrescentOffset = 0.0055;
+                float moonPhaseFactor1 = 2.45;
+                float moonPhaseFactor2 = 750.0;
+            #else
+                float sunSizeFactor1 = 0.9983;
+                float sunSizeFactor2 = 588.235;
+                float moonCrescentOffset = 0.0042;
+                float moonPhaseFactor1 = 2.2;
+                float moonPhaseFactor2 = 1000.0;
+            #endif
+            if (absVdotS > sunSizeFactor1) {
+                float sunMoonMixer = sqrt1(sunSizeFactor2 * (absVdotS - sunSizeFactor1));
 
-					color.rgb = mix(color.rgb, vec3(0.9, 0.5, 0.3) * 10.0, sunMoonMixer);
-				} else {
-					float horizonFactor = GetHorizonFactor(-SdotU);
-					sunMoonMixer = max0(sunMoonMixer - 0.25) * 1.33333 * horizonFactor;
+                #ifdef SUN_MOON_DURING_RAIN
+                    sunMoonMixer *= 1.0 - 0.4 * rainFactor2;
+                #else
+                    sunMoonMixer *= 1.0 - rainFactor2;
+                #endif
 
-					starCoord = GetStarCoord(viewPos.xyz, 1.0) * 0.5 + 0.617;
-					float moonNoise = texture2D(noisetex, starCoord).g
-					                + texture2D(noisetex, starCoord * 2.5).g * 0.7
-					                + texture2D(noisetex, starCoord * 5.0).g * 0.5;
-					moonNoise = max0(moonNoise - 0.75) * 1.7;
-					vec3 moonColor = vec3(0.38, 0.4, 0.5) * (1.2 - (0.2 + 0.2 * sqrt1(nightFactor)) * moonNoise);
+                if (VdotS > 0.0) {
+                    sunMoonMixer = pow2(sunMoonMixer) * GetHorizonFactor(SdotU);
 
-					if (moonPhase >= 1) {
-						float moonPhaseOffset = 0.0;
-						if (moonPhase != 4) {
-							moonPhaseOffset = moonCrescentOffset;
-							moonColor *= 8.5;
-						} else moonColor *= 10.0;
-						if (moonPhase > 4) {
-							moonPhaseOffset = -moonPhaseOffset;
-						}
+                    #ifdef CAVE_FOG
+                        sunMoonMixer *= 1.0 - 0.65 * GetCaveFactor();
+                    #endif
 
-						float ang = fract(timeAngle - (0.25 + moonPhaseOffset));
-						ang = (ang + (cos(ang * 3.14159265358979) * -0.5 + 0.5 - ang) / 3.0) * 6.28318530717959;
-						vec2 sunRotationData2 = vec2(cos(sunPathRotation * 0.01745329251994), -sin(sunPathRotation * 0.01745329251994));
-						vec3 rawSunVec2 = (gbufferModelView * vec4(vec3(-sin(ang), cos(ang) * sunRotationData2) * 2000.0, 1.0)).xyz;
-					
-						float moonPhaseVdosS = dot(nViewPos, normalize(rawSunVec2.xyz));
+                    color.rgb = mix(color.rgb, vec3(0.9, 0.5, 0.3) * 10.0, sunMoonMixer);
+                } else {
+                    float horizonFactor = GetHorizonFactor(-SdotU);
+                    sunMoonMixer = max0(sunMoonMixer - 0.25) * 1.33333 * horizonFactor;
 
-						sunMoonMixer *= pow2(1.0 - min1(pow(abs(moonPhaseVdosS), moonPhaseFactor2) * moonPhaseFactor1));
-					} else moonColor *= 4.0;
+                    starCoord = GetStarCoord(viewPos.xyz, 1.0) * 0.5 + 0.617;
+                    float moonNoise = texture2D(noisetex, starCoord).g
+                                    + texture2D(noisetex, starCoord * 2.5).g * 0.7
+                                    + texture2D(noisetex, starCoord * 5.0).g * 0.5;
+                    moonNoise = max0(moonNoise - 0.75) * 1.7;
+                    vec3 moonColor = vec3(0.38, 0.4, 0.5) * (1.2 - (0.2 + 0.2 * sqrt1(nightFactor)) * moonNoise);
 
-					#ifdef CAVE_FOG
-						sunMoonMixer *= 1.0 - 0.5 * GetCaveFactor();
-					#endif
+                    if (moonPhase >= 1) {
+                        float moonPhaseOffset = 0.0;
+                        if (moonPhase != 4) {
+                            moonPhaseOffset = moonCrescentOffset;
+                            moonColor *= 8.5;
+                        } else moonColor *= 10.0;
+                        if (moonPhase > 4) {
+                            moonPhaseOffset = -moonPhaseOffset;
+                        }
 
-					color.rgb = mix(color.rgb, moonColor, sunMoonMixer);
-				}
-			}
-		#endif
-	} else discard;
-	#endif
+                        float ang = fract(timeAngle - (0.25 + moonPhaseOffset));
+                        ang = (ang + (cos(ang * 3.14159265358979) * -0.5 + 0.5 - ang) / 3.0) * 6.28318530717959;
+                        vec2 sunRotationData2 = vec2(cos(sunPathRotation * 0.01745329251994), -sin(sunPathRotation * 0.01745329251994));
+                        vec3 rawSunVec2 = (gbufferModelView * vec4(vec3(-sin(ang), cos(ang) * sunRotationData2) * 2000.0, 1.0)).xyz;
+
+                        float moonPhaseVdosS = dot(nViewPos, normalize(rawSunVec2.xyz));
+
+                        sunMoonMixer *= pow2(1.0 - min1(pow(abs(moonPhaseVdosS), moonPhaseFactor2) * moonPhaseFactor1));
+                    } else moonColor *= 4.0;
+
+                    #ifdef CAVE_FOG
+                        sunMoonMixer *= 1.0 - 0.5 * GetCaveFactor();
+                    #endif
+
+                    color.rgb = mix(color.rgb, moonColor, sunMoonMixer);
+                }
+            }
+        #endif
+    } else discard;
+    #endif
 
     #ifdef ATM_COLOR_MULTS
         color.rgb *= GetAtmColorMult();
     #endif
+    #ifdef MOON_PHASE_INF_ATMOSPHERE
+        color.rgb *= moonPhaseInfluence;
+    #endif
 
-	if (max(blindness, darknessFactor) > 0.1) color.rgb = vec3(0.0);
+    if (max(blindness, darknessFactor) > 0.1) color.rgb = vec3(0.0);
 
-	#ifdef COLOR_CODED_PROGRAMS
-		ColorCodeProgram(color);
-	#endif
+    #ifdef COLOR_CODED_PROGRAMS
+        ColorCodeProgram(color);
+    #endif
 
-	/* DRAWBUFFERS:0 */
-	gl_FragData[0] = color;
+    /* DRAWBUFFERS:0 */
+    gl_FragData[0] = color;
 }
 
 #endif
@@ -191,7 +206,7 @@ flat out vec3 upVec, sunVec;
 flat out vec4 glColor;
 
 #ifdef OVERWORLD
-	flat out float vanillaStars;
+    flat out float vanillaStars;
 #endif
 
 //Uniforms//
@@ -206,17 +221,17 @@ flat out vec4 glColor;
 
 //Program//
 void main() {
-	gl_Position = ftransform();
+    gl_Position = ftransform();
 
-	glColor = gl_Color;
-	
-	upVec = normalize(gbufferModelView[1].xyz);
-	sunVec = GetSunVector();
-	
-	#ifdef OVERWORLD
-		//Vanilla Star Dedection by Builderb0y
-		vanillaStars = float(glColor.r == glColor.g && glColor.g == glColor.b && glColor.r > 0.0 && glColor.r < 0.51);
-	#endif
+    glColor = gl_Color;
+
+    upVec = normalize(gbufferModelView[1].xyz);
+    sunVec = GetSunVector();
+
+    #ifdef OVERWORLD
+        //Vanilla Star Dedection by Builderb0y
+        vanillaStars = float(glColor.r == glColor.g && glColor.g == glColor.b && glColor.r > 0.0 && glColor.r < 0.51);
+    #endif
 }
 
 #endif

@@ -10,12 +10,12 @@ const float packSizeGN = 128.0;
 
 float GetDif(float lOriginalAlbedo, vec2 offsetCoord) {
     #ifndef GBUFFERS_WATER
-        float lNearbyAlbedo = length(texture2D(tex, offsetCoord).rgb);    
+        float lNearbyAlbedo = length(texture2D(tex, offsetCoord).rgb);
     #else
         vec4 textureSample = texture2D(tex, offsetCoord);
         float lNearbyAlbedo = length(textureSample.rgb * textureSample.a * 1.5);
     #endif
-    
+
     #ifdef GBUFFERS_ENTITIES
         lOriginalAlbedo = abs(lOriginalAlbedo - 1.0);
         lNearbyAlbedo = abs(lNearbyAlbedo - 1.0);
@@ -58,24 +58,24 @@ void GenerateNormals(inout vec3 normalM, vec3 color) {
     vec2 maxOffsetCoord = midCoord + absMidCoordPos;
     vec2 minOffsetCoord = midCoord - absMidCoordPos;
     if (normalMult > 0.0) {
-	    vec3 normalMap = vec3(0.0, 0.0, 1.0);
+        vec3 normalMap = vec3(0.0, 0.0, 1.0);
 
         vec2 offsetCoord = texCoord + vec2( 0.0, offsetR.y);
-        if (offsetCoord.y < maxOffsetCoord.y) 
+        if (offsetCoord.y < maxOffsetCoord.y)
             normalMap.y += GetDif(lOriginalAlbedo, offsetCoord);
 
         offsetCoord = texCoord + vec2( offsetR.x, 0.0);
-        if (offsetCoord.x < maxOffsetCoord.x) 
+        if (offsetCoord.x < maxOffsetCoord.x)
             normalMap.x += GetDif(lOriginalAlbedo, offsetCoord);
 
         offsetCoord = texCoord + vec2( 0.0,-offsetR.y);
-        if (offsetCoord.y > minOffsetCoord.y) 
+        if (offsetCoord.y > minOffsetCoord.y)
             normalMap.y -= GetDif(lOriginalAlbedo, offsetCoord);
-            
+
         offsetCoord = texCoord + vec2(-offsetR.x, 0.0);
-        if (offsetCoord.x > minOffsetCoord.x) 
+        if (offsetCoord.x > minOffsetCoord.x)
             normalMap.x -= GetDif(lOriginalAlbedo, offsetCoord);
-        
+
         normalMap.xy *= normalMult;
         normalMap.xy = clamp(normalMap.xy, vec2(-1.0), vec2(1.0));
 

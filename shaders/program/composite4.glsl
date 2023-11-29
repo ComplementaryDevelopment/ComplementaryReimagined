@@ -24,24 +24,24 @@ float weight[7] = float[7](1.0, 6.0, 15.0, 20.0, 15.0, 6.0, 1.0);
 
 //Common Functions//
 vec3 BloomTile(float lod, vec2 offset, vec2 rescale) {
-	vec3 bloom = vec3(0.0);
-	float scale = exp2(lod);
-	vec2 coord = (texCoord - offset) * scale;
-	float padding = 0.5 + 0.005 * scale;
+    vec3 bloom = vec3(0.0);
+    float scale = exp2(lod);
+    vec2 coord = (texCoord - offset) * scale;
+    float padding = 0.5 + 0.005 * scale;
 
-	if (abs(coord.x - 0.5) < padding && abs(coord.y - 0.5) < padding) {
-		for (int i = -3; i <= 3; i++) {
-			for (int j = -3; j <= 3; j++) {
-				float wg = weight[i + 3] * weight[j + 3];
-				vec2 pixelOffset = vec2(i, j) * rescale;
-				vec2 bloomCoord = (texCoord - offset + pixelOffset) * scale;
-				bloom += texture2D(colortex0, bloomCoord).rgb * wg;
-			}
-		}
-		bloom /= 4096.0;
-	}
+    if (abs(coord.x - 0.5) < padding && abs(coord.y - 0.5) < padding) {
+        for (int i = -3; i <= 3; i++) {
+            for (int j = -3; j <= 3; j++) {
+                float wg = weight[i + 3] * weight[j + 3];
+                vec2 pixelOffset = vec2(i, j) * rescale;
+                vec2 bloomCoord = (texCoord - offset + pixelOffset) * scale;
+                bloom += texture2D(colortex0, bloomCoord).rgb * wg;
+            }
+        }
+        bloom /= 4096.0;
+    }
 
-	return pow(bloom / 128.0, vec3(0.25));
+    return pow(bloom / 128.0, vec3(0.25));
 }
 
 //Includes//
@@ -77,7 +77,7 @@ void main() {
     #else
     /* DRAWBUFFERS:8 */
     #endif
-	gl_FragData[0] = vec4(blur, 1.0);
+    gl_FragData[0] = vec4(blur, 1.0);
 }
 
 #endif
@@ -97,9 +97,9 @@ void main() {
 
 //Program//
 void main() {
-	texCoord = gl_MultiTexCoord0.xy;
-	
-	gl_Position = ftransform();
+    texCoord = gl_MultiTexCoord0.xy;
+
+    gl_Position = ftransform();
 }
 
 #endif

@@ -28,7 +28,7 @@ option.info2.comment=Best settings are subjective, but using the default setting
 
 option.info3=What is Profile or Visual Style
 value.info3.0=
-option.info3.comment="Profile" setting changes the setting founds in the "Performance Settings" menu, while not affecting any preference-based settings. "Visual Style" changes the "Default Style" values that exist on many preference-based settings, but it does not impact performance by an important amount.
+option.info3.comment="Profile" setting changes the settings found in the "Performance Settings" menu, while not affecting any preference-based settings. "Visual Style" changes the "Default Style" values that exist on many preference-based settings, but it does not impact performance by an important amount.
 
 option.info4=What is RP Support
 value.info4.0=
@@ -84,11 +84,17 @@ screen.END_ATM_MULTS=The End Dimension
 screen.CLOUD_SETTINGS=Clouds
 screen.CLOUD_SETTINGS.comment=Settings that relate to the clouds.
 
+screen.CLOUD_COLOR_SETTINGS=Cloud Color
+screen.CLOUD_COLOR_SETTINGS.comment=Settings to change the color of the clouds.
+
 screen.CLOUD_UNBOUND_SETTINGS=Unbound Cloud Settings
 screen.CLOUD_REIMAGINED_SETTINGS=Reimagined Cloud Settings
 
 screen.FOG_SETTINGS=Fog
 screen.FOG_SETTINGS.comment=Settings that relate to the various types of fog.
+
+screen.SUN_MOON_SETTINGS=Sun / Moon
+screen.SUN_MOON_SETTINGS.comment=Settings that relate to the sun and moon.
 
 screen.NETHER_SETTINGS=The Nether Dimension
 screen.NETHER_SETTINGS.comment=Settings that relate to the Nether dimension.
@@ -108,7 +114,7 @@ screen.WORLD_BLUR_SETTINGS.comment=Settings that relate to fancy world blurring 
 screen.MATERIAL_SETTINGS=Materials
 screen.MATERIAL_SETTINGS.comment=Settings that are related to the materials of Minecraft.
 
-screen.IPBR_SETTINGS=Integrated Materials
+screen.IPBR_SETTINGS=IntegratedPBR+ Materials
 screen.IPBR_SETTINGS.comment=Settings that are related to the features of IntegratedPBR+.
 
 screen.GLOWING_ORE_SETTINGS=Glowing Ores
@@ -137,7 +143,7 @@ screen.NETHER_LIGHT_MULTS=The Nether Dimension
 screen.END_LIGHT_MULTS=The End Dimension
 
 screen.BLOCKLIGHT_COLOR_SETTINGS=Blocklight Color
-screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Settings to adjust the color emited from light source blocks.
+screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Settings to adjust the color emitted from light source blocks.
 
 screen.MOON_PHASE_INF_SETTINGS=Moon Phase Influence
 screen.MOON_PHASE_INF_SETTINGS.comment=Settings to determine how different moon phases affect the night lighting.
@@ -237,7 +243,7 @@ value.ENTITY_SHADOWS.true=§dON
 value.ENTITY_SHADOWS.false=§eOFF
 
 option.DETAIL_QUALITY=Detail Quality
-option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: TAA, lighting tweaks, Night Nebula, Nether Storm, Ender Beams.
+option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: TAA, lighting tweaks, Night Nebula, Nether Storm, Ender Beams, sky effect reflections.
 value.DETAIL_QUALITY.0=§4Potato
 value.DETAIL_QUALITY.2=§aMedium
 value.DETAIL_QUALITY.3=§bHigh
@@ -255,6 +261,13 @@ value.SSAO_QUALI_DEFINE.0=§cOFF
 value.SSAO_QUALI_DEFINE.2=§aMedium
 value.SSAO_QUALI_DEFINE.3=§bHigh
 value.SSAO_QUALI_DEFINE.5=§dUltra
+
+option.ANISOTROPIC_FILTER=Texture Filtering
+option.ANISOTROPIC_FILTER.comment=Improves the quality of mipmapped textures using Anisotropic Filtering. §e[*]§r Make sure your "Mipmap Levels" video setting is set to Maximum (4) for best results.
+value.ANISOTROPIC_FILTER.0=§eOFF
+value.ANISOTROPIC_FILTER.4=§a4x
+value.ANISOTROPIC_FILTER.8=§b8x
+value.ANISOTROPIC_FILTER.16=§d16x
 
 option.SSAO_I=Edge Shadow Intensity (SSAO)
 option.SSAO_I.comment=Determines the strength of Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene. §e[*]§r This setting won't work if SSAO is disabled in "Performance Settings".
@@ -315,11 +328,19 @@ option.CLOUD_SPEED_MULT=Cloud Speed
 option.CLOUD_SPEED_MULT.comment=Determines how fast the clouds are going to move. "Synced to World Time" setting uses Minecraft world time to advance the cloud positions; this allows for clouds to appear the same between players in the same server. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
 value.CLOUD_SPEED_MULT.100=Synced to World Time
 
+option.CLOUD_R=Cloud Red Multiplier
+option.CLOUD_G=Cloud Green Multiplier
+option.CLOUD_B=Cloud Blue Multiplier
+
 option.CLOUD_UNBOUND_AMOUNT=Cloud Amount
 option.CLOUD_UNBOUND_AMOUNT.comment=Adjusts the amount of Unbound clouds.
 
 option.CLOUD_UNBOUND_SIZE_MULT=Cloud Size
 option.CLOUD_UNBOUND_SIZE_MULT.comment=Adjusts the size of Unbound clouds. Higher values produce smaller clouds.
+
+option.CLOUD_UNBOUND_RAIN_ADD=Rain Cloud Addition
+option.CLOUD_UNBOUND_RAIN_ADD.comment=Adjusts the cloud amount increase that gets applied during rain/snow.
+prefix.CLOUD_UNBOUND_RAIN_ADD=+
 
 option.DOUBLE_REIM_CLOUDS=Double Reimagined Clouds
 option.DOUBLE_REIM_CLOUDS.comment=Enables a secondary Reimagined cloud layer. §e[*]§r This setting only works with the "Reimagined" Cloud Style.
@@ -338,6 +359,22 @@ option.NETHER_STORM_LOWER_ALT.comment=Determines the lower starting point of the
 
 option.NETHER_STORM_HEIGHT=Nether Storm Height
 option.NETHER_STORM_HEIGHT.comment=Determines how tall the Nether Storm will form. Decrasing this value will result in the Nether Storm gathering near the "Nether Storm Lower Altitude".
+
+option.NETHER_VIEW_LIMIT=Nether View Limit
+option.NETHER_VIEW_LIMIT.comment=Determines the maximum distance that the fog allows to be visible in the Nether. §c[-]§r Increasing this setting can impact performance when "Nether Storm" is enabled.
+value.NETHER_VIEW_LIMIT.96.0=6 Chunks
+value.NETHER_VIEW_LIMIT.112.0=7 Chunks
+value.NETHER_VIEW_LIMIT.128.0=8 Chunks
+value.NETHER_VIEW_LIMIT.160.0=10 Chunks
+value.NETHER_VIEW_LIMIT.192.0=12 Chunks
+value.NETHER_VIEW_LIMIT.224.0=14 Chunks
+value.NETHER_VIEW_LIMIT.256.0=16 Chunks
+value.NETHER_VIEW_LIMIT.320.0=20 Chunks
+value.NETHER_VIEW_LIMIT.384.0=24 Chunks
+value.NETHER_VIEW_LIMIT.512.0=32 Chunks §c[-]
+value.NETHER_VIEW_LIMIT.768.0=48 Chunks §c[-]
+value.NETHER_VIEW_LIMIT.1024.0=64 Chunks §c[-]
+value.NETHER_VIEW_LIMIT.99999.0=Limitless §c[-]
 
 option.NETHER_COLOR_MODE=Color Mode
 option.NETHER_COLOR_MODE.comment=Determines how the ambience colors will be handled in the Nether. Constant: Colors won't change between biomes. Biome Based: Colors will change depending on the biome. Biome Based (Modified): Biome based, but the colors have been rebalanced to better suit the default visual direction of Complementary.
@@ -392,10 +429,10 @@ value.WATER_CAUSTIC_STYLE_DEFINE.1=Reimagined
 value.WATER_CAUSTIC_STYLE_DEFINE.3=Unbound
 
 option.WATER_REFRACTION_INTENSITY=Water Refraction Intensity §e[*]§r
-option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when the Water Quality is set to "High" or above, or else it will only affect the subtle underwater distortion.
+option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when the Water Quality is set to "High" or higher, or else it will only affect the subtle underwater distortion.
 
 option.WATER_FOAM_I=Water Foam Intensity
-option.WATER_FOAM_I.comment=Determines the opacity of foam seen on water edges. §e[*]§r This setting only works when the Water Material Quality is set to Medium or above.
+option.WATER_FOAM_I.comment=Determines the opacity of foam seen on water edges. §e[*]§r This setting only works when the Water Material Quality is set to Medium or higher.
 
 option.WATER_ALPHA_MULT=Water Opacity Factor
 option.WATER_ALPHA_MULT.comment=Adjusts how opaque the water looks. §c[-]§r Extreme values will break the balance of water lighting.
@@ -454,6 +491,9 @@ value.SUN_MOON_STYLE_DEFINE.3=Unbound - Smaller
 option.SUN_MOON_HORIZON=Sun/Moon Horizon
 option.SUN_MOON_HORIZON.comment=Prevents the sun/moon from appearing below the horizon line.
 
+option.SUN_MOON_DURING_RAIN=Sun/Moon During Rain
+option.SUN_MOON_DURING_RAIN.comment=Determines if the sun and moon will be visible during rain or not.
+
 option.NIGHT_STAR_AMOUNT=Night Star Amount
 option.NIGHT_STAR_AMOUNT.comment=Determines the amount of stars in the night sky.
 value.NIGHT_STAR_AMOUNT.2=Medium
@@ -488,6 +528,13 @@ option.NIGHT_NEBULA_I.comment=Adjusts the brightness of Night Nebulae.
 
 option.WEATHER_TEX_OPACITY=Weather Texture Opacity
 option.WEATHER_TEX_OPACITY.comment=Adjusts the opacity of the rainfall/snowfall weather textures.
+
+option.SHADOW_SMOOTHING=Shadow Smoothing
+option.SHADOW_SMOOTHING.comment=Determines the sharpness of shadows. §c[-]§r Lowering this setting will increase shadow flickering and impact performance. §e[*]§r This setting only works if Shadow Sample Quality is set to Low or higher.
+value.SHADOW_SMOOTHING.4=Very Smooth
+value.SHADOW_SMOOTHING.3=Smooth
+value.SHADOW_SMOOTHING.2=Sharp §c[-]
+value.SHADOW_SMOOTHING.1=Very Sharp §c[-]
 
 option.PIXEL_SHADOW=Pixelated Shadows
 option.PIXEL_SHADOW.comment=Modifies the world coordinates on a grid to make shadows pixelated. §e[*]§r This setting does not affect performance.
@@ -535,17 +582,28 @@ value.FXAA.false=§eOFF
 
 option.IMAGE_SHARPENING=Image Sharpening
 option.IMAGE_SHARPENING.comment=Makes the image sharper using a filter. §c[-]§r Too much sharpening might cause visual artifacts like aliasing, flickering, noise, and subtle brightness changes.
-value.IMAGE_SHARPENING.6=6 §c[-]
-value.IMAGE_SHARPENING.7=7 §c[-]
-value.IMAGE_SHARPENING.8=8 §c[-]
-value.IMAGE_SHARPENING.9=9 §c[-]
-value.IMAGE_SHARPENING.10=10 §c[-]
+value.IMAGE_SHARPENING.0=OFF
+value.IMAGE_SHARPENING.1=1x
+value.IMAGE_SHARPENING.2=2x
+value.IMAGE_SHARPENING.3=3x
+value.IMAGE_SHARPENING.4=4x
+value.IMAGE_SHARPENING.5=5x
+value.IMAGE_SHARPENING.6=6x §c[-]
+value.IMAGE_SHARPENING.7=7x §c[-]
+value.IMAGE_SHARPENING.8=8x §c[-]
+value.IMAGE_SHARPENING.9=9x §c[-]
+value.IMAGE_SHARPENING.10=10x §c[-]
 
 option.LENSFLARE=Lens Flare
 option.LENSFLARE.comment=Adds camera lens reflection effect when towards the sun or moon. §c[-]§r This effect can severely impact performance.
 
 option.LENSFLARE_I=Lens Flare Intensity
 option.LENSFLARE_I.comment=Adjusts the strength of the Lens Flare effect.
+
+option.TAA_MODE=TAA Behaviour
+option.TAA_MODE.comment=Determines the behaviour of temporal anti aliasing. Smart & Subtle: TAA is applied in small amounts to the image in a way that won't cause artifacts. Intense: Provides better anti-aliasing, but it will cause extra smudging and flickering; it might be the better choice at a higher frame rate and resolution.
+value.TAA_MODE.1=Smart & Subtle
+value.TAA_MODE.2=Intense §c[-]
 
 option.MOTION_BLURRING=Motion Blur
 option.MOTION_BLURRING.comment=Applies blur to the image when moving the camera.
@@ -605,8 +663,8 @@ value.HAND_SWAYING.1=Subtle
 value.HAND_SWAYING.2=Normal
 value.HAND_SWAYING.3=Intense
 
-option.LESS_LAVA_FOG=Better Visibility Inside Lava
-option.LESS_LAVA_FOG.comment=Reduces the lava fog to improve visibility inside lava.
+option.LESS_LAVA_FOG=Less Fog Inside Lava or Snow
+option.LESS_LAVA_FOG.comment=Reduces the lava fog and powder snow fog to improve visibility inside them.
 
 option.REDUCE_CLOSE_PARTICLES=Reduce Close-up Particles
 option.REDUCE_CLOSE_PARTICLES.comment=Reduces the opacity of particles that are close to the camera to improve visibility.
@@ -624,13 +682,18 @@ value.SHOW_LIGHT_LEVEL.3=Always ON
 option.COLOR_CODED_PROGRAMS=Color Coded Programs §c[-]§r
 option.COLOR_CODED_PROGRAMS.comment=Shows which shader programs are being used to render geometry. §c[-]§r This option is only for development purposes and shouldn't be used for gameplay. §e[*]§r Color values can be found in the shader pack files: shaders/lib/misc/colorCodedPrograms.glsl
 
+option.GLOWING_COLORED_PARTICLES=Force Glowing Particles §c[-]§r
+option.GLOWING_COLORED_PARTICLES.comment=Makes all particles that are technically "colored" turn emissive. §c[-]§r This option isn't recommended for general gameplay as it makes a lot of particles glow when they are made of materials that shouldn't glow at all.
+
 option.MINIMUM_LIGHT_MODE=Cave Lighting
-option.MINIMUM_LIGHT_MODE.comment=Adds extra lighting to areas that don't have skylight. §a[+]§r "Default" option determines the lighting according to the "Brightness" slider in Video Settings.
+option.MINIMUM_LIGHT_MODE.comment=Adds extra lighting to areas that don't have skylight. §a[+]§r "Default" option determines the lighting according to the "Brightness" slider in Video Settings. §c[-]§r Drastically changing this setting can break the lighting balance.
 value.MINIMUM_LIGHT_MODE.0=Very Dark
 value.MINIMUM_LIGHT_MODE.1=Dark
 value.MINIMUM_LIGHT_MODE.2=Default §a[+]
 value.MINIMUM_LIGHT_MODE.3=Bright
 value.MINIMUM_LIGHT_MODE.4=Very Bright
+value.MINIMUM_LIGHT_MODE.5=Ultra Bright §c[-]
+value.MINIMUM_LIGHT_MODE.6=Extreme Bright §c[-]
 
 option.AMBIENT_MULT=Shadow Light Multiplier
 option.AMBIENT_MULT.comment=Determines the amount of ambient lighting seen in shadows. §c[-]§r Drastically changing this setting can break the lighting balance.
@@ -730,7 +793,7 @@ option.POM_ALLOW_CUTOUT=POM on Cutout Surfaces §c[-]§r
 option.POM_ALLOW_CUTOUT.comment=Makes POM be able to work on cutout block sections (like gaps of leaves). §c[-]§r This effect can severely impact performance.
 
 option.DIRECTIONAL_BLOCKLIGHT=Directional Blocklight
-option.DIRECTIONAL_BLOCKLIGHT.comment=Adds depth to blocklight depending on the surface normal. §c[-]§r May cause visual artifacts in some situations. §c[-]§r This effect can impact performance. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used. 
+option.DIRECTIONAL_BLOCKLIGHT.comment=Adds depth to blocklight depending on the surface normal. §c[-]§r May cause visual artifacts in some situations. §c[-]§r This effect can impact performance. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 value.DIRECTIONAL_BLOCKLIGHT.0=OFF
 value.DIRECTIONAL_BLOCKLIGHT.3=Subtle §c[-]
 value.DIRECTIONAL_BLOCKLIGHT.7=Normal §c[-]
@@ -741,6 +804,10 @@ option.HELD_LIGHTING_MODE.comment=Allows handheld light sources to cast light on
 value.HELD_LIGHTING_MODE.0=§cOFF
 value.HELD_LIGHTING_MODE.1=Subtle
 value.HELD_LIGHTING_MODE.2=Normal
+
+option.BLOCKLIGHT_FLICKERING=Blocklight Flickering
+option.BLOCKLIGHT_FLICKERING.comment=Adds a flickering effect to the light cast from blocks.
+value.BLOCKLIGHT_FLICKERING.0=OFF
 
 option.WAVING_SPEED=Waving Speed
 option.WAVING_SPEED.comment=Adjusts how quickly the waving effects happen.
@@ -764,6 +831,9 @@ option.WAVING_LEAVES.comment=Adds movement to leaves to simulate wind.
 
 option.WAVING_LAVA=Waving Lava Texture
 option.WAVING_LAVA.comment=Adds constant movement to lava. §e[*]§r Lava waving in particular is not affected by the "No Waving in Closed Areas" setting.
+
+option.WAVING_LILY_PAD=Waving Lily Pad
+option.WAVING_LILY_PAD.comment=Adds movement to lily pads to simulate impact from water waves.
 
 option.WAVING_WATER_VERTEX=Waving Water Texture
 option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind. §e[*]§r This option is not related to the "Water Wave Strength" setting.
@@ -800,7 +870,7 @@ value.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE.0=Cylinder
 value.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE.1=Sphere
 
 option.RAIN_PUDDLES=Rain Puddles
-option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic, and Block Reflection Quality must be set to Medium or above. §c[-]§r Rain puddles can severely impact performance.
+option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic, and Block Reflection Quality must be set to Medium or higher. §c[-]§r Rain puddles can severely impact performance.
 value.RAIN_PUDDLES.0=OFF
 value.RAIN_PUDDLES.1=§aON - Puddles
 value.RAIN_PUDDLES.2=§aON - Full Coverage
@@ -825,6 +895,9 @@ option.SELECT_OUTLINE_B=SO Blue
 
 option.MOON_PHASE_INF_LIGHT=Moon Phased Night Lighting
 option.MOON_PHASE_INF_LIGHT.comment=Enables different moon phases to change the night lighting brightness.
+
+option.MOON_PHASE_INF_ATMOSPHERE=Moon Phased Night Atmosphere
+option.MOON_PHASE_INF_ATMOSPHERE.comment=Enabled different moon phases to change the night atmosphere brightness.
 
 option.MOON_PHASE_INF_REFLECTION=Moon Phased Moon Reflection
 option.MOON_PHASE_INF_REFLECTION.comment=Enables different moon phases to change the brightness of moon reflections.

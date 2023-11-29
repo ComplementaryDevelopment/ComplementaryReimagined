@@ -36,27 +36,27 @@ float sunVisibility2 = sunVisibility * sunVisibility;
 #include "/lib/colors/lightAndAmbientColors.glsl"
 
 #ifdef COLOR_CODED_PROGRAMS
-	#include "/lib/misc/colorCodedPrograms.glsl"
+    #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 //Program//
 void main() {
-	vec4 color = texture2D(tex, texCoord);
-	color *= glColor;
+    vec4 color = texture2D(tex, texCoord);
+    color *= glColor;
 
-	if (color.a < 0.1 || isEyeInWater == 3) discard;
+    if (color.a < 0.1 || isEyeInWater == 3) discard;
 
-	if (color.r + color.g < 1.5) color.a *= rainTexOpacity;
-	else color.a *= snowTexOpacity;
+    if (color.r + color.g < 1.5) color.a *= rainTexOpacity;
+    else color.a *= snowTexOpacity;
 
-	color.rgb = sqrt3(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + (ambientColor + 0.2 * lightColor) * lmCoord.y * (0.6 + 0.3 * sunFactor));
+    color.rgb = sqrt3(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + (ambientColor + 0.2 * lightColor) * lmCoord.y * (0.6 + 0.3 * sunFactor));
 
-	#ifdef COLOR_CODED_PROGRAMS
-		ColorCodeProgram(color);
-	#endif
+    #ifdef COLOR_CODED_PROGRAMS
+        ColorCodeProgram(color);
+    #endif
 
-	/* DRAWBUFFERS:0 */
-	gl_FragData[0] = color;
+    /* DRAWBUFFERS:0 */
+    gl_FragData[0] = color;
 }
 
 #endif
@@ -86,21 +86,21 @@ uniform mat4 gbufferModelViewInverse;
 
 //Program//
 void main() {
-	vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
-	glColor = gl_Color;
+    vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
+    glColor = gl_Color;
 
-	#ifdef WAVING_RAIN
-		position.xz += (0.4 * position.y + 0.2) * vec2(sin(frameTimeCounter * 0.3) + 0.5, sin(frameTimeCounter * 0.5) * 0.5);
-		position.xz *= 1.0 - 0.08 * position.y;
-	#endif
+    #ifdef WAVING_RAIN
+        position.xz += (0.4 * position.y + 0.2) * vec2(sin(frameTimeCounter * 0.3) + 0.5, sin(frameTimeCounter * 0.5) * 0.5);
+        position.xz *= 1.0 - 0.08 * position.y;
+    #endif
 
-	gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+    gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
 
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	lmCoord  = GetLightMapCoordinates();
-	
-	upVec = normalize(gbufferModelView[1].xyz);
-	sunVec = GetSunVector();
+    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    lmCoord  = GetLightMapCoordinates();
+
+    upVec = normalize(gbufferModelView[1].xyz);
+    sunVec = GetSunVector();
 }
 
 #endif

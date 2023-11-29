@@ -14,7 +14,7 @@ vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 playerPos, vec3 viewP
     vec3 nPlayerPos = normalize(playerPos);
 
     #ifdef BORDER_FOG
-        float maxDist = min(far, 256.0); // consistency9023HFUE85JG
+        float maxDist = min(far, NETHER_VIEW_LIMIT); // consistency9023HFUE85JG
     #else
         float maxDist = far;
     #endif
@@ -35,7 +35,7 @@ vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 playerPos, vec3 viewP
     #endif
 
     vec3 translucentMultM = pow(translucentMult, vec3(1.0 / sampleCount));
-    
+
     for (int i = 0; i < sampleCount; i++) {
         tracePos += traceAdd;
 
@@ -53,7 +53,7 @@ vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 playerPos, vec3 viewP
         float traceAltitudeM = abs(tracePos.y - NETHER_STORM_LOWER_ALT);
         if (tracePos.y < NETHER_STORM_LOWER_ALT) traceAltitudeM *= 10.0;
         traceAltitudeM = 1.0 - min1(abs(traceAltitudeM) / NETHER_STORM_HEIGHT);
-        
+
         for (int h = 0; h < 4; h++) {
             float stormSample = pow2(Noise3D(tracePosM + wind));
             stormSample *= traceAltitudeM;

@@ -17,6 +17,10 @@
 //Uniforms//
 uniform float far, near;
 
+uniform int isEyeInWater;
+
+uniform vec3 cameraPosition;
+
 uniform sampler2D colortex0;
 
 #if WORLD_BLUR > 0
@@ -36,14 +40,8 @@ uniform sampler2D colortex0;
     #endif
 
     #ifdef WB_FOV_SCALED
-	    uniform mat4 gbufferProjection;
+        uniform mat4 gbufferProjection;
     #endif
-#endif
-
-#if WORLD_BLUR > 0 && defined BLOOM_FOG_COMPOSITE3
-    uniform int isEyeInWater;
-
-    uniform vec3 cameraPosition;
 #endif
 
 //Pipeline Constants//
@@ -53,8 +51,8 @@ uniform sampler2D colortex0;
 
 //Common Variables//
 #if WORLD_BLUR > 0
-	float SdotU = dot(sunVec, upVec);
-	float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
+    float SdotU = dot(sunVec, upVec);
+    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 
     vec2 dofOffsets[18] = vec2[18](
         vec2( 0.0    ,  0.25  ),
@@ -165,8 +163,8 @@ void main() {
         #endif
     #endif
 
-	/* DRAWBUFFERS:0 */
-	gl_FragData[0] = vec4(color, 1.0);
+    /* DRAWBUFFERS:0 */
+    gl_FragData[0] = vec4(color, 1.0);
 }
 
 #endif
@@ -192,10 +190,10 @@ void main() {
 
 //Program//
 void main() {
-	gl_Position = ftransform();
-    
+    gl_Position = ftransform();
+
     #if WORLD_BLUR > 0
-	    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+        texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         upVec = normalize(gbufferModelView[1].xyz);
         sunVec = GetSunVector();
     #endif

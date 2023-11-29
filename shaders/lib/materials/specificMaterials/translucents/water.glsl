@@ -47,9 +47,9 @@
 
     reflectMult = 1.0;
 
-	#if WATER_QUALITY >= 3
-		materialMask = OSIEBCA * 241.0; // Water
-	#endif
+    #if WATER_QUALITY >= 3
+        materialMask = OSIEBCA * 241.0; // Water
+    #endif
 
     #if WATER_QUALITY >= 2 || WATER_STYLE >= 2
         #define WATER_SPEED_MULT_M WATER_SPEED_MULT * 0.018
@@ -92,14 +92,14 @@
                      normalBig += texture2D(gaux4, waterPosM * 0.05 - 0.05 * wind).rg - 0.5;
 
                 normalMap.xy = normalMed * WATER_BUMP_MED + normalSmall * WATER_BUMP_SMALL + normalBig * WATER_BUMP_BIG;
-                normalMap.xy *= 12.0 * (1.0 - fresnel) * WATER_BUMPINESS_M;
+                normalMap.xy *= 6.0 * (1.0 - 0.7 * fresnel) * WATER_BUMPINESS_M;
             #endif
 
             normalMap.xy *= 0.03 * lmCoordM.y + 0.01;
         #else
             float pNormalMult = 0.02 * rainFactor * inRainy * pow2(lmCoordM.y);
 
-            if (pNormalMult > 0.0005) {       
+            if (pNormalMult > 0.0005) {
                 vec2 puddlePos = floor((playerPos.xz + cameraPosition.xz) * 16.0) * 0.00625;
 
                 vec2 puddleWind = vec2(frameTimeCounter) * 0.015;
@@ -107,7 +107,7 @@
                 vec2 pNormalCoord2 = puddlePos + vec2(puddleWind.x * -1.5, puddleWind.y * -1.0);
                 vec3 pNormalNoise1 = texture2D(noisetex, pNormalCoord1).rgb;
                 vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
-                
+
                 normalMap.xy = (pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult;
         #endif
 
@@ -150,7 +150,7 @@
             #endif
             float lViewPosT = length(viewPosT);
             float lViewPosDifM = lViewPos - lViewPosT;
-            
+
             #if WATER_STYLE < 3
                 color.a = sqrt1(color.a);
             #else
@@ -175,7 +175,7 @@
                 color.a = pow(color.a, WATER_ALPHA_MULT_M);
             #endif
             ////
-        
+
             // Water Foam
             #if WATER_FOAM_I > 0
                 if (NdotU > 0.99) {
@@ -231,7 +231,7 @@
             #endif
         }
     #else
-        shadowMult = vec3(0.0); 
+        shadowMult = vec3(0.0);
     #endif
 
     // Final Tweaks
@@ -242,13 +242,16 @@
     #if WATER_STYLE == 3 || WATER_STYLE == 2 && SUN_MOON_STYLE >= 2
         smoothnessG = 1.0;
 
-        vec3 lightNormal = normalize(vec3(normalMed + 0.5 * normalSmall, 1.0) * tbnMatrix);
+        const float WATER_BUMPINESS_M2 = min(WATER_BUMP_MED * WATER_BUMP_SMALL * WATER_BUMPINESS * 0.65, 1.0);
+        vec2 lightNormalP = WATER_BUMPINESS_M2 * (normalMed + 0.5 * normalSmall);
+        vec3 lightNormal = normalize(vec3(lightNormalP, 1.0) * tbnMatrix);
         highlightMult = dot(lightNormal, lightVec);
         highlightMult = max0(highlightMult) / max(dot(normal, lightVec), 0.17);
-        highlightMult = mix(pow2(pow2(highlightMult * 1.1)), 1.0, min1(sqrt(miplevel) * 0.45)) * 0.3;
+        highlightMult = mix(pow2(pow2(highlightMult * 1.1)), 1.0, min1(sqrt(miplevel) * 0.45)) * 0.24;
     #else
         smoothnessG = 0.5;
 
-        highlightMult = min(pow2(pow2(dot(colorP.rgb, colorP.rgb) * 0.4)), 0.5) * (16.0 - 15.0 * fresnel2) * (sunVisibility > 0.5 ? 1.0 : 0.5);
+        highlightMult = min(pow2(pow2(dot(colorP.rgb, colorP.rgb) * 0.4)), 0.5);
+        highlightMult *= (16.0 - 15.0 * fresnel2) * (sunVisibility > 0.5 ? 0.85 : 0.425);
     #endif
 #endif

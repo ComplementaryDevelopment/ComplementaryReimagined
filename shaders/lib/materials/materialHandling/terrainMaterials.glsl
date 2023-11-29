@@ -7,7 +7,7 @@ if (mat < 10512) {
                         if (mat < 10008) {
                             if (mat == 10000) { // No directional shading
                                 noDirectionalShading = true;
-                            } 
+                            }
                             else if (mat == 10004) { // Grounded Waving Foliage
                                 subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
@@ -25,8 +25,8 @@ if (mat < 10512) {
                                 #include "/lib/materials/specificMaterials/terrain/leaves.glsl"
                             }
                             else /*if (mat == 10012)*/ { // Vine
-				                shadowMult = vec3(1.7);
-				                centerShadowBias = true;
+                                shadowMult = vec3(1.7);
+                                centerShadowBias = true;
                             }
                         }
                     } else {
@@ -91,8 +91,8 @@ if (mat < 10512) {
                             }
                         } else {
                             if (mat == 10040) { // Rails
-	                            color = texture2DLod(tex, texCoord, 0);
-                                
+                                color = texture2DLod(tex, texCoord, 0);
+
                                 noSmoothLighting = true;
                                 if (color.r > 0.1 && color.g + color.b < 0.1) { // Redstone Parts
                                     noSmoothLighting = true; noDirectionalShading = true;
@@ -121,7 +121,7 @@ if (mat < 10512) {
                             else /*if (mat == 10044)*/ { // Empty Cauldron, Hopper
                                 noSmoothLighting = true;
                                 lmCoordM.x = min(lmCoordM.x, 0.9333);
-                                
+
                                 #include "/lib/materials/specificMaterials/terrain/anvil.glsl"
                             }
                         }
@@ -130,7 +130,7 @@ if (mat < 10512) {
                             if (mat == 10048) { // Water Cauldron
                                 noSmoothLighting = true;
                                 lmCoordM.x = min(lmCoordM.x, 0.9333);
-                                
+
                                 vec3 worldPos = playerPos + cameraPosition;
                                 vec3 fractPos = fract(worldPos.xyz);
                                 vec2 coordM = abs(fractPos.xz - 0.5);
@@ -157,7 +157,7 @@ if (mat < 10512) {
                             else /*if (mat == 10052)*/ { // Powder Snow Cauldron
                                 noSmoothLighting = true;
                                 lmCoordM.x = min(lmCoordM.x, 0.9333);
-                                
+
                                 vec3 worldPos = playerPos + cameraPosition;
                                 vec3 fractPos = fract(worldPos.xyz);
                                 vec2 coordM = abs(fractPos.xz - 0.5);
@@ -333,7 +333,7 @@ if (mat < 10512) {
                                 if (glColor.b < 0.999) { // Grass Block:Normal:Grass Part
                                     smoothnessG = pow2(color.g);
 
-		                            #ifdef SNOWY_WORLD
+                                    #ifdef SNOWY_WORLD
                                         snowMinNdotU = min(pow2(pow2(color.g)) * 1.9, 0.1);
                                         color.rgb = color.rgb * 0.5 + 0.5 * (color.rgb / glColor.rgb);
                                     #endif
@@ -611,7 +611,7 @@ if (mat < 10512) {
                                 #ifdef COATED_TEXTURES
                                     noiseFactor = 1.5;
                                 #endif
-                                
+
                                 #ifdef GLOWING_ORE_ANCIENTDEBRIS
                                     emission = min(pow2(color.g * 6.0), 8.0);
                                     color.rgb *= pow(color.rgb, vec3(min1(GLOWING_ORE_MULT)));
@@ -714,16 +714,7 @@ if (mat < 10512) {
                                 }
                             }
                             else /*if (mat == 10292)*/ { // Copper Block++:All Non-raw Variants
-                                materialMask = OSIEBCA * 2.0; // Copper Fresnel
-                                smoothnessG = pow2(pow2(color.r)) + pow2(max0(color.g - color.r * 0.5)) * 0.3;
-                                smoothnessG = min1(smoothnessG);
-                                smoothnessD = smoothnessG;
-
-                                color.rgb *= 0.6 + 0.7 * GetLuminance(color.rgb);
-
-                                #ifdef COATED_TEXTURES
-                                    noiseFactor = 0.5;
-                                #endif
+                                #include "/lib/materials/specificMaterials/terrain/copperBlock.glsl"
                             }
                         } else {
                             if (mat == 10296) { // Raw Gold Block
@@ -798,14 +789,14 @@ if (mat < 10512) {
                                 }
                             }
                             else /*if (mat == 10324)*/ { // Deepslate Diamond Ore
-                                if (color.b / color.r > 1.5 || color.b > 0.8) { // Diamond Ore:Diamond Part
+                                if (color.b / color.r > 1.5 || color.b > 0.8) { // Deepslate Diamond Ore:Diamond Part
                                     #include "/lib/materials/specificMaterials/terrain/diamondBlock.glsl"
                                     #ifdef GLOWING_ORE_DIAMOND
                                         emission = color.g + 1.5;
                                         color.rgb *= pow(color.rgb, vec3(min1(GLOWING_ORE_MULT)));
                                         emission *= GLOWING_ORE_MULT;
                                     #endif
-                                } else { // Diamond Ore:Stone Part, Diamond Ore:StoneToDiamond part
+                                } else { // Deepslate Diamond Ore:Deepslate Part, Deepslate Diamond Ore:DeepslateToDiamond part
                                     #include "/lib/materials/specificMaterials/terrain/deepslate.glsl"
                                 }
                             }
@@ -833,7 +824,7 @@ if (mat < 10512) {
                                 smoothnessG = 0.8 - factor * 0.3;
                                 highlightMult = factor * 3.0;
                                 smoothnessD = factor;
-                                
+
                                 noSmoothLighting = true;
                                 lmCoordM.x *= 0.85;
 
@@ -1012,6 +1003,7 @@ if (mat < 10512) {
                                 #include "/lib/materials/specificMaterials/terrain/pumpkin.glsl"
                                 noSmoothLighting = true, noDirectionalShading = true;
                                 lmCoordM.y = 0.0;
+                                lmCoordM.x = 1.0;
 
                                 #if MC_VERSION >= 11300
                                     if (color.b > 0.28 && color.r > 0.9) {
@@ -1132,15 +1124,15 @@ if (mat < 10512) {
                 }
             } else {
                 if (mat < 10480) {
-                    if (mat < 10464) { 
+                    if (mat < 10464) {
                         if (mat < 10456) {
                             if (mat == 10448) { // Sea Lantern
                                 noSmoothLighting = true; noDirectionalShading = true;
                                 lmCoordM.x = 0.85;
-                                
+
                                 smoothnessD = min1(max0(0.5 - color.r) * 2.0);
                                 smoothnessG = color.g;
-                                
+
                                 float blockRes = absMidCoordPos.x * atlasSize.x;
                                 vec2 signMidCoordPosM = (floor((signMidCoordPos + 1.0) * blockRes) + 0.5) / blockRes - 1.0;
                                 float dotsignMidCoordPos = dot(signMidCoordPosM, signMidCoordPosM);
@@ -1178,7 +1170,7 @@ if (mat < 10512) {
                             }
                         } else {
                             if (mat == 10456) { // Command Block+
-	                            color = texture2DLod(tex, texCoord, 0);
+                                color = texture2DLod(tex, texCoord, 0);
 
                                 vec2 coord = signMidCoordPos;
                                 float blockRes = absMidCoordPos.x * atlasSize.x;
@@ -1186,7 +1178,7 @@ if (mat < 10512) {
                                 float maxCoord = max(absCoord.x, absCoord.y);
 
                                 float dif = GetMaxColorDif(color.rgb);
-                                
+
                                 if ( // This mess exists because Iris' midCoord is slightly inaccurate
                                     dif > 0.1 && maxCoord < 0.375 &&
                                     !CheckForColor(color.rgb, vec3(111, 73, 43)) &&
@@ -1283,7 +1275,7 @@ if (mat < 10512) {
                         if (mat < 10504) {
                             if (mat == 10496) { // Torch
                                 noDirectionalShading = true;
-                                
+
                                 if (color.r > 0.95) {
                                     noSmoothLighting = true;
                                     lmCoordM.x = 1.0;
@@ -1356,7 +1348,7 @@ if (mat < 10512) {
                                 #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
 
                                 float dotColor = dot(color.rgb, color.rgb);
-                                emission = 2.5 * dotColor * max0(pow2(pow2(pow2(color.r))) - color.b) + pow(dotColor * 0.35, 32.0);                
+                                emission = 2.5 * dotColor * max0(pow2(pow2(pow2(color.r))) - color.b) + pow(dotColor * 0.35, 32.0);
                                 color.r *= 1.0 + 0.1 * emission;
                             }
                         } else {
@@ -1446,10 +1438,15 @@ if (mat < 10512) {
                                 #if GLOWING_LICHEN > 0
                                     float dotColor = dot(color.rgb, color.rgb);
                                     emission = min(pow2(pow2(dotColor) * dotColor) * 1.4 + dotColor * 0.9, 6.0);
+                                    emission = mix(emission, dotColor * 1.5, min1(lViewPos / 96.0)); // Less noise in the distance
 
                                     #if GLOWING_LICHEN == 1
                                         float skyLightFactor = pow2(1.0 - min1(lmCoord.y * 2.9));
                                         emission *= skyLightFactor;
+
+                                        color.r *= 1.0 + 0.15 * skyLightFactor;
+                                    #else
+                                        color.r *= 1.15;
                                     #endif
                                 #endif
                             }
@@ -1579,7 +1576,7 @@ if (mat < 10512) {
                         } else {
                             if (mat == 10584) { // Candle++:Lit
                                 noSmoothLighting = true;
-                                
+
                                 color.rgb *= 1.0 + pow2(max(-signMidCoordPos.y, float(NdotU > 0.9) * 1.2));
 
                                 #ifdef SNOWY_WORLD
@@ -1698,12 +1695,12 @@ if (mat < 10512) {
                                 }
                                 noSmoothLighting = true;
                             }
-                            else /*if (mat == 10628)*/ { // Cave Vines:No Berries
+                            else /*if (mat == 10628)*/ { // Cave Vines:No Glow Berries
                                 subsurfaceMode = 1;
                                 lmCoordM.x *= 0.875;
                             }
                         } else {
-                            if (mat == 10632) { // Cave Vines:With Berries
+                            if (mat == 10632) { // Cave Vines:With Glow Berries
                                 subsurfaceMode = 1;
                                 lmCoordM.x *= 0.875;
 
@@ -1737,7 +1734,7 @@ if (mat < 10512) {
                                 float factor = pow2(smoothnessG);
                                 highlightMult = factor * 2.0 + 1.0;
                                 smoothnessD = min1(factor * 2.0);
-                            
+
                                 if (color.b > 0.1) {
                                     float dotColor = dot(color.rgb, color.rgb);
                                     #if MC_VERSION >= 11300
@@ -1792,7 +1789,7 @@ if (mat < 10512) {
                         if (mat < 10664) {
                             if (mat == 10656) { // Soul Campfire:Lit
                                 noSmoothLighting = true;
-                                
+
                                 float dotColor = dot(color.rgb, color.rgb);
                                 if (color.r > color.b) {
                                     #include "/lib/materials/specificMaterials/terrain/oakWood.glsl"
@@ -1808,7 +1805,7 @@ if (mat < 10512) {
                             }
                             else /*if (mat == 10660)*/ { // Campfire:Unlit, Soul Campfire:Unlit
                                 noSmoothLighting = true;
-                                
+
                                 if (color.r > color.b) {
                                     #include "/lib/materials/specificMaterials/terrain/oakWood.glsl"
                                 }
@@ -1882,7 +1879,17 @@ if (mat < 10512) {
                             if (mat == 10696) { // Sculk, Sculk Catalyst, Sculk Vein, Sculk Sensor:Unlit
                                 float boneFactor = max0(color.r * 1.25 - color.b);
 
-                                if (boneFactor < 0.0001) emission = pow2(max0(color.g - color.r)) * 1.7;
+                                if (boneFactor < 0.0001) {
+                                    emission = pow2(max0(color.g - color.r)) * 1.7;
+
+                                    #ifdef GBUFFERS_TERRAIN
+                                        vec2 bpos = floor(playerPos.xz + cameraPosition.xz + 0.5)
+                                                + floor(playerPos.y + cameraPosition.y + 0.5);
+                                        bpos = bpos * 0.01 + 0.003 * frameTimeCounter;
+                                        emission *= pow2(texture2D(noisetex, bpos).r * pow1_5(texture2D(noisetex, bpos * 0.5).r));
+                                        emission *= 6.0;
+                                    #endif
+                                }
 
                                 smoothnessG = min1(boneFactor * 1.7);
                                 smoothnessD = smoothnessG;
@@ -1970,7 +1977,7 @@ if (mat < 10512) {
                             }
                             else /*if (mat == 10732)*/ { // Potted Stuff:With Subsurface
                                 noSmoothLighting = true;
-                                
+
                                 float NdotE = dot(normalM, eastVec);
                                 if (abs(abs(NdotE) - 0.5) < 0.4) {
                                     subsurfaceMode = 1, noDirectionalShading = true;
@@ -2060,7 +2067,7 @@ if (mat < 10512) {
                             }
                             else /*if (mat == 10772)*/ { // Potted Torchflower
                                 noSmoothLighting = true;
-                                
+
                                 float NdotE = dot(normalM, eastVec);
                                 if (abs(abs(NdotE) - 0.5) < 0.4) {
                                     subsurfaceMode = 1, noDirectionalShading = true;
@@ -2219,7 +2226,7 @@ if (mat < 10512) {
                                         emission = 2.5 * pow1_5(cLength);
                                     } else {
                                         lmCoordM.x = max(lmCoordM.x * 0.9, cLength);
-                                        
+
                                         #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
                                     }
                                 #else
@@ -2252,15 +2259,40 @@ if (mat < 10512) {
                         }
                     } else {
                         if (mat < 10856) {
-                            if (mat == 10848) { //
+                            if (mat == 10848) { // Crafter
+                                smoothnessG = pow2(color.b);
+                                smoothnessD = max(smoothnessG, 0.2);
 
+                                if (color.r > 2.5 * (color.g + color.b)) {
+                                    emission = 4.0;
+                                    color.rgb *= color.rgb;
+                                }
                             }
-                            else /*if (mat == 10852)*/ { //
+                            else /*if (mat == 10852)*/ { // Copper Bulb+
+                                noSmoothLighting = true;
 
+                                vec3 hsvColor = rgb2hsv(color.rgb);
+                                if (abs(hsvColor.r - 0.09722) < 0.04305 && hsvColor.b > 0.7) { // Active Light Part
+                                    smoothnessG = 0.75;
+                                    smoothnessD = 0.35;
+
+                                    float blockRes = absMidCoordPos.x * atlasSize.x;
+                                    vec2 signMidCoordPosM = (floor((signMidCoordPos + 1.0) * blockRes) + 0.5) / blockRes - 1.0;
+                                    float dotsignMidCoordPos = dot(signMidCoordPosM, signMidCoordPosM);
+                                    float lBlockPosM = pow2(max0(1.0 - 1.7 * pow2(pow2(dotsignMidCoordPos))));
+
+                                    emission = pow2(lmCoordM.x) + 0.3 * color.r;
+                                    emission *= (0.7 + 2.0 * pow2(lBlockPosM));
+                                } else if (color.r > 2.5 * (color.g + color.b)) { // Middle Redstone Part
+                                    emission = 4.0;
+                                    color.rgb *= color.rgb;
+                                } else { // Copper Base
+                                    #include "/lib/materials/specificMaterials/terrain/copperBlock.glsl"
+                                }
                             }
                         } else {
                             if (mat == 10856) { //
-                            
+
                             }
                             else /*if (mat == 10860)*/ { //
 
@@ -2271,14 +2303,14 @@ if (mat < 10512) {
                     if (mat < 10880) {
                         if (mat < 10872) {
                             if (mat == 10864) { //
-                            
+
                             }
                             else /*if (mat == 10868)*/ { //
 
                             }
                         } else {
                             if (mat == 10872) { //
-                            
+
                             }
                             else /*if (mat == 10876)*/ { //
 
@@ -2287,14 +2319,14 @@ if (mat < 10512) {
                     } else {
                         if (mat < 10888) {
                             if (mat == 10880) { //
-                            
+
                             }
                             else /*if (mat == 10884)*/ { //
 
                             }
                         } else {
                             if (mat == 10888) { //
-                            
+
                             }
                             else /*if (mat == 10892)*/ { //
 
@@ -2309,14 +2341,14 @@ if (mat < 10512) {
                     if (mat < 10912) {
                         if (mat < 10904) {
                             if (mat == 10896) { //
-                            
+
                             }
                             else /*if (mat == 10900)*/ { //
 
                             }
                         } else {
                             if (mat == 10904) { //
-                            
+
                             }
                             else /*if (mat == 10908)*/ { //
 
@@ -2325,14 +2357,14 @@ if (mat < 10512) {
                     } else {
                         if (mat < 10920) {
                             if (mat == 10912) { //
-                            
+
                             }
                             else /*if (mat == 10916)*/ { //
 
                             }
                         } else {
                             if (mat == 10920) { //
-                            
+
                             }
                             else /*if (mat == 10924)*/ { //
 
@@ -2343,14 +2375,14 @@ if (mat < 10512) {
                     if (mat < 10944) {
                         if (mat < 10936) {
                             if (mat == 10928) { //
-                            
+
                             }
                             else /*if (mat == 10932)*/ { //
 
                             }
                         } else {
                             if (mat == 10936) { //
-                            
+
                             }
                             else /*if (mat == 10940)*/ { //
 
@@ -2359,14 +2391,14 @@ if (mat < 10512) {
                     } else {
                         if (mat < 10952) {
                             if (mat == 10944) { //
-                            
+
                             }
                             else /*if (mat == 10948)*/ { //
 
                             }
                         } else {
                             if (mat == 10952) { //
-                            
+
                             }
                             else /*if (mat == 10956)*/ { //
 
@@ -2379,14 +2411,14 @@ if (mat < 10512) {
                     if (mat < 10976) {
                         if (mat < 10968) {
                             if (mat == 10960) { //
-                            
+
                             }
                             else /*if (mat == 10964)*/ { //
 
                             }
                         } else {
                             if (mat == 10968) { //
-                            
+
                             }
                             else /*if (mat == 10972)*/ { //
 
@@ -2395,14 +2427,14 @@ if (mat < 10512) {
                     } else {
                         if (mat < 10984) {
                             if (mat == 10976) { //
-                            
+
                             }
                             else /*if (mat == 10980)*/ { //
 
                             }
                         } else {
                             if (mat == 10984) { //
-                            
+
                             }
                             else /*if (mat == 10988)*/ { //
 
@@ -2413,14 +2445,14 @@ if (mat < 10512) {
                     if (mat < 11008) {
                         if (mat < 11000) {
                             if (mat == 10992) { //
-                            
+
                             }
                             else /*if (mat == 10996)*/ { //
 
                             }
                         } else {
                             if (mat == 11000) { //
-                            
+
                             }
                             else /*if (mat == 11004)*/ { //
 
@@ -2429,14 +2461,14 @@ if (mat < 10512) {
                     } else {
                         if (mat < 11016) {
                             if (mat == 11008) { //
-                            
+
                             }
                             else /*if (mat == 11012)*/ { //
 
                             }
                         } else {
                             if (mat == 11016) { //
-                            
+
                             }
                             else /*if (mat == 11020)*/ { //
 

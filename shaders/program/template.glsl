@@ -20,7 +20,7 @@
 
 //Program//
 void main() {
-    
+
 }
 
 #endif
@@ -40,7 +40,7 @@ void main() {
 
 //Program//
 void main() {
-    
+
 }
 
 #endif

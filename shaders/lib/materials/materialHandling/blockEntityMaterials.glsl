@@ -42,7 +42,7 @@ if (blockEntityId < 60028) {
                 if (color.g > color.r || color.b > color.g)
                     emission = pow2(factor) * 20.0;
                 emission += 0.35;
-                
+
                 #ifdef COATED_TEXTURES
                     noiseFactor = 0.66;
                 #endif
@@ -81,24 +81,31 @@ if (blockEntityId < 60028) {
                 }
             }
         } else {
-            if (blockEntityId == 60036) { // 
+            if (blockEntityId == 60036) { // Dragon Head:Powered
+                noSmoothLighting = true;
+                if (color.r + color.b > color.g * 3.0) {
+                    emission = 5.0;
+                    color.g *= 0.3;
+                }
+                #ifdef COATED_TEXTURES
+                    noiseFactor = 0.2;
+                #endif
+            } else /*if (blockEntityId == 60040)*/ { //
 
-            } else /*if (blockEntityId == 60040)*/ { // 
-            
             }
         }
     } else {
         if (blockEntityId < 60052) {
             if (blockEntityId == 60044) { //
-                
+
             } else /*if (blockEntityId == 60048)*/ { //
-            
+
             }
         } else {
-            if (blockEntityId == 60052) { // 
+            if (blockEntityId == 60052) { //
 
-            } else if (blockEntityId == 60056) { // 
-            
+            } else if (blockEntityId == 60056) { //
+
             }
         }
     }

@@ -7,15 +7,15 @@ float GetStarNoise(vec2 pos) {
 vec2 GetStarCoord(vec3 viewPos, float sphereness) {
     vec3 wpos = normalize((gbufferModelViewInverse * vec4(viewPos * 1000.0, 1.0)).xyz);
     vec3 starCoord = wpos / (wpos.y + length(wpos.xz) * sphereness);
-	vec3 moonPos = vec3(gbufferModelViewInverse * vec4(- sunVec * 70.0, 1.0));
-	vec3 moonCoord = moonPos / (moonPos.y + length(moonPos.xz) * sphereness);
-	return starCoord.xz - moonCoord.xz;
+    vec3 moonPos = vec3(gbufferModelViewInverse * vec4(- sunVec * 70.0, 1.0));
+    vec3 moonCoord = moonPos / (moonPos.y + length(moonPos.xz) * sphereness);
+    return starCoord.xz - moonCoord.xz;
 }
 
 vec3 GetStars(vec2 starCoord, float VdotU, float VdotS) {
     if (VdotU < 0.0) return vec3(0.0);
 
-    starCoord *= 0.2;
+    starCoord *= 0.25;
     float starFactor = 1024.0;
     starCoord = floor(starCoord * starFactor) / starFactor;
 
@@ -33,7 +33,7 @@ vec3 GetStars(vec2 starCoord, float VdotU, float VdotS) {
     star = max0(star);
     star *= star;
 
-	float starFogFactor = min1(VdotU * 3.0);
+    float starFogFactor = min1(VdotU * 3.0);
     star *= starFogFactor * (1.0 - sunVisibility);
     star *= max0(1.0 - pow(abs(VdotS) * 1.002, 100.0));
 
