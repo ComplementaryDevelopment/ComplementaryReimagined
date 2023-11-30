@@ -91,7 +91,9 @@ if (mat < 10512) {
                             }
                         } else {
                             if (mat == 10040) { // Rails
-                                color = texture2DLod(tex, texCoord, 0);
+                                #if ANISOTROPIC_FILTER == 0
+                                    color = texture2DLod(tex, texCoord, 0);
+                                #endif
 
                                 noSmoothLighting = true;
                                 if (color.r > 0.1 && color.g + color.b < 0.1) { // Redstone Parts

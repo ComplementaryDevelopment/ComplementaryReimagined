@@ -38,7 +38,7 @@ vec2 lensFlareCheckOffsets[4] = vec2[4](
 );
 
 void DoLensFlare(inout vec3 color, vec3 viewPos, float dither) {
-    vec4 clipPosSun = gbufferProjection * vec4(sunVec, 1.0);
+    vec4 clipPosSun = gbufferProjection * vec4(sunVec + 0.001, 1.0); //+0.001 fixes black screen with camera rotation set to 0,0
     vec3 lightPos3 = clipPosSun.xyz / clipPosSun.w * 0.5;
     vec2 lightPos = lightPos3.xy;
     vec3 screenPosSun = lightPos3 + 0.5;
