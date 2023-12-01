@@ -246,7 +246,7 @@ void main() {
         bool noGeneratedNormals = false;
     #endif
     int subsurfaceMode = 0;
-    float smoothnessG = 0.0, highlightMult = 1.0, reflectMult = 0.0, emission = 0.0;
+    float smoothnessG = 0.0, highlightMult = 1.0, reflectMult = 0.0, emission = 100.0;
     vec2 lmCoordM = lmCoord;
     vec3 normalM = VdotN > 0.0 ? -normal : normal; // Inverted Iris Water Normal Workaround
     vec3 geoNormal = normalM;
