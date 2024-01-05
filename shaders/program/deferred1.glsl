@@ -315,18 +315,6 @@ void main() {
             }
         #endif
 
-        color.rgb *= ssao;
-						intenseFresnel = materialMaskInt / 240.0;
-						color.rgb *= 1.0 - 0.25 * metalness;
-					#endif
-					reflectColor = mix(reflectColor, color.rgb / max(color.r + 0.00001, max(color.g, color.b)), metalness);
-				#endif
-			} else {
-				if (materialMaskInt == 254) // No SSAO, No TAA
-					ssao = 1.0;
-			}
-		#endif
-
 		#if DISTANT_HORIZONS_BLENDING == 1
 			// Distant Horizons blending (SSAO)
 			vec3 localPos = (gbufferModelViewInverse * vec4(viewPos)).xyz;
