@@ -274,7 +274,14 @@ void main() {
         vec4 refToWrite = vec4(0.0);
     #endif
 
-    if (z0 < 1.0) {
+    float maxDepth;
+    #if SKYBOX_REFLECTIONS == 1
+        maxDepth = 1.01;
+    #elif
+        maxDepth = 1.0;
+    #endif
+
+    if (z0 < maxDepth) {
         vec3 texture6 = texelFetch(colortex6, texelCoord, 0).rgb;
 
         #if SSAO_QUALI > 0 || defined WORLD_OUTLINE || defined TEMPORAL_FILTER

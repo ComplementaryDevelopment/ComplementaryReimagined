@@ -869,6 +869,11 @@ option.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE.comment=The radius type of blending
 value.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE.0=Cylinder
 value.DISTANT_HORIZONS_BLENDING_RADIUS_TYPE.1=Sphere
 
+option.SKYBOX_REFLECTIONS=Skybox Reflections
+option.SKYBOX_REFLECTIONS.comment=Reflects the skybox onto water, which will cause Distant Horizons' LODs to reflect onto water as well.
+value.SKYBOX_REFLECTIONS.0=OFF
+value.SKYBOX_REFLECTIONS.1=ON
+
 option.RAIN_PUDDLES=Rain Puddles
 option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic, and Block Reflection Quality must be set to Medium or higher. §c[-]§r Rain puddles can severely impact performance.
 value.RAIN_PUDDLES.0=OFF
