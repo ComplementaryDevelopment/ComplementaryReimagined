@@ -172,6 +172,10 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
     #include "/lib/materials/materialMethods/anisotropicFiltering.glsl"
 #endif
 
+#if PIXEL_WATER > 0
+#include "/lib/materials/materialMethods/waterProcedureTexture.glsl"
+#endif
+
 //Program//
 void main() {
     #if ANISOTROPIC_FILTER == 0

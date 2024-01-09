@@ -145,6 +145,10 @@ float GetLinearDepth(float depth) {
 #include "/lib/lighting/mainLighting.glsl"
 #include "/lib/atmospherics/fog/mainFog.glsl"
 
+#if PIXEL_WATER > 0
+#include "/lib/materials/materialMethods/waterProcedureTexture.glsl"
+#endif
+
 #ifdef OVERWORLD
     #include "/lib/atmospherics/sky.glsl"
 #endif

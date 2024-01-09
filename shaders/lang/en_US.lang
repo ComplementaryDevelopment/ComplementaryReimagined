@@ -420,6 +420,11 @@ value.WATER_STYLE_DEFINE.1=Reimagined
 value.WATER_STYLE_DEFINE.2=Reimagined + Waves
 value.WATER_STYLE_DEFINE.3=Unbound
 
+option.PIXEL_WATER=Procedural Pixel Water
+option.PIXEL_WATER.comment=Generated procedural pixelated water texture.
+value.PIXEL_WATER.0=OFF
+value.PIXEL_WATER.1=ON
+
 option.WATER_CAUSTIC_STYLE_DEFINE=Water Caustic Style
 option.WATER_CAUSTIC_STYLE_DEFINE.comment=Determines the style of water shadows, also known as water caustics.
 value.WATER_CAUSTIC_STYLE_DEFINE.-1=Same as Water

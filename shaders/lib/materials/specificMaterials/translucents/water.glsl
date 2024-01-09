@@ -1,3 +1,11 @@
+#if PIXEL_WATER > 0
+const float water_scroll_speed = 0.004;
+vec3 worldPosPixel = playerPos + cameraPosition;
+vec2 waterPosPixel = worldPosPixel.xz + (vec2(frameTimeCounter) * water_scroll_speed);
+vec3 waterMask = waterMaskFunc(waterPosPixel, water_scroll_speed);
+colorP.rgb = waterMask;
+color = vec4(waterMask.x, waterMask.y, waterMask.z, 0.75800);
+#endif
 #if MC_VERSION >= 11300
     #if WATERCOLOR_MODE >= 2
         vec3 glColorM = glColor.rgb;
@@ -25,11 +33,13 @@
         color.rgb = 0.375 * glColorM;
     #endif
 #else
-    #if WATER_STYLE < 3
-        color.rgb = mix(color.rgb, vec3(GetLuminance(color.rgb)), 0.88);
-        color.rgb = pow2(color.rgb) * vec3(2.3, 3.5, 3.1) * 0.9;
-    #else
-        color.rgb = vec3(0.13, 0.2, 0.27);
+    #if PIXEL_WATER < 1
+      #if WATER_STYLE < 3
+          color.rgb = mix(color.rgb, vec3(GetLuminance(color.rgb)), 0.88);
+          color.rgb = pow2(color.rgb) * vec3(2.3, 3.5, 3.1) * 0.9;
+      #else
+          color.rgb = vec3(0.13, 0.2, 0.27);
+      #endif
     #endif
 #endif
 
