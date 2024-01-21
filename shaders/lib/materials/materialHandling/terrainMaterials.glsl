@@ -49,14 +49,14 @@ if (mat < 10512) {
                             if (mat == 10024) { // Modded Ores
                                 #ifdef GLOWING_ORE_MODDED
                                     vec3 avgBorderColor = vec3(0.0);
-                                    avgBorderColor += texture2D(tex, midCoord + vec2( absMidCoordPos.x, absMidCoordPos.y)).rgb;
-                                    avgBorderColor += texture2D(tex, midCoord + vec2(-absMidCoordPos.x, absMidCoordPos.y)).rgb;
-                                    avgBorderColor += texture2D(tex, midCoord + vec2( absMidCoordPos.x,-absMidCoordPos.y)).rgb;
-                                    avgBorderColor += texture2D(tex, midCoord + vec2(-absMidCoordPos.x,-absMidCoordPos.y)).rgb;
-                                    avgBorderColor += texture2D(tex, midCoord + vec2(0.00001, absMidCoordPos.y)).rgb;
-                                    avgBorderColor += texture2D(tex, midCoord + vec2(0.00001,-absMidCoordPos.y)).rgb;
-                                    avgBorderColor += texture2D(tex, midCoord + vec2( absMidCoordPos.x, 0.00001)).rgb;
-                                    avgBorderColor += texture2D(tex, midCoord + vec2(-absMidCoordPos.x, 0.00001)).rgb;
+                                    avgBorderColor += texture2D(tex, vec2(1,1)).rgb;
+                                    avgBorderColor += texture2D(tex, vec2(0,1)).rgb;
+                                    avgBorderColor += texture2D(tex, vec2(1,0)).rgb;
+                                    avgBorderColor += texture2D(tex, vec2(0,0)).rgb;
+                                    avgBorderColor += texture2D(tex, vec2(0.5,1)).rgb;
+                                    avgBorderColor += texture2D(tex, vec2(0.5,0)).rgb;
+                                    avgBorderColor += texture2D(tex, vec2(1,0.5)).rgb;
+                                    avgBorderColor += texture2D(tex, vec2(0,0.5)).rgb;
                                     avgBorderColor *= 0.125;
 
                                     vec3 colorDif = abs(avgBorderColor - color.rgb);
