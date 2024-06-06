@@ -287,7 +287,6 @@ void main() {
 
         #if SHADOW_QUALITY == -1
             if (glColor.a < 0.5) gl_Position.z += 0.0005;
-            else
         #endif
     #endif
 }
