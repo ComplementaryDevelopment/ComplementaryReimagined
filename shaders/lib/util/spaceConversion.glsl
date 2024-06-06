@@ -18,3 +18,11 @@ vec3 PlayerToShadow(vec3 pos) {
     vec3 shadowpos = mat3(shadowModelView) * pos + shadowModelView[3].xyz;
     return projMAD(shadowProjection, shadowpos);
 }
+
+vec3 ShadowClipToShadowView(vec3 pos) {
+    return mat3(shadowProjectionInverse) * pos;
+}
+
+vec3 ShadowViewToPlayer(vec3 pos) {
+    return mat3(shadowModelViewInverse) * pos;
+}

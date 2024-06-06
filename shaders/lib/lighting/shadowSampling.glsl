@@ -1,7 +1,3 @@
-uniform sampler2D shadowcolor0;
-uniform sampler2DShadow shadowtex0;
-uniform sampler2DShadow shadowtex1;
-
 vec3 GetShadowPos(vec3 playerPos) {
     vec3 shadowPos = PlayerToShadow(playerPos);
     float distb = sqrt(shadowPos.x * shadowPos.x + shadowPos.y * shadowPos.y);
@@ -30,7 +26,7 @@ vec3 SampleShadow(vec3 shadowPos, float colorMult, float colorPow) {
 
 float InterleavedGradientNoiseForShadows() {
     float n = 52.9829189 * fract(0.06711056 * gl_FragCoord.x + 0.00583715 * gl_FragCoord.y);
-    #if !defined GBUFFERS_ENTITIES && !defined GBUFFERS_HAND && !defined GBUFFERS_TEXTURED
+    #if !defined GBUFFERS_ENTITIES && !defined GBUFFERS_HAND && !defined GBUFFERS_TEXTURED && defined TAA
         return fract(n + 1.61803398875 * mod(float(frameCounter), 3600.0));
     #else
         return fract(n);
@@ -98,7 +94,7 @@ vec3 SampleBasicFilteredShadow(vec3 shadowPos, float offset) {
 
 vec3 GetShadow(vec3 shadowPos, float lViewPos, float lightmapY, float offset, bool leaves) {
     #if SHADOW_QUALITY > 0
-        #if !defined ENTITY_SHADOWS && defined GBUFFERS_BLOCK
+        #if ENTITY_SHADOWS_DEFINE == -1 && defined GBUFFERS_BLOCK
             offset *= 4.0;
         #else
             #ifdef OVERWORLD

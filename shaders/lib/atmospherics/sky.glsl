@@ -123,4 +123,4 @@ vec3 GetLowQualitySky(float VdotU, float VdotS, float dither, bool doGlare, bool
     return finalSky;
 }
 
-#endif
+#endif //INCLUDE_SKY

@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -11,9 +11,6 @@
 in vec2 texCoord;
 
 in vec4 glColor;
-
-//Uniforms//
-uniform sampler2D tex;
 
 //Pipeline Constants//
 
@@ -36,11 +33,13 @@ void main() {
         }
     #endif
 
+    color.rgb *= 1.0 - 0.6 * pow2(pow2(min1(GetLuminance(color.rgb) * 1.2))); // Fixes ultra bright Breeze
+
     color.rgb = pow1_5(color.rgb);
     color.rgb *= pow2(1.0 + color.b + 0.5 * color.g) * 1.5;
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:0 */
@@ -55,8 +54,6 @@ void main() {
 out vec2 texCoord;
 
 out vec4 glColor;
-
-//Uniforms//
 
 //Attributes//
 

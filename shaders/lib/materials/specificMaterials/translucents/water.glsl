@@ -38,22 +38,23 @@
 #endif
 
 #define PHYSICS_OCEAN_INJECTION
-#if defined GENERATED_NORMALS && (WATER_STYLE >= 2 || defined PHYSICS_OCEAN)
+#if defined GENERATED_NORMALS && (WATER_STYLE >= 2 || defined PHYSICS_OCEAN) && !defined DH_WATER
     noGeneratedNormals = true;
 #endif
 
-#ifdef GBUFFERS_WATER
+#if defined GBUFFERS_WATER || defined DH_WATER
     lmCoordM.y = min(lmCoord.y * 1.07, 1.0); // Iris/Sodium skylight inconsistency workaround
 
     reflectMult = 1.0;
 
-    #if WATER_QUALITY >= 3
+    #if WATER_MAT_QUALITY >= 3
         materialMask = OSIEBCA * 241.0; // Water
     #endif
 
-    #if WATER_QUALITY >= 2 || WATER_STYLE >= 2
+    #if WATER_MAT_QUALITY >= 2 || WATER_STYLE >= 2
         #define WATER_SPEED_MULT_M WATER_SPEED_MULT * 0.018
-        vec2 wind = vec2(frameTimeCounter * WATER_SPEED_MULT_M, 0.0);
+        float rawWind = frameTimeCounter * WATER_SPEED_MULT_M;
+        vec2 wind = vec2(rawWind, 0.0);
         vec3 worldPos = playerPos + cameraPosition;
         vec2 waterPos = worldPos.xz * 16.0;
         #if WATER_STYLE < 3
@@ -63,7 +64,7 @@
     #endif
 
     // Water Normals
-    #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && WATER_QUALITY >= 2
+    #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && WATER_MAT_QUALITY >= 2
         vec3 normalMap = vec3(0.0, 0.0, 1.0);
         #if WATER_STYLE >= 2
             vec2 waterPosM = waterPos;
@@ -78,7 +79,7 @@
             #if WATER_STYLE >= 2
                 waterPosM *= 2.5; wind *= 2.5;
 
-                #if WATER_QUALITY >= 2
+                #if WATER_MAT_QUALITY >= 2
                     vec2 parallaxMult = -0.01 * viewVector.xy / viewVector.z;
                     for (int i = 0; i < 4; i++) {
                         waterPosM += parallaxMult * texture2D(gaux4, waterPosM - wind).a;
@@ -132,7 +133,7 @@
     float fresnel2 = pow2(fresnel);
     float fresnel4 = pow2(fresnel2);
 
-    #if WATER_QUALITY >= 2
+    #if WATER_MAT_QUALITY >= 2
         if (isEyeInWater != 1) {
             // Noise Coloring
             float noise = texture2D(noisetex, (waterPos + wind) * 0.25).g;
@@ -141,8 +142,12 @@
             color.rgb = pow(color.rgb, vec3(1.0 + noise));
 
             // Water Alpha
-            float depthT = texelFetch(depthtex1, texelCoord, 0).r;
-            vec3 screenPosT = vec3(screenCoord, depthT);
+            #ifdef GBUFFERS_WATER
+                float depthT = texelFetch(depthtex1, texelCoord, 0).r;
+            #elif defined DH_WATER
+                float depthT = texelFetch(dhDepthTex1, texelCoord, 0).r;
+            #endif
+            vec3 screenPosT = vec3(screenPos.xy, depthT);
             #ifdef TAA
                 vec3 viewPosT = ScreenToView(vec3(TAAJitter(screenPosT.xy, -0.5), screenPosT.z));
             #else
@@ -155,6 +160,10 @@
                 color.a = sqrt1(color.a);
             #else
                 color.a = 0.98;
+            #endif
+
+            #ifdef DISTANT_HORIZONS
+                if (depthT == 1.0) color.a *= smoothstep(far, far * 0.9, lViewPos);
             #endif
 
             #if WATER_FOG_MULT != 100
@@ -177,7 +186,7 @@
             ////
 
             // Water Foam
-            #if WATER_FOAM_I > 0
+            #if WATER_FOAM_I > 0 && defined GBUFFERS_WATER
                 if (NdotU > 0.99) {
                     vec3 matrixM = vec3(
                         gbufferModelViewInverse[0].y,
@@ -204,7 +213,7 @@
                     vec4 foamColor = vec4(0.9, 0.95, 1.05, 1.0);
 
                     #define WATER_FOAM_IM WATER_FOAM_I * 0.01
-                    #if WATER_FOAM_I < 0
+                    #if WATER_FOAM_I < 100
                         foam *= WATER_FOAM_IM;
                     #elif WATER_FOAM_I > 100
                         foamColor *= WATER_FOAM_IM;
@@ -224,10 +233,12 @@
                 color.a = 0.7;
             #endif
 
-            #if WATER_STYLE == 1
-                translucentMult.rgb *= 1.0 - fresnel4;
-            #else
-                translucentMult.rgb *= 1.0 - 0.9 * max(0.5 * sqrt(fresnel4), fresnel4);
+            #ifdef GBUFFERS_WATER
+                #if WATER_STYLE == 1
+                    translucentMult.rgb *= 1.0 - fresnel4;
+                #else
+                    translucentMult.rgb *= 1.0 - 0.9 * max(0.5 * sqrt(fresnel4), fresnel4);
+                #endif
             #endif
         }
     #else
@@ -239,19 +250,21 @@
 
     color.a = mix(color.a, 1.0, fresnel4);
 
-    #if WATER_STYLE == 3 || WATER_STYLE == 2 && SUN_MOON_STYLE >= 2
-        smoothnessG = 1.0;
+    #ifdef GBUFFERS_WATER
+        #if WATER_STYLE == 3 || WATER_STYLE == 2 && SUN_MOON_STYLE >= 2
+            smoothnessG = 1.0;
 
-        const float WATER_BUMPINESS_M2 = min(WATER_BUMP_MED * WATER_BUMP_SMALL * WATER_BUMPINESS * 0.65, 1.0);
-        vec2 lightNormalP = WATER_BUMPINESS_M2 * (normalMed + 0.5 * normalSmall);
-        vec3 lightNormal = normalize(vec3(lightNormalP, 1.0) * tbnMatrix);
-        highlightMult = dot(lightNormal, lightVec);
-        highlightMult = max0(highlightMult) / max(dot(normal, lightVec), 0.17);
-        highlightMult = mix(pow2(pow2(highlightMult * 1.1)), 1.0, min1(sqrt(miplevel) * 0.45)) * 0.24;
-    #else
-        smoothnessG = 0.5;
+            const float WATER_BUMPINESS_M2 = min(WATER_BUMP_MED * WATER_BUMP_SMALL * WATER_BUMPINESS * 0.65, 1.0);
+            vec2 lightNormalP = WATER_BUMPINESS_M2 * (normalMed + 0.5 * normalSmall);
+            vec3 lightNormal = normalize(vec3(lightNormalP, 1.0) * tbnMatrix);
+            highlightMult = dot(lightNormal, lightVec);
+            highlightMult = max0(highlightMult) / max(dot(normal, lightVec), 0.17);
+            highlightMult = mix(pow2(pow2(highlightMult * 1.1)), 1.0, min1(sqrt(miplevel) * 0.45)) * 0.24;
+        #else
+            smoothnessG = 0.5;
 
-        highlightMult = min(pow2(pow2(dot(colorP.rgb, colorP.rgb) * 0.4)), 0.5);
-        highlightMult *= (16.0 - 15.0 * fresnel2) * (sunVisibility > 0.5 ? 0.85 : 0.425);
+            highlightMult = min(pow2(pow2(dot(colorP.rgb, colorP.rgb) * 0.4)), 0.5);
+            highlightMult *= (16.0 - 15.0 * fresnel2) * (sunVisibility > 0.5 ? 0.85 : 0.425);
+        #endif
     #endif
 #endif

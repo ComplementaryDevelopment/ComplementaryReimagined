@@ -1,3 +1,6 @@
+#ifndef INCLUDE_CLOUD_COORD
+#define INCLUDE_CLOUD_COORD
+
 const float cloudNarrowness = 0.05;
 
 // Thanks to SixthSurge
@@ -23,3 +26,5 @@ vec3 ModifyTracePos(vec3 tracePos, int cloudAltitude) {
     tracePos.xz *= cloudNarrowness;
     return tracePos.xyz;
 }
+
+#endif

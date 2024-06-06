@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -14,35 +14,6 @@ flat in vec4 glColor;
 
 #ifdef OVERWORLD
     flat in float vanillaStars;
-#endif
-
-//Uniforms//
-uniform int isEyeInWater;
-
-uniform float viewWidth, viewHeight;
-uniform float blindness;
-uniform float darknessFactor;
-
-uniform vec3 skyColor;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-
-#ifdef CAVE_FOG
-    uniform vec3 cameraPosition;
-#endif
-
-#if SUN_MOON_STYLE >= 2
-    uniform mat4 gbufferModelView;
-    uniform mat4 shadowModelView;
-    uniform mat4 shadowProjection;
-
-    uniform sampler2D noisetex;
-
-    #ifndef UNIFORM_MOONPHASE
-    #define UNIFORM_MOONPHASE
-    uniform int moonPhase;
-    #endif
 #endif
 
 //Pipeline Constants//
@@ -102,7 +73,14 @@ void main() {
 
         color.rgb = GetSky(VdotU, VdotS, dither, true, false);
 
-        vec2 starCoord = GetStarCoord(viewPos.xyz, 0.75);
+        #ifdef ATM_COLOR_MULTS
+            color.rgb *= GetAtmColorMult();
+        #endif
+        #ifdef MOON_PHASE_INF_ATMOSPHERE
+            color.rgb *= moonPhaseInfluence;
+        #endif
+
+        vec2 starCoord = GetStarCoord(viewPos.xyz, 0.5);
         color.rgb += GetStars(starCoord, VdotU, VdotS);
 
         #if SUN_MOON_STYLE >= 2
@@ -179,17 +157,10 @@ void main() {
     } else discard;
     #endif
 
-    #ifdef ATM_COLOR_MULTS
-        color.rgb *= GetAtmColorMult();
-    #endif
-    #ifdef MOON_PHASE_INF_ATMOSPHERE
-        color.rgb *= moonPhaseInfluence;
-    #endif
-
     if (max(blindness, darknessFactor) > 0.1) color.rgb = vec3(0.0);
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:0 */
@@ -208,8 +179,6 @@ flat out vec4 glColor;
 #ifdef OVERWORLD
     flat out float vanillaStars;
 #endif
-
-//Uniforms//
 
 //Attributes//
 

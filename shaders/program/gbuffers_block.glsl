@@ -31,38 +31,6 @@ in vec4 glColor;
     in vec4 vTexCoordAM;
 #endif
 
-//Uniforms//
-uniform int isEyeInWater;
-uniform int blockEntityId;
-uniform int frameCounter;
-uniform int heldItemId;
-uniform int heldItemId2;
-
-uniform float viewWidth;
-uniform float viewHeight;
-uniform float nightVision;
-uniform float frameTimeCounter;
-
-uniform vec3 skyColor;
-uniform vec3 cameraPosition;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D tex;
-uniform sampler2D noisetex;
-
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-    uniform ivec2 atlasSize;
-#endif
-
-#ifdef CUSTOM_PBR
-    uniform sampler2D normals;
-    uniform sampler2D specular;
-#endif
-
 //Pipeline Constants//
 
 //Common Variables//
@@ -121,6 +89,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
+#ifdef PORTAL_EDGE_EFFECT
+    #include "/lib/misc/voxelization.glsl"
+#endif
+
 //Program//
 void main() {
     vec4 color = texture2D(tex, texCoord);
@@ -139,11 +111,12 @@ void main() {
     vec3 playerPos = ViewToPlayer(viewPos);
 
     bool noSmoothLighting = false, noDirectionalShading = false;
-
     float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = 0.0;
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0;
     vec2 lmCoordM = lmCoord;
-    vec3 normalM = normal, shadowMult = vec3(1.0);
+    vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
+    vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
+
     #ifdef IPBR
         #include "/lib/materials/materialHandling/blockEntityMaterials.glsl"
     #else
@@ -151,7 +124,7 @@ void main() {
             GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
         #endif
 
-        if (blockEntityId == 60024) { // End Portal
+        if (blockEntityId == 60024) { // End Portal, End Gateway
             #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
         } else if (blockEntityId == 60004) { // Signs
             noSmoothLighting = true;
@@ -168,12 +141,12 @@ void main() {
     #endif
 
     #ifdef COATED_TEXTURES
-        CoatTextures(color.rgb, noiseFactor, playerPos);
+        CoatTextures(color.rgb, noiseFactor, playerPos, false);
     #endif
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-               noSmoothLighting, noDirectionalShading, false, false,
-               0, smoothnessG, highlightMult, emission);
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+               worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
+               false, 0, smoothnessG, highlightMult, emission);
 
     #ifdef PBR_REFLECTIONS
         #ifdef OVERWORLD
@@ -184,7 +157,7 @@ void main() {
     #endif
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, blockEntityId);
     #endif
 
     /* DRAWBUFFERS:06 */
@@ -223,21 +196,6 @@ out vec4 glColor;
     out vec3 viewVector;
 
     out vec4 vTexCoordAM;
-#endif
-
-//Uniforms//
-#ifdef TAA
-    uniform float viewWidth, viewHeight;
-#endif
-
-#if defined IPBR || defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-    uniform int blockEntityId;
-#endif
-
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-    uniform vec3 cameraPosition;
-
-    uniform mat4 gbufferModelViewInverse;
 #endif
 
 //Attributes//
@@ -281,9 +239,9 @@ void main() {
     if (normal != normal) normal = -upVec; // Mod Fix: Fixes Better Nether Fireflies
 
     #ifdef IPBR
-        if (blockEntityId == 60024) { // End Portal, End Gateway
+        /*if (blockEntityId == 60024) { // End Portal, End Gateway
             gl_Position.z -= 0.002;
-        }
+        }*/
     #endif
 
     #if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM

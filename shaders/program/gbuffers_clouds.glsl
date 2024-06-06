@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -15,23 +15,6 @@
     flat in vec3 upVec, sunVec;
 
     in vec4 glColor;
-#endif
-
-//Uniforms//
-#if CLOUD_STYLE_DEFINE == 50
-    uniform vec3 skyColor;
-
-    uniform sampler2D tex;
-
-    #ifdef BORDER_FOG
-        uniform float viewWidth;
-        uniform float viewHeight;
-
-        uniform mat4 gbufferProjectionInverse;
-        uniform mat4 gbufferModelViewInverse;
-        uniform mat4 shadowModelView;
-        uniform mat4 shadowProjection;
-    #endif
 #endif
 
 //Pipeline Constants//
@@ -91,7 +74,7 @@ void main() {
             #endif
         #endif
 
-        #ifdef BORDER_FOG
+        #if defined BORDER_FOG && !defined DREAM_TWEAKED_BORDERFOG
             vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
             #ifdef TAA
                 vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
@@ -107,14 +90,10 @@ void main() {
         #endif
 
         #ifdef COLOR_CODED_PROGRAMS
-            ColorCodeProgram(color);
+            ColorCodeProgram(color, -1);
         #endif
 
-        #ifndef LIGHT_COLORING
         /* DRAWBUFFERS:063 */
-        #else
-        /* DRAWBUFFERS:068 */
-        #endif
         gl_FragData[0] = color;
         gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
         gl_FragData[2] = vec4(1.0 - translucentMult.rgb, translucentMult.a);
@@ -132,15 +111,6 @@ void main() {
     flat out vec3 upVec, sunVec;
 
     out vec4 glColor;
-#endif
-
-//Uniforms//
-#if CLOUD_STYLE_DEFINE == 50
-    uniform mat4 gbufferModelViewInverse;
-
-    #ifdef TAA
-        uniform float viewWidth, viewHeight;
-    #endif
 #endif
 
 //Attributes//

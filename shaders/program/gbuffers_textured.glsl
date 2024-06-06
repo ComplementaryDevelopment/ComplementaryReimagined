@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -22,37 +22,6 @@ flat in vec4 glColor;
     #if SUN_ANGLE != 0
         flat in vec3 northVec;
     #endif
-#endif
-
-//Uniforms//
-uniform int isEyeInWater;
-uniform int frameCounter;
-uniform int heldItemId;
-uniform int heldItemId2;
-
-uniform float far;
-uniform float viewWidth;
-uniform float viewHeight;
-uniform float nightVision;
-uniform float frameTimeCounter;
-uniform float blindness;
-uniform float darknessFactor;
-
-uniform ivec2 atlasSize;
-
-uniform vec3 skyColor;
-uniform vec3 cameraPosition;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D tex;
-uniform sampler2D noisetex;
-
-#ifdef VL_CLOUDS_ACTIVE
-    uniform sampler2D gaux1;
 #endif
 
 //Pipeline Constants//
@@ -104,7 +73,7 @@ void main() {
     float lViewPos = length(viewPos);
     vec3 playerPos = ViewToPlayer(viewPos);
 
-    float dither = Bayer64(gl_FragCoord.xy);
+    float dither = texture2D(noisetex, gl_FragCoord.xy / 128.0).b;
     #ifdef TAA
         dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
     #endif
@@ -113,24 +82,31 @@ void main() {
         atmColorMult = GetAtmColorMult();
     #endif
 
-    #ifdef REDUCE_CLOSE_PARTICLES
-        if (lViewPos - dither - 1.0 < 0.0) discard;
-    #endif
-
     #ifdef VL_CLOUDS_ACTIVE
         float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
 
         if (cloudLinearDepth > 0.0) // Because Iris changes the pipeline position of opaque particles
-        if (pow2(cloudLinearDepth + OSIEBCA * dither) * far < min(lViewPos, far)) discard;
+        if (pow2(cloudLinearDepth + OSIEBCA * dither) * renderDistance < min(lViewPos, renderDistance)) discard;
     #endif
 
     float emission = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec2 lmCoordM = lmCoord;
-    vec3 shadowMult = vec3(1.0);
+    vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
+    vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
     #ifdef IPBR
-    if (atlasSize.x < 900.0) { // We don't want to detect particles from the block atlas
+        // We don't want to detect particles from the block atlas
+        #if MC_VERSION >= 12000
+            float atlasCheck = 1100.0; // I think texture atlas got bigger in newer mc
+        #else
+            float atlasCheck = 900.0;
+        #endif
+
+    if (atlasSize.x < atlasCheck) {
         if (color.b > 1.15 * (color.r + color.g) && color.g > color.r * 1.25 && color.g < 0.425 && color.b > 0.75) { // Water Particle
-            color.rgb = sqrt3(color.rgb) * 0.45;
+            materialMask = 0.0;
+            color.rgb = sqrt3(color.rgb);
+            color.rgb *= 0.7;
+            if (dither > 0.4) discard;
         #ifdef OVERWORLD
         } else if (color.b > 0.7 && color.r < 0.28 && color.g < 0.425 && color.g > color.r * 1.4){ // physics mod rain
             if (color.a < 0.1 || isEyeInWater == 3) discard;
@@ -163,11 +139,14 @@ void main() {
                 color.r *= 1.2;
             }
         }
-        //color.rgb = vec3(fract(float(frameCounter) * 0.01), fract(float(frameCounter) * 0.015), fract(float(frameCounter) * 0.02));
     }
     bool noSmoothLighting = false;
     #else
     bool noSmoothLighting = true;
+    #endif
+
+    #ifdef REDUCE_CLOSE_PARTICLES
+        if (lViewPos - 1.0 < dither) discard;
     #endif
 
     #ifdef GLOWING_COLORED_PARTICLES
@@ -178,9 +157,9 @@ void main() {
         }
     #endif
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normal, lmCoordM,
-               noSmoothLighting, false, true, false,
-               0, 0.0, 1.0, emission);
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+               worldGeoNormal, lmCoordM, noSmoothLighting, false, true,
+               false, 0, 0.0, 1.0, emission);
 
     #if MC_VERSION >= 11500
         vec3 nViewPos = normalize(viewPos);
@@ -195,7 +174,7 @@ void main() {
     vec3 translucentMult = mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a);
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:063 */
@@ -224,8 +203,6 @@ flat out vec4 glColor;
         flat out vec3 northVec;
     #endif
 #endif
-
-//Uniforms//
 
 //Attributes//
 

@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -16,72 +16,7 @@ flat in vec3 upVec, sunVec;
     flat in float vlFactor;
 #endif
 
-//Uniforms//
-uniform int isEyeInWater;
-
-uniform float far, near;
-uniform float viewWidth, viewHeight;
-
-uniform vec3 cameraPosition;
-
-uniform mat4 gbufferProjectionInverse;
-
-uniform sampler2D colortex0;
-uniform sampler2D depthtex0;
-uniform sampler2D depthtex1;
-
-#if defined LIGHTSHAFTS_ACTIVE || WATER_QUALITY >= 3 || defined NETHER_STORM || RAINBOWS > 0
-    uniform float frameTimeCounter;
-
-    uniform mat4 gbufferProjection;
-    uniform mat4 gbufferModelViewInverse;
-    uniform mat4 shadowModelView;
-    uniform mat4 shadowProjection;
-
-    uniform sampler2D noisetex;
-#endif
-
-#if defined LIGHTSHAFTS_ACTIVE || defined NETHER_STORM || RAINBOWS > 0
-    uniform int frameCounter;
-
-    #ifndef LIGHT_COLORING
-        uniform sampler2D colortex3;
-    #else
-        uniform sampler2D colortex8;
-    #endif
-#endif
-
-#ifdef LIGHTSHAFTS_ACTIVE
-    //uniform float viewWidth, viewHeight;
-    uniform float blindness;
-    uniform float darknessFactor;
-    uniform float frameTime;
-    uniform float frameTimeSmooth;
-
-    uniform ivec2 eyeBrightness;
-
-    uniform vec3 skyColor;
-
-    uniform sampler2D shadowtex0;
-    uniform sampler2DShadow shadowtex1;
-    uniform sampler2D shadowcolor1;
-#endif
-
-#if WATER_QUALITY >= 3
-    uniform sampler2D colortex6;
-#endif
-
-#if defined LIGHTSHAFTS_ACTIVE && defined LENSFLARE || RAINBOWS > 0 && defined OVERWORLD
-    uniform sampler2D colortex4;
-#endif
-
-#if RAINBOWS == 1
-    uniform float wetness;
-    uniform float inRainy;
-#endif
-
 //Pipeline Constants//
-//const bool colortex0MipmapEnabled = true;
 
 //Common Variables//
 float SdotU = dot(sunVec, upVec);
@@ -108,6 +43,7 @@ vec2 view = vec2(viewWidth, viewHeight);
 
 //Includes//
 #include "/lib/atmospherics/fog/waterFog.glsl"
+#include "/lib/atmospherics/fog/caveFactor.glsl"
 
 #ifdef BLOOM_FOG_COMPOSITE
     #include "/lib/atmospherics/fog/bloomFog.glsl"
@@ -120,11 +56,11 @@ vec2 view = vec2(viewWidth, viewHeight);
     #include "/lib/atmospherics/volumetricLight.glsl"
 #endif
 
-#if WATER_QUALITY >= 3 || defined NETHER_STORM
+#if WATER_MAT_QUALITY >= 3 || defined NETHER_STORM || defined COLORED_LIGHT_FOG
     #include "/lib/util/spaceConversion.glsl"
 #endif
 
-#if WATER_QUALITY >= 3
+#if WATER_MAT_QUALITY >= 3
     #include "/lib/materials/materialMethods/refraction.glsl"
 #endif
 
@@ -143,43 +79,55 @@ vec2 view = vec2(viewWidth, viewHeight);
     #include "/lib/atmospherics/rainbow.glsl"
 #endif
 
+#ifdef COLORED_LIGHT_FOG
+    #include "/lib/misc/voxelization.glsl"
+    #include "/lib/atmospherics/fog/coloredLightFog.glsl"
+#endif
+
 //Program//
 void main() {
     vec3 color = texelFetch(colortex0, texelCoord, 0).rgb;
     float z0 = texelFetch(depthtex0, texelCoord, 0).r;
     float z1 = texelFetch(depthtex1, texelCoord, 0).r;
 
-    #if defined LIGHTSHAFTS_ACTIVE || WATER_QUALITY >= 3 || defined BLOOM_FOG_COMPOSITE || defined NETHER_STORM || RAINBOWS > 0 && defined OVERWORLD
-        vec4 screenPos = vec4(texCoord, z0, 1.0);
-        vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
-        viewPos /= viewPos.w;
-        float lViewPos = length(viewPos.xyz);
+    vec4 screenPos = vec4(texCoord, z0, 1.0);
+    vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+    viewPos /= viewPos.w;
+    float lViewPos = length(viewPos.xyz);
+
+    #if defined DISTANT_HORIZONS && !defined OVERWORLD
+        float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
+        vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
+        vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
+        viewPosDH /= viewPosDH.w;
+        lViewPos = min(lViewPos, length(viewPosDH.xyz));
     #endif
 
-    #if WATER_QUALITY >= 3
+    float dither = texture2D(noisetex, texCoord * view / 128.0).b;
+    #ifdef TAA
+        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+    #endif
+
+    /* TM5723: The "1.0 - translucentMult" trick is done because of the default color attachment
+    value being vec3(0.0). This makes it vec3(1.0) to avoid issues especially on improved glass */
+    vec3 translucentMult = 1.0 - texelFetch(colortex3, texelCoord, 0).rgb; //TM5723
+    vec4 volumetricEffect = vec4(0.0);
+
+    #if WATER_MAT_QUALITY >= 3
         DoRefraction(color, z0, z1, viewPos.xyz, lViewPos);
     #endif
 
-    vec4 volumetricEffect = vec4(0.0);
+    vec4 screenPos1 = vec4(texCoord, z1, 1.0);
+    vec4 viewPos1 = gbufferProjectionInverse * (screenPos1 * 2.0 - 1.0);
+    viewPos1 /= viewPos1.w;
+    float lViewPos1 = length(viewPos1.xyz);
 
-    #if defined LIGHTSHAFTS_ACTIVE || defined NETHER_STORM || RAINBOWS > 0 && defined OVERWORLD
-        /* The "1.0 - translucentMult" trick is done because of the default color attachment
-        value being vec3(0.0). This makes it vec3(1.0) to avoid issues especially on improved glass */
-        #ifndef LIGHT_COLORING
-            vec3 translucentMult = 1.0 - texelFetch(colortex3, texelCoord, 0).rgb;
-        #else
-            vec3 translucentMult = 1.0 - texelFetch(colortex8, texelCoord, 0).rgb;
-        #endif
-
-        float dither = texture2D(noisetex, texCoord * view / 128.0).b;
-        #ifdef TAA
-            dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
-        #endif
-
-        vec4 screenPos1 = vec4(texCoord, z1, 1.0);
-        vec4 viewPos1 = gbufferProjectionInverse * (screenPos1 * 2.0 - 1.0);
-        viewPos1 /= viewPos1.w;
-        float lViewPos1 = length(viewPos1.xyz);
+    #if defined DISTANT_HORIZONS && !defined OVERWORLD
+        float z1DH = texelFetch(dhDepthTex1, texelCoord, 0).r;
+        vec4 screenPos1DH = vec4(texCoord, z1DH, 1.0);
+        vec4 viewPos1DH = dhProjectionInverse * (screenPos1DH * 2.0 - 1.0);
+        viewPos1DH /= viewPos1DH.w;
+        lViewPos1 = min(lViewPos1, length(viewPos1DH.xyz));
     #endif
 
     #if defined LIGHTSHAFTS_ACTIVE || RAINBOWS > 0 && defined OVERWORLD
@@ -187,18 +135,24 @@ void main() {
         float VdotL = dot(nViewPos, lightVec);
     #endif
 
+    #if defined NETHER_STORM || defined COLORED_LIGHT_FOG
+        vec3 playerPos = ViewToPlayer(viewPos.xyz);
+        vec3 nPlayerPos = normalize(playerPos);
+    #endif
+
+    #if RAINBOWS > 0 && defined OVERWORLD
+        if (isEyeInWater == 0) color += GetRainbow(translucentMult, z0, z1, lViewPos, lViewPos1, VdotL, dither);
+    #endif
+
     #ifdef LIGHTSHAFTS_ACTIVE
         float vlFactorM = vlFactor;
-
         float VdotU = dot(nViewPos, upVec);
 
-        volumetricEffect = GetVolumetricLight(color, vlFactorM, translucentMult, lViewPos1, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
+        volumetricEffect = GetVolumetricLight(color, vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
     #endif
 
     #ifdef NETHER_STORM
-        vec3 playerPos = ViewToPlayer(viewPos.xyz);
-
-        volumetricEffect = GetNetherStorm(color, translucentMult, playerPos, viewPos.xyz, lViewPos, lViewPos1, dither);
+        volumetricEffect = GetNetherStorm(color, translucentMult, nPlayerPos, playerPos, lViewPos, lViewPos1, dither);
     #endif
 
     #ifdef ATM_COLOR_MULTS
@@ -212,8 +166,19 @@ void main() {
         if (isEyeInWater == 0) color = mix(color, volumetricEffect.rgb, volumetricEffect.a);
     #endif
 
-    #if RAINBOWS > 0 && defined OVERWORLD
-        if (isEyeInWater == 0) color += GetRainbow(translucentMult, z0, z1, lViewPos, lViewPos1, VdotL, dither);
+    #ifdef COLORED_LIGHT_FOG
+        float caveFactor = GetCaveFactor();
+
+        vec3 lightFog = GetColoredLightFog(nPlayerPos, translucentMult, lViewPos, lViewPos1, dither, caveFactor);
+        float lightFogMult = COLORED_LIGHT_FOG_I;
+        //if (heldItemId == 40000 && heldItemId2 != 40000) lightFogMult = 0.0; // Hold spider eye to disable light fog
+
+        #ifdef OVERWORLD
+            lightFogMult *= 0.2 + 0.6 * max(caveFactor, 1.0 - sunFactor * invRainFactor);
+        #endif
+
+        color /= 1.0 + pow2(GetLuminance(lightFog)) * lightFogMult * 2.0;
+        color += lightFog * lightFogMult * 0.5;
     #endif
 
     if (isEyeInWater == 1) {
@@ -247,8 +212,8 @@ void main() {
     /* DRAWBUFFERS:0 */
     gl_FragData[0] = vec4(color, 1.0);
 
-    // a.k.a #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
-    #if LIGHTSHAFT_QUALI_DEFINE > 0 && LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
+    // supposed to be #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
+    #if LIGHTSHAFT_QUALI_DEFINE > 0 && LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 && defined OVERWORLD || defined END
         #ifdef LENSFLARE
             if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y > 1.5)
                 vlFactorM = texelFetch(colortex4, texelCoord, 0).r;
@@ -270,13 +235,6 @@ flat out vec3 upVec, sunVec;
 
 #ifdef LIGHTSHAFTS_ACTIVE
     flat out float vlFactor;
-#endif
-
-//Uniforms//
-#if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
-    uniform float viewWidth, viewHeight;
-
-    uniform sampler2D colortex4;
 #endif
 
 //Attributes//

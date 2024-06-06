@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -30,41 +30,6 @@ in vec4 glColor;
     in vec3 viewVector;
 
     in vec4 vTexCoordAM;
-#endif
-
-//Uniforms//
-uniform int isEyeInWater;
-uniform int frameCounter;
-uniform int heldItemId;
-uniform int heldItemId2;
-
-uniform float viewWidth;
-uniform float viewHeight;
-uniform float nightVision;
-uniform float frameTimeCounter;
-
-uniform vec3 skyColor;
-uniform vec3 cameraPosition;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D tex;
-uniform sampler2D noisetex;
-
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM || defined IPBR && defined IS_IRIS
-    uniform ivec2 atlasSize;
-#endif
-
-#ifdef CUSTOM_PBR
-    uniform sampler2D normals;
-    uniform sampler2D specular;
-#endif
-
-#ifdef IS_IRIS
-    uniform int currentRenderedItemId;
 #endif
 
 //Pipeline Constants//
@@ -141,6 +106,8 @@ void main() {
         bool noSmoothLighting = true, noGeneratedNormals = false;
         float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 0.6;
         vec2 lmCoordM = lmCoord;
+        vec3 geoNormal = normalM;
+        vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
         vec3 shadowMult = vec3(0.4);
         #ifdef IPBR
             #ifdef IS_IRIS
@@ -156,7 +123,7 @@ void main() {
             #endif
 
             #ifdef COATED_TEXTURES
-                CoatTextures(color.rgb, noiseFactor, playerPos);
+                CoatTextures(color.rgb, noiseFactor, playerPos, false);
             #endif
         #else
             #ifdef CUSTOM_PBR
@@ -164,9 +131,9 @@ void main() {
             #endif
         #endif
 
-        DoLighting(color, shadowMult, playerPos, viewPos, 0.0, normalM, lmCoordM,
-                   noSmoothLighting, false, false, false,
-                   0, smoothnessG, highlightMult, emission);
+        DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+                   false, 0, smoothnessG, highlightMult, emission);
 
         #if defined IPBR && defined IS_IRIS
             color.rgb += maRecolor;
@@ -182,7 +149,7 @@ void main() {
     }
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:06 */
@@ -222,11 +189,6 @@ out vec4 glColor;
     out vec3 viewVector;
 
     out vec4 vTexCoordAM;
-#endif
-
-//Uniforms//
-#if HAND_SWAYING > 0
-    uniform float frameTimeCounter;
 #endif
 
 //Attributes//

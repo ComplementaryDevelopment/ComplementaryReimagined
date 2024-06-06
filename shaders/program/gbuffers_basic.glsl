@@ -15,27 +15,6 @@ in vec3 normal;
 
 flat in vec4 glColor;
 
-//Uniforms//
-uniform int isEyeInWater;
-uniform int frameCounter;
-uniform int heldItemId;
-uniform int heldItemId2;
-
-uniform float viewWidth;
-uniform float viewHeight;
-uniform float nightVision;
-uniform float frameTimeCounter;
-
-uniform vec3 skyColor;
-uniform vec3 cameraPosition;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D noisetex;
-
 //Pipeline Constants//
 
 //Common Variables//
@@ -83,15 +62,16 @@ void main() {
     vec3 playerPos = ViewToPlayer(viewPos);
 
     float materialMask = 0.0;
-    vec3 shadowMult = vec3(1.0);
+    vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
+    vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
     #ifndef GBUFFERS_LINE
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normal, lmCoord,
-                false, false, false, false,
-                0, 0.0, 0.0, 0.0);
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoord, false, false, false,
+                   false, 0, 0.0, 0.0, 0.0);
     #endif
 
-    #if SELECT_OUTLINE != 1
+    #if SELECT_OUTLINE != 1 || defined SELECT_OUTLINE_AUTO_HIDE
     if (abs(color.a - 0.4) + dot(color.rgb, color.rgb) < 0.01) {
         #if SELECT_OUTLINE == 0
             discard;
@@ -105,11 +85,28 @@ void main() {
             color.a = 0.1;
             materialMask = OSIEBCA * 252.0; // Versatile Selection Outline
         #endif
+
+        #ifdef SELECT_OUTLINE_AUTO_HIDE
+            if (heldItemId == 40008 && (
+                heldItemId2 == 40008 ||
+                heldItemId2 == 45060 ||
+                heldItemId2 == 45108 ||
+                heldItemId2 >= 44000 &&
+                heldItemId2 < 45000)) {
+                // Both hands hold nothing or only a light/totem/shield in off-hand
+                discard;
+            }
+        #endif
     }
     #endif
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
+    #endif
+
+    #if COLORED_LIGHTING > 0 && defined NETHER
+        if (gl_FragCoord.x < 0.0)
+        color = shadow2D(shadowtex0, vec3(0.5)); // To Activate Shadowmap in Nether
     #endif
 
     /* DRAWBUFFERS:06 */
@@ -128,11 +125,6 @@ flat out vec3 upVec, sunVec, northVec, eastVec;
 out vec3 normal;
 
 flat out vec4 glColor;
-
-//Uniforms//
-#if defined GBUFFERS_LINE || defined TAA
-    uniform float viewWidth, viewHeight;
-#endif
 
 //Attributes//
 

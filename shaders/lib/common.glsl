@@ -15,23 +15,36 @@
 
     #define RP_MODE 1 //[1 0 3 2]
 
-    #define REALTIME_SHADOWS
-    #define SHADOW_QUALITY 2 //[0 1 2 3 4 5]
+    #define SHADOW_QUALITY 2 //[-1 0 1 2 3 4 5]
     const float shadowDistance = 192.0; //[64.0 80.0 96.0 112.0 128.0 160.0 192.0 224.0 256.0 320.0 384.0 512.0 768.0 1024.0]
-    //#define ENTITY_SHADOWS
+    #define ENTITY_SHADOWS_DEFINE -1 //[-1 1]
     #define SSAO_QUALI_DEFINE 2 //[0 2 3]
-    #define FXAA
+    #define FXAA_DEFINE 1 //[-1 1]
     #define DETAIL_QUALITY 2 //[0 2 3]
     #define CLOUD_QUALITY 2 //[0 1 2 3]
     #define LIGHTSHAFT_QUALI_DEFINE 2 //[0 1 2 3 4]
-    #define WATER_QUALITY 2 //[1 2 3]
-    #define WATER_REFLECT_QUALITY 2 //[0 1 2]
+    #define WATER_REFLECT_QUALITY 2 //[-1 0 1 2]
     #define BLOCK_REFLECT_QUALITY 3 //[0 1 2 3]
     #define ANISOTROPIC_FILTER 0 //[0 4 8 16]
 
+    #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1
+        #define COLORED_LIGHTING 0 //[128 192 256 384 512]
+        #if COLORED_LIGHTING > 0
+            #define COLORED_LIGHT_FOG
+            #define COLORED_LIGHT_FOG_I 0.60 //[0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50]
+            
+            #define PORTAL_EDGE_EFFECT
+            #ifndef IRIS_HAS_CONNECTED_TEXTURES
+                #define CONNECTED_GLASS_EFFECT
+            #endif
+        #endif
+    #else
+        #define COLORED_LIGHTING 0
+    #endif
+
     #define WATER_STYLE_DEFINE -1 //[-1 1 2 3]
     #define WATER_CAUSTIC_STYLE_DEFINE -1 //[-1 1 3]
-    #define WATER_REFRACTION_INTENSITY 2.0 //[1.0 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6 2.8 3.0]
+    #define WATER_REFRACTION_INTENSITY 2.0 //[0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6 2.8 3.0]
     #define WATER_FOAM_I 100 //[0 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150]
     #define WATER_ALPHA_MULT 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300 325 350 375 400 425 450 475 500 550 600 650 700 750 800 850 900]
     #define WATER_FOG_MULT 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300 325 350 375 400 425 450 475 500 550 600 650 700 750 800 850 900]
@@ -61,6 +74,8 @@
     //#define NIGHT_NEBULA
     #define NIGHT_NEBULA_I 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300]
     #define WEATHER_TEX_OPACITY 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300 325 350 375 400 425 450 475 500 550 600 650 700 750 800 850 900]
+    #define SPECIAL_BIOME_WEATHER
+    #define RAIN_STYLE 1 //[1 2]
     #define SUN_MOON_STYLE_DEFINE -1 //[-1 1 2 3]
     #define SUN_MOON_HORIZON
     #define SUN_MOON_DURING_RAIN
@@ -98,6 +113,7 @@
     #define LIGHTSHAFT_DAY_I 100 //[1 3 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
     #define LIGHTSHAFT_NIGHT_I 100 //[1 3 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
     #define LIGHTSHAFT_RAIN_I 100 //[1 3 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
+    //#define LIGHTSHAFT_SMOKE
 
     #define BLOOM
     #define BLOOM_STRENGTH 0.12 //[0.027 0.036 0.045 0.054 0.063 0.072 0.081 0.09 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 0.18 0.19 0.21 0.23 0.25 0.28 0.32 10.00]
@@ -109,7 +125,7 @@
     #define UNDERWATER_DISTORTION
     //#define LENSFLARE
     #define LENSFLARE_I 1.00 //[0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00 2.20 2.40 2.60 2.80 3.00 3.25 3.50 3.75 4.00 4.50 5.00]
-    #define TAA_MODE 1 //[1 2]
+    #define TAA_MODE 1 //[1 2 0]
 
     #define WORLD_BLUR 0 //[0 1 2]
     //#define WB_FOV_SCALED
@@ -125,7 +141,7 @@
     #define WB_DB_END_I 64.0 //[1.0 1.5 2.0 3.0 4.5 6.0 9.0 12.0 18.0 24.0 32.0 48.0 64.0 96.0 128.0 192.0 256.0 384.0 512.0 768.0 1024.0 1536.0 2048.0 3072.0 4096.0]
 
     #define ENTITY_GN_AND_CT
-    #define GENERATED_NORMAL_MULT 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
+    #define GENERATED_NORMAL_MULT 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 250 300 400]
     #define COATED_TEXTURE_MULT 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
 
     #define GLOWING_ORE_MASTER 1 //[0 1 2]
@@ -164,9 +180,11 @@
     #define HELD_LIGHTING_MODE 2 //[0 1 2]
     #define BLOCKLIGHT_FLICKERING 0 //[0 2 3 4 5 6 7 8 9 10]
     #define AMBIENT_MULT 100 //[50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
+    #define PLAYER_SHADOW 1 //[-1 1]
 
     #define WAVING_SPEED 1.00 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.20 2.40 2.60 2.80 3.00 3.25 3.50 3.75 4.00 4.50 5.00]
     #define WAVING_I 1.00 //[0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00 50.0]
+    #define WAVING_I_RAIN_MULT 100 //[25 50 75 100 125 150 175 200]
     #define NO_WAVING_INDOORS
     #define WAVING_FOLIAGE
     #define WAVING_LEAVES
@@ -178,6 +196,7 @@
     #define SUN_ANGLE -1 //[-1 0 -20 -30 -40 -50 -60 60 50 40 30 20]
 
     #define SELECT_OUTLINE 1 //[0 1 3 4 2]
+    //#define SELECT_OUTLINE_AUTO_HIDE
     #define SELECT_OUTLINE_I 1.00 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.20 2.40 2.60 2.80 3.00 3.25 3.50 3.75 4.00 4.50 5.00]
     #define SELECT_OUTLINE_R 1.35 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
     #define SELECT_OUTLINE_G 0.35 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
@@ -206,7 +225,7 @@
 
     #define T_EXPOSURE 1.40 //[0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.10 2.20 2.30 2.40 2.50 2.60 2.70 2.80]
     #define TM_WHITE_CURVE 2.0 //[1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0]
-    #define T_LOWER_CURVE 1.20 //[0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
+    #define T_LOWER_CURVE 1.10 //[0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
     #define T_UPPER_CURVE 1.30 //[0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
     #define T_SATURATION 1.00 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
     #define T_VIBRANCE 1.00 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
@@ -278,8 +297,10 @@
     #define XLIGHT_R 1.00 //[0.01 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
     #define XLIGHT_G 1.00 //[0.01 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
     #define XLIGHT_B 1.00 //[0.01 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
+    #define XLIGHT_I 1.00 //[0.01 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
 
-    //#define LIGHT_COLORING
+    //#define DREAM_TWEAKED_LIGHTING
+    //#define DREAM_TWEAKED_BORDERFOG
 
 //Internal Settings//
     #define SIDE_SHADOWING
@@ -296,6 +317,8 @@
     #define GLOWING_ENTITY_FIX
     #define FLICKERING_FIX
     //#define SAFER_GENERATED_NORMALS
+
+    #define SHADOW_FRUSTUM_FIT
 
 //Extensions//
 
@@ -364,36 +387,40 @@
         #define CLOUD_STYLE CLOUD_STYLE_DEFINE
     #endif
     // Thanks to SpacEagle17 and isuewo for the sun angle handling
-    #if SUN_ANGLE == -1
-        #if SHADER_STYLE == 1
+    #ifdef END
+        const float sunPathRotation = 0.0;
+    #else
+        #if SUN_ANGLE == -1
+            #if SHADER_STYLE == 1
+                const float sunPathRotation = 0.0;
+                #define PERPENDICULAR_TWEAKS
+            #elif SHADER_STYLE == 4
+                const float sunPathRotation = -40.0;
+            #endif
+        #elif SUN_ANGLE == 0
             const float sunPathRotation = 0.0;
             #define PERPENDICULAR_TWEAKS
-        #elif SHADER_STYLE == 4
+        #elif SUN_ANGLE == 20
+            const float sunPathRotation = 20.0;
+        #elif SUN_ANGLE == 30
+            const float sunPathRotation = 30.0;
+        #elif SUN_ANGLE == 40
+            const float sunPathRotation = 40.0;
+        #elif SUN_ANGLE == 50
+            const float sunPathRotation = 50.0;
+        #elif SUN_ANGLE == 60
+            const float sunPathRotation = 60.0;
+        #elif SUN_ANGLE == -20
+            const float sunPathRotation = -20.0;
+        #elif SUN_ANGLE == -30
+            const float sunPathRotation = -30.0;
+        #elif SUN_ANGLE == -40
             const float sunPathRotation = -40.0;
+        #elif SUN_ANGLE == -50
+            const float sunPathRotation = -50.0;
+        #elif SUN_ANGLE == -60
+            const float sunPathRotation = -60.0;
         #endif
-    #elif SUN_ANGLE == 0
-        const float sunPathRotation = 0.0;
-        #define PERPENDICULAR_TWEAKS
-    #elif SUN_ANGLE == 20
-        const float sunPathRotation = 20.0;
-    #elif SUN_ANGLE == 30
-        const float sunPathRotation = 30.0;
-    #elif SUN_ANGLE == 40
-        const float sunPathRotation = 40.0;
-    #elif SUN_ANGLE == 50
-        const float sunPathRotation = 50.0;
-    #elif SUN_ANGLE == 60
-        const float sunPathRotation = 60.0;
-    #elif SUN_ANGLE == -20
-        const float sunPathRotation = -20.0;
-    #elif SUN_ANGLE == -30
-        const float sunPathRotation = -30.0;
-    #elif SUN_ANGLE == -40
-        const float sunPathRotation = -40.0;
-    #elif SUN_ANGLE == -50
-        const float sunPathRotation = -50.0;
-    #elif SUN_ANGLE == -60
-        const float sunPathRotation = -60.0;
     #endif
 
     #if SHADOW_QUALITY >= 1
@@ -423,24 +450,37 @@
     #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 1
         #define PBR_REFLECTIONS
     #endif
-    #if BLOCK_REFLECT_QUALITY >= 3
+    #if BLOCK_REFLECT_QUALITY >= 3 && RP_MODE >= 1
         #define TEMPORAL_FILTER
     #endif
 
-    #if DETAIL_QUALITY == 0
+    #if DETAIL_QUALITY == 0 // Potato
         #undef PERPENDICULAR_TWEAKS
         #define LOW_QUALITY_NETHER_STORM
         #define LOW_QUALITY_ENDER_NEBULA
+        #define WATER_MAT_QUALITY 1
     #endif
-    #if DETAIL_QUALITY >= 1
-        #define TAA
+    #if DETAIL_QUALITY >= 1 // not an option for now
+        #if TAA_MODE >= 1
+            #define TAA
+        #endif
+        #define WATER_MAT_QUALITY 1
     #endif
-    #if DETAIL_QUALITY >= 2
-
+    #if DETAIL_QUALITY >= 2 // Medium
+        #undef WATER_MAT_QUALITY
+        #define WATER_MAT_QUALITY 2
     #endif
-    #if DETAIL_QUALITY >= 3
+    #if DETAIL_QUALITY >= 3 // High
+        #undef WATER_MAT_QUALITY
+        #define WATER_MAT_QUALITY 3 // we use DETAIL_QUALITY >= 3 when writing in gbuffers_water because optifine bad
         #define HQ_NIGHT_NEBULA
         #define SKY_EFFECT_REFLECTION
+        #define CONNECTED_GLASS_CORNER_FIX
+        #define ACL_CORNER_LEAK_FIX
+        #define DO_NETHER_VINE_WAVING_OUTSIDE_NETHER
+        #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && RAIN_PUDDLES > 0 && COLORED_LIGHTING > 0
+            #define PUDDLE_VOXELIZATION
+        #endif
     #endif
 
 //Define Handling//
@@ -460,9 +500,11 @@
         #undef CLOUD_SHADOWS
         #undef SNOWY_WORLD
         #undef LENSFLARE
+        #undef LIGHTSHAFT_SMOKE
     #endif
     #ifdef NETHER
         #undef ATMOSPHERIC_FOG
+        #undef NO_WAVING_INDOORS
     #else
         #undef NETHER_STORM
     #endif
@@ -500,16 +542,12 @@
         #undef GBUFFERS_ENTITIES_GLOWING
     #endif
 
-    #if LIGHTSHAFT_QUALI > 0 && defined OVERWORLD && defined REALTIME_SHADOWS || defined END
+    #if LIGHTSHAFT_QUALI > 0 && defined OVERWORLD && SHADOW_QUALITY > -1 || defined END
         #define LIGHTSHAFTS_ACTIVE
     #endif
 
     #if defined WAVING_FOLIAGE || defined WAVING_LEAVES || defined WAVING_LAVA || defined WAVING_LILY_PAD
         #define WAVING_ANYTHING_TERRAIN
-    #endif
-
-    #ifdef IS_IRIS
-        #undef FANCY_GLASS
     #endif
 
     #if WATERCOLOR_R != 100 || WATERCOLOR_G != 100 || WATERCOLOR_B != 100
@@ -526,39 +564,18 @@
         #define UNDERWATERCOLOR_CHANGED
     #endif
 
+    #ifdef IS_IRIS
+        #undef FANCY_GLASS
+    #endif
+
 //Activate Settings//
-    #ifdef ENTITY_SHADOWS
-    #endif
     #ifdef POM_ALLOW_CUTOUT
-    #endif
-    #ifdef ATM_COLOR_MULTS
-    #endif
-    #ifdef CLOUD_CLOSED_AREA_CHECK
     #endif
     #ifdef BRIGHT_CAVE_WATER
     #endif
 
-//Very Common Uniforms//
-    uniform int worldTime;
-    uniform int worldDay;
-
-    uniform float rainFactor;
-    uniform float screenBrightness;
-    uniform float eyeBrightnessM;
-
-    uniform vec3 fogColor;
-
-    #if NETHER_COLOR_MODE == 3
-        uniform float inNetherWastes;
-        uniform float inCrimsonForest;
-        uniform float inWarpedForest;
-        uniform float inBasaltDeltas;
-        uniform float inSoulValley;
-    #endif
-
-    #ifdef VERTEX_SHADER
-        uniform mat4 gbufferModelView;
-    #endif
+//Uniforms//
+#include "/lib/uniforms.glsl"
 
 //Very Common Variables//
     const float OSIEBCA = 1.0 / 255.0; // One Step In Eight Bit Color Attachment
@@ -583,17 +600,16 @@
             230 to 240: Consistent metalness with still increasing f0
     241 to 255 - PBR Independant:
         OSIEBCA * 241.0 = Water
-
+    
         OSIEBCA * 252.0 = Versatile Selection Outline
         OSIEBCA * 253.0 = Reduced Edge TAA
         OSIEBCA * 254.0 = No SSAO, No TAA
         OSIEBCA * 255.0 = *Unused as 1.0 is the clear color*
     */
 
-    #ifndef REALTIME_SHADOWS
+    #if SHADOW_QUALITY == -1
       float timeAngle = worldTime / 24000.0;
     #else
-      uniform float sunAngle;
       float tAmin     = fract(sunAngle - 0.033333333);
       float tAlin     = tAmin < 0.433333333 ? tAmin * 1.15384615385 : tAmin * 0.882352941176 + 0.117647058824;
       float hA        = tAlin > 0.5 ? 1.0 : 0.0;
@@ -603,8 +619,18 @@
       float timeAngle = (tAfrc * (1.0-tAmix) + tAfrs * tAmix + hA) * 0.5;
     #endif
 
+    #ifndef DISTANT_HORIZONS
+        float renderDistance = far;
+    #else
+        float renderDistance = float(dhRenderDistance);
+    #endif
+
     const float shadowMapBias = 1.0 - 25.6 / shadowDistance;
-    float noonFactor = sqrt(max(sin(timeAngle*6.28318530718),0.0));
+    #ifndef DREAM_TWEAKED_LIGHTING
+        float noonFactor = sqrt(max(sin(timeAngle*6.28318530718),0.0));
+    #else
+        float noonFactor = pow(max(sin(timeAngle*6.28318530718),0.0), 0.2);
+    #endif
     float nightFactor = max(sin(timeAngle*(-6.28318530718)),0.0);
     float invNightFactor = 1.0 - nightFactor;
     float rainFactor2 = rainFactor * rainFactor;
@@ -622,7 +648,7 @@
 
     const float oceanAltitude = 61.9;
 
-    const vec3 blocklightCol = vec3(0.1775, 0.108, 0.0775) * vec3(XLIGHT_R, XLIGHT_G, XLIGHT_B);
+    #include "/lib/colors/blocklightColors.glsl"
 
     const vec3 caveFogColorRaw = vec3(0.13, 0.13, 0.15);
     #if MINIMUM_LIGHT_MODE <= 1
@@ -645,7 +671,7 @@
     #endif
     vec3 waterFogColor = underwaterColorM2 * vec3(0.2 + 0.1 * vsBrightness);
 
-    #if NETHER_COLOR_MODE == 3 && defined FRAGMENT_SHADER
+    #if NETHER_COLOR_MODE == 3
         float netherColorMixer = inNetherWastes + inCrimsonForest + inWarpedForest + inBasaltDeltas + inSoulValley;
         vec3 netherColor = mix(
             fogColor * 0.6 + 0.2 * normalize(fogColor + 0.0001),
@@ -666,11 +692,11 @@
     const vec3 endSkyColor = vec3(0.095, 0.07, 0.15) * 1.5;
 
     #if WEATHER_TEX_OPACITY == 100
-        const float rainTexOpacity = 0.35;
+        const float rainTexOpacity = 0.25;
         const float snowTexOpacity = 0.5;
     #else
         #define WEATHER_TEX_OPACITY_M 100.0 / WEATHER_TEX_OPACITY
-        const float rainTexOpacity = pow(0.35, WEATHER_TEX_OPACITY_M);
+        const float rainTexOpacity = pow(0.25, WEATHER_TEX_OPACITY_M);
         const float snowTexOpacity = pow(0.5, WEATHER_TEX_OPACITY_M);
     #endif
 

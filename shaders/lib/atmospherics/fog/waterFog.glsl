@@ -6,7 +6,7 @@
             lViewPos *= WATER_FOG_MULT_M;
         #endif
 
-        #if LIGHTSHAFT_QUALI > 0 && defined REALTIME_SHADOWS
+        #if LIGHTSHAFT_QUALI > 0 && SHADOW_QUALITY > -1
             float fog = lViewPos / 48.0;
             fog *= fog;
         #else

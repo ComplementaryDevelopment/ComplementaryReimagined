@@ -54,4 +54,4 @@ vec3 DrawEnderBeams(float VdotU, vec3 playerPos) {
     return beams.rgb;
 }
 
-#endif
+#endif //INCLUDE_ENDERBEAMS

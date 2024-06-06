@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -30,43 +30,6 @@ in vec4 glColor;
     in vec3 viewVector;
 
     in vec4 vTexCoordAM;
-#endif
-
-//Uniforms//
-uniform int isEyeInWater;
-uniform int entityId;
-uniform int blockEntityId;
-uniform int frameCounter;
-uniform int heldItemId;
-uniform int heldItemId2;
-
-uniform float viewWidth;
-uniform float viewHeight;
-uniform float nightVision;
-uniform float frameTimeCounter;
-
-uniform ivec2 atlasSize;
-
-uniform vec3 skyColor;
-uniform vec3 cameraPosition;
-
-uniform vec4 entityColor;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D tex;
-uniform sampler2D noisetex;
-
-#ifdef CUSTOM_PBR
-    uniform sampler2D normals;
-    uniform sampler2D specular;
-#endif
-
-#ifdef IS_IRIS
-    uniform int currentRenderedItemId;
 #endif
 
 //Pipeline Constants//
@@ -164,7 +127,7 @@ void main() {
             #endif
 
             #ifdef COATED_TEXTURES
-                CoatTextures(color.rgb, noiseFactor, playerPos);
+                CoatTextures(color.rgb, noiseFactor, playerPos, false);
             #endif
         #else
             #ifdef CUSTOM_PBR
@@ -179,10 +142,12 @@ void main() {
         #endif
 
         normalM = gl_FrontFacing ? normalM : -normalM; // Inverted Normal Workaround
+        vec3 geoNormal = normalM;
+        vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-                   noSmoothLighting, false, false, true,
-                   0, smoothnessG, highlightMult, emission);
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+                   true, 0, smoothnessG, highlightMult, emission);
 
         #if defined IPBR && defined IS_IRIS
             color.rgb += maRecolor;
@@ -198,7 +163,7 @@ void main() {
     }
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:06 */
@@ -238,15 +203,6 @@ out vec4 glColor;
     out vec3 viewVector;
 
     out vec4 vTexCoordAM;
-#endif
-
-//Uniforms//
-#ifdef FLICKERING_FIX
-    uniform int entityId;
-
-    uniform vec3 cameraPosition;
-
-    uniform mat4 gbufferModelViewInverse;
 #endif
 
 //Attributes//
@@ -325,12 +281,13 @@ void main() {
             if (gl_Normal.y == 1.0) { // Maps
                 normal = upVec * 2.0;
             }
-        } else if (entityId == 50084) { // Slime
+        } else if (entityId == 50084) { // Slime, Chicken
             gl_Position.z -= 0.00015;
         }
 
-        #ifndef REALTIME_SHADOWS
+        #if SHADOW_QUALITY == -1
             if (glColor.a < 0.5) gl_Position.z += 0.0005;
+            else
         #endif
     #endif
 }

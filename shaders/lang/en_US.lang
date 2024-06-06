@@ -1,13 +1,13 @@
 #shaders/lang/en_us.lang
 
 #Profiles
-profile.POTATO=§4Potato
-profile.VERYLOW=§6Very Low
-profile.LOW=§eLow
+profile.POTATO=§aPotato
+profile.VERYLOW=§aVery Low
+profile.LOW=§aLow
 profile.MEDIUM=§aMedium
-profile.HIGH=§bHigh (Default)
-profile.VERYHIGH=§9Very High
-profile.ULTRA=§dUltra
+profile.HIGH=§eHigh (Default)
+profile.VERYHIGH=§cVery High
+profile.ULTRA=§4§lUltra
 profile.comment=Shader profiles change performance settings with the most optimised visual fidelity to performance ratio. §e[*]§r It's recommended to use one of these profiles for your settings unless you know what you are doing. §e[*]§r All affected settings can all be found in the "Performance Settings" menu.
 
 #Information
@@ -77,7 +77,7 @@ screen.ATM_COLOR_SETTINGS.comment=Enables customization of atmosphere colors tha
 screen.MORNING_ATM_MULTS=Sunrise/Sunset Time
 screen.NOON_ATM_MULTS=Noon Time
 screen.NIGHT_ATM_MULTS=Night Time
-screen.RAIN_ATM_MULTS=Rainy/Snowy Weather
+screen.RAIN_ATM_MULTS=Rainy Weather
 screen.NETHER_ATM_MULTS=The Nether Dimension
 screen.END_ATM_MULTS=The End Dimension
 
@@ -98,6 +98,9 @@ screen.SUN_MOON_SETTINGS.comment=Settings that relate to the sun and moon.
 
 screen.NETHER_SETTINGS=The Nether Dimension
 screen.NETHER_SETTINGS.comment=Settings that relate to the Nether dimension.
+
+screen.WEATHER_SETTINGS=Rain / Weather
+screen.WEATHER_SETTINGS.comment=Settings that relate to weather conditions
 
 screen.CAMERA_SETTINGS=Camera
 screen.CAMERA_SETTINGS.comment=Settings that relate to the view/camera.
@@ -123,7 +126,7 @@ screen.GLOWING_ORE_SETTINGS.comment=Settings to adjust emission of ore blocks.
 screen.GLOWING_STUFF_SETTINGS=Glowing Stuff
 screen.GLOWING_STUFF_SETTINGS.comment=Settings to adjust emission of miscellaneous blocks.
 
-screen.OTHER_IPBR_SETTINGS=Other
+screen.OTHER_IPBR_SETTINGS=Other IPBR Features
 screen.OTHER_IPBR_SETTINGS.comment=Miscellaneous IntegratedPBR+ settings.
 
 screen.CUSTOM_PBR_SETTINGS=labPBR/seuspbr Materials
@@ -138,15 +141,18 @@ screen.LIGHT_COLOR_SETTINGS.comment=Enables customization of lighting colors tha
 screen.MORNING_LIGHT_MULTS=Sunrise/Sunset Time
 screen.NOON_LIGHT_MULTS=Noon Time
 screen.NIGHT_LIGHT_MULTS=Night Time
-screen.RAIN_LIGHT_MULTS=Rainy/Snowy Weather
+screen.RAIN_LIGHT_MULTS=Rainy Weather
 screen.NETHER_LIGHT_MULTS=The Nether Dimension
 screen.END_LIGHT_MULTS=The End Dimension
 
-screen.BLOCKLIGHT_COLOR_SETTINGS=Blocklight Color
-screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Settings to adjust the color emitted from light source blocks.
+screen.BLOCKLIGHT_COLOR_SETTINGS=Blocklight Color §e[*]§r
+screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Settings to adjust the color emitted from light source blocks. §e[*]§r These color settings won't affect most lights if the Advanced Colored Lighting setting is enabled, except for the Blocklight Intensity slider.
 
 screen.MOON_PHASE_INF_SETTINGS=Moon Phase Influence
 screen.MOON_PHASE_INF_SETTINGS.comment=Settings to determine how different moon phases affect the night lighting.
+
+screen.ACL_FEATURES_SETTINGS=ACL Exclusive Features §e[*]§r
+screen.ACL_FEATURES_SETTINGS.comment=Settings that are about features exclusive to Advanced Colored Lighting. §e[*]§r These features only work if Advanced Colored Lighting is enabled in Performance Settings and your system supports it.
 
 screen.WATER_SETTINGS=Water
 screen.WATER_SETTINGS.comment=Settings that are about water.
@@ -177,95 +183,99 @@ value.RP_MODE.1=§bIntegrated PBR+
 value.RP_MODE.2=§eseuspbr (RP Required)
 value.RP_MODE.3=§elabPBR (RP Required)
 
-option.WATER_QUALITY=Water Material Quality
-option.WATER_QUALITY.comment=Adjusts the visual quality of water. §bHigh§r: Enables water refraction and allows for more detail on wavy water styles. §aMedium§r: Default. §eLow§r: No edge foaming, no fancy alpha, no varying color intensity, no surface shadows, and no wave parallax.
-value.WATER_QUALITY.1=§eLow
-value.WATER_QUALITY.2=§aMedium
-value.WATER_QUALITY.3=§bHigh
-
 option.WATER_REFLECT_QUALITY=Water Reflection Quality
-option.WATER_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on translucents. §aMedium§r: Screenspace ray-traced reflections on water and translucents. §4Potato§r: Replaces water and translucent reflections with a faster method, may look incorrect in some situations. §cOFF§r: No reflections.
-value.WATER_REFLECT_QUALITY.0=§cOFF
-value.WATER_REFLECT_QUALITY.1=§4Potato
-value.WATER_REFLECT_QUALITY.2=§aMedium
+option.WATER_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on translucents. §cMedium§r: Screenspace ray-traced reflections on water and translucents. §ePotato§r: Replaces water and translucent reflections with a faster method, may look incorrect in some situations. §aOFF§r: No reflections.
+value.WATER_REFLECT_QUALITY.-1=§aOFF
+value.WATER_REFLECT_QUALITY.0=§aSky only
+value.WATER_REFLECT_QUALITY.1=§ePotato
+value.WATER_REFLECT_QUALITY.2=§cMedium
 
 option.BLOCK_REFLECT_QUALITY=Block Reflection Quality §e[*]§r
-option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §bHigh§r: Sun/moon highlights + smoother specular reflections using a temporal filter. §aMedium§r: Sun/moon highlights + specular reflections. §eLow§r: Sun/moon highlights only. §e[*]§r RP Support option must be set to anything but Basic for any specular reflections to appear.
-value.BLOCK_REFLECT_QUALITY.0=§cOFF
+option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §eHigh§r: Sun/moon highlights + smoother specular reflections using a temporal filter. §eMedium§r: Sun/moon highlights + specular reflections. §aLow§r: Sun/moon highlights only. §e[*]§r RP Support option must be set to anything but Basic for any specular reflections to appear.
+value.BLOCK_REFLECT_QUALITY.0=§aOFF
 value.BLOCK_REFLECT_QUALITY.1=§eLow
-value.BLOCK_REFLECT_QUALITY.2=§aMedium
-value.BLOCK_REFLECT_QUALITY.3=§bHigh
-
-option.REALTIME_SHADOWS=Real-Time Shadows
-option.REALTIME_SHADOWS.comment=Enables traditional shadows that move depending on the terrain and sun/moon angle. §e[*]§r Disabling this option will cause Light Shafts to not work, and will stop other shadow options from doing anything
-value.REALTIME_SHADOWS.true=§bON
-value.REALTIME_SHADOWS.false=§cOFF
+value.BLOCK_REFLECT_QUALITY.2=§cMedium
+value.BLOCK_REFLECT_QUALITY.3=§cHigh
 
 option.SHADOW_QUALITY=Shadow Sample Quality
-option.SHADOW_QUALITY.comment=Adjusts the quality of shadows. Every tier further reduces the shadow noise artifacts, and options lower than §bHigh§r enable optimised shadows on leaves; meanwhile the §6Very Low§r option significantly downgrades shadows in multiple ways.
-value.SHADOW_QUALITY.0=§6Very Low
+option.SHADOW_QUALITY.comment=Adjusts the quality of shadows. Every tier further reduces the shadow noise artifacts, options lower than §eHigh§r enable optimised shadows on leaves, §eVery Low§r significantly downgrades shadows in multiple ways, §aOFF§r completely disables shadows and light shafts.
+value.SHADOW_QUALITY.-1=§aOFF
+value.SHADOW_QUALITY.0=§eVery Low
 value.SHADOW_QUALITY.1=§eLow
-value.SHADOW_QUALITY.2=§aMedium
-value.SHADOW_QUALITY.3=§bHigh
-value.SHADOW_QUALITY.4=§9Very High
-value.SHADOW_QUALITY.5=§dUltra
+value.SHADOW_QUALITY.2=§eMedium
+value.SHADOW_QUALITY.3=§eHigh
+value.SHADOW_QUALITY.4=§cVery High
+value.SHADOW_QUALITY.5=§4§lUltra
 
-option.LIGHTSHAFT_QUALI_DEFINE=Light Shaft Quality
-option.LIGHTSHAFT_QUALI_DEFINE.comment=Adjusts the quality of light shafts. Every tier further reduces the light shaft noise artifacts.
-value.LIGHTSHAFT_QUALI_DEFINE.0=§cOFF
+option.LIGHTSHAFT_QUALI_DEFINE=Light Shaft Quality §e[*]§r
+option.LIGHTSHAFT_QUALI_DEFINE.comment=Adjusts the quality of light shafts. Every tier further reduces the light shaft noise artifacts. §e[*]§r Shadow Sample Quality setting must be set to anything but OFF for light shafts to work.
+value.LIGHTSHAFT_QUALI_DEFINE.0=§aOFF
 value.LIGHTSHAFT_QUALI_DEFINE.1=§eLow
-value.LIGHTSHAFT_QUALI_DEFINE.2=§aMedium
-value.LIGHTSHAFT_QUALI_DEFINE.3=§bHigh
-value.LIGHTSHAFT_QUALI_DEFINE.4=§9Very High
+value.LIGHTSHAFT_QUALI_DEFINE.2=§eMedium
+value.LIGHTSHAFT_QUALI_DEFINE.3=§cHigh
+value.LIGHTSHAFT_QUALI_DEFINE.4=§4§lVery High
 
 option.shadowDistance=Shadow Distance
 option.shadowDistance.comment=Adjusts the distance from the player which real-time shadows are rendered. §e[*]§r The value is internally capped at Render Distance. §c[-]§r Lower values may cause excessive Light Shaft leaking.
-value.shadowDistance.64.0=§e4 Chunks §c[-]
-value.shadowDistance.80.0=§e5 Chunks §c[-]
-value.shadowDistance.96.0=§e6 Chunks §c[-]
-value.shadowDistance.112.0=§e7 Chunks §c[-]
+value.shadowDistance.64.0=§a4 Chunks §c[-]
+value.shadowDistance.80.0=§a5 Chunks §c[-]
+value.shadowDistance.96.0=§a6 Chunks §c[-]
+value.shadowDistance.112.0=§a7 Chunks §c[-]
 value.shadowDistance.128.0=§a8 Chunks
-value.shadowDistance.160.0=§a10 Chunks
-value.shadowDistance.192.0=§b12 Chunks
-value.shadowDistance.224.0=§b14 Chunks
-value.shadowDistance.256.0=§b16 Chunks
-value.shadowDistance.320.0=§d20 Chunks
-value.shadowDistance.384.0=§d24 Chunks
-value.shadowDistance.512.0=§d32 Chunks
-value.shadowDistance.768.0=§d48 Chunks
-value.shadowDistance.1024.0=§d64 Chunks
+value.shadowDistance.160.0=§e10 Chunks
+value.shadowDistance.192.0=§e12 Chunks
+value.shadowDistance.224.0=§e14 Chunks
+value.shadowDistance.256.0=§c16 Chunks
+value.shadowDistance.320.0=§c20 Chunks
+value.shadowDistance.384.0=§4§l24 Chunks
+value.shadowDistance.512.0=§4§l32 Chunks
+value.shadowDistance.768.0=§4§k-§r§4§l§n§o48 Chunks§r§4§k-
+value.shadowDistance.1024.0=§4§k-§r§4§l§n§o64 Chunks§r§4§k-
 
-option.ENTITY_SHADOWS=Entity Shadows
-option.ENTITY_SHADOWS.comment=Enables the ability for entities and block entities to cast shadows.
-value.ENTITY_SHADOWS.true=§dON
-value.ENTITY_SHADOWS.false=§eOFF
+option.ENTITY_SHADOWS_DEFINE=Entity Shadows
+option.ENTITY_SHADOWS_DEFINE.comment=Enables the ability for entities and block entities to cast shadows. §c[-]§r Entity Shadows impact performance way more than expected, costing more than 50% of your fps in some cases.
+value.ENTITY_SHADOWS_DEFINE.-1=§aOFF
+value.ENTITY_SHADOWS_DEFINE.1=§4§k-§r§4§l§n§oON§r§4§k- §r§c[-]
 
 option.DETAIL_QUALITY=Detail Quality
-option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: TAA, lighting tweaks, Night Nebula, Nether Storm, Ender Beams, sky effect reflections.
-value.DETAIL_QUALITY.0=§4Potato
-value.DETAIL_QUALITY.2=§aMedium
-value.DETAIL_QUALITY.3=§bHigh
+option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: Water material, TAA, lighting tweaks, Night Nebula, Nether Storm, Ender Beams, sky effect reflections, rain puddle accuracy
+value.DETAIL_QUALITY.0=§aPotato
+value.DETAIL_QUALITY.2=§eMedium
+value.DETAIL_QUALITY.3=§cHigh
 
 option.CLOUD_QUALITY=Cloud Quality
 option.CLOUD_QUALITY.comment=Adjusts the lighting, detail, and sample quality of Reimagined/Unbound cloud styles. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
-value.CLOUD_QUALITY.0=§cOFF
-value.CLOUD_QUALITY.1=§eLow
-value.CLOUD_QUALITY.2=§aMedium
-value.CLOUD_QUALITY.3=§bHigh
+value.CLOUD_QUALITY.0=§aOFF
+value.CLOUD_QUALITY.1=§aLow
+value.CLOUD_QUALITY.2=§eMedium
+value.CLOUD_QUALITY.3=§cHigh
+
+option.FXAA_DEFINE=Anti-Aliasing (FXAA)
+option.FXAA_DEFINE.comment=Enables Fast Approximate Anti-Aliasing (FXAA), which is basically an effect that produces smoother image.
+value.FXAA_DEFINE.-1=§aOFF
+value.FXAA_DEFINE.1=§eON
 
 option.SSAO_QUALI_DEFINE=Edge Shadow (SSAO) Quality
 option.SSAO_QUALI_DEFINE.comment=Adjusts the quality of Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene. Every tier further reduces the ssao noise artifacts.
-value.SSAO_QUALI_DEFINE.0=§cOFF
-value.SSAO_QUALI_DEFINE.2=§aMedium
-value.SSAO_QUALI_DEFINE.3=§bHigh
-value.SSAO_QUALI_DEFINE.5=§dUltra
+value.SSAO_QUALI_DEFINE.0=§aOFF
+value.SSAO_QUALI_DEFINE.2=§eMedium
+value.SSAO_QUALI_DEFINE.3=§cHigh
 
 option.ANISOTROPIC_FILTER=Texture Filtering
-option.ANISOTROPIC_FILTER.comment=Improves the quality of mipmapped textures using Anisotropic Filtering. §e[*]§r Make sure your "Mipmap Levels" video setting is set to Maximum (4) for best results.
-value.ANISOTROPIC_FILTER.0=§eOFF
-value.ANISOTROPIC_FILTER.4=§a4x
-value.ANISOTROPIC_FILTER.8=§b8x
-value.ANISOTROPIC_FILTER.16=§d16x
+option.ANISOTROPIC_FILTER.comment=Improves the quality of mipmapped textures using Anisotropic Filtering. §e[*]§r Make sure your "Mipmap Levels" video setting is set to Maximum (4) or you won't get good results.
+value.ANISOTROPIC_FILTER.0=§aOFF
+value.ANISOTROPIC_FILTER.4=§e4x
+value.ANISOTROPIC_FILTER.8=§e8x
+value.ANISOTROPIC_FILTER.16=§4§l16x
+
+option.COLORED_LIGHTING=Advanced Colored Lighting §e[*]§r
+option.COLORED_LIGHTING.comment=Uses voxelization and floodfill lighting to add color to blocklight, alongside introducing some new lights. §e[*]§r This feature only works on Iris and supported platforms. §e[*]§r Real-Time Shadows must be enabled for this to work. §a[+]§r This system also enables some other features which you can individually enable/disable in the "Other" -> "ACL Features" menu. §c[-]§r High chunk values for this effect impact performance way more than expected, each 2 chunk increment costs more than twice the performance of the previous tier.
+value.COLORED_LIGHTING.0=§aOFF
+value.COLORED_LIGHTING.128=§e4 Chunks
+value.COLORED_LIGHTING.192=§c6 Chunks
+value.COLORED_LIGHTING.256=§c8 Chunks
+value.COLORED_LIGHTING.384=§4§l12 Chunks
+value.COLORED_LIGHTING.512=§4§k-§r§4§l§n§o16 Chunks§r§4§k- §r§c[-]
 
 option.SSAO_I=Edge Shadow Intensity (SSAO)
 option.SSAO_I.comment=Determines the strength of Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene. §e[*]§r This setting won't work if SSAO is disabled in "Performance Settings".
@@ -301,6 +311,9 @@ value.LIGHTSHAFT_BEHAVIOUR.1=Scene Aware §a[+]
 value.LIGHTSHAFT_BEHAVIOUR.2=Regular
 value.LIGHTSHAFT_BEHAVIOUR.3=Extreme §c[-]
 
+option.LIGHTSHAFT_SMOKE=Light Shaft Smoke
+option.LIGHTSHAFT_SMOKE.comment=Adds volumetric smoke to the light shafts. §c[-]§r This effect can impact performance.
+
 option.LIGHTSHAFT_DAY_I=Light Shaft Day Multiplier
 option.LIGHTSHAFT_NIGHT_I=Light Shaft Night Multiplier
 option.LIGHTSHAFT_RAIN_I=Light Shaft Rain Multiplier
@@ -317,7 +330,7 @@ option.CLOUD_SHADOWS=Cloud Shadows
 option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r Cloud shadows will be randomly generated if Cloud Style is set to "Unbound", because of the extra complexity of Unbound clouds.
 
 option.CLOUD_CLOSED_AREA_CHECK=Prevent Clouds in Interiors
-option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r This setting will be treated as disabled if "Real-Time Shadows" are also disabled.
+option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r This setting will be treated as OFF if "Real-Time Shadows" are disabled.
 
 option.CLOUD_ALT1=Cloud Altitude
 option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
@@ -333,7 +346,7 @@ option.CLOUD_B=Cloud Blue Multiplier
 option.CLOUD_UNBOUND_AMOUNT=Cloud Amount
 option.CLOUD_UNBOUND_AMOUNT.comment=Adjusts the amount of Unbound clouds.
 
-option.CLOUD_UNBOUND_SIZE_MULT=Cloud Size
+option.CLOUD_UNBOUND_SIZE_MULT=Cloud Smallness
 option.CLOUD_UNBOUND_SIZE_MULT.comment=Adjusts the size of Unbound clouds. Higher values produce smaller clouds.
 
 option.CLOUD_UNBOUND_RAIN_ADD=Rain Cloud Addition
@@ -427,13 +440,13 @@ value.WATER_CAUSTIC_STYLE_DEFINE.1=Reimagined
 value.WATER_CAUSTIC_STYLE_DEFINE.3=Unbound
 
 option.WATER_REFRACTION_INTENSITY=Water Refraction Intensity §e[*]§r
-option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when the Water Quality is set to "High" or higher, or else it will only affect the subtle underwater distortion.
+option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when Detail Quality is set to "High", or else it will only affect the subtle underwater distortion.
 
 option.WATER_FOAM_I=Water Foam Intensity
-option.WATER_FOAM_I.comment=Determines the opacity of foam seen on water edges. §e[*]§r This setting only works when the Water Material Quality is set to Medium or higher.
+option.WATER_FOAM_I.comment=Determines the opacity of foam seen on water edges. §e[*]§r This setting only works when Detail Quality is set to Medium or higher.
 
 option.WATER_ALPHA_MULT=Water Opacity Factor
-option.WATER_ALPHA_MULT.comment=Adjusts how opaque the water looks. §c[-]§r Extreme values will break the balance of water lighting.
+option.WATER_ALPHA_MULT.comment=Adjusts how opaque the water looks. §c[-]§r Extreme values will break the balance of water lighting. §e[*]§r This setting only works when Detail Quality is set to Medium or higher.
 
 option.WATER_FOG_MULT=Water Fog Factor
 option.WATER_FOG_MULT.comment=Adjusts how close the water fog looks. Higher values provide closer fog. §c[-]§r Extreme values will break the balance of water lighting.
@@ -524,6 +537,14 @@ option.NIGHT_NEBULA.comment=Adds galaxy-style nebulae to the night sky. The nebu
 option.NIGHT_NEBULA_I=Night Nebula Brightness
 option.NIGHT_NEBULA_I.comment=Adjusts the brightness of Night Nebulae.
 
+option.RAIN_STYLE=Rainy Weather Style
+option.RAIN_STYLE.comment=Determines the style of rainy weather.
+value.RAIN_STYLE.1=Light & Warmer
+value.RAIN_STYLE.2=Heavy & Colder
+
+option.SPECIAL_BIOME_WEATHER=Special Cold/Dry Weather
+option.SPECIAL_BIOME_WEATHER.comment=Changes the atmosphere balance in cold and dry biomes to make things feel like a snowstorm or sandstorm.
+
 option.WEATHER_TEX_OPACITY=Weather Texture Opacity
 option.WEATHER_TEX_OPACITY.comment=Adjusts the opacity of the rainfall/snowfall weather textures.
 
@@ -573,11 +594,6 @@ value.BLOOM_STRENGTH.0.28=150% §c[-]
 value.BLOOM_STRENGTH.0.32=180% §c[-]
 value.BLOOM_STRENGTH.10.00=§cInsane
 
-option.FXAA=Anti-Aliasing (FXAA)
-option.FXAA.comment=Enables Fast Approximate Anti-Aliasing (FXAA), which is basically an effect that produces smoother image.
-value.FXAA.true=§aON
-value.FXAA.false=§eOFF
-
 option.IMAGE_SHARPENING=Image Sharpening
 option.IMAGE_SHARPENING.comment=Makes the image sharper using a filter. §c[-]§r Too much sharpening might cause visual artifacts like aliasing, flickering, noise, and subtle brightness changes.
 value.IMAGE_SHARPENING.0=OFF
@@ -598,10 +614,11 @@ option.LENSFLARE.comment=Adds camera lens reflection effect when towards the sun
 option.LENSFLARE_I=Lens Flare Intensity
 option.LENSFLARE_I.comment=Adjusts the strength of the Lens Flare effect.
 
-option.TAA_MODE=TAA Behaviour
-option.TAA_MODE.comment=Determines the behaviour of temporal anti aliasing. Smart & Subtle: TAA is applied in small amounts to the image in a way that won't cause artifacts. Intense: Provides better anti-aliasing, but it will cause extra smudging and flickering; it might be the better choice at a higher frame rate and resolution.
-value.TAA_MODE.1=Smart & Subtle
-value.TAA_MODE.2=Intense §c[-]
+option.TAA_MODE=Temporal Filter
+option.TAA_MODE.comment=Determines the behaviour of temporal anti aliasing. Smart & Subtle §a[+]§r: Temporal filter is applied in small amounts to the image in a way that won't cause artifacts. Intense §e[*]§r: Provides better anti-aliasing, but it will cause extra smudging and flickering; it might be the better choice at a higher frame rate and resolution. OFF §c[-]§r: Turning this off will cause worse performance and worse effect quality.
+value.TAA_MODE.1=Smart & Subtle §a[+]
+value.TAA_MODE.2=Intense §e[*]
+value.TAA_MODE.0=OFF §c[-]
 
 option.MOTION_BLURRING=Motion Blur
 option.MOTION_BLURRING.comment=Applies blur to the image when moving the camera.
@@ -641,7 +658,7 @@ option.VIGNETTE_R=Vignette
 option.VIGNETTE_R.comment=Applies darkening around the edges of the screen.
 
 option.CHROMA_ABERRATION=Chromatic Aberration
-option.CHROMA_ABERRATION.comment=Separates different colors towards the edges of the screen. §c[-] Chromatic Aberration can cause the image to feel blurry; high values aren't recommended for gameplay.
+option.CHROMA_ABERRATION.comment=Separates different colors towards the edges of the screen. §c[-]§r Chromatic Aberration can cause the image to feel blurry; high values aren't recommended for gameplay.
 value.CHROMA_ABERRATION.4=4 §c[-]
 value.CHROMA_ABERRATION.5=5 §c[-]
 value.CHROMA_ABERRATION.6=6 §c[-]
@@ -695,6 +712,11 @@ value.MINIMUM_LIGHT_MODE.6=Extreme Bright §c[-]
 
 option.AMBIENT_MULT=Shadow Light Multiplier
 option.AMBIENT_MULT.comment=Determines the amount of ambient lighting seen in shadows. §c[-]§r Drastically changing this setting can break the lighting balance.
+
+option.PLAYER_SHADOW=Player Shadow §e[*]§r
+option.PLAYER_SHADOW.comment=Determines if the player will cast a shadow or not. §e[*]§r This setting only works on Iris. §e[*]§r This setting will be treated as OFF if "Real-Time Shadows" are disabled.
+value.PLAYER_SHADOW.-1=OFF
+value.PLAYER_SHADOW.1=ON
 
 option.GENERATED_NORMALS=Generated Normals
 option.GENERATED_NORMALS.comment=Adds auto-generated bumpy details to surfaces. §e[*]§r RP Support option must be set to Integrated PBR+.
@@ -821,8 +843,15 @@ value.WAVING_I.50.0=§cInsane
 option.NO_WAVING_INDOORS=No Waving in Closed Areas
 option.NO_WAVING_INDOORS.comment=Prevents blocks from waving in closed areas using skylight. §c[-]§r This setting being enabled can cause problems with some resource packs or mods.
 
-option.WAVING_FOLIAGE=Waving Foliage
-option.WAVING_FOLIAGE.comment=Adds movement to foliage to simulate wind.
+option.WAVING_I_RAIN_MULT=Waving Rain Multiplier
+option.WAVING_I_RAIN_MULT.comment=Multiplies the speed and intensity of waving during rain. §c[-]§r Too much waving intensity can cause waving blocks to clip in and out of other blocks. §c[-]§r This setting can impact performance when increased above 100.
+value.WAVING_I.125=125 §c[-]
+value.WAVING_I.150=150 §c[-]
+value.WAVING_I.175=175 §c[-]
+value.WAVING_I.200=200 §c[-]
+
+option.WAVING_FOLIAGE=Waving Grass
+option.WAVING_FOLIAGE.comment=Adds movement to grass and other similar foliage to simulate wind.
 
 option.WAVING_LEAVES=Waving Leaves
 option.WAVING_LEAVES.comment=Adds movement to leaves to simulate wind.
@@ -831,7 +860,7 @@ option.WAVING_LAVA=Waving Lava Texture
 option.WAVING_LAVA.comment=Adds constant movement to lava. §e[*]§r Lava waving in particular is not affected by the "No Waving in Closed Areas" setting.
 
 option.WAVING_LILY_PAD=Waving Lily Pad
-option.WAVING_LILY_PAD.comment=Adds movement to lily pads to simulate impact from water waves.
+option.WAVING_LILY_PAD.comment=Adds movement to lily pads and frogspawn to simulate impact from water waves.
 
 option.WAVING_WATER_VERTEX=Waving Water Texture
 option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind. §e[*]§r This option is not related to the "Water Wave Strength" setting.
@@ -855,7 +884,7 @@ option.DARK_OUTLINE_THICKNESS=Dark Outline Thickness
 option.DARK_OUTLINE_THICKNESS.comment=Determines the thickness of the Dark Outline effect. §c[-]§r Increasing this setting can impact performance.
 
 option.RAIN_PUDDLES=Rain Puddles
-option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §e[*]§r RP Support option must be set to anything but Basic, and Block Reflection Quality must be set to Medium or higher. §c[-]§r Rain puddles can severely impact performance.
+option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §c[-]§r Rain puddles can severely impact performance.
 value.RAIN_PUDDLES.0=OFF
 value.RAIN_PUDDLES.1=§aON - Puddles
 value.RAIN_PUDDLES.2=§aON - Full Coverage
@@ -872,6 +901,9 @@ value.SELECT_OUTLINE.1=Default
 value.SELECT_OUTLINE.2=Rainbow
 value.SELECT_OUTLINE.3=Select Color
 value.SELECT_OUTLINE.4=Versatile
+
+option.SELECT_OUTLINE_AUTO_HIDE=Auto Hide Selection Outline
+option.SELECT_OUTLINE_AUTO_HIDE.comment=Hides the block selection outline if the player isn't holding anything in any of their hands, or only holding a light source in the off-hand.
 
 option.SELECT_OUTLINE_I=SO Brightness
 option.SELECT_OUTLINE_R=SO Red
@@ -895,6 +927,21 @@ option.MOON_PHASE_PARTIAL.comment=Adjusts the moon phase influence during all mo
 
 option.MOON_PHASE_DARK=Dark Moon Intensity
 option.MOON_PHASE_DARK.comment=Adjusts the moon phase influence during New Moon (darkest phase).
+
+option.CONNECTED_GLASS_EFFECT=Connected Glass
+option.CONNECTED_GLASS_EFFECT.comment=Makes all types of glass connect to each other. §e[*]§r This feature only works if Advanced Colored Lighting is enabled in Performance Settings and your system supports it. §e[*]§r This feature will be automatically disable itself if the "Continuity" mod is installed.
+
+option.PORTAL_EDGE_EFFECT=Glowing Portal Edges
+option.PORTAL_EDGE_EFFECT.comment=Adds an emissive border effect to end and nether portals. §e[*]§r This feature only works if Advanced Colored Lighting is enabled in Performance Settings and your system supports it.
+
+option.PUDDLE_VOXELIZATION=Fix Puddles Under Glass
+option.PUDDLE_VOXELIZATION.comment=Prevents rain puddles from forming in closed areas with glass roofs when the Rain Puddles setting is enabled. §e[*]§r This feature only works if Advanced Colored Lighting is enabled in Performance Settings and your system supports it.
+
+option.COLORED_LIGHT_FOG=Colored Light Fog
+option.COLORED_LIGHT_FOG.comment=Adds volumetric blocklight fog to the scene, most visible during the night or underground. §e[*]§r This feature only works if Advanced Colored Lighting is enabled in Performance Settings and your system supports it. §c[-]§r This effect can severely impact performance.
+
+option.COLORED_LIGHT_FOG_I=Light Fog Intensity
+option.COLORED_LIGHT_FOG_I.comment=Determines the brightness of the Colored Light Fog.
 
 option.LIGHT_COLOR_MULTS=§eLighting Color Multipliers
 option.LIGHT_COLOR_MULTS.comment=Enables customization of lighting colors that are seen on all surfaces.
@@ -954,3 +1001,4 @@ option.ATM_END_I=Atmosphere Intensity Multiplier
 option.XLIGHT_R=Blocklight Red Multiplier
 option.XLIGHT_G=Blocklight Green Multiplier
 option.XLIGHT_B=Blocklight Blue Multiplier
+option.XLIGHT_I=Blocklight Intensity

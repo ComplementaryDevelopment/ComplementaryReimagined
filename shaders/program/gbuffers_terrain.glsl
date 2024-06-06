@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -35,57 +35,10 @@ in vec4 glColorRaw;
     in vec4 spriteBounds;
 #endif
 
-//Uniforms//
-uniform int isEyeInWater;
-uniform int frameCounter;
-uniform int heldItemId;
-uniform int heldItemId2;
-
-uniform float viewWidth;
-uniform float viewHeight;
-uniform float nightVision;
-uniform float frameTimeCounter;
-
-uniform vec3 skyColor;
-uniform vec3 cameraPosition;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D tex;
-uniform sampler2D noisetex;
-
-#if defined IPBR || defined POM
-    uniform ivec2 atlasSize;
-#endif
-
-#if RAIN_PUDDLES >= 1
-    #if RAIN_PUDDLES < 3
-        uniform float wetness;
-        uniform float inRainy;
-    #else
-        float wetness = 1.0;
-        float inRainy = 1.0;
-    #endif
-#endif
-
-#if HELD_LIGHTING_MODE == 0 && SHOW_LIGHT_LEVEL == 2
-    uniform int heldBlockLightValue;
-    uniform int heldBlockLightValue2;
-#endif
-
-#ifdef CUSTOM_PBR
-    uniform sampler2D normals;
-    uniform sampler2D specular;
-#endif
-
-#ifdef LIGHT_COLORING
-    layout (rgba8) uniform image2D colorimg3;
-#endif
-
 //Pipeline Constants//
+#if COLORED_LIGHTING > 0
+    const float voxelDistance = 32.0;
+#endif
 
 //Common Variables//
 float NdotU = dot(normal, upVec);
@@ -116,6 +69,9 @@ vec4 glColor = glColorRaw;
 
 //Common Functions//
 void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, inout float snowMinNdotU, float lViewPos) {
+    #ifdef DREAM_TWEAKED_LIGHTING
+        return;
+    #endif
     float factor = max(80.0 - lViewPos, 0.0);
     shadowMult *= 1.0 + 0.004 * noonFactor * factor;
 
@@ -172,6 +128,10 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
     #include "/lib/materials/materialMethods/anisotropicFiltering.glsl"
 #endif
 
+#ifdef PUDDLE_VOXELIZATION
+    #include "/lib/misc/puddleVoxelization.glsl"
+#endif
+
 //Program//
 void main() {
     #if ANISOTROPIC_FILTER == 0
@@ -181,7 +141,6 @@ void main() {
     #endif
 
     float smoothnessD = 0.0, materialMask = 0.0, skyLightFactor = 0.0;
-    vec3 normalM = normal;
 
     #if !defined POM || !defined POM_ALLOW_CUTOUT
         if (color.a <= 0.00001) discard;
@@ -200,10 +159,12 @@ void main() {
     vec3 playerPos = ViewToPlayer(viewPos);
 
     int subsurfaceMode = 0;
-    bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false, centerShadowBias = false, noGeneratedNormals = false;
+    bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false, centerShadowBias = false, noGeneratedNormals = false, doTileRandomisation = true;
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0, snowMinNdotU = 0.0, snowFactor = 1.0, noPuddles = 0.0;
     vec2 lmCoordM = lmCoord;
-    vec3 shadowMult = vec3(1.0);
+    vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
+    vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
+
     #ifdef IPBR
         vec3 maRecolor = vec3(0.0);
         #include "/lib/materials/materialHandling/terrainMaterials.glsl"
@@ -213,31 +174,30 @@ void main() {
         #endif
 
         #ifdef COATED_TEXTURES
-            CoatTextures(color.rgb, noiseFactor, playerPos);
+            CoatTextures(color.rgb, noiseFactor, playerPos, doTileRandomisation);
         #endif
     #else
         #ifdef CUSTOM_PBR
             GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
         #endif
 
-        if (mat == 10000) { // No directional shading
+        if (mat == 10001) { // No directional shading
             noDirectionalShading = true;
-        } else if (mat == 10004) { // Grounded Waving Foliage
+        } else if (mat == 10005) { // Grounded Waving Foliage
             subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
             DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
-        } else if (mat == 10008) { // Leaves
+        } else if (mat == 10009) { // Leaves
             #include "/lib/materials/specificMaterials/terrain/leaves.glsl"
-        } else if (mat == 10012) { // Vine
-            shadowMult = vec3(1.7);
-            centerShadowBias = true;
-        } else if (mat == 10016) { // Non-waving Foliage
+        } else if (mat == 10013) { // Vine
+            subsurfaceMode = 3, centerShadowBias = true; noSmoothLighting = true;
+        } else if (mat == 10017) { // Non-waving Foliage
             subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-        } else if (mat == 10020) { // Upper Waving Foliage
+        } else if (mat == 10021) { // Upper Waving Foliage
             subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
             DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
-        } else if (mat == 10744) { // Cobweb
-            subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
-            centerShadowBias = true;
+        } else if (mat == 10028) { // Modded Light Sources
+            noSmoothLighting = true; noDirectionalShading = true;
+            emission = GetLuminance(color.rgb) * 2.5;
         }
 
         #ifdef SNOWY_WORLD
@@ -274,7 +234,19 @@ void main() {
         float puddleLightFactor = max0(lmCoord.y * 32.0 - 31.0) * clamp((1.0 - 1.15 * lmCoord.x) * 10.0, 0.0, 1.0);
         float puddleNormalFactor = pow2(max0(NdotUmax0 - 0.5) * 2.0);
         float puddleMixer = puddleLightFactor * inRainy * puddleNormalFactor;
-        if (pow2(pow2(wetness)) * puddleMixer - noPuddles > 0.00001) {
+        #if RAIN_PUDDLES < 3
+            float wetnessM = wetness;
+        #else
+            float wetnessM = 1.0;
+        #endif
+        #ifdef PUDDLE_VOXELIZATION
+            vec3 voxelPos = SceneToPuddleVoxel(playerPos);
+            vec3 voxel_sample_pos = clamp01(voxelPos / vec3(puddle_voxelVolumeSize));
+            if (CheckInsidePuddleVoxelVolume(voxelPos)) {
+                noPuddles += texture2D(puddle_sampler, voxel_sample_pos.xz).r;
+            }
+        #endif
+        if (pow2(pow2(wetnessM)) * puddleMixer - noPuddles > 0.00001) {
             vec2 worldPosXZ = playerPos.xz + cameraPosition.xz;
             vec2 puddleWind = vec2(frameTimeCounter) * 0.03;
             #if WATER_STYLE == 1
@@ -298,10 +270,10 @@ void main() {
                 float pFormNoise  = texture2D(noisetex, puddlePosForm).b        * 3.0;
                       pFormNoise += texture2D(noisetex, puddlePosForm * 0.5).b  * 5.0;
                       pFormNoise += texture2D(noisetex, puddlePosForm * 0.25).b * 8.0;
-                      pFormNoise *= sqrt1(wetness) * 0.5625 + 0.4375;
+                      pFormNoise *= sqrt1(wetnessM) * 0.5625 + 0.4375;
                       pFormNoise  = clamp(pFormNoise - 7.0, 0.0, 1.0);
             #else
-                float pFormNoise = wetness;
+                float pFormNoise = wetnessM;
             #endif
             puddleMixer *= pFormNoise;
 
@@ -318,9 +290,9 @@ void main() {
         #include "/lib/misc/showLightLevels.glsl"
     #endif
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, normalM, lmCoordM,
-                noSmoothLighting, noDirectionalShading, noVanillaAO, centerShadowBias,
-                subsurfaceMode, smoothnessG, highlightMult, emission);
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+               worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
+               centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
 
     #ifdef IPBR
         color.rgb += maRecolor;
@@ -335,7 +307,7 @@ void main() {
     #endif
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, mat);
     #endif
 
     /* DRAWBUFFERS:06 */
@@ -378,19 +350,6 @@ out vec4 glColorRaw;
 
 #if ANISOTROPIC_FILTER > 0
     out vec4 spriteBounds;
-#endif
-
-//Uniforms//
-#ifdef TAA
-    uniform float viewWidth, viewHeight;
-#endif
-
-#ifdef WAVING_ANYTHING_TERRAIN
-    uniform float frameTimeCounter;
-
-    uniform vec3 cameraPosition;
-
-    uniform mat4 gbufferModelViewInverse;
 #endif
 
 //Attributes//
@@ -452,6 +411,10 @@ void main() {
                 glColorRaw.rgb = min(glColorRaw.rgb, vec3(0.9));
             }
         #endif
+    #endif
+
+    #ifdef FLICKERING_FIX
+        if (mat == 10257) gl_Position.z -= 0.00001; // Iron Bars
     #endif
 
     #ifdef TAA

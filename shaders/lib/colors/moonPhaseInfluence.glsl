@@ -2,11 +2,6 @@
 #define INCLUDE_MOON_PHASE_INF
 
 #ifdef OVERWORLD
-    #ifndef UNIFORM_MOONPHASE
-    #define UNIFORM_MOONPHASE
-    uniform int moonPhase;
-    #endif
-
     float moonPhaseInfluence = mix(
         1.0,
         moonPhase == 0 ? MOON_PHASE_FULL : moonPhase != 4 ? MOON_PHASE_PARTIAL : MOON_PHASE_DARK,

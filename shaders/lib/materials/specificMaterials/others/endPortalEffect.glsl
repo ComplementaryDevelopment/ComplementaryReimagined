@@ -57,9 +57,44 @@ for (int j = 0; j < repeat; j++) {
         color.rgb += psample * length(psample.rgb) * (3000.0 / repeat);
     }
 }
-color.rgb *= 0.4;
+color.rgb *= vec3(0.09, 0.077, 0.07);
+emission = 10.0;
 noDirectionalShading = true;
 
 #ifdef COATED_TEXTURES
     noiseFactor = 0.0;
+#endif
+
+#ifdef PORTAL_EDGE_EFFECT
+    //vec3 voxelPos = SceneToVoxel(mix(playerPos, vec3(0.0), -0.02)); // Fixes weird parallax offset
+    vec3 voxelPos = SceneToVoxel(playerPos);
+
+    float portalOffset = 0.08333 * dither;
+    vec3[4] portalOffsets = vec3[](
+        vec3( portalOffset, 0, portalOffset),
+        vec3( portalOffset, 0,-portalOffset),
+        vec3(-portalOffset, 0, portalOffset),
+        vec3(-portalOffset, 0,-portalOffset)
+    );
+
+    float edge = 0.0;
+    for (int i = 0; i < 4; i++) {
+        int voxel = int(texelFetch(voxel_sampler, ivec3(voxelPos + portalOffsets[i]), 0).r);
+        if (voxel == 58 || voxel == 255) { // End Portal Frame or Bedrock
+            edge = 1.0; break;
+        }
+    }
+    
+    #ifdef END
+        // No edge effect in the middle of the return fountain
+        vec2 var1 = abs(playerPos.xz + cameraPosition.xz - 0.5);
+        float var2 = max(var1.x, var1.y);
+        if (var2 > 1.0)
+    #endif
+
+    {
+        vec4 edgeColor = vec4(vec3(0.3, 0.6, 0.7), 1.0);
+        color = mix(color, edgeColor, edge);
+        emission = mix(emission, 5.0, edge);
+    }
 #endif

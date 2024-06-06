@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -14,21 +14,6 @@ flat in vec4 glColor;
 
 #ifdef OVERWORLD
     flat in vec3 upVec, sunVec;
-#endif
-
-//Uniforms//
-uniform int isEyeInWater;
-
-uniform float viewWidth, viewHeight;
-
-uniform vec3 skyColor;
-
-uniform mat4 gbufferProjectionInverse;
-
-uniform sampler2D tex;
-
-#ifdef CAVE_FOG
-    uniform vec3 cameraPosition;
 #endif
 
 //Pipeline Constants//
@@ -112,7 +97,7 @@ void main() {
     #endif
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:0 */
@@ -131,8 +116,6 @@ flat out vec4 glColor;
 #ifdef OVERWORLD
     flat out vec3 upVec, sunVec;
 #endif
-
-//Uniforms//
 
 //Attributes//
 

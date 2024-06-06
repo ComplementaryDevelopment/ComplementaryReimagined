@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -11,16 +11,6 @@
 in vec2 texCoord;
 
 in vec4 glColor;
-
-//Uniforms//
-uniform float viewWidth, viewHeight;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D tex;
 
 //Pipeline Constants//
 
@@ -70,7 +60,7 @@ void main() {
     color.rgb *= 0.5 + 0.5 * exp(- lViewPos * 0.04);
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:06 */
@@ -86,11 +76,6 @@ void main() {
 out vec2 texCoord;
 
 out vec4 glColor;
-
-//Uniforms//
-#ifdef TAA
-    uniform float viewWidth, viewHeight;
-#endif
 
 //Attributes//
 

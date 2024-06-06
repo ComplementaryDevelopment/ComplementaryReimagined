@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -13,30 +13,6 @@
 
     #ifdef BLOOM_FOG_COMPOSITE2
         flat in vec3 upVec, sunVec;
-    #endif
-#endif
-
-//Uniforms//
-uniform sampler2D colortex0;
-
-#ifdef MOTION_BLURRING
-    uniform float viewWidth, viewHeight, aspectRatio;
-
-    uniform vec3 cameraPosition, previousCameraPosition;
-
-    uniform mat4 gbufferPreviousProjection, gbufferProjectionInverse;
-    uniform mat4 gbufferModelView, gbufferPreviousModelView, gbufferModelViewInverse;
-
-    uniform sampler2D depthtex1;
-
-    #ifdef BLOOM_FOG_COMPOSITE2
-        uniform int isEyeInWater;
-
-        uniform sampler2D depthtex0;
-
-        #ifdef NETHER
-            uniform float far;
-        #endif
     #endif
 #endif
 
@@ -111,6 +87,14 @@ void main() {
             viewPos /= viewPos.w;
             float lViewPos = length(viewPos.xyz);
 
+            #if defined DISTANT_HORIZONS && defined NETHER
+                float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
+                vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
+                vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
+                viewPosDH /= viewPosDH.w;
+                lViewPos = min(lViewPos, length(viewPosDH.xyz));
+            #endif
+
             color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog can move between composite1-2-3
         #endif
     #endif
@@ -131,8 +115,6 @@ void main() {
         flat out vec3 upVec, sunVec;
     #endif
 #endif
-
-//Uniforms//
 
 //Attributes//
 

@@ -22,7 +22,7 @@ if (currentRenderedItemId < 45064) {
                     smoothnessD = 0.5;
 
                     #ifdef GLOWING_ARMOR_TRIM
-                        emission = 2.0;
+                        emission = 1.5;
                     #endif
                 } else if (currentRenderedItemId == 45004) { // Wooden Tools, Bow, Fishing Rod
                     #include "/lib/materials/specificMaterials/planks/sprucePlanks.glsl"
@@ -208,8 +208,9 @@ if (currentRenderedItemId < 45064) {
             }
         } else {
             if (currentRenderedItemId < 45120) {
-                if (currentRenderedItemId == 45112) { //
-
+                if (currentRenderedItemId == 45112) { // Trial Key
+                    emission = max0(color.r - color.b) * 3.0;
+                    color.rgb = pow(color.rgb, vec3(1.0 + 0.5 * sqrt(emission)));
                 } else /*if (currentRenderedItemId == 45116)*/ { //
 
                 }

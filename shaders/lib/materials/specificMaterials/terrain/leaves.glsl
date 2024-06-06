@@ -1,5 +1,12 @@
 subsurfaceMode = 2;
-materialMask = OSIEBCA * 253.0; // Reduced Edge TAA
+
+#ifdef GBUFFERS_TERRAIN
+    materialMask = OSIEBCA * 253.0; // Reduced Edge TAA
+
+    #ifdef COATED_TEXTURES
+        doTileRandomisation = false;
+    #endif
+#endif
 
 #ifdef IPBR
     float factor = min1(pow2(color.g - 0.15 * (color.r + color.b)) * 2.5);
@@ -14,6 +21,6 @@ materialMask = OSIEBCA * 253.0; // Reduced Edge TAA
     color.rgb = color.rgb * 0.5 + 0.5 * (color.rgb / glColor.rgb);
 #endif
 
-#if defined REALTIME_SHADOWS && SHADOW_QUALITY < 3
+#if SHADOW_QUALITY > -1 && SHADOW_QUALITY < 3
     shadowMult = vec3(sqrt1(max0(max(lmCoordM.y, min1(lmCoordM.x * 2.0)) - 0.95) * 20.0));
 #endif

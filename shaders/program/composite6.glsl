@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -10,33 +10,10 @@
 
 noperspective in vec2 texCoord;
 
-//Uniforms//
-uniform float viewWidth, viewHeight;
-uniform float far, near;
-
-uniform vec3 cameraPosition, previousCameraPosition;
-
-uniform mat4 gbufferPreviousProjection, gbufferProjectionInverse;
-uniform mat4 gbufferPreviousModelView, gbufferModelViewInverse;
-
-uniform sampler2D colortex2;
-uniform sampler2D colortex6;
-uniform sampler2D depthtex1;
-
-#ifndef LIGHT_COLORING
-    uniform sampler2D colortex3;
-#else
-    uniform sampler2D colortex8;
-#endif
-
 //Pipeline Constants//
 #include "/lib/pipelineSettings.glsl"
 
-#ifndef LIGHT_COLORING
-    const bool colortex3MipmapEnabled = true;
-#else
-    const bool colortex8MipmapEnabled = true;
-#endif
+const bool colortex3MipmapEnabled = true;
 
 //Common Variables//
 vec2 view = vec2(viewWidth, viewHeight);
@@ -53,39 +30,22 @@ float GetLinearDepth(float depth) {
 
 //Program//
 void main() {
-    #ifndef LIGHT_COLORING
-        vec3 color = texelFetch(colortex3, texelCoord, 0).rgb;
-    #else
-        vec3 color = texelFetch(colortex8, texelCoord, 0).rgb;
-    #endif
+    vec3 color = texelFetch(colortex3, texelCoord, 0).rgb;
 
     vec3 temp = vec3(0.0);
-    float depth;
+    float z1 = 0.0;
 
     #ifdef TEMPORAL_FILTER
-        depth = texelFetch(depthtex1, texelCoord, 0).r;
+        z1 = texelFetch(depthtex1, texelCoord, 0).r;
     #endif
 
     #ifdef TAA
-        DoTAA(color, temp, depth);
+        DoTAA(color, temp, z1);
     #endif
 
-    #ifndef LIGHT_COLORING
     /* DRAWBUFFERS:32 */
-    #else
-    /* DRAWBUFFERS:82 */
-    #endif
     gl_FragData[0] = vec4(color, 1.0);
-    gl_FragData[1] = vec4(temp, 1.0);
-
-    #ifdef TEMPORAL_FILTER
-        #ifndef LIGHT_COLORING
-        /* DRAWBUFFERS:321 */
-        #else
-        /* DRAWBUFFERS:821 */
-        #endif
-        gl_FragData[2] = vec4(depth, 0.0, 0.0, 1.0);
-    #endif
+    gl_FragData[1] = vec4(temp, z1);
 }
 
 #endif
@@ -94,8 +54,6 @@ void main() {
 #ifdef VERTEX_SHADER
 
 noperspective out vec2 texCoord;
-
-//Uniforms//
 
 //Attributes//
 

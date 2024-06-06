@@ -23,7 +23,7 @@ vec3 GetAuroraBorealis(vec3 viewPos, float VdotU, float dither) {
         #ifdef DEFERRED1
             int sampleCount = 25;
             int sampleCountP = sampleCount + 5;
-        #elif defined GBUFFERS_WATER
+        #else
             int sampleCount = 10;
             int sampleCountP = sampleCount + 10;
         #endif

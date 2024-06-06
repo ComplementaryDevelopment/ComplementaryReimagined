@@ -8,18 +8,22 @@ float manualDeterminant(mat2 matrix) {
 }
 
 mat2 inverseM(mat2 m) {
-    mat2 adj;
-    adj[0][0] = m[1][1];
-    adj[0][1] = -m[0][1];
-    adj[1][0] = -m[1][0];
-    adj[1][1] = m[0][0];
-    return adj / manualDeterminant(m);
+    #if MC_VERSION >= 11700
+        return inverse(m);
+    #else
+        mat2 adj;
+        adj[0][0] = m[1][1];
+        adj[0][1] = -m[0][1];
+        adj[1][0] = -m[1][0];
+        adj[1][1] = m[0][0];
+        return adj / manualDeterminant(m);
+    #endif
 }
 
 vec4 textureAF(sampler2D texSampler, vec2 uv) {
     vec2 spriteDimensions = vec2(spriteBounds.z - spriteBounds.x, spriteBounds.w - spriteBounds.y);
 
-    mat2 J = inverse(mat2(dFdx(uv), dFdy(uv)));          // dFdxy: pixel footprint in texture space
+    mat2 J = inverseM(mat2(dFdx(uv), dFdy(uv)));          // dFdxy: pixel footprint in texture space
     J = transpose(J)*J;                                  // quadratic form
     float d = manualDeterminant(J), t = J[0][0]+J[1][1], // find ellipse: eigenvalues, max eigenvector
           D = sqrt(abs(t*t-4.0*d)),                      // abs() fix a bug: in weird view angles 0 can be slightly negative

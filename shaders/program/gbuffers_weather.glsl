@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -14,13 +14,6 @@ in vec2 texCoord;
 flat in vec3 upVec, sunVec;
 
 flat in vec4 glColor;
-
-//Uniforms//
-uniform int isEyeInWater;
-
-uniform vec3 skyColor;
-
-uniform sampler2D tex;
 
 //Pipeline Constants//
 
@@ -52,7 +45,7 @@ void main() {
     color.rgb = sqrt3(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + (ambientColor + 0.2 * lightColor) * lmCoord.y * (0.6 + 0.3 * sunFactor));
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:0 */
@@ -71,11 +64,6 @@ flat out vec3 upVec, sunVec;
 
 flat out vec4 glColor;
 
-//Uniforms//
-uniform float frameTimeCounter;
-
-uniform mat4 gbufferModelViewInverse;
-
 //Attributes//
 
 //Common Variables//
@@ -90,8 +78,9 @@ void main() {
     glColor = gl_Color;
 
     #ifdef WAVING_RAIN
-        position.xz += (0.4 * position.y + 0.2) * vec2(sin(frameTimeCounter * 0.3) + 0.5, sin(frameTimeCounter * 0.5) * 0.5);
-        position.xz *= 1.0 - 0.08 * position.y;
+        float rainWavingFactor = eyeBrightnessM2; // Prevents clipping inside interiors
+        position.xz += rainWavingFactor * (0.4 * position.y + 0.2) * vec2(sin(frameTimeCounter * 0.3) + 0.5, sin(frameTimeCounter * 0.5) * 0.5);
+        position.xz *= 1.0 - 0.08 * position.y * rainWavingFactor;
     #endif
 
     gl_Position = gl_ProjectionMatrix * gbufferModelView * position;

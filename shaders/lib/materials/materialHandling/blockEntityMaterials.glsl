@@ -63,7 +63,7 @@ if (blockEntityId < 60028) {
                     emission = 20.0;
                     color.rgb *= vec3(1.0, 0.25, 0.1);
                 }
-            } else /*if (blockEntityId == 60024)*/ { // End Portal
+            } else /*if (blockEntityId == 60024)*/ { // End Portal, End Gateway
                 #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
             }
         }
@@ -71,8 +71,8 @@ if (blockEntityId < 60028) {
 } else {
     if (blockEntityId < 60044) {
         if (blockEntityId < 60036) {
-            if (blockEntityId == 60028) { // End Gateway
-                #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
+            if (blockEntityId == 60028) { //
+            
             } else /*if (blockEntityId == 60032)*/ { // Bell
                 if (color.r + color.g > color.b + 0.5) { // Bell:Golden Part
                     #include "/lib/materials/specificMaterials/terrain/goldBlock.glsl"
@@ -81,15 +81,8 @@ if (blockEntityId < 60028) {
                 }
             }
         } else {
-            if (blockEntityId == 60036) { // Dragon Head:Powered
-                noSmoothLighting = true;
-                if (color.r + color.b > color.g * 3.0) {
-                    emission = 5.0;
-                    color.g *= 0.3;
-                }
-                #ifdef COATED_TEXTURES
-                    noiseFactor = 0.2;
-                #endif
+            if (blockEntityId == 60036) { // 
+            
             } else /*if (blockEntityId == 60040)*/ { //
 
             }

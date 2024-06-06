@@ -12,7 +12,7 @@ vec3 GetLightColorMult() {
 
         lightColorMult = mix(noonLightMult, morningLightMult, invNoonFactor2);
         lightColorMult = mix(nightLightMult, lightColorMult, sunVisibility2);
-        lightColorMult *= mix(vec3(1.0), rainLightMult, rainFactor);
+        lightColorMult = mix(lightColorMult, dot(lightColorMult, vec3(0.33333)) * rainLightMult, rainFactor);
     #elif defined NETHER
         vec3 netherLightMult = vec3(LIGHT_NETHER_R, LIGHT_NETHER_G, LIGHT_NETHER_B) * LIGHT_NETHER_I;
 
@@ -37,7 +37,7 @@ vec3 GetAtmColorMult() {
 
         atmColorMult = mix(noonAtmMult, morningAtmMult, invNoonFactor2);
         atmColorMult = mix(nightAtmMult, atmColorMult, sunVisibility2);
-        atmColorMult *= mix(vec3(1.0), rainAtmMult, rainFactor);
+        atmColorMult = mix(atmColorMult, dot(atmColorMult, vec3(0.33333)) * rainAtmMult, rainFactor);
     #elif defined NETHER
         vec3 netherAtmMult = vec3(ATM_NETHER_R, ATM_NETHER_G, ATM_NETHER_B) * ATM_NETHER_I;
 
@@ -55,4 +55,4 @@ vec3 lightColorMult;
 vec3 atmColorMult;
 vec3 sqrtAtmColorMult;
 
-#endif
+#endif //INCLUDE_LIGHT_AND_AMBIENT_MULTIPLIERS

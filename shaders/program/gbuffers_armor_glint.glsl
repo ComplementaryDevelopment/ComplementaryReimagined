@@ -12,9 +12,6 @@ in vec2 texCoord;
 
 flat in vec4 glColor;
 
-//Uniforms//
-uniform sampler2D tex;
-
 //Pipeline Constants//
 
 //Common Variables//
@@ -32,7 +29,7 @@ void main() {
     color *= glColor;
 
     #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color);
+        ColorCodeProgram(color, -1);
     #endif
 
     /* DRAWBUFFERS:0 */
@@ -47,11 +44,6 @@ void main() {
 out vec2 texCoord;
 
 flat out vec4 glColor;
-
-//Uniforms//
-#if HAND_SWAYING > 0
-    uniform float frameTimeCounter;
-#endif
 
 //Attributes//
 

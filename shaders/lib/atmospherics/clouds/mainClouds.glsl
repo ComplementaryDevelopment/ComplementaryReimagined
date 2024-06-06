@@ -11,7 +11,7 @@ float InterleavedGradientNoiseForClouds() {
     #endif
 }
 
-#ifdef REALTIME_SHADOWS
+#if SHADOW_QUALITY > -1
     vec3 GetShadowOnCloudPosition(vec3 tracePos, vec3 cameraPos) {
         vec3 wpos = PlayerToShadow(tracePos - cameraPos);
         float distb = sqrt(wpos.x * wpos.x + wpos.y * wpos.y);
@@ -46,47 +46,48 @@ vec4 GetClouds(inout float cloudLinearDepth, float skyFade, vec3 cameraPos, vec3
     vec4 clouds = vec4(0.0);
 
     vec3 nPlayerPos = normalize(playerPos);
-    float lViewPosM = lViewPos < far * 1.5 ? lViewPos - 1.0 : 1000000000.0;
+    float lViewPosM = lViewPos < renderDistance * 1.5 ? lViewPos - 1.0 : 1000000000.0;
     float skyMult0 = pow2(skyFade * 3.333333 - 2.333333);
 
     float thresholdMix = pow2(clamp01(VdotU * 5.0));
     float thresholdF = mix(far, 1000.0, thresholdMix * 0.5 + 0.5);
+    #ifdef DISTANT_HORIZONS
+        thresholdF = max(thresholdF, renderDistance);
+    #endif
 
     #ifdef CLOUDS_REIMAGINED
         cloudAmbientColor *= 1.0 - 0.25 * rainFactor;
-
-        #ifndef DOUBLE_REIM_CLOUDS
-            clouds = GetVolumetricClouds(cloudAlt1i, thresholdF, cloudLinearDepth, skyFade, skyMult0,
-                                         cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
-        #else
-            int maxCloudAlt = max(cloudAlt1i, cloudAlt2i);
-            int minCloudAlt = min(cloudAlt1i, cloudAlt2i);
-
-            if (abs(cameraPos.y - minCloudAlt) < abs(cameraPos.y - maxCloudAlt)) {
-                clouds = GetVolumetricClouds(minCloudAlt, thresholdF, cloudLinearDepth, skyFade, skyMult0,
-                                             cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
-                if (clouds.a == 0.0) {
-                clouds = GetVolumetricClouds(maxCloudAlt, thresholdF, cloudLinearDepth, skyFade, skyMult0,
-                                             cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
-                }
-            } else {
-                clouds = GetVolumetricClouds(maxCloudAlt, thresholdF, cloudLinearDepth, skyFade, skyMult0,
-                                             cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
-                if (clouds.a == 0.0) {
-                clouds = GetVolumetricClouds(minCloudAlt, thresholdF, cloudLinearDepth, skyFade, skyMult0,
-                                             cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
-                }
-            }
-        #endif
     #endif
 
-    #ifdef CLOUDS_UNBOUND
-        clouds = GetVolumetricClouds(cloudAlt1i, thresholdF, cloudLinearDepth, skyFade, skyMult0,
-                                     cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
-    #endif
-
+    vec3 cloudColorMult = vec3(1.0);
     #if CLOUD_R != 100 || CLOUD_G != 100 || CLOUD_B != 100
-        clouds.rgb *= vec3(CLOUD_R, CLOUD_G, CLOUD_B) * 0.01;
+        cloudColorMult *= vec3(CLOUD_R, CLOUD_G, CLOUD_B) * 0.01;
+    #endif
+    cloudAmbientColor *= cloudColorMult;
+    cloudLightColor *= cloudColorMult;
+
+    #if !defined DOUBLE_REIM_CLOUDS || defined CLOUDS_UNBOUND
+        clouds = GetVolumetricClouds(cloudAlt1i, thresholdF, cloudLinearDepth, skyFade, skyMult0,
+                                        cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
+    #else
+        int maxCloudAlt = max(cloudAlt1i, cloudAlt2i);
+        int minCloudAlt = min(cloudAlt1i, cloudAlt2i);
+
+        if (abs(cameraPos.y - minCloudAlt) < abs(cameraPos.y - maxCloudAlt)) {
+            clouds = GetVolumetricClouds(minCloudAlt, thresholdF, cloudLinearDepth, skyFade, skyMult0,
+                                            cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
+            if (clouds.a == 0.0) {
+            clouds = GetVolumetricClouds(maxCloudAlt, thresholdF, cloudLinearDepth, skyFade, skyMult0,
+                                            cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
+            }
+        } else {
+            clouds = GetVolumetricClouds(maxCloudAlt, thresholdF, cloudLinearDepth, skyFade, skyMult0,
+                                            cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
+            if (clouds.a == 0.0) {
+            clouds = GetVolumetricClouds(minCloudAlt, thresholdF, cloudLinearDepth, skyFade, skyMult0,
+                                            cameraPos, nPlayerPos, lViewPosM, VdotS, VdotU, dither);
+            }
+        }
     #endif
 
     #ifdef ATM_COLOR_MULTS

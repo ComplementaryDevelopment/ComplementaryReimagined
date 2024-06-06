@@ -9,14 +9,13 @@ float Noise3D(vec3 p) {
     return mix(a, b, fz);
 }
 
-vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 playerPos, vec3 viewPos, float lViewPos, float lViewPos1, float dither) {
+vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 nPlayerPos, vec3 playerPos, float lViewPos, float lViewPos1, float dither) {
     vec4 netherStorm = vec4(1.0, 1.0, 1.0, 0.0);
-    vec3 nPlayerPos = normalize(playerPos);
 
     #ifdef BORDER_FOG
-        float maxDist = min(far, NETHER_VIEW_LIMIT); // consistency9023HFUE85JG
+        float maxDist = min(renderDistance, NETHER_VIEW_LIMIT); // consistency9023HFUE85JG
     #else
-        float maxDist = far;
+        float maxDist = renderDistance;
     #endif
 
     #ifndef LOW_QUALITY_NETHER_STORM

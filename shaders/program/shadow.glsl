@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -17,18 +17,9 @@ flat in vec3 sunVec, upVec;
 in vec4 position;
 flat in vec4 glColor;
 
-//Uniforms//
-uniform int isEyeInWater;
-
-uniform vec3 cameraPosition;
-
-uniform sampler2D tex;
-uniform sampler2D noisetex;
-
-#if WATER_CAUSTIC_STYLE >= 3
-    uniform float frameTimeCounter;
-
-    uniform sampler2D gaux4;
+#ifdef CONNECTED_GLASS_EFFECT
+    in vec2 signMidCoordPos;
+    flat in vec2 absMidCoordPos;
 #endif
 
 //Pipeline Constants//
@@ -48,6 +39,9 @@ void DoNaturalShadowCalculation(inout vec4 color1, inout vec4 color2) {
 }
 
 //Includes//
+#ifdef CONNECTED_GLASS_EFFECT
+    #include "/lib/materials/materialMethods/connectedGlass.glsl"
+#endif
 
 //Program//
 void main() {
@@ -62,11 +56,19 @@ void main() {
             float positionYM = position.y;
         #endif
 
-        if (mat < 31008) {
-            if (mat < 31000) {
+        if (mat < 32008) {
+            if (mat < 32000) {
+                #ifdef CONNECTED_GLASS_EFFECT
+                    if (mat == 30008) { // Tinted Glass
+                        DoSimpleConnectedGlass(color1);
+                    }
+                    if (mat >= 31000) { // Stained Glass, Stained Glass Pane
+                        DoSimpleConnectedGlass(color1);
+                    }
+                #endif
                 DoNaturalShadowCalculation(color1, color2);
             } else {
-                if (mat == 31000) { // Water
+                if (mat == 32000) { // Water
                     vec3 worldPos = position.xyz + cameraPosition;
 
                     #if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
@@ -141,7 +143,7 @@ void main() {
                         color1.rgb *= vec3(UNDERWATERCOLOR_RM, UNDERWATERCOLOR_GM, UNDERWATERCOLOR_BM);
                         color2.rgb *= vec3(UNDERWATERCOLOR_RM, UNDERWATERCOLOR_GM, UNDERWATERCOLOR_BM);
                     #endif
-                } else /*if (mat == 31004)*/ { // Ice
+                } else /*if (mat == 32004)*/ { // Ice
                     color1.rgb *= color1.rgb;
                     color1.rgb *= color1.rgb;
                     color1.rgb = mix(vec3(1.0), color1.rgb, pow(color1.a, (1.0 - color1.a) * 0.5) * 1.05);
@@ -152,7 +154,15 @@ void main() {
                 }
             }
         } else {
-            if (mat < 31020) { // Glass, Glass Pane, Beacon (31008, 31012, 31016)
+            if (mat < 32020) { // Glass, Glass Pane, Beacon (32008, 32012, 32016)
+                #ifdef CONNECTED_GLASS_EFFECT
+                    if (mat == 32008) { // Glass
+                        DoSimpleConnectedGlass(color1);
+                    }
+                    if (mat == 32012) { // Glass Pane
+                        DoSimpleConnectedGlass(color1);
+                    }
+                #endif
                 if (color1.a > 0.5) color1 = vec4(0.0, 0.0, 0.0, 1.0);
                 else color1 = vec4(vec3(0.2 * (1.0 - GLASS_OPACITY)), 1.0);
                 color2.rgb = vec3(0.3);
@@ -187,28 +197,37 @@ flat out vec3 sunVec, upVec;
 out vec4 position;
 flat out vec4 glColor;
 
-//Uniforms//
-uniform mat4 shadowProjection, shadowProjectionInverse;
-uniform mat4 shadowModelView, shadowModelViewInverse;
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
+#ifdef CONNECTED_GLASS_EFFECT
+    out vec2 signMidCoordPos;
+    flat out vec2 absMidCoordPos;
+#endif
 
-#if defined WAVING_ANYTHING_TERRAIN || defined WAVING_WATER_VERTEX
-    uniform float frameTimeCounter;
-
-    uniform vec3 cameraPosition;
+//Pipeline Constants//
+#if COLORED_LIGHTING > 0
+    #extension GL_ARB_shader_image_load_store : enable
 #endif
 
 //Attributes//
 attribute vec4 mc_Entity;
 
-#if defined PERPENDICULAR_TWEAKS || defined WAVING_ANYTHING_TERRAIN || defined WAVING_WATER_VERTEX
+#if defined PERPENDICULAR_TWEAKS || defined WAVING_ANYTHING_TERRAIN || defined WAVING_WATER_VERTEX || defined CONNECTED_GLASS_EFFECT
     attribute vec4 mc_midTexCoord;
 #endif
 
+#if COLORED_LIGHTING > 0
+    attribute vec3 at_midBlock;
+#endif
+
 //Common Variables//
-#if (defined WAVING_ANYTHING_TERRAIN || defined WAVING_WATER_VERTEX) && defined NO_WAVING_INDOORS
-    vec2 lmCoord = vec2(0.0);
+vec2 lmCoord;
+
+#if COLORED_LIGHTING > 0
+    uniform int renderStage;
+    writeonly uniform uimage3D voxel_img;
+
+    #ifdef PUDDLE_VOXELIZATION
+        writeonly uniform uimage2D puddle_img;
+    #endif
 #endif
 
 //Common Functions//
@@ -220,30 +239,42 @@ attribute vec4 mc_Entity;
     #include "/lib/materials/materialMethods/wavingBlocks.glsl"
 #endif
 
+#if COLORED_LIGHTING > 0
+    #include "/lib/misc/voxelization.glsl"
+
+    #ifdef PUDDLE_VOXELIZATION
+        #include "/lib/misc/puddleVoxelization.glsl"
+    #endif
+#endif
+
 //Program//
 void main() {
     texCoord = gl_MultiTexCoord0.xy;
+    lmCoord = GetLightMapCoordinates();
     glColor = gl_Color;
-
     sunVec = GetSunVector();
     upVec = normalize(gbufferModelView[1].xyz);
-
     mat = int(mc_Entity.x + 0.5);
 
     position = shadowModelViewInverse * shadowProjectionInverse * ftransform();
 
     #if defined WAVING_ANYTHING_TERRAIN || defined WAVING_WATER_VERTEX
-        #ifdef NO_WAVING_INDOORS
-            lmCoord = GetLightMapCoordinates();
-        #endif
-
         DoWave(position.xyz, mat);
     #endif
 
+    #ifdef CONNECTED_GLASS_EFFECT
+        vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
+        vec2 texMinMidCoord = texCoord - midCoord;
+        signMidCoordPos = sign(texMinMidCoord);
+        absMidCoordPos  = abs(texMinMidCoord);
+    #endif
+
     #ifdef PERPENDICULAR_TWEAKS
-        if (mat == 10004 || mat == 10016) { // Foliage
-            vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
-            vec2 texMinMidCoord = texCoord - midCoord;
+        if (mat == 10005 || mat == 10017) { // Foliage
+            #ifndef CONNECTED_GLASS_EFFECT
+                vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
+                vec2 texMinMidCoord = texCoord - midCoord;
+            #endif
             if (texMinMidCoord.y < 0.0) {
                 vec3 normal = gl_NormalMatrix * gl_Normal;
                 position.xyz += normal * 0.35;
@@ -251,9 +282,18 @@ void main() {
         }
     #endif
 
-    if (mat == 31000) { // Water
+    if (mat == 32000) { // Water
         position.y += 0.015 * max0(length(position.xyz) - 50.0);
     }
+
+    #if COLORED_LIGHTING > 0
+        if (gl_VertexID % 4 == 0) {
+            UpdateVoxelMap(mat);
+            #ifdef PUDDLE_VOXELIZATION
+                UpdatePuddleVoxelMap(mat);
+            #endif
+        }
+    #endif
 
     gl_Position = shadowProjection * shadowModelView * position;
 

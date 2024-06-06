@@ -1,17 +1,17 @@
 #if TAA_MODE == 1
-    const float blendMinimum = 0.3;
-    const float blendVariable = 0.2;
-    const float blendConstant = 0.7;
+    float blendMinimum = 0.3;
+    float blendVariable = 0.2;
+    float blendConstant = 0.7;
 
-    const float regularEdge = 20.0;
-    const float extraEdgeMult = 3.0;
+    float regularEdge = 20.0;
+    float extraEdgeMult = 3.0;
 #elif TAA_MODE == 2
-    const float blendMinimum = 0.6;
-    const float blendVariable = 0.2;
-    const float blendConstant = 0.7;
+    float blendMinimum = 0.6;
+    float blendVariable = 0.2;
+    float blendConstant = 0.7;
 
-    const float regularEdge = 5.0;
-    const float extraEdgeMult = 3.0;
+    float regularEdge = 5.0;
+    float extraEdgeMult = 3.0;
 #endif
 
 // Previous frame reprojection from Chocapic13
@@ -41,7 +41,7 @@ vec3 YCoCgToRGB(vec3 col) {
     return vec3(n + col.g, col.r + col.b, n - col.g);
 }
 
-vec3 ClipAABB(vec3 q,vec3 aabb_min, vec3 aabb_max){
+vec3 ClipAABB(vec3 q, vec3 aabb_min, vec3 aabb_max){
     vec3 p_clip = 0.5 * (aabb_max + aabb_min);
     vec3 e_clip = 0.5 * (aabb_max - aabb_min) + 0.00000001;
 
@@ -67,8 +67,8 @@ ivec2 neighbourhoodOffsets[8] = ivec2[8](
     ivec2( 0,-1)
 );
 
-void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float depth, inout float edge) {
-    vec3 minclr = RGBToYCoCg(color);
+void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float z0, float z1, inout float edge) {
+    vec3 minclr = color;
     vec3 maxclr = minclr;
 
     int cc = 2;
@@ -76,32 +76,29 @@ void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float depth, inout 
     for (int i = 0; i < 8; i++) {
         ivec2 texelCoordM2 = texelCoordM1 + neighbourhoodOffsets[i];
 
-        float depthCheck = texelFetch(depthtex1, texelCoordM2, 0).r;
-        if (abs(GetLinearDepth(depthCheck) - GetLinearDepth(depth)) > 0.09) {
+        float z0Check = texelFetch(depthtex0, texelCoordM2, 0).r;
+        float z1Check = texelFetch(depthtex1, texelCoordM2, 0).r;
+        if (max(abs(GetLinearDepth(z0Check) - GetLinearDepth(z0)), abs(GetLinearDepth(z1Check) - GetLinearDepth(z1))) > 0.09) {
             edge = regularEdge;
 
             if (int(texelFetch(colortex6, texelCoordM2, 0).g * 255.1) == 253) // Reduced Edge TAA
                 edge *= extraEdgeMult;
         }
 
-        #ifndef LIGHT_COLORING
-            vec3 clr = texelFetch(colortex3, texelCoordM2, 0).rgb;
-        #else
-            vec3 clr = texelFetch(colortex8, texelCoordM2, 0).rgb;
-        #endif
-        clr = RGBToYCoCg(clr);
+        vec3 clr = texelFetch(colortex3, texelCoordM2, 0).rgb;
         minclr = min(minclr, clr); maxclr = max(maxclr, clr);
     }
 
-    tempColor = RGBToYCoCg(tempColor);
     tempColor = ClipAABB(tempColor, minclr, maxclr);
-    tempColor = YCoCgToRGB(tempColor);
 }
 
-void DoTAA(inout vec3 color, inout vec3 temp, float depth) {
+void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     int materialMask = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);
 
     if (materialMask == 254) { // No SSAO, No TAA
+        #ifndef CUSTOM_PBR
+            if (z1 <= 0.56) return; // The edge pixel trick doesn't look nice on hand
+        #endif
         int i = 0;
         while (i < 4) {
             int mms = int(texelFetch(colortex6, texelCoord + neighbourhoodOffsets[i], 0).g * 255.1);
@@ -111,29 +108,39 @@ void DoTAA(inout vec3 color, inout vec3 temp, float depth) {
         if (i == 4) return;
     }
 
+    float z0 = texelFetch(depthtex0, texelCoord, 0).r;
     #ifndef TEMPORAL_FILTER
-        depth = texelFetch(depthtex1, texelCoord, 0).r;
+        z1 = texelFetch(depthtex1, texelCoord, 0).r;
     #endif
 
     #ifdef CUSTOM_PBR
-        if (depth <= 0.56) return; // materialMask might be occupied, so we do the check manually
+        if (z1 <= 0.56) return; // materialMask might be occupied, so we do the check manually
     #endif
 
-    vec3 coord = vec3(texCoord, depth);
+    vec3 coord = vec3(texCoord, z1);
     vec3 cameraOffset = cameraPosition - previousCameraPosition;
     vec2 prvCoord = Reprojection(coord, cameraOffset);
 
     vec3 tempColor = texture2D(colortex2, prvCoord).rgb;
-    if (tempColor == vec3(0.0)) { // Fixes the first frame
+    if (tempColor == vec3(0.0)) { // Fixes the first frame || Possibly fixes nans spreading around
         temp = color;
         return;
     }
 
     float edge = 0.0;
-    NeighbourhoodClamping(color, tempColor, depth, edge);
+    NeighbourhoodClamping(color, tempColor, z0, z1, edge);
 
     if (materialMask == 253) // Reduced Edge TAA
         edge *= extraEdgeMult;
+
+    #ifdef DISTANT_HORIZONS
+        if (z0 == 1.0) {
+            blendMinimum = 0.75;
+            blendVariable = 0.05;
+            blendConstant = 0.9;
+            edge = 1.0;
+        }
+    #endif
 
     vec2 velocity = (texCoord - prvCoord.xy) * view;
     float blendFactor = float(prvCoord.x > 0.0 && prvCoord.x < 1.0 &&

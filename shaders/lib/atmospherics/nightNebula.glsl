@@ -13,8 +13,16 @@ const vec4 CLOUD1_COL = vec4(0.41, 0.64, 0.97, 0.4);
 const vec4 CLOUD2_COL = vec4(0.81, 0.55, 0.21, 0.2);
 const vec4 CLOUD3_COL = vec4(0.51, 0.81, 0.98, 1.0);
 
+float sinM(float x) {
+    return sin(mod(x, 2.0 * pi));
+}
+
+float cosM(float x) {
+    return cos(mod(x, 2.0 * pi));
+}
+
 float rand(vec2 inCoord){
-    return fract(sin(dot(inCoord, vec2(23.53, 44.0))) * 42350.45);
+    return fract(sinM(dot(inCoord, vec2(23.53, 44.0))) * 42350.45);
 }
 
 float perlin(vec2 inCoord){
@@ -65,15 +73,15 @@ vec3 GetNightNebula(vec3 viewPos, float VdotU, float VdotS) {
 
     float timescaled = TIME * timescale;
     vec2 zoomUV2
-    = vec2(zoomScale * UV.x + 0.03  * timescaled * sin(0.07 * timescaled), zoomScale * UV.y + 0.03  * timescaled * cos(0.06 * timescaled));
+    = vec2(zoomScale * UV.x + 0.03  * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.03  * timescaled * cosM(0.06 * timescaled));
     vec2 zoomUV3
-    = vec2(zoomScale * UV.x + 0.027 * timescaled * sin(0.07 * timescaled), zoomScale * UV.y + 0.025 * timescaled * cos(0.06 * timescaled));
+    = vec2(zoomScale * UV.x + 0.027 * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.025 * timescaled * cosM(0.06 * timescaled));
     vec2 zoomUV4
-    = vec2(zoomScale * UV.x + 0.021 * timescaled * sin(0.07 * timescaled), zoomScale * UV.y + 0.021 * timescaled * cos(0.07 * timescaled));
-    float tide = 0.05 * sin(TIME);
-    float tide2 = 0.06 * cos(0.3 * TIME);
+    = vec2(zoomScale * UV.x + 0.021 * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.021 * timescaled * cosM(0.07 * timescaled));
+    float tide = 0.05 * sinM(TIME);
+    float tide2 = 0.06 * cosM(0.3 * TIME);
 
-    vec4 nebulaTexture = vec4(vec3(0.0), 0.5 + 0.2 * sin(0.23 * TIME + UV.x - UV.y));
+    vec4 nebulaTexture = vec4(vec3(0.0), 0.5 + 0.2 * sinM(0.23 * TIME + UV.x - UV.y));
     nebulaTexture += fbmCloud2(zoomUV3, 0.24 + tide) * CLOUD1_COL;
     nebulaTexture += fbmCloud(zoomUV2 * 0.9, 0.33 - tide) * CLOUD2_COL;
     nebulaTexture = mix(nebulaTexture, CLOUD3_COL, fbmCloud(vec2(0.9 * zoomUV4.x, 0.9 * zoomUV4.y), 0.25 + tide2));

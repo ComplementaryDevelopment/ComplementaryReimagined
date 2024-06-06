@@ -25,8 +25,25 @@
     #endif
     vec3 nightClearAmbientColor   = vec3(0.09, 0.12, 0.17) * (1.55 + vsBrightness * 0.77);
 
-    vec3 dayRainLightColor   = vec3(0.21, 0.16, 0.13) * 0.85;
-    vec3 dayRainAmbientColor = vec3(0.2, 0.2, 0.25) * 2.3;
+    #ifdef SPECIAL_BIOME_WEATHER
+        vec3 drlcSnowM = inSnowy * vec3(-0.06, 0.0, 0.04);
+        vec3 drlcDryM = inDry * vec3(0.0, -0.03, -0.05);
+    #else
+        vec3 drlcSnowM = vec3(0.0), drlcDryM = vec3(0.0);
+    #endif
+    #if RAIN_STYLE == 2
+        vec3 drlcRainMP = vec3(-0.03, 0.0, 0.02);
+        #ifdef SPECIAL_BIOME_WEATHER
+            vec3 drlcRainM = inRainy * drlcRainMP;
+        #else
+            vec3 drlcRainM = drlcRainMP;
+        #endif
+    #else
+        vec3 drlcRainM = vec3(0.0);
+    #endif
+    vec3 dayRainLightColor   = vec3(0.21, 0.16, 0.13) * 0.85 + noonFactor * vec3(0.0, 0.02, 0.06)
+                             + rainFactor * (drlcRainM + drlcSnowM + drlcDryM);
+    vec3 dayRainAmbientColor = vec3(0.2, 0.2, 0.25) * (1.8 + 0.5 * vsBrightness);
 
     vec3 nightRainLightColor   = vec3(0.03, 0.035, 0.05) * (0.5 + 0.5 * vsBrightness);
     vec3 nightRainAmbientColor = vec3(0.16, 0.20, 0.3) * (0.75 + 0.6 * vsBrightness);
@@ -57,4 +74,4 @@
     vec3 ambientColor  = endLightColor * (0.2 + endLightBalancer);
 #endif
 
-#endif
+#endif //INCLUDE_LIGHT_AND_AMBIENT_COLORS

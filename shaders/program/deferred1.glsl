@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -14,71 +14,6 @@ flat in vec3 upVec, sunVec;
 
 #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
     flat in float vlFactor;
-#endif
-
-//Uniforms//
-uniform int isEyeInWater;
-uniform int frameCounter;
-
-uniform float far, near;
-uniform float viewWidth, viewHeight;
-uniform float blindness;
-uniform float darknessFactor;
-uniform float frameTimeCounter;
-uniform float aspectRatio;
-
-uniform ivec2 eyeBrightness;
-
-uniform vec3 skyColor;
-uniform vec3 cameraPosition;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D colortex0;
-uniform sampler2D colortex6;
-uniform sampler2D depthtex0;
-uniform sampler2D noisetex;
-
-#if SSAO_QUALI > 0 || defined PBR_REFLECTIONS
-    uniform mat4 gbufferProjection;
-#endif
-
-#ifdef PBR_REFLECTIONS
-    uniform mat4 gbufferModelView;
-
-    uniform sampler2D colortex5;
-#endif
-
-#if AURORA_STYLE > 0
-    uniform float inSnowy;
-
-    #ifndef UNIFORM_MOONPHASE
-    #define UNIFORM_MOONPHASE
-    uniform int moonPhase;
-    #endif
-#endif
-
-#ifdef VL_CLOUDS_ACTIVE
-    #ifdef REALTIME_SHADOWS
-        uniform sampler2DShadow shadowtex0;
-    #endif
-
-    #ifdef CLOUDS_REIMAGINED
-        uniform sampler2D colortex3;
-    #endif
-#endif
-
-#ifdef TEMPORAL_FILTER
-    uniform vec3 previousCameraPosition;
-
-    uniform mat4 gbufferPreviousProjection;
-    uniform mat4 gbufferPreviousModelView;
-
-    uniform sampler2D colortex1;
-    uniform sampler2D colortex7;
 #endif
 
 //Pipeline Constants//
@@ -244,7 +179,7 @@ float GetLinearDepth(float depth) {
 //Program//
 void main() {
     vec3 color = texelFetch(colortex0, texelCoord, 0).rgb;
-    float z0   = texelFetch(depthtex0, texelCoord, 0).r;
+    float z0 = texelFetch(depthtex0, texelCoord, 0).r;
 
     vec4 screenPos = vec4(texCoord, z0, 1.0);
     vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
@@ -254,7 +189,7 @@ void main() {
     vec3 playerPos = ViewToPlayer(viewPos.xyz);
 
     float dither = texture2D(noisetex, texCoord * vec2(viewWidth, viewHeight) / 128.0).b;
-    #ifdef TAA
+    #if defined TAA || defined TEMPORAL_FILTER
         dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
     #endif
 
@@ -335,10 +270,13 @@ void main() {
 
             if (fresnelM > 0.0) {
                 vec2 roughCoord = gl_FragCoord.xy / 128.0;
-                #ifndef TEMPORAL_FILTER
+                #ifdef TAA
                     float noiseMult = 0.3;
                 #else
-                    float noiseMult = 0.3;
+                    float noiseMult = 0.1;
+                #endif
+                #ifndef TEMPORAL_FILTER
+                #else
                     float blendFactor = 1.0;
                     float writeFactor = 1.0;
                 #endif
@@ -394,20 +332,19 @@ void main() {
                     #endif
 
                     vec4 newRef = vec4(colorAdd, colorMultInv);
-                    float lCameraOffset = length(cameraOffset);
                     ivec2 texelOppositePreCoord = clamp(ivec2((texCoord - 2.0 * (prvCoord - texCoord)) * view), ivec2(0, 0), texelCoord);
 
                     // Reduce blending at speed
                     blendFactor *= float(prvCoord.x > 0.0 && prvCoord.x < 1.0 && prvCoord.y > 0.0 && prvCoord.y < 1.0);
-                    float velocity = lCameraOffset * max(16.0 - lViewPos / gbufferProjection[1][1], 3.0);
-                    blendFactor *= 0.7 + 0.3 * exp(-velocity);
+                    float velocity = length(cameraOffset) * max(16.0 - lViewPos / gbufferProjection[1][1], 3.0);
+                    blendFactor *= mix(1.0, exp(-velocity), smoothnessD);
 
                     // Reduce blending if depth changed
-                    float linearZP = GetLinearDepth(texelFetch(colortex1, texelOppositePreCoord, 0).r);
-                    float linearZP2 = GetLinearDepth(texture2D(colortex1, texCoord + 1.5 * (prvCoord - texCoord)).r);
+                    float linearZP = GetLinearDepth(texelFetch(colortex2, texelOppositePreCoord, 0).a);
+                    float linearZP2 = GetLinearDepth(texture2D(colortex2, texCoord + 1.5 * (prvCoord - texCoord)).a);
                     float linearZDif = max(abs(linearZP - linearZ0), abs(linearZP2 - linearZ0)) * far;
                     blendFactor *= max0(2.0 - linearZDif) * 0.5;
-                    //color = mix(vec3(1,1,0), color, max0(2.0 - max0(linearZDif - 1.0)) * 0.5);
+                    //color = mix(vec3(1,1,0), color, max0(2.0 - linearZDif) * 0.5);
 
                     // Reduce blending if normal changed
                     vec3 texture5P = texelFetch(colortex5, texelOppositePreCoord, 0).rgb;
@@ -420,7 +357,8 @@ void main() {
                     blendFactor = max0(blendFactor); // Prevent first frame NaN
                     newRef = max(newRef, vec4(0.0)); // Prevent random NaNs from persisting
                     refToWrite = mix(newRef, oldRef, blendFactor * 0.95);
-
+                    refToWrite = mix(max(refToWrite, newRef), refToWrite, pow2(pow2(pow2(refToWrite.a))));
+                    
                     color.rgb *= 1.0 - refToWrite.a * fresnelM;
                     color.rgb += refToWrite.rgb * fresnelM;
 
@@ -445,6 +383,25 @@ void main() {
 
         DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither);
     } else { // Sky
+        #ifdef DISTANT_HORIZONS
+            float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
+            if (z0DH < 1.0) { // Distant Horizons Chunks
+                vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
+                vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
+                viewPosDH /= viewPosDH.w;
+                lViewPos = length(viewPosDH.xyz);
+                playerPos = ViewToPlayer(viewPosDH.xyz);
+                
+                #ifndef SKY_EFFECT_REFLECTION
+                    waterRefColor = sqrt(color) - 1.0;
+                #else
+                    waterRefColor = color;
+                #endif
+                
+                DoFog(color.rgb, skyFade, lViewPos, playerPos, VdotU, VdotS, dither);
+            } else { // Start of Actual Sky
+        #endif
+
         skyFade = 1.0;
 
         #ifdef OVERWORLD
@@ -472,13 +429,19 @@ void main() {
                 color.rgb *= atmColorMult;
             #endif
         #endif
+
+        #ifdef DISTANT_HORIZONS
+        } // End of Actual Sky
+        #endif
     }
 
     float cloudLinearDepth = 1.0;
     vec4 clouds = vec4(0.0);
 
     #ifdef VL_CLOUDS_ACTIVE
-        if (z0 > 0.56) {
+        float cloudZCheck = 0.56;
+
+        if (z0 > cloudZCheck) {
             clouds = GetClouds(cloudLinearDepth, skyFade, cameraPosition, playerPos,
                                lViewPos, VdotS, VdotU, dither, auroraBorealis, nightNebula);
 
@@ -494,6 +457,19 @@ void main() {
     #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
         if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5)
             cloudLinearDepth = vlFactor;
+    #endif
+
+    #if defined OVERWORLD && defined ATMOSPHERIC_FOG && (defined SPECIAL_BIOME_WEATHER || RAIN_STYLE == 2)
+        float altitudeFactorRaw = GetAtmFogAltitudeFactor(playerPos.y + cameraPosition.y);
+        vec3 atmFogColor = GetAtmFogColor(altitudeFactorRaw, VdotS);
+
+        #if RAIN_STYLE == 2
+            float factor = 1.0;
+        #else
+            float factor = max(inSnowy, inDry);
+        #endif
+
+        color = mix(color, atmFogColor, 0.5 * rainFactor * factor * sqrt1(skyFade));
     #endif
 
     #ifdef DARK_OUTLINE
@@ -521,22 +497,6 @@ flat out vec3 upVec, sunVec;
 
 #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
     flat out float vlFactor;
-#endif
-
-//Uniforms//
-#if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
-    uniform float viewWidth, viewHeight;
-
-    uniform sampler2D colortex4;
-
-    #ifdef END
-        uniform int frameCounter;
-
-        uniform float frameTimeSmooth;
-        uniform float far;
-
-        uniform vec3 cameraPosition;
-    #endif
 #endif
 
 //Attributes//

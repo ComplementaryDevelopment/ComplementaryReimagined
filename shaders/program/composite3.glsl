@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -14,23 +14,13 @@
     flat in vec3 upVec, sunVec;
 #endif
 
-//Uniforms//
-uniform float far, near;
-
-uniform int isEyeInWater;
-
-uniform vec3 cameraPosition;
-
-uniform sampler2D colortex0;
-
+//Pipeline Constants//
 #if WORLD_BLUR > 0
-    uniform float viewWidth, viewHeight, aspectRatio;
+    const bool colortex0MipmapEnabled = true;
+#endif
 
-    uniform mat4 gbufferProjectionInverse;
-
-    uniform sampler2D depthtex0;
-    uniform sampler2D depthtex1;
-
+//Common Variables//
+#if WORLD_BLUR > 0
     #if WORLD_BLUR == 2 && WB_DOF_FOCUS >= 0
         #if WB_DOF_FOCUS == 0
             uniform float centerDepthSmooth;
@@ -38,18 +28,8 @@ uniform sampler2D colortex0;
             float centerDepthSmooth = (far * (WB_DOF_FOCUS - near)) / (WB_DOF_FOCUS * (far - near));
         #endif
     #endif
-
-    #ifdef WB_FOV_SCALED
-        uniform mat4 gbufferProjection;
-    #endif
 #endif
 
-//Pipeline Constants//
-#if WORLD_BLUR > 0
-    const bool colortex0MipmapEnabled = true;
-#endif
-
-//Common Variables//
 #if WORLD_BLUR > 0
     float SdotU = dot(sunVec, upVec);
     float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
@@ -151,15 +131,23 @@ void main() {
         float z1 = texelFetch(depthtex1, texelCoord, 0).r;
         float z0 = texelFetch(depthtex0, texelCoord, 0).r;
 
-        vec4 screenPos0 = vec4(texCoord, z0, 1.0);
-        vec4 viewPos0 = gbufferProjectionInverse * (screenPos0 * 2.0 - 1.0);
-        viewPos0 /= viewPos0.w;
-        float lViewPos0 = length(viewPos0.xyz);
+        vec4 screenPos = vec4(texCoord, z0, 1.0);
+        vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+        viewPos /= viewPos.w;
+        float lViewPos = length(viewPos.xyz);
 
-        DoWorldBlur(color, z1, lViewPos0);
+        #if defined DISTANT_HORIZONS && defined NETHER
+            float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
+            vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
+            vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
+            viewPosDH /= viewPosDH.w;
+            lViewPos = min(lViewPos, length(viewPosDH.xyz));
+        #endif
+
+        DoWorldBlur(color, z1, lViewPos);
 
         #ifdef BLOOM_FOG_COMPOSITE3
-            color *= GetBloomFog(lViewPos0); // Reminder: Bloom Fog can move between composite1-2-3
+            color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog can move between composite1-2-3
         #endif
     #endif
 
@@ -177,8 +165,6 @@ void main() {
 
     flat out vec3 upVec, sunVec;
 #endif
-
-//Uniforms//
 
 //Attributes//
 

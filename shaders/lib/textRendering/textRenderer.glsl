@@ -44,8 +44,8 @@
 --------------------------------------------------------------------------------
 */
 
-#if !defined UTILITY_TEXTRENDERING_INCLUDED
-#define UTILITY_TEXTRENDERING_INCLUDED
+#if !defined UTILITY_TEXTRENDERER_INCLUDED
+#define UTILITY_TEXTRENDERER_INCLUDED
 
 // Characters
 
@@ -325,4 +325,4 @@ void printLine() {
     ++text.charPos.y;
 }
 
-#endif // UTILITY_TEXTRENDERING_INCLUDED
+#endif // UTILITY_TEXTRENDERER_INCLUDED
