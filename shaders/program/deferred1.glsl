@@ -415,7 +415,7 @@ void main() {
             #endif
         #endif
         #ifdef NETHER
-            color.rgb = netherColor;
+            color.rgb = netherColor * (1.0 - maxBlindnessDarkness);
 
             #ifdef ATM_COLOR_MULTS
                 color.rgb *= atmColorMult;
@@ -424,6 +424,7 @@ void main() {
         #ifdef END
             color.rgb = endSkyColor;
             color.rgb += GetEnderStars(viewPos.xyz, VdotU);
+            color.rgb *= 1.0 - maxBlindnessDarkness;
 
             #ifdef ATM_COLOR_MULTS
                 color.rgb *= atmColorMult;

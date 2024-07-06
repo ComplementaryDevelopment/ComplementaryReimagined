@@ -1,5 +1,4 @@
 vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, float lViewPos1, float dither, float caveFactor) {
-    if (max(blindness, darknessFactor) > 0.1) return vec3(0.0);
     vec3 lightFog = vec3(0.0);
 
     float stepMult = 8.0;
@@ -46,6 +45,8 @@ vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, f
     #ifdef NETHER
         lightFog *= netherColor * 5.0;
     #endif
+
+    lightFog *= 1.0 - maxBlindnessDarkness;
 
     return pow(lightFog / sampleCount, vec3(0.25));
 }

@@ -157,7 +157,7 @@ void main() {
     } else discard;
     #endif
 
-    if (max(blindness, darknessFactor) > 0.1) color.rgb = vec3(0.0);
+    color.rgb *= 1.0 - maxBlindnessDarkness;
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);

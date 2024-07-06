@@ -84,8 +84,10 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         float NdotLmax0 = max0(NdotL);
         float NdotLM = NdotLmax0 * 0.9999;
 
-        #ifndef GBUFFERS_TEXTURED
-            #if defined GBUFFERS_TERRAIN
+        #ifdef GBUFFERS_TEXTURED
+            NdotLM = 1.0;
+        #else
+            #ifdef GBUFFERS_TERRAIN
                 if (subsurfaceMode != 0) {
                     #if defined CUSTOM_PBR && defined POM && POM_QUALITY >= 128 && POM_LIGHTING_MODE == 2
                         shadowMult *= max(pow2(pow2(dot(normalM, geoNormal))), sqrt2(NdotLmax0));
@@ -103,8 +105,6 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                     NdotLM = sqrt3(NdotLM);
                 #endif
             #endif
-        #else
-            NdotLM = 1.0;
         #endif
 
         #if ENTITY_SHADOWS_DEFINE == -1 && (defined GBUFFERS_ENTITIES || defined GBUFFERS_BLOCK)
@@ -135,7 +135,10 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             playerPosM = floor((playerPosM + cameraPosition) * PIXEL_SHADOW + 0.001) / PIXEL_SHADOW - cameraPosition + 0.5 / PIXEL_SHADOW;
                         #endif
 
-                        #ifndef GBUFFERS_TEXTURED
+                        #ifdef GBUFFERS_TEXTURED
+                            vec3 centerPlayerPos = floor(playerPos + cameraPosition) - cameraPosition + 0.5;
+                            playerPosM = mix(centerPlayerPos, playerPosM + vec3(0.0, 0.02, 0.0), lightmapYM);
+                        #else
                             // Shadow bias without peter-panning
                             float distanceBias = pow(dot(playerPos, playerPos), 0.75);
                             distanceBias = 0.12 + 0.0008 * distanceBias;
@@ -174,9 +177,6 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             }
 
                             playerPosM += bias;
-                        #else
-                            vec3 centerplayerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
-                            playerPosM = mix(centerplayerPos, playerPosM + vec3(0.0, 0.02, 0.0), lightmapYM);
                         #endif
 
                         vec3 shadowPos = GetShadowPos(playerPosM);
@@ -320,18 +320,19 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
     #if COLORED_LIGHTING > 0
         // Prepare
-        #ifndef GBUFFERS_HAND
-            vec3 voxelPos = SceneToVoxel(playerPos);
-            vec3 voxelPosM = voxelPos + worldGeoNormal * 0.5;
-                 voxelPosM = clamp01(voxelPosM / vec3(voxelVolumeSize));
-        #else
+        #if defined GBUFFERS_HAND
             vec3 voxelPos = SceneToVoxel(vec3(0.0));
-            vec3 voxelPosM = clamp01(voxelPos / vec3(voxelVolumeSize));
+        #elif defined GBUFFERS_TEXTURED
+            vec3 voxelPos = SceneToVoxel(playerPos);
+        #else
+            vec3 voxelPos = SceneToVoxel(playerPos);
+            voxelPos = voxelPos + worldGeoNormal * 0.55; // should be close to 0.5 for ACL_CORNER_LEAK_FIX but 0.5 makes slabs flicker
         #endif
 
         vec3 specialLighting = vec3(0.0);
         vec4 lightVolume = vec4(0.0);
         if (CheckInsideVoxelVolume(voxelPos)) {
+            vec3 voxelPosM = clamp01(voxelPos / vec3(voxelVolumeSize));
             lightVolume = GetLightVolume(voxelPosM);
             lightVolume = sqrt(lightVolume);
             specialLighting = lightVolume.rgb;

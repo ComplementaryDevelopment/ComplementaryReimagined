@@ -26,7 +26,7 @@ void DoDarkOutline(inout vec3 color, inout float skyFade, float z0, float dither
         int sampleCount = 12;
     #endif
 
-    for(int i = 0; i < sampleCount; i++) {
+    for (int i = 0; i < sampleCount; i++) {
         vec2 offset = scale * darkOutlineOffsets[i];
         sampleZA = texture2D(depthtex0, texCoord + offset).r;
         sampleZB = texture2D(depthtex0, texCoord - offset).r;

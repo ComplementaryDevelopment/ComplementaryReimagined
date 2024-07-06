@@ -14,7 +14,7 @@ if (mat < 11024) {
                                     subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
                                     #ifdef GBUFFERS_TERRAIN
-                                        DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+                                        DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, viewPos, nViewPos, lViewPos, dither);
 
                                         #ifdef COATED_TEXTURES
                                             doTileRandomisation = false;
@@ -53,7 +53,7 @@ if (mat < 11024) {
                                     subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
                                     #ifdef GBUFFERS_TERRAIN
-                                        DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+                                        DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, viewPos, nViewPos, lViewPos, dither);
 
                                         #ifdef COATED_TEXTURES
                                             doTileRandomisation = false;
@@ -751,7 +751,7 @@ if (mat < 11024) {
                                     if (color.r != color.g || color.r > 0.99) { // Gold Ore:Raw Gold Part
                                         #include "/lib/materials/specificMaterials/terrain/rawGoldBlock.glsl"
                                         #ifdef GLOWING_ORE_GOLD
-                                            if (color.g - color.b > 0.15) {
+                                            if (color.g - color.b > 0.15 || color.r > 0.99) {
                                                 emission = color.r + 1.0;
                                                 color.rgb *= pow(color.rgb, vec3(min1(GLOWING_ORE_MULT)));
                                                 emission *= GLOWING_ORE_MULT;
@@ -768,7 +768,7 @@ if (mat < 11024) {
                                     if (color.r != color.g || color.r > 0.99) { // Deepslate Gold Ore:Raw Gold Part
                                         #include "/lib/materials/specificMaterials/terrain/rawGoldBlock.glsl"
                                         #ifdef GLOWING_ORE_GOLD
-                                            if (color.g - color.b > 0.15) {
+                                            if (color.g - color.b > 0.15 || color.r > 0.99) {
                                                 emission = color.r + 1.0;
                                                 color.rgb *= pow(color.rgb, vec3(min1(GLOWING_ORE_MULT)));
                                                 emission *= GLOWING_ORE_MULT;
@@ -1310,16 +1310,21 @@ if (mat < 11024) {
                                         noSmoothLighting = true;
                                         lmCoordM.x = 1.0;
                                         emission = GetLuminance(color.rgb) * 4.1;
+                                        #ifndef GBUFFERS_TERRAIN
+                                            emission *= 0.65;
+                                        #endif
                                         color.r *= 1.4;
                                         color.b *= 0.5;
-                                    } else
+                                    } 
+                                    
                                     #ifdef GBUFFERS_TERRAIN
-                                        if (abs(NdotU) < 0.5) {
+                                        else if (abs(NdotU) < 0.5) {
                                             lmCoordM.x = min1(0.7 + 0.3 * pow2(1.0 - signMidCoordPos.y));
                                         }
                                     #else
-                                        noSmoothLighting = false;
-                                        lmCoordM.x = 0.9;
+                                        else {
+                                            color.rgb *= 1.5;
+                                        }
                                     #endif
 
                                     emission += 0.0001; // No light reducing during noon
@@ -1367,10 +1372,16 @@ if (mat < 11024) {
                         if (mat < 10528) {
                             if (mat < 10520) {
                                 if (mat < 10516) { // Chorus Flower:Dead
-                                    if (color.b < color.g) {
-                                        emission = 10.7;
-                                        color.rgb *= color.rgb * dot(color.rgb, color.rgb) * vec3(0.4, 0.35, 0.4);
-                                    }
+                                    vec3 checkColor = texture2DLod(tex, texCoord, 0).rgb;
+                                    if (CheckForColor(checkColor, vec3(164, 157, 126)) ||
+                                        CheckForColor(checkColor, vec3(201, 197, 176)) ||
+                                        CheckForColor(checkColor, vec3(226, 221, 188)) ||
+                                        CheckForColor(checkColor, vec3(153, 142, 95))
+                                    ) {
+                                        emission = min(GetLuminance(color.rgb), 0.75) / 0.75;
+                                        emission = pow2(pow2(emission)) * 6.5;
+                                        color.gb *= 0.85;
+                                    } else emission = max0(GetLuminance(color.rgb) - 0.5) * 3.0;
                                 }
                                 else /*if (mat < 10520)*/ { // Furnace:Lit
                                     lmCoordM.x *= 0.95;
@@ -2100,7 +2111,7 @@ if (mat < 11024) {
                                     subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
                                     #ifdef GBUFFERS_TERRAIN
-                                        DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, lViewPos);
+                                        DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, viewPos, nViewPos, lViewPos, dither);
 
                                         emission = (1.0 - abs(signMidCoordPos.x)) * max0(0.7 - abs(signMidCoordPos.y + 0.7));
                                         emission = pow1_5(emission) * 2.5;

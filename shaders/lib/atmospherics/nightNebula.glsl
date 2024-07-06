@@ -42,7 +42,7 @@ float fbmCloud(vec2 inCoord, float minimum){
     float value = 0.0;
     float scale = 0.5;
 
-    for(int i = 0; i < OCTAVE; i++){
+    for (int i = 0; i < OCTAVE; i++){
         value += perlin(inCoord) * scale;
         inCoord *= 2.0;
         scale *= 0.5;
@@ -55,7 +55,7 @@ float fbmCloud2(vec2 inCoord, float minimum){
     float value = 0.0;
     float scale = 0.5;
 
-    for(int i = 0; i < OCTAVE; i++){
+    for (int i = 0; i < OCTAVE; i++){
         value += perlin(inCoord) * scale;
         inCoord *= 2.0;
         scale *= 0.5;
@@ -65,7 +65,7 @@ float fbmCloud2(vec2 inCoord, float minimum){
 }
 
 vec3 GetNightNebula(vec3 viewPos, float VdotU, float VdotS) {
-    float nebulaFactor = pow2(max0(VdotU) * min1(nightFactor * 2.0)) * invRainFactor - blindness - darknessFactor;
+    float nebulaFactor = pow2(max0(VdotU) * min1(nightFactor * 2.0)) * invRainFactor - maxBlindnessDarkness;
     if (nebulaFactor < 0.001) return vec3(0.0);
 
     vec2 UV = GetStarCoord(viewPos, 0.75);

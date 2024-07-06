@@ -1,5 +1,5 @@
 vec3 GetAuroraBorealis(vec3 viewPos, float VdotU, float dither) {
-    float visibility = sqrt1(clamp01(VdotU * 1.5 - 0.225)) - sunVisibility - rainFactor - blindness - darknessFactor;
+    float visibility = sqrt1(clamp01(VdotU * 1.5 - 0.225)) - sunVisibility - rainFactor - maxBlindnessDarkness;
     visibility *= 1.0 - VdotU * 0.9;
 
     #if AURORA_CONDITION == 1 || AURORA_CONDITION == 3

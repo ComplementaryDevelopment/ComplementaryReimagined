@@ -30,17 +30,18 @@ float Noise3D(vec3 p) {
 }
 
 vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucentMult, float lViewPos0, float lViewPos1, vec3 nViewPos, float VdotL, float VdotU, vec2 texCoord, float z0, float z1, float dither) {
-    if (max(blindness, darknessFactor) > 0.1) return vec4(0.0);
     vec4 volumetricLight = vec4(0.0);
+    float vlMult = 1.0 - maxBlindnessDarkness;
 
-    // For some reason Optifine doesn't provide correct shadowMapResolution if Shadow Quality isn't 1x
-    vec2 shadowMapResolutionM = textureSize(shadowtex0, 0);
+    #if SHADOW_QUALITY > -1
+        // Optifine for some reason doesn't provide correct shadowMapResolution if Shadow Quality isn't 1x
+        vec2 shadowMapResolutionM = textureSize(shadowtex0, 0);
+    #endif
 
     #ifdef OVERWORLD
         vec3 vlColor = lightColor;
         vec3 vlColorReducer = vec3(1.0);
         float vlSceneIntensity = isEyeInWater != 1 ? vlFactor : 1.0;
-        float vlMult = 1.0;
 
         #ifdef SPECIAL_BIOME_WEATHER
             vlSceneIntensity = mix(vlSceneIntensity, 1.0, inDry * rainFactor);
@@ -48,7 +49,7 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 
         if (sunVisibility < 0.5) {
             vlSceneIntensity = 0.0;
-            vlMult = 0.6 + 0.4 * max0(far - lViewPos1) / far;
+            vlMult *= 0.6 + 0.4 * max0(far - lViewPos1) / far;
             vlColor = normalize(pow(vlColor, vec3(1.0 - max0(1.0 - 1.5 * nightFactor))));
             vlColor *= 0.0766 + 0.0766 * vsBrightness;
         } else {
@@ -206,7 +207,6 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
                             + 0.25 * Noise3D((smokePos - smokeWind) * 3.0)
                             + 0.10 * Noise3D((smokePos + smokeWind) * 9.0);
                 smoke = smoothstep1(smoothstep1(smoothstep1(smoke)));
-                //smoke = pow(smoke, 1.0 / (1.0 + 0.1 * length(playerPos)))
                 totalSmoke += smoke * shadowSample * sampleMult;
             #endif
 
@@ -250,7 +250,7 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 
                 int skyCheck = 0;
                 for (float i = 0.1; i < 1.0; i += 0.2) {
-                    skyCheck += int(texelFetch(depthtex1, ivec2(view.x * i, view.y * 0.9), 0).x == 1.0);
+                    skyCheck += int(texelFetch(depthtex0, ivec2(view.x * i, view.y * 0.9), 0).x == 1.0);
                 }
                 if (skyCheck >= 4) {
                     salsCheck = 0.0;
@@ -288,9 +288,10 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
             vlColor.rgb *= mix(1.0, LIGHTSHAFT_RAIN_IM, rainFactor);
         #endif
 
-        volumetricLight.rgb *= vlMult * vlColor;
+        volumetricLight.rgb *= vlColor;
     #endif
 
+    volumetricLight.rgb *= vlMult;
     volumetricLight = max(volumetricLight, vec4(0.0));
 
     #ifdef DISTANT_HORIZONS

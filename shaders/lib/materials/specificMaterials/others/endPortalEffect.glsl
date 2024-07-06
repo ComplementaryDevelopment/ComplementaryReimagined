@@ -8,7 +8,7 @@ vec3[8] colors = vec3[](
     vec3(0.4144472, 0.5648165, 0.8037   ),
     vec3(0.508905 , 0.6719649, 0.9982805),
     vec3(0.5361914, 0.4476583, 0.8008522));
-color.rgb = vec3(0.4214321, 0.4722309, 1.9922364) * 0.08;
+color.rgb = vec3(0.421, 0.7, 1.6) * 0.14;
 
 float dither = Bayer64(gl_FragCoord.xy);
 #ifdef TAA
@@ -57,7 +57,7 @@ for (int j = 0; j < repeat; j++) {
         color.rgb += psample * length(psample.rgb) * (3000.0 / repeat);
     }
 }
-color.rgb *= vec3(0.09, 0.077, 0.07);
+color.rgb *= vec3(0.09, 0.086, 0.06) * 0.9;
 emission = 10.0;
 noDirectionalShading = true;
 
@@ -69,32 +69,33 @@ noDirectionalShading = true;
     //vec3 voxelPos = SceneToVoxel(mix(playerPos, vec3(0.0), -0.02)); // Fixes weird parallax offset
     vec3 voxelPos = SceneToVoxel(playerPos);
 
-    float portalOffset = 0.08333 * dither;
-    vec3[4] portalOffsets = vec3[](
-        vec3( portalOffset, 0, portalOffset),
-        vec3( portalOffset, 0,-portalOffset),
-        vec3(-portalOffset, 0, portalOffset),
-        vec3(-portalOffset, 0,-portalOffset)
-    );
+    if (CheckInsideVoxelVolume(voxelPos)) {
+        float portalOffset = 0.08333 * dither;
+        vec3[4] portalOffsets = vec3[](
+            vec3( portalOffset, 0, portalOffset),
+            vec3( portalOffset, 0,-portalOffset),
+            vec3(-portalOffset, 0, portalOffset),
+            vec3(-portalOffset, 0,-portalOffset)
+        );
 
-    float edge = 0.0;
-    for (int i = 0; i < 4; i++) {
-        int voxel = int(texelFetch(voxel_sampler, ivec3(voxelPos + portalOffsets[i]), 0).r);
-        if (voxel == 58 || voxel == 255) { // End Portal Frame or Bedrock
-            edge = 1.0; break;
+        float edge = 0.0;
+        for (int i = 0; i < 4; i++) {
+            int voxel = int(texelFetch(voxel_sampler, ivec3(voxelPos + portalOffsets[i]), 0).r);
+            if (voxel == 58 || voxel == 255) { // End Portal Frame or Bedrock
+                edge = 1.0; break;
+            }
         }
-    }
-    
-    #ifdef END
-        // No edge effect in the middle of the return fountain
-        vec2 var1 = abs(playerPos.xz + cameraPosition.xz - 0.5);
-        float var2 = max(var1.x, var1.y);
-        if (var2 > 1.0)
-    #endif
-
-    {
-        vec4 edgeColor = vec4(vec3(0.3, 0.6, 0.7), 1.0);
-        color = mix(color, edgeColor, edge);
-        emission = mix(emission, 5.0, edge);
+        
+        #ifdef END
+            // No edge effect in the middle of the return fountain
+            vec2 var1 = abs(playerPos.xz + cameraPosition.xz - 0.5);
+            float var2 = max(var1.x, var1.y);
+            if (var2 > 1.0)
+        #endif
+        {
+            vec4 edgeColor = vec4(vec3(0.18, 0.5, 0.45), 1.0);
+            color = mix(color, edgeColor, edge);
+            emission = mix(emission, 5.0, edge);
+        }
     }
 #endif

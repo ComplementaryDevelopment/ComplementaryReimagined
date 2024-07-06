@@ -50,7 +50,7 @@ float GetParallaxShadow(float parallaxFade, float dither, float height, vec2 coo
     vec3 parallaxdir = tbn * lightVec;
     parallaxdir.xy *= 1.0 * POM_DEPTH; // Angle
 
-    for(int i = 0; i < 4 && parallaxshadow >= 0.01; i++) {
+    for (int i = 0; i < 4 && parallaxshadow >= 0.01; i++) {
         float stepLC = 0.025 * (i + dither);
 
         float currentHeight = height + parallaxdir.z * stepLC;

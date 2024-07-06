@@ -125,7 +125,7 @@ vec4 GetVolumetricClouds(int cloudAltitude, float distanceThreshold, inout float
             float skyMult1 = 1.0 - 0.2 * (1.0 - skyFade) * max(sunVisibility2, nightFactor);
             float skyMult2 = 1.0 - 0.33333 * skyFade;
             colorSample = mix(cloudSkyColor, colorSample * skyMult1, cloudFogFactor * skyMult2);
-            colorSample *= pow2(1.0 - max(blindness, darknessFactor));
+            colorSample *= pow2(1.0 - maxBlindnessDarkness);
 
             cloudLinearDepth = sqrt(lTracePos / renderDistance);
             volumetricClouds.a = pow(cloudDistanceFactor * 1.33333, 0.5 + 10.0 * pow(abs(VdotSM1), 90.0)) * cloudMult;

@@ -30,6 +30,7 @@ uniform float aspectRatio;
 uniform float blindness;
 uniform float darknessFactor;
 uniform float darknessLightFactor;
+uniform float maxBlindnessDarkness;
 uniform float eyeAltitude;
 uniform float frameTime;
 uniform float frameTimeCounter;

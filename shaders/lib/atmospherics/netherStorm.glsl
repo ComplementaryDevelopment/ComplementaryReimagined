@@ -10,6 +10,7 @@ float Noise3D(vec3 p) {
 }
 
 vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 nPlayerPos, vec3 playerPos, float lViewPos, float lViewPos1, float dither) {
+    if (isEyeInWater != 0) return vec4(0.0);
     vec4 netherStorm = vec4(1.0, 1.0, 1.0, 0.0);
 
     #ifdef BORDER_FOG
@@ -73,7 +74,7 @@ vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 nPlayerPos, vec3 play
 
     netherStorm.a = min1(netherStorm.a * NETHER_STORM_I);
 
-    netherStorm.rgb *= netherColor * 3.0;
+    netherStorm.rgb *= netherColor * 3.0 * (1.0 - maxBlindnessDarkness);
 
     //if (netherStorm.a > 0.98) netherStorm.rgb = vec3(1,0,1);
     //netherStorm.a *= 1.0 - max0(netherStorm.a - 0.98) * 50.0;

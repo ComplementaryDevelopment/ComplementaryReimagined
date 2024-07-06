@@ -301,6 +301,7 @@
 
     //#define DREAM_TWEAKED_LIGHTING
     //#define DREAM_TWEAKED_BORDERFOG
+    //#define FOLIAGE_ALT_SUBSURFACE
 
 //Internal Settings//
     #define SIDE_SHADOWING

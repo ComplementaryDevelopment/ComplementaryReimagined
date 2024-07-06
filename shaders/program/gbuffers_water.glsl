@@ -201,6 +201,13 @@ void main() {
         }
     #endif
 
+    #if WATER_MAT_QUALITY >= 3 && SELECT_OUTLINE == 4
+        int materialMaskInt = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);
+        if (materialMaskInt == 252) {
+            materialMask = OSIEBCA * 252.0; // Versatile Selection Outline
+        }
+    #endif
+
     // Blending
     if (!translucentMultCalculated)
         translucentMult = vec4(mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a), 1.0);

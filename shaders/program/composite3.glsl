@@ -101,7 +101,7 @@
         #endif
 
         if (coc * 0.5 > 1.0 / max(viewWidth, viewHeight)) {
-            for(int i = 0; i < 18; i++) {
+            for (int i = 0; i < 18; i++) {
                 vec2 offset = dofOffsets[i] * coc * 0.0085 * dofScale;
                 float lod = log2(viewHeight * aspectRatio * coc * 0.75 / 320.0);
                 #ifndef WB_CHROMATIC

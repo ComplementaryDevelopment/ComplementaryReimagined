@@ -60,7 +60,7 @@ option.info10.comment=EminGT: The main developer of Complementary. Capt Tatsu: D
 
 #Style
 option.SHADER_STYLE=Visual Style
-option.SHADER_STYLE.comment=Determines the default visual style of the shader pack. §bReimagined§r: Complementing Minecraft while preserving its unique visual elements. §dUnbound§r: Reworking the visuals of Minecraft with a semi-realistic fantasy style. §e[*]§r Affected settings: Water Style, Cloud Style, Sun/Moon Style, Sun/Moon Angle, Aurora Style.
+option.SHADER_STYLE.comment=Determines the default visual style of the shader pack. §bReimagined§r: Complementing Minecraft while preserving its unique visual elements. §dUnbound§r: Reworking the visuals of Minecraft with a semi-realistic fantasy style. §e[*]§r Affected settings: Water Style, Cloud Style, Sun/Moon Style, Sun/Moon Angle, Aurora Style, Glowing Ores.
 value.SHADER_STYLE.1=§bReimagined
 value.SHADER_STYLE.4=§dUnbound
 
@@ -191,7 +191,7 @@ value.WATER_REFLECT_QUALITY.1=§ePotato
 value.WATER_REFLECT_QUALITY.2=§cMedium
 
 option.BLOCK_REFLECT_QUALITY=Block Reflection Quality §e[*]§r
-option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §eHigh§r: Sun/moon highlights + smoother specular reflections using a temporal filter. §eMedium§r: Sun/moon highlights + specular reflections. §aLow§r: Sun/moon highlights only. §e[*]§r RP Support option must be set to anything but Basic for any specular reflections to appear.
+option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §cHigh§r: Sun/moon highlights + smoother specular reflections using a temporal filter. §eMedium§r: Sun/moon highlights + specular reflections. §aLow§r: Sun/moon highlights only. §e[*]§r RP Support option must be set to anything but Basic for any specular reflections to appear.
 value.BLOCK_REFLECT_QUALITY.0=§aOFF
 value.BLOCK_REFLECT_QUALITY.1=§eLow
 value.BLOCK_REFLECT_QUALITY.2=§cMedium
@@ -269,7 +269,7 @@ value.ANISOTROPIC_FILTER.8=§e8x
 value.ANISOTROPIC_FILTER.16=§4§l16x
 
 option.COLORED_LIGHTING=Advanced Colored Lighting §e[*]§r
-option.COLORED_LIGHTING.comment=Uses voxelization and floodfill lighting to add color to blocklight, alongside introducing some new lights. §e[*]§r This feature only works on Iris and supported platforms. §e[*]§r Real-Time Shadows must be enabled for this to work. §a[+]§r This system also enables some other features which you can individually enable/disable in the "Other" -> "ACL Features" menu. §c[-]§r High chunk values for this effect impact performance way more than expected, each 2 chunk increment costs more than twice the performance of the previous tier.
+option.COLORED_LIGHTING.comment=Uses voxelization and floodfill lighting to add color to blocklight, alongside introducing some new lights. §e[*]§r This feature only works on Iris and supported platforms. §e[*]§r This setting will be disabled if "Shadow Sample Quality" is OFF. §a[+]§r This system also enables some other features which you can individually enable/disable in the "Other" -> "ACL Features" menu. §c[-]§r High chunk values for this effect impact performance way more than expected, each 2 chunk increment costs more than twice the performance of the previous tier.
 value.COLORED_LIGHTING.0=§aOFF
 value.COLORED_LIGHTING.128=§e4 Chunks
 value.COLORED_LIGHTING.192=§c6 Chunks
@@ -330,7 +330,7 @@ option.CLOUD_SHADOWS=Cloud Shadows
 option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r Cloud shadows will be randomly generated if Cloud Style is set to "Unbound", because of the extra complexity of Unbound clouds.
 
 option.CLOUD_CLOSED_AREA_CHECK=Prevent Clouds in Interiors
-option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r This setting will be treated as OFF if "Real-Time Shadows" are disabled.
+option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r This setting will be disabled if "Shadow Sample Quality" is OFF.
 
 option.CLOUD_ALT1=Cloud Altitude
 option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
@@ -714,7 +714,7 @@ option.AMBIENT_MULT=Shadow Light Multiplier
 option.AMBIENT_MULT.comment=Determines the amount of ambient lighting seen in shadows. §c[-]§r Drastically changing this setting can break the lighting balance.
 
 option.PLAYER_SHADOW=Player Shadow §e[*]§r
-option.PLAYER_SHADOW.comment=Determines if the player will cast a shadow or not. §e[*]§r This setting only works on Iris. §e[*]§r This setting will be treated as OFF if "Real-Time Shadows" are disabled.
+option.PLAYER_SHADOW.comment=Determines if the player will cast a shadow or not. §e[*]§r This setting only works on Iris. §e[*]§r This setting will be disabled if "Shadow Sample Quality" is OFF.
 value.PLAYER_SHADOW.-1=OFF
 value.PLAYER_SHADOW.1=ON
 

@@ -24,7 +24,7 @@ vec3 DrawEnderBeams(float VdotU, vec3 playerPos) {
 
     vec4 beams = vec4(0.0);
     float gradientMix = 1.0;
-    for(int i = 0; i < sampleCount; i++) {
+    for (int i = 0; i < sampleCount; i++) {
         vec2 planeCoord = playerPos.xz + cameraPosition.xz;
         planeCoord *= (1.0 + i * 6.0 / sampleCount) * 0.0014;
 

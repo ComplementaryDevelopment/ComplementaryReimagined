@@ -83,6 +83,7 @@ void DoBSLColorSaturation(inout vec3 color) {
             netherBloom *= netherBloom;
             netherBloom *= netherBloom;
             netherBloom = 1.0 - exp(-8.0 * netherBloom);
+            netherBloom *= 1.0 - maxBlindnessDarkness;
             bloomStrength = mix(bloomStrength * 0.7, bloomStrength * 1.8, netherBloom);
         #endif
 

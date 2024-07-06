@@ -70,6 +70,10 @@ float Noise3D(vec3 p) {
     #include "/lib/lighting/mainLighting.glsl"
 #undef GBUFFERS_TERRAIN
 
+#ifdef SNOWY_WORLD
+    #include "/lib/materials/materialMethods/snowyWorld.glsl"
+#endif
+
 //Program//
 void main() {
     vec4 color = vec4(glColor.rgb, 1.0);
@@ -96,7 +100,7 @@ void main() {
 
     bool noSmoothLighting = false, noDirectionalShading = false, noVanillaAO = false, centerShadowBias = false;
     int subsurfaceMode = 0;
-    float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0;
+    float smoothnessG = 0.0, smoothnessD = 0.0, highlightMult = 1.0, emission = 0.0, snowFactor = 1.0, snowMinNdotU = 0.0;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);    
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
     
@@ -109,6 +113,11 @@ void main() {
     } else if (mat == DH_BLOCK_LAVA) {
         emission = 1.5;
     }
+
+    #ifdef SNOWY_WORLD
+        DoSnowyWorld(color, smoothnessG, highlightMult, smoothnessD, emission,
+                     playerPos, lmCoord, snowFactor, snowMinNdotU, NdotU, subsurfaceMode);
+    #endif
 
     float lengthCylinder = max(length(playerPos.xz), abs(playerPos.y));
     highlightMult *= 0.5 + 0.5 * pow2(1.0 - smoothstep(far, far * 1.5, lengthCylinder));

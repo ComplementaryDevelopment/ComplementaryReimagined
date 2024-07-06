@@ -46,7 +46,13 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
 
             // Ray Marching
             vec3 start = viewPos + normalMR * (lViewPos * 0.025 * (1.0 - fresnel) + 0.05);
-            vec3 vector = reflect(nViewPos, normalize(normalMR));
+            #if defined GBUFFERS_WATER && WATER_STYLE >= 2
+                vec3 vector = reflect(nViewPos, normalize(normalMR)); // Not using nViewPosR because normalMR changed
+            #else
+                vec3 vector = nViewPosR;
+            #endif
+            //vector = normalize(vector - 0.5 * (1.0 - smoothness) * (1.0 - fresnel) * normalMR); // reflection anisotropy test
+            //vector = normalize(vector - 0.075 * dither * (1.0 - pow2(pow2(fresnel))) * normalMR);
             vector *= 0.5;
             vec3 viewPosRT = viewPos + vector;
             vec3 tvector = vector;
@@ -54,7 +60,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
             int sr = 0;
             float dist = 0.0;
             vec3 rfragpos = vec3(0.0);
-            for(int i = 0; i < 30; i++) {
+            for (int i = 0; i < 30; i++) {
                 refPos = nvec3(gbufferProjection * vec4(viewPosRT, 1.0)) * 0.5 + 0.5;
                 if (abs(refPos.x - 0.5) > rEdge.x || abs(refPos.y - 0.5) > rEdge.y) break;
 
@@ -75,7 +81,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
                 viewPosRT = start + tvector;
             }
 
-            // Finalizing Terrain Reflection and Alpha
+            // Finalizing Terrain Reflection and Alpha 
             if (refPos.z < 0.99997) {
                 vec2 absPos = abs(refPos.xy - 0.5);
                 vec2 cdist = absPos / rEdge;
