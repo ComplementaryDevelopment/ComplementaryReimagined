@@ -105,7 +105,7 @@ void main() {
 
     float dither = texture2D(noisetex, texCoord * view / 128.0).b;
     #ifdef TAA
-        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+        dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
 
     /* TM5723: The "1.0 - translucentMult" trick is done because of the default color attachment
@@ -167,14 +167,12 @@ void main() {
     #endif
 
     #ifdef COLORED_LIGHT_FOG
-        float caveFactor = GetCaveFactor();
-
-        vec3 lightFog = GetColoredLightFog(nPlayerPos, translucentMult, lViewPos, lViewPos1, dither, caveFactor);
+        vec3 lightFog = GetColoredLightFog(nPlayerPos, translucentMult, lViewPos, lViewPos1, dither);
         float lightFogMult = COLORED_LIGHT_FOG_I;
         //if (heldItemId == 40000 && heldItemId2 != 40000) lightFogMult = 0.0; // Hold spider eye to disable light fog
 
         #ifdef OVERWORLD
-            lightFogMult *= 0.2 + 0.6 * max(caveFactor, 1.0 - sunFactor * invRainFactor);
+            lightFogMult *= 0.2 + 0.6 * mix(1.0, 1.0 - sunFactor * invRainFactor, eyeBrightnessM);
         #endif
 
         color /= 1.0 + pow2(GetLuminance(lightFog)) * lightFogMult * 2.0;
@@ -214,7 +212,7 @@ void main() {
 
     // supposed to be #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
     #if LIGHTSHAFT_QUALI_DEFINE > 0 && LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 && defined OVERWORLD || defined END
-        #ifdef LENSFLARE
+        #if LENSFLARE_MODE > 0
             if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y > 1.5)
                 vlFactorM = texelFetch(colortex4, texelCoord, 0).r;
         #endif

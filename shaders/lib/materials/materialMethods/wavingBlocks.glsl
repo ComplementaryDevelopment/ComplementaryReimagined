@@ -1,4 +1,4 @@
-#if COLORED_LIGHTING > 0
+#if COLORED_LIGHTING_INTERNAL > 0
     #include "/lib/misc/voxelization.glsl"
 #endif
 
@@ -119,7 +119,7 @@ void DoWave(inout vec3 playerPos, int mat) {
             #if defined NETHER || defined DO_NETHER_VINE_WAVING_OUTSIDE_NETHER
                 else if (mat == 10884 || mat == 10885) { // Weeping Vines, Twisting Vines
                     float waveMult = 1.0;
-                    #if COLORED_LIGHTING > 0
+                    #if COLORED_LIGHTING_INTERNAL > 0
                         vec3 playerPosP = playerPos + vec3(0.0, 0.1, 0.0);
                         vec3 voxelPosP = SceneToVoxel(playerPosP);
                         vec3 playerPosN = playerPos - vec3(0.0, 0.1, 0.0);

@@ -10,7 +10,7 @@
 
 noperspective in vec2 texCoord;
 
-#if defined BLOOM_FOG || defined LENSFLARE
+#if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
     flat in vec3 upVec, sunVec;
 #endif
 
@@ -22,7 +22,7 @@ float ph = 1.0 / viewHeight;
 
 vec2 view = vec2(viewWidth, viewHeight);
 
-#if defined BLOOM_FOG || defined LENSFLARE
+#if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
     float SdotU = dot(sunVec, upVec);
     float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 #endif
@@ -101,7 +101,7 @@ void DoBSLColorSaturation(inout vec3 color) {
     #include "/lib/util/dither.glsl"
 #endif
 
-#ifdef LENSFLARE
+#if LENSFLARE_MODE > 0 && defined OVERWORLD
     #include "/lib/misc/lensFlare.glsl"
 #endif
 
@@ -109,7 +109,7 @@ void DoBSLColorSaturation(inout vec3 color) {
 void main() {
     vec3 color = texture2D(colortex0, texCoord).rgb;
 
-    #if defined BLOOM_FOG || defined LENSFLARE
+    #if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
         float z0 = texture2D(depthtex0, texCoord).r;
 
         vec4 screenPos = vec4(texCoord, z0, 1.0);
@@ -130,7 +130,7 @@ void main() {
 
     float dither = texture2D(noisetex, texCoord * view / 128.0).b;
     #ifdef TAA
-        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+        dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
 
     #ifdef BLOOM_FOG
@@ -169,7 +169,7 @@ void main() {
         }
     #endif
 
-    #ifdef LENSFLARE
+    #if LENSFLARE_MODE > 0 && defined OVERWORLD
         DoLensFlare(color, viewPos.xyz, dither);
     #endif
 
@@ -195,7 +195,7 @@ void main() {
 
 noperspective out vec2 texCoord;
 
-#if defined BLOOM_FOG || defined LENSFLARE
+#if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
     flat out vec3 upVec, sunVec;
 #endif
 
@@ -213,7 +213,7 @@ void main() {
 
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-    #if defined BLOOM_FOG || defined LENSFLARE
+    #if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
         upVec = normalize(gbufferModelView[1].xyz);
         sunVec = GetSunVector();
     #endif

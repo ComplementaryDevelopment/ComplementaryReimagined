@@ -21,6 +21,6 @@ subsurfaceMode = 2;
     color.rgb = color.rgb * 0.5 + 0.5 * (color.rgb / glColor.rgb);
 #endif
 
-#if SHADOW_QUALITY > -1 && SHADOW_QUALITY < 3
+#if SHADOW_QUALITY > -1 && SHADOW_QUALITY < 3 && defined OVERWORLD
     shadowMult = vec3(sqrt1(max0(max(lmCoordM.y, min1(lmCoordM.x * 2.0)) - 0.95) * 20.0));
 #endif

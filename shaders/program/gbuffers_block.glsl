@@ -81,6 +81,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/materials/materialMethods/coatedTextures.glsl"
 #endif
 
+#if IPBR_EMISSIVE_MODE != 1
+    #include "/lib/materials/materialMethods/customEmission.glsl"
+#endif
+
 #ifdef CUSTOM_PBR
     #include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
@@ -119,13 +123,19 @@ void main() {
 
     #ifdef IPBR
         #include "/lib/materials/materialHandling/blockEntityMaterials.glsl"
+
+        #if IPBR_EMISSIVE_MODE != 1
+            emission = GetCustomEmissionForIPBR(color, emission);
+        #endif
     #else
         #ifdef CUSTOM_PBR
             GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
         #endif
 
-        if (blockEntityId == 60024) { // End Portal, End Gateway
-            #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
+        if (blockEntityId == 60025) { // End Portal, End Gateway
+            #ifdef SPECIAL_PORTAL_EFFECTS
+                #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
+            #endif
         } else if (blockEntityId == 60004) { // Signs
             noSmoothLighting = true;
             if (glColor.r + glColor.g + glColor.b <= 2.99 || lmCoord.x > 0.999) { // Sign Text

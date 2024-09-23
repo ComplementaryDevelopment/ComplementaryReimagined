@@ -22,7 +22,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
                    sampler2D depthtex, float dither, float skyLightFactor, float fresnel,
                    float smoothness, vec3 geoNormal, vec3 color, vec3 shadowMult, float highlightMult) {
     // Step 1: Prepare
-    vec2 rEdge = vec2(0.6, 0.53);
+    vec2 rEdge = vec2(0.6, 0.55);
     vec3 normalMR = normalM;
 
     #if defined GBUFFERS_WATER && WATER_STYLE == 1 && defined GENERATED_NORMALS

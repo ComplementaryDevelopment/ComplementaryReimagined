@@ -1,7 +1,11 @@
-vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, float lViewPos1, float dither, float caveFactor) {
+vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, float lViewPos1, float dither) {
     vec3 lightFog = vec3(0.0);
 
     float stepMult = 8.0;
+
+    #ifdef CAVE_SMOKE
+        float caveFactor = GetCaveFactor();
+    #endif
 
     float maxDist = min(effectiveACLdistance * 0.5, far);
     float halfMaxDist = maxDist * 0.5;

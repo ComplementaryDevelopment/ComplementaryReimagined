@@ -104,7 +104,7 @@ void main() {
         ColorCodeProgram(color, -1);
     #endif
 
-    #if COLORED_LIGHTING > 0 && defined NETHER
+    #if COLORED_LIGHTING_INTERNAL > 0 && defined NETHER
         if (gl_FragCoord.x < 0.0)
         color = shadow2D(shadowtex0, vec3(0.5)); // To Activate Shadowmap in Nether
     #endif

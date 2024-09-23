@@ -1,5 +1,6 @@
 #ifndef INCLUDE_WATER_FOG
-#define INCLUDE_WATER_FOG
+    #define INCLUDE_WATER_FOG
+    
     float GetWaterFog(float lViewPos) {
         #if WATER_FOG_MULT != 100
             #define WATER_FOG_MULT_M WATER_FOG_MULT * 0.01;

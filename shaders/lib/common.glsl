@@ -27,9 +27,12 @@
     #define BLOCK_REFLECT_QUALITY 3 //[0 1 2 3]
     #define ANISOTROPIC_FILTER 0 //[0 4 8 16]
 
-    #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1
-        #define COLORED_LIGHTING 0 //[128 192 256 384 512]
-        #if COLORED_LIGHTING > 0
+    #define COLORED_LIGHTING 0 //[128 192 256 384 512]
+    #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && !defined MC_OS_MAC
+        #define COLORED_LIGHTING_INTERNAL COLORED_LIGHTING
+        #if COLORED_LIGHTING_INTERNAL > 0
+            #define COLORED_LIGHT_SATURATION 100 //[50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125]
+
             #define COLORED_LIGHT_FOG
             #define COLORED_LIGHT_FOG_I 0.60 //[0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50]
             
@@ -37,9 +40,10 @@
             #ifndef IRIS_HAS_CONNECTED_TEXTURES
                 #define CONNECTED_GLASS_EFFECT
             #endif
+            //#define COLORED_CANDLE_LIGHT
         #endif
     #else
-        #define COLORED_LIGHTING 0
+        #define COLORED_LIGHTING_INTERNAL 0
     #endif
 
     #define WATER_STYLE_DEFINE -1 //[-1 1 2 3]
@@ -123,9 +127,10 @@
     #define VIGNETTE_R
     #define CHROMA_ABERRATION 0 //[0 1 2 3 4 5 6 7 8]
     #define UNDERWATER_DISTORTION
-    //#define LENSFLARE
-    #define LENSFLARE_I 1.00 //[0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00 2.20 2.40 2.60 2.80 3.00 3.25 3.50 3.75 4.00 4.50 5.00]
+    #define LENSFLARE_MODE 0 //[0 1 2]
+    #define LENSFLARE_I 1.00 //[0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00 2.20 2.40 2.60 2.80 3.00 3.25 3.50 3.75 4.00 4.25 4.50 4.75 5.00]
     #define TAA_MODE 1 //[1 2 0]
+    //#define DISTANT_LIGHT_BOKEH
 
     #define WORLD_BLUR 0 //[0 1 2]
     //#define WB_FOV_SCALED
@@ -167,6 +172,8 @@
     //#define EMISSIVE_LAPIS_BLOCK
     //#define GLOWING_ARMOR_TRIM
 
+    #define IPBR_EMISSIVE_MODE 1 //[1 3 2]
+
     #define NORMAL_MAP_STRENGTH 100 //[0 10 15 20 30 40 60 80 100 120 140 160 180 200]
     #define CUSTOM_EMISSION_INTENSITY 100 //[0 5 7 10 15 20 25 30 35 40 45 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 225 250]
     #define POM_DEPTH 0.80 //[0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
@@ -192,6 +199,8 @@
     #define WAVING_LILY_PAD
     #define WAVING_WATER_VERTEX
     #define WAVING_RAIN
+
+    #define SPECIAL_PORTAL_EFFECTS
 
     #define SUN_ANGLE -1 //[-1 0 -20 -30 -40 -50 -60 60 50 40 30 20]
 
@@ -308,7 +317,6 @@
     #define SHADOW_FILTERING
 
     #define GLASS_OPACITY 0.25
-    #define FANCY_NETHERPORTAL
 
     #define DIRECTIONAL_SHADING
 
@@ -339,9 +347,10 @@
 //Visual Style and Performance Setting Handling//
     #if RP_MODE == 1
         #define IPBR
+        #define IPBR_PARTICLE_FEATURES
         //#define GENERATED_NORMALS
         //#define COATED_TEXTURES
-        //#define FANCY_GLASS
+        #define FANCY_GLASS
         //#define GREEN_SCREEN_LIME
     #endif
     #if RP_MODE >= 2
@@ -479,7 +488,7 @@
         #define CONNECTED_GLASS_CORNER_FIX
         #define ACL_CORNER_LEAK_FIX
         #define DO_NETHER_VINE_WAVING_OUTSIDE_NETHER
-        #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && RAIN_PUDDLES > 0 && COLORED_LIGHTING > 0
+        #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && RAIN_PUDDLES > 0 && COLORED_LIGHTING_INTERNAL > 0
             #define PUDDLE_VOXELIZATION
         #endif
     #endif
@@ -500,7 +509,6 @@
         #undef CAVE_FOG
         #undef CLOUD_SHADOWS
         #undef SNOWY_WORLD
-        #undef LENSFLARE
         #undef LIGHTSHAFT_SMOKE
     #endif
     #ifdef NETHER
@@ -529,6 +537,7 @@
 
     #if defined GBUFFERS_HAND || defined GBUFFERS_ENTITIES
         #undef SNOWY_WORLD
+        #undef DISTANT_LIGHT_BOKEH
     #endif
     #if defined GBUFFERS_TEXTURED || defined GBUFFERS_BASIC
         #undef LIGHT_HIGHLIGHT
@@ -565,8 +574,12 @@
         #define UNDERWATERCOLOR_CHANGED
     #endif
 
-    #ifdef IS_IRIS
+    #if defined IS_IRIS && !defined IRIS_HAS_TRANSLUCENCY_SORTING
         #undef FANCY_GLASS
+    #endif
+
+    #ifdef DISTANT_HORIZONS
+        #undef DISTANT_LIGHT_BOKEH
     #endif
 
 //Activate Settings//
@@ -574,39 +587,13 @@
     #endif
     #ifdef BRIGHT_CAVE_WATER
     #endif
+    #ifdef IPBR_PARTICLE_FEATURES
+    #endif
+    #ifdef COLORED_CANDLE_LIGHT
+    #endif
 
-//Uniforms//
-#include "/lib/uniforms.glsl"
-
-//Very Common Variables//
-    const float OSIEBCA = 1.0 / 255.0; // One Step In Eight Bit Color Attachment
-    /* materialMask steps
-    0 to 240 - PBR Dependant:
-        IntegratedPBR:
-            0 to 99: deferredMaterials
-                OSIEBCA * 0.0 = *Unused as 0.0 is the default value*
-                OSIEBCA * 1.0 = Intense Fresnel
-                OSIEBCA * 2.0 = Copper Fresnel
-                OSIEBCA * 3.0 = Gold Fresnel
-                OSIEBCA * 4.0 =
-                OSIEBCA * 5.0 = Redstone Fresnel
-            100 to 199: Exact copy of deferredMaterials but toned down reflection handling
-                materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
-            200 to 240: Random checks
-                OSIEBCA * 240.0 = Green Screen Lime Blocks
-        seuspbr:
-            0 to 240: Increasing metalness
-        labPBR:
-            0 to 229: Increasing f0
-            230 to 240: Consistent metalness with still increasing f0
-    241 to 255 - PBR Independant:
-        OSIEBCA * 241.0 = Water
-    
-        OSIEBCA * 252.0 = Versatile Selection Outline
-        OSIEBCA * 253.0 = Reduced Edge TAA
-        OSIEBCA * 254.0 = No SSAO, No TAA
-        OSIEBCA * 255.0 = *Unused as 1.0 is the clear color*
-    */
+//Very Common Stuff//
+    #include "/lib/uniforms.glsl"
 
     #if SHADOW_QUALITY == -1
       float timeAngle = worldTime / 24000.0;
@@ -619,6 +606,8 @@
       float tAmix     = hA < 0.5 ? 0.3 : -0.1;
       float timeAngle = (tAfrc * (1.0-tAmix) + tAfrs * tAmix + hA) * 0.5;
     #endif
+
+    #include "/lib/util/commonFunctions.glsl"
 
     #ifndef DISTANT_HORIZONS
         float renderDistance = far;
@@ -646,6 +635,7 @@
     float syncedTime = (worldTime + modifiedWorldDay * 24000) * 0.05;
 
     const float pi = 3.14159265359;
+    const float goldenRatio = 1.61803398875;
 
     const float oceanAltitude = 61.9;
 
@@ -708,7 +698,33 @@
     const int cloudAlt1i = int(CLOUD_ALT1); // Old setting files can send float values
     const int cloudAlt2i = int(CLOUD_ALT2);
 
-//Very Common Functions//
-#include "/lib/util/commonFunctions.glsl"
+    const float OSIEBCA = 1.0 / 255.0; // One Step In Eight Bit Color Attachment
+    /* materialMask steps
+    0 to 240 - PBR Dependant:
+        IntegratedPBR:
+            0 to 99: deferredMaterials
+                OSIEBCA * 0.0 = *Unused as 0.0 is the default value*
+                OSIEBCA * 1.0 = Intense Fresnel
+                OSIEBCA * 2.0 = Copper Fresnel
+                OSIEBCA * 3.0 = Gold Fresnel
+                OSIEBCA * 4.0 =
+                OSIEBCA * 5.0 = Redstone Fresnel
+            100 to 199: Exact copy of deferredMaterials but toned down reflection handling
+                materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
+            200 to 240: Random checks
+                OSIEBCA * 240.0 = Green Screen Lime Blocks
+        seuspbr:
+            0 to 240: Increasing metalness
+        labPBR:
+            0 to 229: Increasing f0
+            230 to 240: Consistent metalness with still increasing f0
+    241 to 255 - PBR Independant:
+        OSIEBCA * 241.0 = Water
+    
+        OSIEBCA * 252.0 = Versatile Selection Outline
+        OSIEBCA * 253.0 = Reduced Edge TAA
+        OSIEBCA * 254.0 = No SSAO, No TAA
+        OSIEBCA * 255.0 = *Unused as 1.0 is the clear color*
+    */
 
 // 62 75 74 20 74 68 4F 73 65 20 77 68 6F 20 68 6F 70 65 20 69 6E 20 74 68 65 20 6C 69 6D 69 4E 61 6C 0A 77 69 6C 6C 20 72 65 6E 65 77 20 74 68 65 69 72 20 73 54 72 65 6E 67 74 48 2E 0A 74 68 65 79 20 77 69 6C 6C 20 73 6F 41 72 20 6F 6E 20 65 6C 79 54 72 61 73 20 6C 69 6B 65 20 70 68 61 6E 74 6F 6D 73 3B 0A 74 68 65 79 20 77 69 6C 6C 20 72 75 6E 20 61 6E 44 20 6E 6F 74 20 67 72 6F 77 20 77 65 41 72 79 2C 0A 74 68 65 59 20 77 69 6C 6C 20 77 61 6C 6B 20 61 6E 64 20 6E 6F 74 20 62 65 20 66 61 69 6E 74 2E

@@ -56,11 +56,12 @@
         float rawWind = frameTimeCounter * WATER_SPEED_MULT_M;
         vec2 wind = vec2(rawWind, 0.0);
         vec3 worldPos = playerPos + cameraPosition;
-        vec2 waterPos = worldPos.xz * 16.0;
-        #if WATER_STYLE < 3
-             waterPos = floor(waterPos);
+        vec2 waterPos = worldPos.xz;
+        #if WATER_STYLE < 3 && defined GBUFFERS_WATER
+            float blockRes = absMidCoordPos.x * atlasSize.x * 2.0;
+            waterPos = floor(waterPos * blockRes) / blockRes;
         #endif
-        waterPos = 0.002 * (waterPos + worldPos.y * 32.0);
+        waterPos = 0.032 * (waterPos + worldPos.y * 2.0);
     #endif
 
     // Water Normals

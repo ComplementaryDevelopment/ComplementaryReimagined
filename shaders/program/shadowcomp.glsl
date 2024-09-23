@@ -12,15 +12,15 @@
 #define OPTIMIZATION_ACL_BEHIND_PLAYER
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
-#if COLORED_LIGHTING == 128
+#if COLORED_LIGHTING_INTERNAL == 128
 	const ivec3 workGroups = ivec3(16, 8, 16);
-#elif COLORED_LIGHTING == 192
+#elif COLORED_LIGHTING_INTERNAL == 192
 	const ivec3 workGroups = ivec3(24, 12, 24);
-#elif COLORED_LIGHTING == 256
+#elif COLORED_LIGHTING_INTERNAL == 256
 	const ivec3 workGroups = ivec3(32, 16, 32);
-#elif COLORED_LIGHTING == 384
+#elif COLORED_LIGHTING_INTERNAL == 384
 	const ivec3 workGroups = ivec3(48, 24, 48);
-#elif COLORED_LIGHTING == 512
+#elif COLORED_LIGHTING_INTERNAL == 512
 	const ivec3 workGroups = ivec3(64, 32, 64);
 #endif
 

@@ -203,7 +203,7 @@ flat out vec4 glColor;
 #endif
 
 //Pipeline Constants//
-#if COLORED_LIGHTING > 0
+#if COLORED_LIGHTING_INTERNAL > 0
     #extension GL_ARB_shader_image_load_store : enable
 #endif
 
@@ -214,14 +214,14 @@ attribute vec4 mc_Entity;
     attribute vec4 mc_midTexCoord;
 #endif
 
-#if COLORED_LIGHTING > 0
+#if COLORED_LIGHTING_INTERNAL > 0
     attribute vec3 at_midBlock;
 #endif
 
 //Common Variables//
 vec2 lmCoord;
 
-#if COLORED_LIGHTING > 0
+#if COLORED_LIGHTING_INTERNAL > 0
     uniform int renderStage;
     writeonly uniform uimage3D voxel_img;
 
@@ -239,7 +239,7 @@ vec2 lmCoord;
     #include "/lib/materials/materialMethods/wavingBlocks.glsl"
 #endif
 
-#if COLORED_LIGHTING > 0
+#if COLORED_LIGHTING_INTERNAL > 0
     #include "/lib/misc/voxelization.glsl"
 
     #ifdef PUDDLE_VOXELIZATION
@@ -286,7 +286,7 @@ void main() {
         position.y += 0.015 * max0(length(position.xyz) - 50.0);
     }
 
-    #if COLORED_LIGHTING > 0
+    #if COLORED_LIGHTING_INTERNAL > 0
         if (gl_VertexID % 4 == 0) {
             UpdateVoxelMap(mat);
             #ifdef PUDDLE_VOXELIZATION

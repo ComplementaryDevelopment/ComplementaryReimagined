@@ -12,7 +12,7 @@ color.rgb = vec3(0.421, 0.7, 1.6) * 0.14;
 
 float dither = Bayer64(gl_FragCoord.xy);
 #ifdef TAA
-    dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+    dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     int repeat = 4;
 #else
     int repeat = 8;

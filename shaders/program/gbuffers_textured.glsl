@@ -75,7 +75,7 @@ void main() {
 
     float dither = texture2D(noisetex, gl_FragCoord.xy / 128.0).b;
     #ifdef TAA
-        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+        dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
 
     #ifdef ATM_COLOR_MULTS
@@ -93,7 +93,7 @@ void main() {
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
-    #ifdef IPBR
+    #if defined IPBR && defined IPBR_PARTICLE_FEATURES
         // We don't want to detect particles from the block atlas
         #if MC_VERSION >= 12000
             float atlasCheck = 1100.0; // I think texture atlas got bigger in newer mc

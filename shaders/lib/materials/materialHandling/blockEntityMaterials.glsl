@@ -64,24 +64,26 @@ if (blockEntityId < 60028) {
                     color.rgb *= vec3(1.0, 0.25, 0.1);
                 }
             } else /*if (blockEntityId == 60024)*/ { // End Portal, End Gateway
-                #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
+                #ifdef SPECIAL_PORTAL_EFFECTS
+                    #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
+                #endif
             }
         }
     }
 } else {
     if (blockEntityId < 60044) {
         if (blockEntityId < 60036) {
-            if (blockEntityId == 60028) { //
-            
-            } else /*if (blockEntityId == 60032)*/ { // Bell
+            if (blockEntityId == 60028) { // Bell
                 if (color.r + color.g > color.b + 0.5) { // Bell:Golden Part
                     #include "/lib/materials/specificMaterials/terrain/goldBlock.glsl"
                 } else {
                     #include "/lib/materials/specificMaterials/terrain/stone.glsl"
                 }
+            } else /*if (blockEntityId == 60032)*/ { //
+            
             }
         } else {
-            if (blockEntityId == 60036) { // 
+            if (blockEntityId == 60036) { //
             
             } else /*if (blockEntityId == 60040)*/ { //
 

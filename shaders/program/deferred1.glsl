@@ -176,6 +176,10 @@ float GetLinearDepth(float depth) {
     #include "/lib/colors/moonPhaseInfluence.glsl"
 #endif
 
+#ifdef DISTANT_LIGHT_BOKEH
+    #include "/lib/misc/distantLightBokeh.glsl"
+#endif
+
 //Program//
 void main() {
     vec3 color = texelFetch(colortex0, texelCoord, 0).rgb;
@@ -190,7 +194,7 @@ void main() {
 
     float dither = texture2D(noisetex, texCoord * vec2(viewWidth, viewHeight) / 128.0).b;
     #if defined TAA || defined TEMPORAL_FILTER
-        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+        dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
 
     #ifdef ATM_COLOR_MULTS
@@ -210,7 +214,17 @@ void main() {
     #endif
 
     if (z0 < 1.0) {
-        vec3 texture6 = texelFetch(colortex6, texelCoord, 0).rgb;
+        #ifdef DISTANT_LIGHT_BOKEH
+            int dlbo = 1;
+            vec3 dlbColor = color;
+            dlbColor += texelFetch(colortex0, texelCoord + ivec2( 0, dlbo), 0).rgb;
+            dlbColor += texelFetch(colortex0, texelCoord + ivec2( 0,-dlbo), 0).rgb;
+            dlbColor += texelFetch(colortex0, texelCoord + ivec2( dlbo, 0), 0).rgb;
+            dlbColor += texelFetch(colortex0, texelCoord + ivec2(-dlbo, 0), 0).rgb;
+            dlbColor *= 0.2;
+            float dlbMix = GetDistantLightBokehMix(lViewPos);
+            color = mix(color, dlbColor, dlbMix);
+        #endif
 
         #if SSAO_QUALI > 0 || defined WORLD_OUTLINE || defined TEMPORAL_FILTER
             float linearZ0 = GetLinearDepth(z0);
@@ -222,6 +236,7 @@ void main() {
             float ssao = 1.0;
         #endif
 
+        vec3 texture6 = texelFetch(colortex6, texelCoord, 0).rgb;
         bool entityOrHand = z0 < 0.56;
         int materialMaskInt = int(texture6.g * 255.1);
         float intenseFresnel = 0.0;
@@ -275,8 +290,7 @@ void main() {
                 #else
                     float noiseMult = 0.1;
                 #endif
-                #ifndef TEMPORAL_FILTER
-                #else
+                #ifdef TEMPORAL_FILTER
                     float blendFactor = 1.0;
                     float writeFactor = 1.0;
                 #endif
@@ -292,7 +306,7 @@ void main() {
                 noiseMult *= pow2(1.0 - smoothnessD);
 
                 vec3 roughNoise = vec3(texture2D(noisetex, roughCoord).r, texture2D(noisetex, roughCoord + 0.1).r, texture2D(noisetex, roughCoord + 0.2).r);
-                roughNoise = fract(roughNoise + vec3(dither, dither * 1.61803398875, dither * 1.61803398875 * 1.61803398875));
+                roughNoise = fract(roughNoise + vec3(dither, dither * goldenRatio, dither * pow2(goldenRatio)));
                 roughNoise = noiseMult * (roughNoise - vec3(0.5));
 
                 normalM += roughNoise;
@@ -308,10 +322,7 @@ void main() {
 
                 vec3 colorP = color;
 
-                #ifndef TEMPORAL_FILTER
-                    color *= 1.0 - colorMultInv * fresnelM;
-                    color += colorAdd * fresnelM;
-                #else
+                #ifdef TEMPORAL_FILTER
                     vec3 cameraOffset = cameraPosition - previousCameraPosition;
                     vec2 prvCoord = SHalfReprojection(playerPos, cameraOffset);
                     #if defined IPBR && !defined GENERATED_NORMALS
@@ -332,22 +343,20 @@ void main() {
                     #endif
 
                     vec4 newRef = vec4(colorAdd, colorMultInv);
-                    ivec2 texelOppositePreCoord = clamp(ivec2((texCoord - 2.0 * (prvCoord - texCoord)) * view), ivec2(0, 0), texelCoord);
+                    vec2 oppositePreCoord = texCoord - 2.0 * (prvCoord - texCoord);
 
                     // Reduce blending at speed
                     blendFactor *= float(prvCoord.x > 0.0 && prvCoord.x < 1.0 && prvCoord.y > 0.0 && prvCoord.y < 1.0);
                     float velocity = length(cameraOffset) * max(16.0 - lViewPos / gbufferProjection[1][1], 3.0);
-                    blendFactor *= mix(1.0, exp(-velocity), smoothnessD);
+                    blendFactor *= mix(1.0, exp(-velocity) * 0.5 + 0.5, smoothnessD);
 
                     // Reduce blending if depth changed
-                    float linearZP = GetLinearDepth(texelFetch(colortex2, texelOppositePreCoord, 0).a);
-                    float linearZP2 = GetLinearDepth(texture2D(colortex2, texCoord + 1.5 * (prvCoord - texCoord)).a);
-                    float linearZDif = max(abs(linearZP - linearZ0), abs(linearZP2 - linearZ0)) * far;
+                    float linearZDif = abs(GetLinearDepth(texture2D(colortex1, oppositePreCoord).r) - linearZ0) * far;
                     blendFactor *= max0(2.0 - linearZDif) * 0.5;
                     //color = mix(vec3(1,1,0), color, max0(2.0 - linearZDif) * 0.5);
 
                     // Reduce blending if normal changed
-                    vec3 texture5P = texelFetch(colortex5, texelOppositePreCoord, 0).rgb;
+                    vec3 texture5P = texture2D(colortex5, oppositePreCoord, 0).rgb;
                     vec3 texture5Dif = abs(texture5 - texture5P);
                     if (texture5Dif != clamp(texture5Dif, vec3(-0.004), vec3(0.004))) {
                         blendFactor = 0.0;
@@ -361,8 +370,10 @@ void main() {
                     
                     color.rgb *= 1.0 - refToWrite.a * fresnelM;
                     color.rgb += refToWrite.rgb * fresnelM;
-
                     refToWrite *= writeFactor;
+                #else
+                    color *= 1.0 - colorMultInv * fresnelM;
+                    color += colorAdd * fresnelM;
                 #endif
 
                 color = max(colorP * max(intenseFresnel, 1.0 - pow2(smoothnessD)) * 0.9, color);

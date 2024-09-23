@@ -36,7 +36,7 @@ in vec4 glColorRaw;
 #endif
 
 //Pipeline Constants//
-#if COLORED_LIGHTING > 0
+#if COLORED_LIGHTING_INTERNAL > 0
     const float voxelDistance = 32.0;
 #endif
 
@@ -129,7 +129,7 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
     #include "/lib/antialiasing/jitter.glsl"
 #endif
 
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || ANISOTROPIC_FILTER > 0 || defined DISTANT_LIGHT_BOKEH
     #include "/lib/util/miplevel.glsl"
 #endif
 
@@ -139,6 +139,10 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
 
 #ifdef COATED_TEXTURES
     #include "/lib/materials/materialMethods/coatedTextures.glsl"
+#endif
+
+#if IPBR_EMISSIVE_MODE != 1
+    #include "/lib/materials/materialMethods/customEmission.glsl"
 #endif
 
 #ifdef CUSTOM_PBR
@@ -159,6 +163,10 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
 
 #ifdef SNOWY_WORLD
     #include "/lib/materials/materialMethods/snowyWorld.glsl"
+#endif
+
+#ifdef DISTANT_LIGHT_BOKEH
+    #include "/lib/misc/distantLightBokeh.glsl"
 #endif
 
 //Program//
@@ -190,7 +198,7 @@ void main() {
 
     float dither = Bayer64(gl_FragCoord.xy);
     #ifdef TAA
-        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+        dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
 
     int subsurfaceMode = 0;
@@ -210,6 +218,10 @@ void main() {
 
         #ifdef COATED_TEXTURES
             CoatTextures(color.rgb, noiseFactor, playerPos, doTileRandomisation);
+        #endif
+
+        #if IPBR_EMISSIVE_MODE != 1
+            emission = GetCustomEmissionForIPBR(color, emission);
         #endif
     #else
         #ifdef CUSTOM_PBR
@@ -417,6 +429,10 @@ void main() {
     absMidCoordPos  = abs(texMinMidCoord);
 
     mat = int(mc_Entity.x + 0.5);
+
+    #if ANISOTROPIC_FILTER > 0
+        if (mc_Entity.y > 0.5 && dot(normal, upVec) < 0.999) absMidCoordPos = vec2(0.0); // Fix257062
+    #endif
 
     #ifdef WAVING_ANYTHING_TERRAIN
         vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;

@@ -2,6 +2,8 @@
     #include "/lib/materials/materialMethods/pomEffects.glsl"
 #endif
 
+#include "/lib/materials/materialMethods/customEmission.glsl"
+
 void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoordM, inout float NdotU, inout vec3 shadowMult, inout float smoothnessG, inout float smoothnessD, inout float highlightMult, inout float emission, inout float materialMask, vec3 viewPos, float lViewPos) {
     vec2 texCoordM = texCoord;
 
@@ -42,7 +44,7 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
             if (parallaxFade < 1.0) {
                 float dither = Bayer64(gl_FragCoord.xy);
                 #ifdef TAA
-                    dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+                    dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
                 #endif
 
                 parallaxLocalCoord = GetParallaxCoord(parallaxFade, dither, texCoordM, parallaxTexDepth, parallaxTraceCoordDepth);
@@ -128,22 +130,14 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
         highlightMult *= 0.5 + 0.5 * specularMap.g;
     #endif
 
-    #if CUSTOM_EMISSION_INTENSITY > 0
-        #if RP_MODE == 2 // seuspbr
-            emission = specularMap.b;
-        #elif RP_MODE == 3 // labPBR
-            emission = specularMap.a < 1.0 ? specularMap.a : 0.0;
-
-            vec4 specularMapL0 = texture2DLod(specular, texCoordM, 0);
-            float emissionL0 = specularMapL0.a < 1.0 ? specularMapL0.a : 0.0;
-            emission = min(emission, emissionL0); // Fixes issues caused by mipmaps
-        #endif
-        emission *= 0.03 * CUSTOM_EMISSION_INTENSITY;
-    #endif
+    emission = GetCustomEmission(specularMap, texCoordM);
 
     #ifndef GBUFFERS_WATER
         #ifdef GBUFFERS_ENTITIES
-            if (materialMask > OSIEBCA * 240.1) return;
+            if (
+                materialMask > OSIEBCA * 240.1
+                && specularMap.g < 0.01
+            ) return;
         #endif
 
         #if RP_MODE == 2 // seuspbr

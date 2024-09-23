@@ -28,6 +28,8 @@ void main() {
     vec4 color = texture2D(tex, texCoord);
     color *= glColor;
 
+    color.rgb *= glColor.a; // Needed for Minecraft's "Glint Strength" apparently
+
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);
     #endif

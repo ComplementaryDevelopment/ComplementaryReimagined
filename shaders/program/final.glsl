@@ -14,7 +14,7 @@ noperspective in vec2 texCoord;
 #include "/lib/pipelineSettings.glsl"
 
 //Common Variables//
-#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0 && !defined IS_IRIS
+#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0 && (!defined IS_IRIS || defined MC_OS_MAC)
     #define ANY_ERROR_MESSAGE
 #endif
 
@@ -24,6 +24,10 @@ noperspective in vec2 texCoord;
 
 #if COLORED_LIGHTING > 0 && !defined IS_IRIS
     #define OPTIFINE_ACL_ERROR
+#endif
+
+#if COLORED_LIGHTING > 0 && defined MC_OS_MAC
+    #define APPLE_ACL_ERROR
 #endif
 
 //Common Functions//
@@ -107,6 +111,8 @@ void main() {
         #include "/lib/textRendering/error_optifine_af.glsl"
     #elif defined OPTIFINE_ACL_ERROR
         #include "/lib/textRendering/error_optifine_acl.glsl"
+    #elif defined APPLE_ACL_ERROR
+        #include "/lib/textRendering/error_apple_acl.glsl"
     #endif
 
     /* DRAWBUFFERS:0 */

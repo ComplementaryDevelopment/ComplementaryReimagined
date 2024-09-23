@@ -139,7 +139,6 @@ void main() {
         sunVec = GetSunVector();
 
         vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
-        position.xz -= vec2(88.0);
         gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
 
         #ifdef TAA

@@ -18,7 +18,7 @@
     #include "/lib/colors/moonPhaseInfluence.glsl"
 #endif
 
-#if COLORED_LIGHTING > 0
+#if COLORED_LIGHTING_INTERNAL > 0
     #include "/lib/misc/voxelization.glsl"
 #endif
 
@@ -318,7 +318,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
     vec3 blockLighting = lightmapXM * blocklightCol;
 
-    #if COLORED_LIGHTING > 0
+    #if COLORED_LIGHTING_INTERNAL > 0
         // Prepare
         #if defined GBUFFERS_HAND
             vec3 voxelPos = SceneToVoxel(vec3(0.0));
@@ -346,11 +346,11 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         specialLighting = lightmapXM * 0.13 * DoLuminanceCorrection(specialLighting + blocklightCol * 0.05);
 
         // Add some extra non-contrasty detail
-        vec3 specialLightingM = max(specialLighting, vec3(0.0));
-        specialLightingM /= (0.2 + 0.8 * GetLuminance(specialLightingM));
-        specialLightingM *= (1.0 / (1.0 + emission)) * 0.22;
-        specialLighting *= 0.9;
-        specialLighting += pow2(specialLightingM / (color.rgb + 0.1));
+        AddSpecialLightDetail(specialLighting, color.rgb, emission);
+
+        #if COLORED_LIGHT_SATURATION != 100
+            specialLighting = mix(blockLighting, specialLighting, COLORED_LIGHT_SATURATION * 0.01);
+        #endif
 
         // Serve with distance fade
         vec3 absPlayerPos = abs(playerPos);
@@ -363,7 +363,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
     #if HELD_LIGHTING_MODE >= 1
         float heldLight = heldBlockLightValue; float heldLight2 = heldBlockLightValue2;
-        #if COLORED_LIGHTING == 0
+        #if COLORED_LIGHTING_INTERNAL == 0
             vec3 heldLightCol = blocklightCol; vec3 heldLightCol2 = blocklightCol;
 
             if (heldItemId == 45032) heldLight = 15; if (heldItemId2 == 45032) heldLight2 = 15; // Lava Bucket
@@ -373,6 +373,11 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
             if (heldItemId == 45032) { heldLightCol = lavaSpecialLightColor; heldLight = 15; } // Lava Bucket
             if (heldItemId2 == 45032) { heldLightCol2 = lavaSpecialLightColor; heldLight2 = 15; }
+
+            #if COLORED_LIGHT_SATURATION != 100
+                heldLightCol = mix(blocklightCol, heldLightCol, COLORED_LIGHT_SATURATION * 0.01);
+                heldLightCol2 = mix(blocklightCol, heldLightCol2, COLORED_LIGHT_SATURATION * 0.01);
+            #endif
         #endif
 
         vec3 playerPosLightM = playerPos + relativeEyePosition;
@@ -387,6 +392,10 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
         vec3 heldLighting = pow2(heldLight * DoLuminanceCorrection(heldLightCol + 0.001))
                           + pow2(heldLight2 * DoLuminanceCorrection(heldLightCol2 + 0.001));
+
+        #if COLORED_LIGHTING_INTERNAL > 0
+            AddSpecialLightDetail(heldLighting, color.rgb, emission);
+        #endif
 
         #ifdef GBUFFERS_HAND
             blockLighting *= 0.5;
@@ -514,7 +523,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Vanilla Ambient Occlusion
     float vanillaAO = 1.0;
     #if VANILLAAO_I > 0
-        if (subsurfaceMode != 0) vanillaAO = min1(glColor.a * 1.15);
+        if (subsurfaceMode != 0) vanillaAO = mix(min1(glColor.a * 1.15), 1.0, shadowMult.g);
         else if (!noVanillaAO) {
             #ifdef GBUFFERS_TERRAIN
                 vanillaAO = min1(glColor.a + 0.08);

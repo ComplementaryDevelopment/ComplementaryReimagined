@@ -1,7 +1,7 @@
 /*
 const int colortex0Format = R11F_G11F_B10F; //main color
-
-const int colortex2Format = RGBA16F;        //taa & previous depth
+const int colortex1Format = R32F;           //previous depth
+const int colortex2Format = RGB16F;         //taa
 const int colortex3Format = RGBA8;          //(cloud/water map on deferred/gbuffer) | translucentMult & bloom & final color
 const int colortex4Format = R8;             //volumetric cloud linear depth & volumetric light factor
 const int colortex5Format = RGBA8_SNORM;    //normalM & scene image for water reflections
@@ -10,7 +10,7 @@ const int colortex7Format = RGBA16F;        //(cloud/water map on gbuffer) | tem
 */
 
 const bool colortex0Clear = true;
-
+const bool colortex1Clear = false;
 const bool colortex2Clear = false;
 const bool colortex3Clear = true;
 const bool colortex4Clear = false;

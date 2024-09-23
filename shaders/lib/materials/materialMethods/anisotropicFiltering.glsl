@@ -23,20 +23,22 @@ mat2 inverseM(mat2 m) {
 vec4 textureAF(sampler2D texSampler, vec2 uv) {
     vec2 spriteDimensions = vec2(spriteBounds.z - spriteBounds.x, spriteBounds.w - spriteBounds.y);
 
-    mat2 J = inverseM(mat2(dFdx(uv), dFdy(uv)));          // dFdxy: pixel footprint in texture space
-    J = transpose(J)*J;                                  // quadratic form
-    float d = manualDeterminant(J), t = J[0][0]+J[1][1], // find ellipse: eigenvalues, max eigenvector
-          D = sqrt(abs(t*t-4.0*d)),                      // abs() fix a bug: in weird view angles 0 can be slightly negative
-          V = (t-D)/2.0, v = (t+D)/2.0,                  // eigenvalues
-          M = 1.0/sqrt(V), m = 1./sqrt(v);               // = 1./radii^2
-    vec2 A = M * normalize(vec2(-J[0][1], J[0][0]-V));   // max eigenvector = main axis
+    mat2 J = inverseM(mat2(dFdx(uv), dFdy(uv)));
+    J = transpose(J)*J;
+    float d = manualDeterminant(J), t = J[0][0]+J[1][1],
+          D = sqrt(abs(t*t-4.001*d)), // using 4.001 instead of 4.0 fixes a rare texture glitch with square texture atlas
+          V = (t-D)/2.0, v = (t+D)/2.0,
+          M = 1.0/sqrt(V), m = 1./sqrt(v);
+    vec2 A = M * normalize(vec2(-J[0][1], J[0][0]-V));
 
-    float lod;
-    if (M/m > 16.0) {
-        lod = log2(M / 16.0 * viewHeight);
-    } else {
-        lod = log2(m * viewHeight);
-    }
+    float lod = 0.0;
+    #if ANISOTROPIC_FILTER >= 8 && defined GBUFFERS_TERRAIN
+        // Fix257062 - Checking if absMidCoordPos is fine or else miplevel will be broken. This can be an issue for flowing lava.
+        if (absMidCoordPos.x > 0.0001)
+        // Excluding cutout blocks for better looks
+        if (texture2DLod(texSampler, uv, 10000.0).a == 1.0)
+            lod = miplevel * 0.4;
+    #endif
 
     float samplesDiv2 = ANISOTROPIC_FILTER / 2.0;
     vec2 ADivSamples = A / ANISOTROPIC_FILTER;

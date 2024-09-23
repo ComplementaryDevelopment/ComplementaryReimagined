@@ -5,7 +5,7 @@
 float InterleavedGradientNoiseForClouds() {
     float n = 52.9829189 * fract(0.06711056 * gl_FragCoord.x + 0.00583715 * gl_FragCoord.y);
     #ifdef TAA
-        return fract(n + 1.61803398875 * mod(float(frameCounter), 3600.0));
+        return fract(n + goldenRatio * mod(float(frameCounter), 3600.0));
     #else
         return fract(n);
     #endif

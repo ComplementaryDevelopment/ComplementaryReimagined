@@ -29,7 +29,7 @@ bool CheckInsidePuddleVoxelVolume(vec3 voxelPos) {
         vec3 voxelPos = SceneToPuddleVoxel(scenePos);
 
         if (CheckInsidePuddleVoxelVolume(voxelPos))
-            if (scenePos.y >= -1.5)
+            if (scenePos.y >= -3.5)
             imageStore(puddle_img, ivec2(voxelPos.xz), uvec4(10u, 0u, 0u, 0u));
     }
 #endif

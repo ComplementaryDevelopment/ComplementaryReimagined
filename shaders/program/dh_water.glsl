@@ -105,7 +105,7 @@ void main() {
 
     float dither = Bayer64(gl_FragCoord.xy);
     #ifdef TAA
-        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+        dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
 
     #ifdef ATM_COLOR_MULTS

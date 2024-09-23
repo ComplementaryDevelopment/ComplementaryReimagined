@@ -104,6 +104,10 @@ float GetLinearDepth(float depth) {
     #include "/lib/materials/materialMethods/generatedNormals.glsl"
 #endif
 
+#if IPBR_EMISSIVE_MODE != 1
+    #include "/lib/materials/materialMethods/customEmission.glsl"
+#endif
+
 #ifdef CUSTOM_PBR
     #include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
@@ -142,7 +146,7 @@ void main() {
 
     float dither = Bayer64(gl_FragCoord.xy);
     #ifdef TAA
-        dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
+        dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
 
     #ifdef LIGHT_COLOR_MULTS
@@ -185,6 +189,10 @@ void main() {
         #ifdef GENERATED_NORMALS
             if (!noGeneratedNormals) GenerateNormals(normalM, colorP.rgb * colorP.a * 1.5);
         #endif
+
+        #if IPBR_EMISSIVE_MODE != 1
+            emission = GetCustomEmissionForIPBR(color, emission);
+        #endif
     #else
         #ifdef CUSTOM_PBR
             float smoothnessD, materialMaskPh;
@@ -195,7 +203,7 @@ void main() {
         if (mat == 32000) { // Water
             #include "/lib/materials/specificMaterials/translucents/water.glsl"
         } else if (mat == 30020) { // Nether Portal
-            #ifdef FANCY_NETHERPORTAL
+            #ifdef SPECIAL_PORTAL_EFFECTS
                 #include "/lib/materials/specificMaterials/translucents/netherPortal.glsl"
             #endif
         }

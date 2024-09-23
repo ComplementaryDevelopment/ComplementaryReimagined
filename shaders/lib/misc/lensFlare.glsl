@@ -38,6 +38,10 @@ vec2 lensFlareCheckOffsets[4] = vec2[4](
 );
 
 void DoLensFlare(inout vec3 color, vec3 viewPos, float dither) {
+    #if LENSFLARE_MODE == 1
+        if (sunVec.z > 0.0) return;
+    #endif
+
     vec4 clipPosSun = gbufferProjection * vec4(sunVec + 0.001, 1.0); //+0.001 fixes black screen with camera rotation set to 0,0
     vec3 lightPos3 = clipPosSun.xyz / clipPosSun.w * 0.5;
     vec2 lightPos = lightPos3.xy;
@@ -69,7 +73,11 @@ void DoLensFlare(inout vec3 color, vec3 viewPos, float dither) {
     str = pow(clamp(str * 8.0, 0.0, 1.0), 2.0) - clamp(str * 3.0 - 1.5, 0.0, 1.0);
     flareFactor *= str;
 
-    flareFactor *= LENSFLARE_I * (0.65 - 0.4 * rainFactor);
+    #ifdef SUN_MOON_DURING_RAIN
+        flareFactor *= 0.65 - 0.4 * rainFactor;
+    #else
+        flareFactor *= 1.0 - rainFactor;
+    #endif
 
     vec3 flare = (
         BaseLens(lightPos, 0.3, -0.45, 1.0) * vec3(2.2, 1.2, 0.1) * 0.07 +
@@ -95,12 +103,18 @@ void DoLensFlare(inout vec3 color, vec3 viewPos, float dither) {
         RingLens(lightPos, 0.15, 0.98, 0.99) * vec3(0.15, 0.40, 2.55) * 2.5
     );
 
-    if (sunVec.z > 0.0) {
-        flare = flare * 0.2 + GetLuminance(flare) * vec3(0.3, 0.4, 0.6);
-        flare *= clamp01(1.0 - (SdotU + 0.1) * 5.0);
-    } else {
+    #if LENSFLARE_MODE == 2
+        if (sunVec.z > 0.0) {
+            flare = flare * 0.2 + GetLuminance(flare) * vec3(0.3, 0.4, 0.6);
+            flare *= clamp01(1.0 - (SdotU + 0.1) * 5.0);
+            flareFactor *= LENSFLARE_I > 1.001 ? sqrt(LENSFLARE_I) : LENSFLARE_I;
+        } else
+    #endif
+    {
+        flareFactor *= LENSFLARE_I;
         flare *= clamp01((SdotU + 0.1) * 5.0);
     }
+
     flare *= flareFactor;
 
     color = mix(color, vec3(1.0), flare);

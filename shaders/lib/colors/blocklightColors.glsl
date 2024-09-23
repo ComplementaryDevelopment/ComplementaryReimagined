@@ -1,10 +1,20 @@
 vec3 blocklightCol = vec3(0.1775, 0.108, 0.0775) * vec3(XLIGHT_R, XLIGHT_G, XLIGHT_B);
 
+void AddSpecialLightDetail(inout vec3 light, vec3 albedo, float emission) {
+	vec3 lightM = max(light, vec3(0.0));
+	lightM /= (0.2 + 0.8 * GetLuminance(lightM));
+	lightM *= (1.0 / (1.0 + emission)) * 0.22;
+	light *= 0.9;
+	light += pow2(lightM / (albedo + 0.1));
+}
+
 vec3 fireSpecialLightColor = vec3(2.0, 0.87, 0.27) * 3.8;
 vec3 lavaSpecialLightColor = vec3(3.0, 0.9, 0.2) * 4.0;
 vec3 netherPortalSpecialLightColor = vec3(1.8, 0.4, 2.2) * 0.8;
 vec3 redstoneSpecialLightColor = vec3(4.0, 0.1, 0.1);
 vec4 soulFireSpecialColor = vec4(vec3(0.3, 2.0, 2.2) * 1.0, 0.3);
+float candleColorMult = 2.0;
+float candleExtraLight = 0.004;
 vec4 GetSpecialBlocklightColor(int mat) {
 	/* Please note that these colors do not determine the intensity of the
 	final light. Instead; higher values of color change how long the color
@@ -48,7 +58,7 @@ vec4 GetSpecialBlocklightColor(int mat) {
 					if (mat == 21) return vec4(fireSpecialLightColor * 0.7, 0.0); // Furnace:Lit
 					if (mat == 22) return vec4(fireSpecialLightColor * 0.7, 0.0); // Smoker:Lit
 					if (mat == 23) return vec4(fireSpecialLightColor * 0.7, 0.0); // Blast Furnace:Lit
-					if (mat == 24) return vec4(fireSpecialLightColor * 0.5, 0.002); // Candles:Lit
+					if (mat == 24) return vec4(fireSpecialLightColor * 0.25 * candleColorMult, candleExtraLight); // Standard Candles:Lit
 					if (mat == 25) return vec4(netherPortalSpecialLightColor * 2.0, 0.4); // Nether Portal
 				}
 			}
@@ -120,23 +130,23 @@ vec4 GetSpecialBlocklightColor(int mat) {
 				} else {
 					if (mat == 68) return vec4(vec3(0.75), 0.0); // Vault:Inactive
 					if (mat == 69) return vec4(vec3(1.3, 1.6, 1.6) * 1.0, 0.1); // Trial Spawner:Ominous:Active, Vault:Ominous:Active
-					if (mat == 70) return vec4(0.0);
-					if (mat == 71) return vec4(0.0);
-					if (mat == 72) return vec4(0.0);
-					if (mat == 73) return vec4(0.0);
+					if (mat == 70) return vec4(vec3(1.0, 0.1, 0.1) * candleColorMult, candleExtraLight); // Red Candles:Lit
+					if (mat == 71) return vec4(vec3(1.0, 0.5, 0.1) * candleColorMult, candleExtraLight); // Orange Candles:Lit
+					if (mat == 72) return vec4(vec3(1.0, 1.0, 0.1) * candleColorMult, candleExtraLight); // Yellow Candles:Lit
+					if (mat == 73) return vec4(vec3(0.1, 1.0, 0.1) * candleColorMult, candleExtraLight); // Lime Candles:Lit
 				}
 			}
 		} else {
 			if (mat < 86) {
 				if (mat < 80) {
-					if (mat == 74) return vec4(0.0);
-					if (mat == 75) return vec4(0.0);
-					if (mat == 76) return vec4(0.0);
-					if (mat == 77) return vec4(0.0);
-					if (mat == 78) return vec4(0.0);
-					if (mat == 79) return vec4(0.0);
+					if (mat == 74) return vec4(vec3(0.3, 1.0, 0.3) * candleColorMult, candleExtraLight); // Green Candles:Lit
+					if (mat == 75) return vec4(vec3(0.3, 0.8, 1.0) * candleColorMult, candleExtraLight); // Cyan Candles:Lit
+					if (mat == 76) return vec4(vec3(0.5, 0.65, 1.0) * candleColorMult, candleExtraLight); // Light Blue Candles:Lit
+					if (mat == 77) return vec4(vec3(0.1, 0.15, 1.0) * candleColorMult, candleExtraLight); // Blue Candles:Lit
+					if (mat == 78) return vec4(vec3(0.7, 0.3, 1.0) * candleColorMult, candleExtraLight); // Purple Candles:Lit
+					if (mat == 79) return vec4(vec3(1.0, 0.1, 1.0) * candleColorMult, candleExtraLight); // Magenta Candles:Lit
 				} else {
-					if (mat == 80) return vec4(0.0);
+					if (mat == 80) return vec4(vec3(1.0, 0.4, 1.0) * candleColorMult, candleExtraLight); // Pink Candles:Lit
 					if (mat == 81) return vec4(0.0);
 					if (mat == 82) return vec4(0.0);
 					if (mat == 83) return vec4(0.0);
@@ -170,7 +180,7 @@ vec3[] specialTintColor = vec3[](
 	// 200: White
 	vec3(1.0),
 	// 201: Orange
-	vec3(1.0, 0.5, 0.2),
+	vec3(1.0, 0.5, 0.1),
 	// 202: Magenta
 	vec3(1.0, 0.1, 1.0),
 	// 203: Light Blue
@@ -180,7 +190,7 @@ vec3[] specialTintColor = vec3[](
 	// 205: Lime
 	vec3(0.1, 1.0, 0.1),
 	// 206: Pink
-	vec3(1.0, 0.3, 1.0),
+	vec3(1.0, 0.4, 1.0),
 	// 207: Gray
 	vec3(1.0),
 	// 208: Light Gray

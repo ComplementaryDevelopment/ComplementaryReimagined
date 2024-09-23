@@ -77,6 +77,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/materials/materialMethods/coatedTextures.glsl"
 #endif
 
+#if IPBR_EMISSIVE_MODE != 1
+    #include "/lib/materials/materialMethods/customEmission.glsl"
+#endif
+
 #ifdef CUSTOM_PBR
     #include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
@@ -95,7 +99,7 @@ void main() {
         #ifdef GENERATED_NORMALS
             vec3 colorP = color.rgb;
         #endif
-        color.rgb *= glColor.rgb;
+        color *= glColor;
 
         vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z + 0.38);
         vec3 viewPos = ScreenToView(screenPos);
@@ -124,6 +128,10 @@ void main() {
 
             #ifdef COATED_TEXTURES
                 CoatTextures(color.rgb, noiseFactor, playerPos, false);
+            #endif
+
+            #if IPBR_EMISSIVE_MODE != 1
+                emission = GetCustomEmissionForIPBR(color, emission);
             #endif
         #else
             #ifdef CUSTOM_PBR

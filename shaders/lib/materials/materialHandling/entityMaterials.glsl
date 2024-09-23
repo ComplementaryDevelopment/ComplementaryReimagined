@@ -165,8 +165,24 @@ if (entityId < 50064) {
                         emission = 2.5;
                 }
             } else {
-                if (entityId == 50104) { //
-
+                if (entityId == 50104) { // Piglin++, Hoglin+
+                    if (atlasSize.x < 900) {
+                        if (CheckForColor(color.rgb, vec3(255)) || CheckForColor(color.rgb, vec3(255, 242, 246))) {
+                            vec2 tSize = textureSize(tex, 0);
+                            vec4 checkRightmostColor = texelFetch(tex, ivec2(texCoord * tSize) + ivec2(1, 0), 0);
+                            if (
+                                CheckForColor(checkRightmostColor.rgb, vec3(201, 130, 101)) ||
+                                CheckForColor(checkRightmostColor.rgb, vec3(241, 158, 152)) ||
+                                CheckForColor(checkRightmostColor.rgb, vec3(223, 127, 119)) ||
+                                CheckForColor(checkRightmostColor.rgb, vec3(241, 158, 152)) ||
+                                CheckForColor(checkRightmostColor.rgb, vec3(165, 99, 80)) ||
+                                CheckForColor(checkRightmostColor.rgb, vec3(213, 149, 122)) ||
+                                CheckForColor(checkRightmostColor.rgb, vec3(255))
+                            ) {
+                                emission = 1.0;
+                            }
+                        }
+                    }
                 } else /*if (entityId == 50108)*/ { //
 
                 }
