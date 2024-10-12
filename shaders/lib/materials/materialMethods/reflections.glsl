@@ -20,7 +20,16 @@ vec3 refPos = vec3(0.0);
 
 vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, float lViewPos, float z0,
                    sampler2D depthtex, float dither, float skyLightFactor, float fresnel,
-                   float smoothness, vec3 geoNormal, vec3 color, vec3 shadowMult, float highlightMult) {
+                   float smoothness, vec3 geoNormal, vec3 color, vec3 shadowMult, float highlightMult, vec2 texelOffset) {
+    #if PIXEL_REFLECTION > 0
+        //normalM = normalize(TexelSnap(normalM, texelOffset));
+        geoNormal = TexelSnap(geoNormal, texelOffset);
+        playerPos = TexelSnap(playerPos, texelOffset);
+        viewPos = TexelSnap(viewPos, texelOffset);
+        nViewPos = TexelSnap(nViewPos, texelOffset);
+        lViewPos = TexelSnap(lViewPos, texelOffset);
+    #endif
+
     // Step 1: Prepare
     vec2 rEdge = vec2(0.6, 0.55);
     vec3 normalMR = normalM;
@@ -244,4 +253,12 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
     // End Step 3
 
     return reflection;
+}
+
+vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, float lViewPos, float z0,
+                sampler2D depthtex, float dither, float skyLightFactor, float fresnel,
+                float smoothness, vec3 geoNormal, vec3 color, vec3 shadowMult, float highlightMult) {
+    return GetReflection(normalM, viewPos, nViewPos, playerPos, lViewPos, z0,
+            depthtex, dither, skyLightFactor, fresnel, smoothness, geoNormal,
+            color, shadowMult, highlightMult, vec2(0.0));
 }

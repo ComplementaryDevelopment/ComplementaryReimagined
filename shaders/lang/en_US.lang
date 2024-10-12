@@ -175,6 +175,9 @@ screen.SELECT_OUTLINE_SETTINGS.comment=Settings that change the block selection 
 screen.WORLD_OUTLINE_SETTINGS=World Outline
 screen.WORLD_OUTLINE_SETTINGS.comment=Settings that are about optional outline effects.
 
+screen.PIXEL_VISUALS_SETTINGS=Pixel Visuals
+screen.PIXEL_VISUALS_SETTINGS.comment=Settings for pixel visuals using texel space.
+
 #Settings
 option.RP_MODE=RP Support
 option.RP_MODE.comment=Changes many internal calculations to determine how different blocks and materials will be rendered. §bIntegrated PBR+§r: Calculated PBR and extra effects, highly recommended for most use cases. §aBasic§r: No PBR or extra effects. §elabPBR/seuspbr§r: Materials using the required PBR resource packs.
@@ -563,6 +566,27 @@ value.PIXEL_SHADOW.16=16x16 §e[*]
 value.PIXEL_SHADOW.32=32x32 §e[*]
 value.PIXEL_SHADOW.64=64x64 §e[*]
 value.PIXEL_SHADOW.128=128x128 §e[*]
+
+option.PIXEL_SHADING=Pixelated Shading
+option.PIXEL_SHADING.comment=Makes shading pixelated by snapping it in texelspace. This setting overrides Pixelated Shadows. §e[*]§r May contain visual artifacts.
+value.PIXEL_SHADING.0=OFF 
+value.PIXEL_SHADING.1=Shadows
+value.PIXEL_SHADING.2=Shadows & AO
+value.PIXEL_SHADING.3=All light §e[*]
+
+option.PIXEL_REFLECTION=Pixelated Reflections
+option.PIXEL_REFLECTION.comment=Makes reflection pixelated by snapping it in texelspace. §c[-]§r Not completed and currently contains visual artifacts.
+value.PIXEL_REFLECTION.0=OFF
+value.PIXEL_REFLECTION.1=ON §c[-]
+
+option.PIXEL_SCALE=Pixel Scale
+option.PIXEL_SCALE.comment=Scaling done on the textures resolution.
+value.PIXEL_SCALE.0=0.5
+value.PIXEL_SCALE.1=1
+value.PIXEL_SCALE.2=2
+value.PIXEL_SCALE.3=3
+value.PIXEL_SCALE.4=4
+value.PIXEL_SCALE.5=5
 
 option.BLOOM=Bloom
 option.BLOOM.comment=Enables blurry glow from bright objects and humidity.

@@ -68,6 +68,13 @@ void main() {
     vec4 colorP = color;
     color *= glColor;
 
+    #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
+        vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
+        vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
+
+        vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+    #endif
+
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     vec3 viewPos = ScreenToView(screenPos);
     float lViewPos = length(viewPos);
@@ -157,9 +164,15 @@ void main() {
         }
     #endif
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-               worldGeoNormal, lmCoordM, noSmoothLighting, false, true,
-               false, 0, 0.0, 1.0, emission);
+    #if PIXEL_SHADING > 0
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, false, true,
+                   false, 0, 0.0, 1.0, emission, texelOffset);
+    #else
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, false, true,
+                   false, 0, 0.0, 1.0, emission);
+    #endif
 
     #if MC_VERSION >= 11500
         vec3 nViewPos = normalize(viewPos);

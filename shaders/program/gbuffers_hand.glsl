@@ -93,6 +93,13 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 void main() {
     vec4 color = texture2D(tex, texCoord);
 
+    #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
+        vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
+        vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
+
+        vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+    #endif
+
     float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec3 normalM = normal;
     if (color.a > 0.00001) {
@@ -139,9 +146,15 @@ void main() {
             #endif
         #endif
 
-        DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
-                   false, 0, smoothnessG, highlightMult, emission);
+        #if PIXEL_SHADING > 0
+            DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM,
+                       worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+                       false, 0, smoothnessG, highlightMult, emission, texelOffset);
+        #else
+            DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM,
+                       worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+                       false, 0, smoothnessG, highlightMult, emission);
+        #endif
 
         #if defined IPBR && defined IS_IRIS
             color.rgb += maRecolor;

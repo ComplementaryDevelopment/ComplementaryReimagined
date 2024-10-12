@@ -105,6 +105,13 @@ void main() {
     #endif
     color *= glColor;
 
+    #if PIXEL_SHADING > 0
+        vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
+        vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
+
+        vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+    #endif
+
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
@@ -154,9 +161,15 @@ void main() {
         CoatTextures(color.rgb, noiseFactor, playerPos, false);
     #endif
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-               worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
-               false, 0, smoothnessG, highlightMult, emission);
+    #if PIXEL_SHADING > 0
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
+                   false, 0, smoothnessG, highlightMult, emission, texelOffset);
+    #else
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
+                   false, 0, smoothnessG, highlightMult, emission);
+    #endif
 
     #ifdef PBR_REFLECTIONS
         #ifdef OVERWORLD

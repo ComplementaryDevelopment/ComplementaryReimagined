@@ -136,6 +136,13 @@ void main() {
     vec4 colorP = texture2D(tex, texCoord);
     vec4 color = colorP * vec4(glColor.rgb, 1.0);
 
+    #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
+        vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
+        vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
+
+        vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+    #endif
+
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
@@ -223,9 +230,15 @@ void main() {
     translucentMult.rgb = mix(translucentMult.rgb, vec3(1.0), min1(pow2(pow2(lViewPos / far))));
 
     // Lighting
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-               worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
-               false, subsurfaceMode, smoothnessG, highlightMult, emission);
+    #if PIXEL_SHADING > 0
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
+                   false, subsurfaceMode, smoothnessG, highlightMult, emission, texelOffset);
+    #else
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
+                   false, subsurfaceMode, smoothnessG, highlightMult, emission);
+    #endif
 
     // Reflections
     #if WATER_REFLECT_QUALITY >= 0
@@ -243,9 +256,15 @@ void main() {
             skyLightFactor = max(skyLightFactor, min1(dot(shadowMult, shadowMult)));
         #endif
 
-        vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
-                                        depthtex1, dither, skyLightFactor, fresnel,
-                                        smoothnessG, geoNormal, color.rgb, shadowMult, highlightMult);
+        #if PIXEL_REFLECTION > 0
+            vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
+                                            depthtex1, dither, skyLightFactor, fresnel,
+                                            smoothnessG, geoNormal, color.rgb, shadowMult, highlightMult, texelOffset);
+        #else
+            vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
+                                            depthtex1, dither, skyLightFactor, fresnel,
+                                            smoothnessG, geoNormal, color.rgb, shadowMult, highlightMult);
+        #endif 
 
         color.rgb = mix(color.rgb, reflection.rgb, fresnelM);
     #endif
