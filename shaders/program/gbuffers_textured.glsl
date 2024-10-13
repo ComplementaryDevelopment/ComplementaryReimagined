@@ -99,6 +99,13 @@ void main() {
     float emission = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
+    #if PIXEL_SHADING > 2 || PIXEL_REFLECTION > 0
+        #if PIXEL_SHADING > 2
+            lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+        #endif
+        normalM = TexelSnap(normalM, texelOffset);
+        geoNormal = normalM;
+    #endif
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
     #if defined IPBR && defined IPBR_PARTICLE_FEATURES
         // We don't want to detect particles from the block atlas

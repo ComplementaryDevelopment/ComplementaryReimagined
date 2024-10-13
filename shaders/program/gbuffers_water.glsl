@@ -187,6 +187,13 @@ void main() {
     vec2 lmCoordM = lmCoord;
     vec3 normalM = VdotN > 0.0 ? -normal : normal; // Inverted Iris Water Normal Workaround
     vec3 geoNormal = normalM;
+    #if PIXEL_SHADING > 2 || PIXEL_REFLECTION > 0
+        #if PIXEL_SHADING > 2
+            lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+        #endif        
+        normalM = TexelSnap(normalM, texelOffset);
+        geoNormal = normalM;
+    #endif
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
     vec3 shadowMult = vec3(1.0);
     float fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);

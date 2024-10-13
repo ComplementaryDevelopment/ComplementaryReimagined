@@ -121,6 +121,9 @@ void main() {
         bool noGeneratedNormals = false;
         float smoothnessG = 0.0, highlightMult = 0.0, emission = 0.0, noiseFactor = 0.75;
         vec2 lmCoordM = lmCoord;
+        #if PIXEL_SHADING > 2
+            lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+        #endif
         vec3 shadowMult = vec3(1.0);
         #ifdef IPBR
             #include "/lib/materials/materialHandling/entityMaterials.glsl"
@@ -158,6 +161,10 @@ void main() {
 
         normalM = gl_FrontFacing ? normalM : -normalM; // Inverted Normal Workaround
         vec3 geoNormal = normalM;
+        #if PIXEL_SHADING > 2 || PIXEL_REFLECTION > 0
+            normalM = TexelSnap(normalM, texelOffset);
+            geoNormal = normalM;
+        #endif
         vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
         #if PIXEL_SHADING > 0

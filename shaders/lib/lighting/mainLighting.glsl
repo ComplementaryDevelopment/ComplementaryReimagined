@@ -36,14 +36,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         lViewPos = TexelSnap(lViewPos, texelOffset);
 
         #if PIXEL_SHADING > 1
-          glAlpha = TexelSnap(glAlpha, texelOffset);
-        #endif
-
-        #if PIXEL_SHADING > 2
-            //normalM = normalize(TexelSnap(normalM, texelOffset));
-            geoNormal = TexelSnap(geoNormal, texelOffset);
-            worldGeoNormal = TexelSnap(worldGeoNormal, texelOffset);
-            lightmap.xy = clamp(TexelSnap(lightmap.xy, texelOffset), 0.0, 1.0);
+            glAlpha = TexelSnap(glAlpha, texelOffset);
         #endif
     #endif
 

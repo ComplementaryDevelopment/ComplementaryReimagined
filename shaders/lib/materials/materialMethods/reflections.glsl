@@ -22,8 +22,6 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
                    sampler2D depthtex, float dither, float skyLightFactor, float fresnel,
                    float smoothness, vec3 geoNormal, vec3 color, vec3 shadowMult, float highlightMult, vec2 texelOffset) {
     #if PIXEL_REFLECTION > 0
-        //normalM = normalize(TexelSnap(normalM, texelOffset));
-        geoNormal = TexelSnap(geoNormal, texelOffset);
         playerPos = TexelSnap(playerPos, texelOffset);
         viewPos = TexelSnap(viewPos, texelOffset);
         nViewPos = TexelSnap(nViewPos, texelOffset);

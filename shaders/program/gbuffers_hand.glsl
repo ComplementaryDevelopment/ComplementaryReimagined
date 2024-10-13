@@ -118,6 +118,13 @@ void main() {
         float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 0.6;
         vec2 lmCoordM = lmCoord;
         vec3 geoNormal = normalM;
+        #if PIXEL_SHADING > 2 || PIXEL_REFLECTION > 0
+            #if PIXEL_SHADING > 2
+                lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+            #endif
+            normalM = TexelSnap(normal, texelOffset);
+            geoNormal = TexelSnap(normal, texelOffset);
+        #endif
         vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
         vec3 shadowMult = vec3(0.4);
         #ifdef IPBR
