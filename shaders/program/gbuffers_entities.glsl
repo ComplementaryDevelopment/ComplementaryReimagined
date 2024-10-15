@@ -100,17 +100,19 @@ void main() {
 
     color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
 
+    float alphaCheck = color.a;
     #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
         vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
         vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
 
         vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+        alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
     #endif
 
     float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec3 normalM = normal;
 
-    if (color.a > 0.001) {
+    if (alphaCheck > 0.001) {
         vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
         vec3 viewPos = ScreenToView(screenPos);
         vec3 nViewPos = normalize(viewPos);

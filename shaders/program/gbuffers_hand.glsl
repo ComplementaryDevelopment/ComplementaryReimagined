@@ -93,16 +93,18 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 void main() {
     vec4 color = texture2D(tex, texCoord);
 
+    float alphaCheck = color.a;
     #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
         vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
         vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
 
         vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+        alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
     #endif
 
     float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec3 normalM = normal;
-    if (color.a > 0.00001) {
+    if (alphaCheck > 0.00001) {
         #ifdef GENERATED_NORMALS
             vec3 colorP = color.rgb;
         #endif

@@ -179,13 +179,17 @@ void main() {
 
     float smoothnessD = 0.0, materialMask = 0.0, skyLightFactor = 0.0;
 
+    float alphaCheck = color.a;
     #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
         vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
         vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
 
         vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
-    #elif !defined POM || !defined POM_ALLOW_CUTOUT // discard during PIXEL_SHADING causes edge artifacts
-        if (color.a <= 0.00001) discard;
+        alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
+    #endif
+
+    #if !defined POM || !defined POM_ALLOW_CUTOUT
+        if (alphaCheck <= 0.00001) discard;
     #endif
 
     vec3 colorP = color.rgb;
