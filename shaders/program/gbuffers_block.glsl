@@ -105,7 +105,7 @@ void main() {
     #endif
     color *= glColor;
 
-    #if PIXEL_SHADING > 0
+    #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
         vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
         vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
 
