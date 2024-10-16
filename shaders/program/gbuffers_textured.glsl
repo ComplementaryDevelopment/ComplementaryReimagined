@@ -68,11 +68,8 @@ void main() {
     vec4 colorP = color;
     color *= glColor;
 
-    #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
-        vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
-        vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
-
-        vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+    #ifdef USE_TEXEL_OFFSET
+        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
     #endif
 
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
@@ -99,10 +96,10 @@ void main() {
     float emission = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
-    #if PIXEL_SHADING > 2 || PIXEL_REFLECTION > 0
-        #if PIXEL_SHADING > 2
-            lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
-        #endif
+    #if PIXEL_SHADING > 2
+        lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+    #endif
+    #if PIXEL_NORMALS > 0
         normalM = TexelSnap(normalM, texelOffset);
         geoNormal = normalM;
     #endif

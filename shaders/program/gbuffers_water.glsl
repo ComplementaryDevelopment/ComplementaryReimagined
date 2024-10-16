@@ -136,11 +136,8 @@ void main() {
     vec4 colorP = texture2D(tex, texCoord);
     vec4 color = colorP * vec4(glColor.rgb, 1.0);
 
-    #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
-        vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
-        vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
-
-        vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+    #ifdef USE_TEXEL_OFFSET
+        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
     #endif
 
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
@@ -187,10 +184,10 @@ void main() {
     vec2 lmCoordM = lmCoord;
     vec3 normalM = VdotN > 0.0 ? -normal : normal; // Inverted Iris Water Normal Workaround
     vec3 geoNormal = normalM;
-    #if PIXEL_SHADING > 2 || PIXEL_REFLECTION > 0
-        #if PIXEL_SHADING > 2
-            lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
-        #endif        
+    #if PIXEL_SHADING > 2
+        lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+    #endif
+    #if PIXEL_NORMALS > 0
         normalM = TexelSnap(normalM, texelOffset);
         geoNormal = normalM;
     #endif
@@ -263,7 +260,7 @@ void main() {
             skyLightFactor = max(skyLightFactor, min1(dot(shadowMult, shadowMult)));
         #endif
 
-        #if PIXEL_REFLECTION > 0
+        #if PIXEL_NORMALS > 0 || PIXEL_WATER > 0
             vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
                                             depthtex1, dither, skyLightFactor, fresnel,
                                             smoothnessG, geoNormal, color.rgb, shadowMult, highlightMult, texelOffset);

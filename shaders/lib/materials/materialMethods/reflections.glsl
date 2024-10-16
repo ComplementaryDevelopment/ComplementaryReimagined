@@ -21,11 +21,12 @@ vec3 refPos = vec3(0.0);
 vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, float lViewPos, float z0,
                    sampler2D depthtex, float dither, float skyLightFactor, float fresnel,
                    float smoothness, vec3 geoNormal, vec3 color, vec3 shadowMult, float highlightMult, vec2 texelOffset) {
-    #if PIXEL_REFLECTION > 0
+    #if defined GBUFFERS_WATER && PIXEL_WATER > 0
         playerPos = TexelSnap(playerPos, texelOffset);
         viewPos = TexelSnap(viewPos, texelOffset);
-        nViewPos = TexelSnap(nViewPos, texelOffset);
+        // nViewPos = TexelSnap(nViewPos, texelOffset);
         lViewPos = TexelSnap(lViewPos, texelOffset);
+        fresnel = TexelSnap(fresnel, texelOffset);
     #endif
 
     // Step 1: Prepare

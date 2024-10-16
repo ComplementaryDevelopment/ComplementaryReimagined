@@ -101,11 +101,8 @@ void main() {
     color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
 
     float alphaCheck = color.a;
-    #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
-        vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
-        vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
-
-        vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+    #ifdef USE_TEXEL_OFFSET
+        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
         alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
     #endif
 
@@ -163,7 +160,7 @@ void main() {
 
         normalM = gl_FrontFacing ? normalM : -normalM; // Inverted Normal Workaround
         vec3 geoNormal = normalM;
-        #if PIXEL_SHADING > 2 || PIXEL_REFLECTION > 0
+        #if PIXEL_NORMALS > 0
             normalM = TexelSnap(normalM, texelOffset);
             geoNormal = normalM;
         #endif

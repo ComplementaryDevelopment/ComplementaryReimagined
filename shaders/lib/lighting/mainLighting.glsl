@@ -31,13 +31,16 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                 bool centerShadowBias, int subsurfaceMode, float smoothnessG, float highlightMult, float emission, vec2 texelOffset) {
     float glAlpha = glColor.a;
     #if PIXEL_SHADING > 0
-        playerPos = TexelSnap(playerPos, texelOffset);
-        viewPos = TexelSnap(viewPos, texelOffset);
-        lViewPos = TexelSnap(lViewPos, texelOffset);
+        vec3 tPlayerPos = TexelSnap(playerPos, texelOffset);
 
         #if PIXEL_SHADING > 1
             glAlpha = TexelSnap(glAlpha, texelOffset);
         #endif
+        #if PIXEL_SHADING > 2
+            viewPos = TexelSnap(viewPos, texelOffset);
+            lViewPos = TexelSnap(lViewPos, texelOffset);
+            playerPos = TexelSnap(playerPos, texelOffset);
+        #endif 
     #endif
 
     float lightmapY2 = pow2(lightmap.y);
@@ -141,6 +144,9 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                         #endif
 
                         vec3 playerPosM = playerPos;
+                        #if PIXEL_SHADING > 0 && PIXEL_SHADING < 2
+                            playerPosM = tPlayerPos;
+                        #endif
 
                         #if PIXEL_SHADING < 0 && PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
                             playerPosM = floor((playerPosM + cameraPosition) * PIXEL_SHADOW + 0.001) / PIXEL_SHADOW - cameraPosition + 0.5 / PIXEL_SHADOW;
@@ -249,6 +255,9 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
             #ifdef CLOUD_SHADOWS
                 vec3 worldPos = playerPos + cameraPosition;
+                #if PIXEL_SHADING > 0 && PIXEL_SHADING < 2
+                    worldPos = tPlayerPos + cameraPosition;
+                #endif
 
                 #ifdef CLOUDS_REIMAGINED
                     float EdotL = dot(eastVec, lightVec);

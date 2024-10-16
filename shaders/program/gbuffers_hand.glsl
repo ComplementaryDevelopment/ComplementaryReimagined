@@ -94,11 +94,8 @@ void main() {
     vec4 color = texture2D(tex, texCoord);
 
     float alphaCheck = color.a;
-    #if PIXEL_SHADING > 0 || PIXEL_REFLECTION > 0
-        vec2 texSize = textureSize(tex, 0) * PIXEL_TEXEL_SCALE;
-        vec4 texelSize = vec4(1.0 / texSize.xy, texSize.xy);
-
-        vec2 texelOffset = ComputeTexelOffset(texCoord, texelSize);
+    #ifdef USE_TEXEL_OFFSET
+        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
         alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
     #endif
 
@@ -120,10 +117,10 @@ void main() {
         float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 0.6;
         vec2 lmCoordM = lmCoord;
         vec3 geoNormal = normalM;
-        #if PIXEL_SHADING > 2 || PIXEL_REFLECTION > 0
-            #if PIXEL_SHADING > 2
-                lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
-            #endif
+        #if PIXEL_SHADING > 2
+            lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+        #endif
+        #if PIXELS_NORMALS > 0
             normalM = TexelSnap(normal, texelOffset);
             geoNormal = TexelSnap(normal, texelOffset);
         #endif

@@ -574,10 +574,15 @@ value.PIXEL_SHADING.1=Shadows
 value.PIXEL_SHADING.2=Shadows & AO
 value.PIXEL_SHADING.3=All light §e[*]
 
-option.PIXEL_REFLECTION=Pixelated Reflections
-option.PIXEL_REFLECTION.comment=Makes reflection pixelated by snapping it in texelspace. §c[-]§r Not completed and currently contains visual artifacts.
-value.PIXEL_REFLECTION.0=OFF
-value.PIXEL_REFLECTION.1=ON §c[-]
+option.PIXEL_NORMALS=Pixelated Normals
+option.PIXEL_NORMALS.comment=Makes normals pixelated by snapping it in texelspace. Changes look of some lighting. §e[*]§r May contain visual artifacts.
+value.PIXEL_NORMALS.0=OFF
+value.PIXEL_NORMALS.1=ON §e[*]
+
+option.PIXEL_WATER=Pixelated Water Reflection
+option.PIXEL_WATER.comment=Makes water reflection pixelated by snapping it in texelspace. §e[*]§r May contain visual artifacts.
+value.PIXEL_WATER.0=OFF
+value.PIXEL_WATER.1=ON §e[*]
 
 option.PIXEL_SCALE=Pixel Scale
 option.PIXEL_SCALE.comment=Scaling done on the textures resolution.
