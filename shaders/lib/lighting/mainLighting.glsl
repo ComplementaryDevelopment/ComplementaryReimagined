@@ -148,7 +148,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             playerPosM = tPlayerPos;
                         #endif
 
-                        #if PIXEL_SHADING < 0 && PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
+                        #if PIXEL_SHADING <= 0 && PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
                             playerPosM = floor((playerPosM + cameraPosition) * PIXEL_SHADOW + 0.001) / PIXEL_SHADOW - cameraPosition + 0.5 / PIXEL_SHADOW;
                         #endif
 
