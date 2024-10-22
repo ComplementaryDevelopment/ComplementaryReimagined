@@ -6,10 +6,10 @@ vec2 vTexCoord = signMidCoordPos * 0.5 + 0.5;
 
 vec4 ReadNormal(vec2 coord) {
     coord = fract(coord) * vTexCoordAM.pq + vTexCoordAM.st;
-	return textureGrad(normals, coord, dcdx, dcdy);
+    return textureGrad(normals, coord, dcdx, dcdy);
 }
 
-vec2 GetParallaxCoord(float parallaxFade, inout vec2 newCoord, inout float texDepth, inout vec3 traceCoordDepth) {
+vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, inout float texDepth, inout vec3 traceCoordDepth) {
     float invParallaxQuality = 1.0 / POM_QUALITY;
     vec4 normalMap = ReadNormal(vTexCoord.st);
     vec2 normalMapM = normalMap.xy * 2.0 - 1.0;
@@ -23,11 +23,6 @@ vec2 GetParallaxCoord(float parallaxFade, inout vec2 newCoord, inout float texDe
     float i = 0.0;
     vec2 localCoord;
     #if defined GBUFFERS_TERRAIN || defined GBUFFERS_BLOCK
-        float dither = Bayer64(gl_FragCoord.xy);
-        #ifdef TAA
-            dither = fract(dither + 1.61803398875 * mod(float(frameCounter), 3600.0));
-        #endif
-
         if (texDepth <= 1.0 - i * invParallaxQuality) {
             localCoord = vTexCoord.st + i * interval;
             texDepth = ReadNormal(localCoord).a;
@@ -49,15 +44,14 @@ vec2 GetParallaxCoord(float parallaxFade, inout vec2 newCoord, inout float texDe
     return localCoord;
 }
 
-float GetParallaxShadow(float parallaxFade, float height, vec2 coord, vec3 lightVec, mat3 tbn) {
+float GetParallaxShadow(float parallaxFade, float dither, float height, vec2 coord, vec3 lightVec, mat3 tbn) {
     float parallaxshadow = 1.0;
 
     vec3 parallaxdir = tbn * lightVec;
     parallaxdir.xy *= 1.0 * POM_DEPTH; // Angle
-    float stepL = 1.0 / 32.0;
 
-    for(int i = 0; i < 4 && parallaxshadow >= 0.01; i++) {
-        float stepLC = stepL * i;
+    for (int i = 0; i < 4 && parallaxshadow >= 0.01; i++) {
+        float stepLC = 0.025 * (i + dither);
 
         float currentHeight = height + parallaxdir.z * stepLC;
 
@@ -66,7 +60,7 @@ float GetParallaxShadow(float parallaxFade, float height, vec2 coord, vec3 light
 
         parallaxshadow *= clamp(1.0 - (offsetHeight - currentHeight) * 4.0, 0.0, 1.0);
     }
-    
+
     return mix(parallaxshadow, 1.0, parallaxFade);
 }
 

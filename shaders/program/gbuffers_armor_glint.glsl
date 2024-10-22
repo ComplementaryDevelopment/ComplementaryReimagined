@@ -12,9 +12,6 @@ in vec2 texCoord;
 
 flat in vec4 glColor;
 
-//Uniforms//
-uniform sampler2D tex;
-
 //Pipeline Constants//
 
 //Common Variables//
@@ -23,20 +20,22 @@ uniform sampler2D tex;
 
 //Includes//
 #ifdef COLOR_CODED_PROGRAMS
-	#include "/lib/misc/colorCodedPrograms.glsl"
+    #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 //Program//
 void main() {
-	vec4 color = texture2D(tex, texCoord);
-	color *= glColor;
+    vec4 color = texture2D(tex, texCoord);
+    color *= glColor;
 
-	#ifdef COLOR_CODED_PROGRAMS
-		ColorCodeProgram(color);
-	#endif
+    color.rgb *= glColor.a; // Needed for Minecraft's "Glint Strength" apparently
 
-	/* DRAWBUFFERS:0 */
-	gl_FragData[0] = color;
+    #ifdef COLOR_CODED_PROGRAMS
+        ColorCodeProgram(color, -1);
+    #endif
+
+    /* DRAWBUFFERS:0 */
+    gl_FragData[0] = color;
 }
 
 #endif
@@ -48,11 +47,6 @@ out vec2 texCoord;
 
 flat out vec4 glColor;
 
-//Uniforms//
-#if HAND_SWAYING > 0
-	uniform float frameTimeCounter;
-#endif
-
 //Attributes//
 
 //Common Variables//
@@ -63,17 +57,17 @@ flat out vec4 glColor;
 
 //Program//
 void main() {
-	gl_Position = ftransform();
+    gl_Position = ftransform();
 
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-	glColor = gl_Color;
+    glColor = gl_Color;
 
-	#if HAND_SWAYING > 0
-		if (gl_ProjectionMatrix[2][2] > -0.5) {
-			#include "/lib/misc/handSway.glsl"
-		}
-	#endif
+    #if HAND_SWAYING > 0
+        if (gl_ProjectionMatrix[2][2] > -0.5) {
+            #include "/lib/misc/handSway.glsl"
+        }
+    #endif
 }
 
 #endif

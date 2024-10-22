@@ -19,7 +19,7 @@ vec3 GetEnderStars(vec3 viewPos, float VdotU) {
     star *= star;
 
     vec3 enderStars = star * endSkyColor * 3000.0;
-    
+
     float VdotUM1 = abs(VdotU);
     float VdotUM2 = pow2(1.0 - VdotUM1);
     enderStars *= VdotUM1 * VdotUM1 * (VdotUM2 + 0.015) + 0.015;

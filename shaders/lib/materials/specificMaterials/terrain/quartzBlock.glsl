@@ -10,7 +10,9 @@ highlightMult = 3.5 * factor8;
 
 smoothnessD = factor8;
 
-DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+#ifdef GBUFFERS_TERRAIN
+    DoBrightBlockTweaks(color.rgb, 0.5, shadowMult, highlightMult);
+#endif
 
 #ifdef COATED_TEXTURES
     noiseFactor = 0.5;

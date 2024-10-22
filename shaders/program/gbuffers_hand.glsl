@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -16,56 +16,20 @@ in vec3 normal;
 
 in vec4 glColor;
 
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-	in vec2 signMidCoordPos;
-	flat in vec2 absMidCoordPos;
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM || defined IPBR && defined IS_IRIS
+    in vec2 signMidCoordPos;
+    flat in vec2 absMidCoordPos;
+    flat in vec2 midCoord;
 #endif
 
 #if defined GENERATED_NORMALS || defined CUSTOM_PBR
-	flat in vec3 binormal, tangent;
+    flat in vec3 binormal, tangent;
 #endif
 
 #ifdef POM
-	in vec3 viewVector;
+    in vec3 viewVector;
 
-	in vec4 vTexCoordAM;
-#endif
-
-//Uniforms//
-uniform int isEyeInWater;
-uniform int frameCounter;
-
-uniform float viewWidth;
-uniform float viewHeight;
-uniform float nightVision;
-
-uniform vec3 skyColor;
-uniform vec3 cameraPosition;
-
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-
-uniform sampler2D tex;
-uniform sampler2D noisetex;
-
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-	uniform ivec2 atlasSize;
-#endif
-
-#ifdef CUSTOM_PBR
-	uniform sampler2D normals;
-	uniform sampler2D specular;
-#endif
-
-#ifdef POM
-	uniform int heldItemId;
-	uniform int heldItemId2;
-#endif
-
-#ifdef IS_IRIS
-	uniform int currentRenderedItemId;
+    in vec4 vTexCoordAM;
 #endif
 
 //Pipeline Constants//
@@ -82,17 +46,17 @@ float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
 float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 
 #ifdef OVERWORLD
-	vec3 lightVec = sunVec * ((timeAngle < 0.5325 || timeAngle > 0.9675) ? 1.0 : -1.0);
+    vec3 lightVec = sunVec * ((timeAngle < 0.5325 || timeAngle > 0.9675) ? 1.0 : -1.0);
 #else
-	vec3 lightVec = sunVec;
+    vec3 lightVec = sunVec;
 #endif
 
 #if defined GENERATED_NORMALS || defined CUSTOM_PBR
-	mat3 tbnMatrix = mat3(
-		tangent.x, binormal.x, normal.x,
-		tangent.y, binormal.y, normal.y,
-		tangent.z, binormal.z, normal.z
-	);
+    mat3 tbnMatrix = mat3(
+        tangent.x, binormal.x, normal.x,
+        tangent.y, binormal.y, normal.y,
+        tangent.z, binormal.z, normal.z
+    );
 #endif
 
 //Common Functions//
@@ -102,89 +66,108 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #include "/lib/lighting/mainLighting.glsl"
 
 #if defined GENERATED_NORMALS || defined COATED_TEXTURES
-	#include "/lib/util/miplevel.glsl"
+    #include "/lib/util/miplevel.glsl"
 #endif
 
 #ifdef GENERATED_NORMALS
-	#include "/lib/materials/materialMethods/generatedNormals.glsl"
+    #include "/lib/materials/materialMethods/generatedNormals.glsl"
 #endif
 
 #ifdef COATED_TEXTURES
-	#include "/lib/materials/materialMethods/coatedTextures.glsl"
+    #include "/lib/materials/materialMethods/coatedTextures.glsl"
+#endif
+
+#if IPBR_EMISSIVE_MODE != 1
+    #include "/lib/materials/materialMethods/customEmission.glsl"
 #endif
 
 #ifdef CUSTOM_PBR
-	#include "/lib/materials/materialHandling/customMaterials.glsl"
+    #include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
 
 #ifdef COLOR_CODED_PROGRAMS
-	#include "/lib/misc/colorCodedPrograms.glsl"
+    #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 //Program//
 void main() {
-	vec4 color = texture2D(tex, texCoord);
+    vec4 color = texture2D(tex, texCoord);
 
-	float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
-	vec3 normalM = normal;
-	if (color.a > 0.00001) {
-		#ifdef GENERATED_NORMALS
-			vec3 colorP = color.rgb;
-		#endif
-		color.rgb *= glColor.rgb;
-		
-		vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z + 0.38);
-		vec3 viewPos = ScreenToView(screenPos);
-		vec3 playerPos = ViewToPlayer(viewPos);
+    float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
+    vec3 normalM = normal;
+    if (color.a > 0.00001) {
+        #ifdef GENERATED_NORMALS
+            vec3 colorP = color.rgb;
+        #endif
+        color *= glColor;
 
-		if (color.a < 0.75) materialMask = 0.0;
+        vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z + 0.38);
+        vec3 viewPos = ScreenToView(screenPos);
+        vec3 playerPos = ViewToPlayer(viewPos);
 
-		float smoothnessG = 0.0, highlightMult = 0.0, emission = 0.0, noiseFactor = 0.6;
-		vec2 lmCoordM = lmCoord;
-		vec3 shadowMult = vec3(0.4);
-		#ifdef IPBR
-			#ifdef IS_IRIS
-				#include "/lib/materials/materialHandling/irisMaterials.glsl"
-			#endif
+        if (color.a < 0.75) materialMask = 0.0;
 
-			#ifdef GENERATED_NORMALS
-				GenerateNormals(normalM, colorP);
-			#endif
+        bool noSmoothLighting = true, noGeneratedNormals = false;
+        float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 0.6;
+        vec2 lmCoordM = lmCoord;
+        vec3 geoNormal = normalM;
+        vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
+        vec3 shadowMult = vec3(0.4);
+        #ifdef IPBR
+            #ifdef IS_IRIS
+                vec3 maRecolor = vec3(0.0);
+                #include "/lib/materials/materialHandling/irisMaterials.glsl"
 
-			#ifdef COATED_TEXTURES
-				CoatTextures(color.rgb, noiseFactor, playerPos);
-			#endif
-		#else
-			#ifdef CUSTOM_PBR
-				GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, 0.0);
-			#endif
-		#endif
+                if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
+                else if (smoothnessD > 0.2) materialMask = 100.0;
+            #endif
 
-		DoLighting(color, shadowMult, playerPos, viewPos, 0.0, normalM, lmCoordM,
-				   true, false, false, false,
-				   0, smoothnessG, highlightMult, emission);
+            #ifdef GENERATED_NORMALS
+                if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
+            #endif
 
-		#if defined CUSTOM_PBR && defined PBR_REFLECTIONS
-			#ifdef OVERWORLD
-				skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
-			#else
-				skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
-			#endif
-		#endif
-	}
+            #ifdef COATED_TEXTURES
+                CoatTextures(color.rgb, noiseFactor, playerPos, false);
+            #endif
 
-	#ifdef COLOR_CODED_PROGRAMS
-		ColorCodeProgram(color);
-	#endif
+            #if IPBR_EMISSIVE_MODE != 1
+                emission = GetCustomEmissionForIPBR(color, emission);
+            #endif
+        #else
+            #ifdef CUSTOM_PBR
+                GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, 0.0);
+            #endif
+        #endif
 
-	/* DRAWBUFFERS:01 */
-	gl_FragData[0] = color;
-	gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
+        DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+                   false, 0, smoothnessG, highlightMult, emission);
 
-	#if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 2
-		/* DRAWBUFFERS:015 */
-		gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
-	#endif
+        #if defined IPBR && defined IS_IRIS
+            color.rgb += maRecolor;
+        #endif
+
+        #if (defined CUSTOM_PBR || defined IPBR && defined IS_IRIS) && defined PBR_REFLECTIONS
+            #ifdef OVERWORLD
+                skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
+            #else
+                skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
+            #endif
+        #endif
+    }
+
+    #ifdef COLOR_CODED_PROGRAMS
+        ColorCodeProgram(color, -1);
+    #endif
+
+    /* DRAWBUFFERS:06 */
+    gl_FragData[0] = color;
+    gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
+
+    #if BLOCK_REFLECT_QUALITY >= 2 && (RP_MODE >= 2 || defined IS_IRIS)
+        /* DRAWBUFFERS:065 */
+        gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
+    #endif
 }
 
 #endif
@@ -200,33 +183,29 @@ out vec3 normal;
 
 out vec4 glColor;
 
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-	out vec2 signMidCoordPos;
-	flat out vec2 absMidCoordPos;
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM || defined IPBR && defined IS_IRIS
+    out vec2 signMidCoordPos;
+    flat out vec2 absMidCoordPos;
+    flat out vec2 midCoord;
 #endif
 
 #if defined GENERATED_NORMALS || defined CUSTOM_PBR
-	flat out vec3 binormal, tangent;
+    flat out vec3 binormal, tangent;
 #endif
 
 #ifdef POM
-	out vec3 viewVector;
+    out vec3 viewVector;
 
-	out vec4 vTexCoordAM;
-#endif
-
-//Uniforms//
-#if HAND_SWAYING > 0
-	uniform float frameTimeCounter;
+    out vec4 vTexCoordAM;
 #endif
 
 //Attributes//
-#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-	attribute vec4 mc_midTexCoord;
+#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM || defined IPBR && defined IS_IRIS
+    attribute vec4 mc_midTexCoord;
 #endif
 
 #if defined GENERATED_NORMALS || defined CUSTOM_PBR
-	attribute vec4 at_tangent;
+    attribute vec4 at_tangent;
 #endif
 
 //Common Variables//
@@ -237,49 +216,49 @@ out vec4 glColor;
 
 //Program//
 void main() {
-	gl_Position = ftransform();
+    gl_Position = ftransform();
 
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-	lmCoord  = GetLightMapCoordinates();
+    lmCoord  = GetLightMapCoordinates();
 
-	glColor = gl_Color;
+    glColor = gl_Color;
 
-	normal = normalize(gl_NormalMatrix * gl_Normal);
+    normal = normalize(gl_NormalMatrix * gl_Normal);
 
-	upVec = normalize(gbufferModelView[1].xyz);
-	eastVec = normalize(gbufferModelView[0].xyz);
-	northVec = normalize(gbufferModelView[2].xyz);
-	sunVec = GetSunVector();
-	
-	#if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-		vec2 midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
-		vec2 texMinMidCoord = texCoord - midCoord;
-		signMidCoordPos = sign(texMinMidCoord);
-		absMidCoordPos  = abs(texMinMidCoord);
-	#endif
+    upVec = normalize(gbufferModelView[1].xyz);
+    eastVec = normalize(gbufferModelView[0].xyz);
+    northVec = normalize(gbufferModelView[2].xyz);
+    sunVec = GetSunVector();
 
-	#if defined GENERATED_NORMALS || defined CUSTOM_PBR
-		binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
-		tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
-	#endif
+    #if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM || defined IPBR && defined IS_IRIS
+        midCoord = (gl_TextureMatrix[0] * mc_midTexCoord).st;
+        vec2 texMinMidCoord = texCoord - midCoord;
+        signMidCoordPos = sign(texMinMidCoord);
+        absMidCoordPos  = abs(texMinMidCoord);
+    #endif
 
-	#ifdef POM
-		mat3 tbnMatrix = mat3(
-			tangent.x, binormal.x, normal.x,
-			tangent.y, binormal.y, normal.y,
-			tangent.z, binormal.z, normal.z
-		);
+    #if defined GENERATED_NORMALS || defined CUSTOM_PBR
+        binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
+        tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
+    #endif
 
-		viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
+    #ifdef POM
+        mat3 tbnMatrix = mat3(
+            tangent.x, binormal.x, normal.x,
+            tangent.y, binormal.y, normal.y,
+            tangent.z, binormal.z, normal.z
+        );
 
-		vTexCoordAM.zw  = abs(texMinMidCoord) * 2;
-		vTexCoordAM.xy  = min(texCoord, midCoord - texMinMidCoord);
-	#endif
+        viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
 
-	#if HAND_SWAYING > 0
-		#include "/lib/misc/handSway.glsl"
-	#endif
+        vTexCoordAM.zw  = abs(texMinMidCoord) * 2;
+        vTexCoordAM.xy  = min(texCoord, midCoord - texMinMidCoord);
+    #endif
+
+    #if HAND_SWAYING > 0
+        #include "/lib/misc/handSway.glsl"
+    #endif
 }
 
 #endif

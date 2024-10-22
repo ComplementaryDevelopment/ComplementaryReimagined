@@ -1,4 +1,4 @@
-#version 130 
+#version 130
 
 #define VERTEX_SHADER
 #define END

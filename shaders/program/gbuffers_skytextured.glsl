@@ -1,6 +1,6 @@
-////////////////////////////////////////
-// Complementary Reimagined by EminGT //
-////////////////////////////////////////
+/////////////////////////////////////
+// Complementary Shaders by EminGT //
+/////////////////////////////////////
 
 //Common//
 #include "/lib/common.glsl"
@@ -13,31 +13,16 @@ in vec2 texCoord;
 flat in vec4 glColor;
 
 #ifdef OVERWORLD
-	flat in vec3 upVec, sunVec;
-#endif
-
-//Uniforms//
-uniform int isEyeInWater;
-
-uniform float viewWidth, viewHeight;
-
-uniform vec3 skyColor;
-
-uniform mat4 gbufferProjectionInverse;
-
-uniform sampler2D tex;
-
-#ifdef CAVE_FOG
-	uniform vec3 cameraPosition;
+    flat in vec3 upVec, sunVec;
 #endif
 
 //Pipeline Constants//
 
 //Common Variables//
 #ifdef OVERWORLD
-	float SdotU = dot(sunVec, upVec);
-	float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
-	float sunVisibility2 = sunVisibility * sunVisibility;
+    float SdotU = dot(sunVec, upVec);
+    float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+    float sunVisibility2 = sunVisibility * sunVisibility;
 #endif
 
 //Common Functions//
@@ -50,77 +35,73 @@ uniform sampler2D tex;
 #endif
 
 #ifdef COLOR_CODED_PROGRAMS
-	#include "/lib/misc/colorCodedPrograms.glsl"
+    #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
 //Program//
 void main() {
-	#ifdef OVERWORLD
-		vec2 tSize = textureSize(tex, 0);
-		vec4 color = texture2D(tex, texCoord);
-		color.rgb *= glColor.rgb;
-	
-		vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
-		vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
-		viewPos /= viewPos.w;
-		vec3 nViewPos = normalize(viewPos.xyz);
-		
-		float VdotS = dot(nViewPos, sunVec);
-		float VdotU = dot(nViewPos, upVec);
+    #ifdef OVERWORLD
+        vec2 tSize = textureSize(tex, 0);
+        vec4 color = texture2D(tex, texCoord);
+        color.rgb *= glColor.rgb;
 
-		if (abs(tSize.y - 264.0) < 248.5) { //tSize.y must range from 16 to 512
-			#if SUN_MOON_STYLE >= 2
-				discard;
-			#endif
+        vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
+        vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+        viewPos /= viewPos.w;
+        vec3 nViewPos = normalize(viewPos.xyz);
 
-			if (VdotS > 0.0) { // Sun
-				if (color.b > 0.1775) { // 0.065 to 0.290
-					if (color.b > 0.48) { // 0.295 to 0.665
-						color.rgb *= 12.0;
-					} else {
-						color.rgb *= 8.0;
-					}
+        float VdotS = dot(nViewPos, sunVec);
+        float VdotU = dot(nViewPos, upVec);
 
-					color.rgb *= normalize(lightColor);
-					color.rgb *= 0.2 + 0.8 * sunVisibility2;
-				} else discard;
-			} else { // Moon
-				color.rgb *= sqrt2(max0(color.r - 0.115)); // 0.065 to 0.165
-				color.rgb *= 1.5;
-			}
+        if (abs(tSize.y - 264.0) < 248.5) { //tSize.y must range from 16 to 512
+            #if SUN_MOON_STYLE >= 2
+                discard;
+            #endif
 
-			color.rgb *= GetHorizonFactor(VdotU);
+            if (VdotS > 0.0) { // Sun
+                color.rgb *= dot(color.rgb, color.rgb) * normalize(lightColor) * 3.2;
+                color.rgb *= 0.25 + (0.75 - 0.25 * rainFactor) * sunVisibility2;
+            } else { // Moon
+                color.rgb *= smoothstep1(min1(length(color.rgb))) * 1.3;
+            }
 
-			#ifdef CAVE_FOG
-				color.rgb *= 1.0 - 0.75 * GetCaveFactor();
-			#endif
-		} else { // Custom Sky
-			#if MC_VERSION >= 11300
-				color.rgb *= color.rgb * smoothstep1(sqrt1(max0(VdotU)));
-			#else
-				discard;
-				// Old mc custom skyboxes are weirdly broken, so we discard.
-			#endif
-		}
+            color.rgb *= GetHorizonFactor(VdotU);
 
-		if (isEyeInWater == 1) color.rgb *= 0.25;
-		color.a *= invRainFactor * invRainFactor;
-	#endif
+            #ifdef CAVE_FOG
+                color.rgb *= 1.0 - 0.75 * GetCaveFactor();
+            #endif
+        } else { // Custom Sky
+            #if MC_VERSION >= 11300
+                color.rgb *= color.rgb * smoothstep1(sqrt1(max0(VdotU)));
+            #else
+                discard;
+                // Old mc custom skyboxes are weirdly broken, so we discard.
+            #endif
+        }
 
-	#ifdef NETHER
-		vec4 color = vec4(0.0);
-	#endif
+        if (isEyeInWater == 1) color.rgb *= 0.25;
 
-	#ifdef END
-		vec4 color = vec4(endSkyColor, 1.0);
-	#endif
+        #ifdef SUN_MOON_DURING_RAIN
+            color.a *= 1.0 - 0.8 * rainFactor;
+        #else
+            color.a *= 1.0 - rainFactor;
+        #endif
+    #endif
 
-	#ifdef COLOR_CODED_PROGRAMS
-		ColorCodeProgram(color);
-	#endif
+    #ifdef NETHER
+        vec4 color = vec4(0.0);
+    #endif
 
-	/* DRAWBUFFERS:0 */
-	gl_FragData[0] = color;
+    #ifdef END
+        vec4 color = vec4(endSkyColor, 1.0);
+    #endif
+
+    #ifdef COLOR_CODED_PROGRAMS
+        ColorCodeProgram(color, -1);
+    #endif
+
+    /* DRAWBUFFERS:0 */
+    gl_FragData[0] = color;
 }
 
 #endif
@@ -133,10 +114,8 @@ out vec2 texCoord;
 flat out vec4 glColor;
 
 #ifdef OVERWORLD
-	flat out vec3 upVec, sunVec;
+    flat out vec3 upVec, sunVec;
 #endif
-
-//Uniforms//
 
 //Attributes//
 
@@ -148,15 +127,15 @@ flat out vec4 glColor;
 
 //Program//
 void main() {
-	gl_Position = ftransform();
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	
-	glColor = gl_Color;
+    gl_Position = ftransform();
+    texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-	#ifdef OVERWORLD
-		upVec = normalize(gbufferModelView[1].xyz);
-		sunVec = GetSunVector();
-	#endif
+    glColor = gl_Color;
+
+    #ifdef OVERWORLD
+        upVec = normalize(gbufferModelView[1].xyz);
+        sunVec = GetSunVector();
+    #endif
 }
 
 #endif
