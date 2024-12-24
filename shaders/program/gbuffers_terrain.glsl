@@ -179,8 +179,14 @@ void main() {
 
     float smoothnessD = 0.0, materialMask = 0.0, skyLightFactor = 0.0;
 
+    float alphaCheck = color.a;
+    #ifdef USE_TEXEL_OFFSET
+        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
+        alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
+    #endif
+
     #if !defined POM || !defined POM_ALLOW_CUTOUT
-        if (color.a <= 0.00001) discard;
+        if (alphaCheck <= 0.00001) discard;
     #endif
 
     vec3 colorP = color.rgb;
@@ -206,6 +212,13 @@ void main() {
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0, snowFactor = 1.0, snowMinNdotU = 0.0, noPuddles = 0.0;
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
+    #if PIXEL_SHADING > 2
+        lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+    #endif
+    #if PIXEL_NORMALS > 0
+        normalM = TexelSnap(normal, texelOffset);
+        geoNormal = normalM;
+    #endif
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
     #ifdef IPBR
@@ -324,9 +337,15 @@ void main() {
         #include "/lib/misc/showLightLevels.glsl"
     #endif
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-               worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
-               centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
+    #if PIXEL_SHADING > 0
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
+                   centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission, texelOffset);
+    #else
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
+                   centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
+    #endif
 
     #ifdef IPBR
         color.rgb += maRecolor;

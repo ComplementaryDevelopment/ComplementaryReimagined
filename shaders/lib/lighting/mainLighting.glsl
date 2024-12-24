@@ -28,7 +28,21 @@ vec3 highlightColor = normalize(pow(lightColor, vec3(0.37))) * (0.3 + 1.5 * sunV
 //Lighting//
 void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 viewPos, float lViewPos, vec3 geoNormal, vec3 normalM,
                 vec3 worldGeoNormal, vec2 lightmap, bool noSmoothLighting, bool noDirectionalShading, bool noVanillaAO,
-                bool centerShadowBias, int subsurfaceMode, float smoothnessG, float highlightMult, float emission) {
+                bool centerShadowBias, int subsurfaceMode, float smoothnessG, float highlightMult, float emission, vec2 texelOffset) {
+    float glAlpha = glColor.a;
+    #if PIXEL_SHADING > 0
+        vec3 tPlayerPos = TexelSnap(playerPos, texelOffset);
+
+        #if PIXEL_SHADING > 1
+            glAlpha = TexelSnap(glAlpha, texelOffset);
+        #endif
+        #if PIXEL_SHADING > 2
+            viewPos = TexelSnap(viewPos, texelOffset);
+            lViewPos = TexelSnap(lViewPos, texelOffset);
+            playerPos = TexelSnap(playerPos, texelOffset);
+        #endif 
+    #endif
+
     float lightmapY2 = pow2(lightmap.y);
     float lightmapYM = smoothstep1(lightmap.y);
     float subsurfaceHighlight = 0.0;
@@ -130,8 +144,11 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                         #endif
 
                         vec3 playerPosM = playerPos;
+                        #if PIXEL_SHADING > 0 && PIXEL_SHADING < 2
+                            playerPosM = tPlayerPos;
+                        #endif
 
-                        #if PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
+                        #if PIXEL_SHADING <= 0 && PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
                             playerPosM = floor((playerPosM + cameraPosition) * PIXEL_SHADOW + 0.001) / PIXEL_SHADOW - cameraPosition + 0.5 / PIXEL_SHADOW;
                         #endif
 
@@ -171,7 +188,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                             playerPosM += (1.0 - lightmapYM) * edgeFactor;
                                         #endif
 
-                                        playerPosM += (1.0 - pow2(pow2(max(glColor.a, lightmapYM)))) * edgeFactor;
+                                        playerPosM += (1.0 - pow2(pow2(max(glAlpha, lightmapYM)))) * edgeFactor;
                                     }
                                 #endif
                             }
@@ -238,6 +255,9 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
             #ifdef CLOUD_SHADOWS
                 vec3 worldPos = playerPos + cameraPosition;
+                #if PIXEL_SHADING > 0 && PIXEL_SHADING < 2
+                    worldPos = tPlayerPos + cameraPosition;
+                #endif
 
                 #ifdef CLOUDS_REIMAGINED
                     float EdotL = dot(eastVec, lightVec);
@@ -523,10 +543,10 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Vanilla Ambient Occlusion
     float vanillaAO = 1.0;
     #if VANILLAAO_I > 0
-        if (subsurfaceMode != 0) vanillaAO = mix(min1(glColor.a * 1.15), 1.0, shadowMult.g);
+        if (subsurfaceMode != 0) vanillaAO = mix(min1(glAlpha * 1.15), 1.0, shadowMult.g);
         else if (!noVanillaAO) {
             #ifdef GBUFFERS_TERRAIN
-                vanillaAO = min1(glColor.a + 0.08);
+                vanillaAO = min1(glAlpha + 0.08);
                 #ifdef OVERWORLD
                     vanillaAO = pow(
                         pow1_5(vanillaAO),
@@ -544,7 +564,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                     );
                 #endif
             #else
-                vanillaAO = glColor.a;
+                vanillaAO = glAlpha;
             #endif
             vanillaAO = vanillaAO * 0.9 + 0.1;
 
@@ -581,4 +601,12 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     color.rgb *= finalDiffuse;
     color.rgb += lightHighlight;
     color.rgb *= pow2(1.0 - darknessLightFactor);
+}
+
+void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 viewPos, float lViewPos, vec3 geoNormal, vec3 normalM,
+                vec3 worldGeoNormal, vec2 lightmap, bool noSmoothLighting, bool noDirectionalShading, bool noVanillaAO, bool centerShadowBias, 
+                int subsurfaceMode, float smoothnessG, float highlightMult, float emission) {
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 
+            worldGeoNormal, lightmap, noSmoothLighting, noDirectionalShading, noVanillaAO, centerShadowBias, 
+            subsurfaceMode, smoothnessG, highlightMult, emission, vec2(0.0));
 }

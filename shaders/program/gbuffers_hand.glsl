@@ -93,9 +93,15 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 void main() {
     vec4 color = texture2D(tex, texCoord);
 
+    float alphaCheck = color.a;
+    #ifdef USE_TEXEL_OFFSET
+        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
+        alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
+    #endif
+
     float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec3 normalM = normal;
-    if (color.a > 0.00001) {
+    if (alphaCheck > 0.00001) {
         #ifdef GENERATED_NORMALS
             vec3 colorP = color.rgb;
         #endif
@@ -111,6 +117,13 @@ void main() {
         float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 0.6;
         vec2 lmCoordM = lmCoord;
         vec3 geoNormal = normalM;
+        #if PIXEL_SHADING > 2
+            lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+        #endif
+        #if PIXELS_NORMALS > 0
+            normalM = TexelSnap(normal, texelOffset);
+            geoNormal = TexelSnap(normal, texelOffset);
+        #endif
         vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
         vec3 shadowMult = vec3(0.4);
         #ifdef IPBR
@@ -139,9 +152,15 @@ void main() {
             #endif
         #endif
 
-        DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
-                   false, 0, smoothnessG, highlightMult, emission);
+        #if PIXEL_SHADING > 0
+            DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM,
+                       worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+                       false, 0, smoothnessG, highlightMult, emission, texelOffset);
+        #else
+            DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM,
+                       worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+                       false, 0, smoothnessG, highlightMult, emission);
+        #endif
 
         #if defined IPBR && defined IS_IRIS
             color.rgb += maRecolor;

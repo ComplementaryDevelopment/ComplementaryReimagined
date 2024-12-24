@@ -148,6 +148,9 @@ screen.END_LIGHT_MULTS=The End Dimension
 screen.BLOCKLIGHT_COLOR_SETTINGS=Blocklight Color §e[*]§r
 screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Settings to adjust the color emitted from light source blocks. §e[*]§r These color settings won't affect most lights if the Advanced Colored Lighting setting is enabled, except for the Blocklight Intensity slider.
 
+screen.PIXEL_LIGHTING_SETTINGS=Pixel Lighting
+screen.PIXEL_LIGHTING_SETTINGS.comment=Settings for pixel lighting using texel space.
+
 screen.MOON_PHASE_INF_SETTINGS=Moon Phase Influence
 screen.MOON_PHASE_INF_SETTINGS.comment=Settings to determine how different moon phases affect the night lighting.
 
@@ -563,6 +566,32 @@ value.PIXEL_SHADOW.16=16x16 §e[*]
 value.PIXEL_SHADOW.32=32x32 §e[*]
 value.PIXEL_SHADOW.64=64x64 §e[*]
 value.PIXEL_SHADOW.128=128x128 §e[*]
+
+option.PIXEL_SHADING=Pixelated Shading
+option.PIXEL_SHADING.comment=Makes shading pixelated by snapping it in texelspace. This setting overrides Pixelated Shadows. §e[*]§r May contain visual artifacts.
+value.PIXEL_SHADING.0=OFF 
+value.PIXEL_SHADING.1=Shadows
+value.PIXEL_SHADING.2=Shadows & AO
+value.PIXEL_SHADING.3=All light §e[*]
+
+option.PIXEL_NORMALS=Pixelated Normals
+option.PIXEL_NORMALS.comment=Makes normals pixelated by snapping it in texelspace. Changes look of some lighting. §e[*]§r May contain visual artifacts.
+value.PIXEL_NORMALS.0=OFF
+value.PIXEL_NORMALS.1=ON §e[*]
+
+option.PIXEL_WATER=Pixelated Water Reflection
+option.PIXEL_WATER.comment=Makes water reflection pixelated by snapping it in texelspace. §e[*]§r May contain visual artifacts.
+value.PIXEL_WATER.0=OFF
+value.PIXEL_WATER.1=ON §e[*]
+
+option.PIXEL_SCALE=Pixel Scale
+option.PIXEL_SCALE.comment=Scaling done on the textures resolution.
+value.PIXEL_SCALE.0=0.5
+value.PIXEL_SCALE.1=1
+value.PIXEL_SCALE.2=2
+value.PIXEL_SCALE.3=4
+value.PIXEL_SCALE.4=8
+value.PIXEL_SCALE.5=16
 
 option.BLOOM=Bloom
 option.BLOOM.comment=Enables blurry glow from bright objects and humidity.

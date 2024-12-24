@@ -105,6 +105,10 @@ void main() {
     #endif
     color *= glColor;
 
+    #ifdef USE_TEXEL_OFFSET
+        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
+    #endif
+
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
@@ -119,6 +123,13 @@ void main() {
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0;
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
+    #if PIXEL_SHADING > 2
+        lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
+    #endif
+    #if PIXEL_NORMALS > 0
+        normalM = TexelSnap(normal, texelOffset);
+        geoNormal = normalM;
+    #endif
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
     #ifdef IPBR
@@ -154,9 +165,15 @@ void main() {
         CoatTextures(color.rgb, noiseFactor, playerPos, false);
     #endif
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-               worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
-               false, 0, smoothnessG, highlightMult, emission);
+    #if PIXEL_SHADING > 0
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
+                   false, 0, smoothnessG, highlightMult, emission, texelOffset);
+    #else
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
+                   false, 0, smoothnessG, highlightMult, emission);
+    #endif
 
     #ifdef PBR_REFLECTIONS
         #ifdef OVERWORLD

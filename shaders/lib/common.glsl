@@ -69,6 +69,10 @@
 
     #define SHADOW_SMOOTHING 4 //[1 2 3 4]
     #define PIXEL_SHADOW 0 //[0 8 16 32 64 128]
+    #define PIXEL_SHADING 0 //[0 1 2 3]
+    #define PIXEL_NORMALS 0 //[0 1]
+    #define PIXEL_WATER 0 //[0 1]
+    #define PIXEL_SCALE 1 //[0 1 2 3 4 5]
     #define RAIN_PUDDLES 0 //[0 1 2 3 4]
     #define SSAO_I 100 //[0 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300]
     #define VANILLAAO_I 100 //[0 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300]
@@ -608,6 +612,10 @@
     #endif
 
     #include "/lib/util/commonFunctions.glsl"
+        
+    #if PIXEL_SHADING > 0 || PIXEL_NORMALS > 0 || PIXEL_WATER > 0
+        #include "/lib/util/texelUtils.glsl"
+    #endif 
 
     #ifndef DISTANT_HORIZONS
         float renderDistance = far;
