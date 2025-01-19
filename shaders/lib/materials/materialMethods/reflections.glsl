@@ -92,7 +92,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
             }
             
             // DH pass on non-DH (if there is nothing blocking)
-            #if DISTANT_HORIZONS && !defined DH_WATER
+            #if defined DISTANT_HORIZONS && !defined DH_WATER
             if (refPos.z > 0.99997)
             {
                 vector = vectorBase;
