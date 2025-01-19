@@ -41,7 +41,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
     // Step 2: Calculate Terrain Reflection and Alpha
     vec4 reflection = vec4(0.0);
     #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 1
-        #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 2
+        #if (defined DEFERRED1 || WATER_REFLECT_QUALITY >= 2) && (!defined DH_WATER || DETAIL_QUALITY >= 3)
             // Method 1: Ray Marched Reflection //
 
             // Ray Marching
@@ -169,7 +169,11 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
             #if defined DEFERRED1 && defined TEMPORAL_FILTER
                 else refPos.z = 1.0;
             #endif
-        #elif !defined DEFERRED1 && WATER_REFLECT_QUALITY < 2
+            #if !defined DEFERRED1 && defined DISTANT_HORIZONS && DETAIL_QUALITY < 3
+                else
+            #endif
+        #endif
+        #if !defined DEFERRED1 && (WATER_REFLECT_QUALITY < 2 || (defined DISTANT_HORIZONS && DETAIL_QUALITY < 3))
         {   // Method 2: Mirorred Image Reflection //
 
             #if WATER_REFLECT_QUALITY < 2
