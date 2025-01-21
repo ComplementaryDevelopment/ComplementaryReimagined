@@ -212,6 +212,9 @@ void main() {
         vec3 maRecolor = vec3(0.0);
         #include "/lib/materials/materialHandling/terrainMaterials.glsl"
 
+        //int blockEntityId = mat;
+        //#include "/lib/materials/materialHandling/blockEntityMaterials.glsl"
+
         #ifdef GENERATED_NORMALS
             if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
         #endif

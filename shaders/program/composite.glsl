@@ -212,7 +212,7 @@ void main() {
 
     // supposed to be #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
     #if LIGHTSHAFT_QUALI_DEFINE > 0 && LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 && defined OVERWORLD || defined END
-        #if LENSFLARE_MODE > 0
+        #if LENSFLARE_MODE > 0 || defined ENTITY_TAA_NOISY_CLOUD_FIX
             if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y > 1.5)
                 vlFactorM = texelFetch(colortex4, texelCoord, 0).r;
         #endif

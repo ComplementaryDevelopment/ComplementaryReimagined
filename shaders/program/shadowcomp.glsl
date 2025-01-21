@@ -22,6 +22,10 @@ layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 	const ivec3 workGroups = ivec3(48, 24, 48);
 #elif COLORED_LIGHTING_INTERNAL == 512
 	const ivec3 workGroups = ivec3(64, 32, 64);
+#elif COLORED_LIGHTING_INTERNAL == 768
+	const ivec3 workGroups = ivec3(96, 32, 96);
+#elif COLORED_LIGHTING_INTERNAL == 1024
+	const ivec3 workGroups = ivec3(128, 32, 128);
 #endif
 
 //Common Variables//

@@ -910,8 +910,7 @@ if (mat < 11024) {
                                     }
                                 }
                                 else /*if (mat < 10352)*/ { // Azalea, Flowering Azalea
-                                    subsurfaceMode = 2;
-                                    shadowMult = vec3(0.85);
+                                    #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
                                 }
                             }
                         }
@@ -989,7 +988,7 @@ if (mat < 11024) {
                                         noiseFactor = 0.5;
                                     #endif
                                 }
-                                else /*if (mat < 10384)*/ { // Snow, Snow Block, Powder Snow
+                                else /*if (mat < 10384)*/ { // 8 Layer Snow, Snow Block, Powder Snow
                                     #include "/lib/materials/specificMaterials/terrain/snow.glsl"
                                 }
                             }
@@ -1330,7 +1329,11 @@ if (mat < 11024) {
                                     
                                     #ifdef GBUFFERS_TERRAIN
                                         else if (abs(NdotU) < 0.5) {
-                                            lmCoordM.x = min1(0.7 + 0.3 * pow2(1.0 - signMidCoordPos.y));
+                                            #if MC_VERSION >= 12102 // torch model got changed in 1.21.2
+                                                lmCoordM.x = min1(0.7 + 0.3 * smoothstep1(max0(0.4 - signMidCoordPos.y)));
+                                            #else
+                                                lmCoordM.x = min1(0.7 + 0.3 * pow2(1.0 - signMidCoordPos.y));
+                                            #endif
                                         }
                                     #else
                                         else {
@@ -2028,11 +2031,6 @@ if (mat < 11024) {
                                 if (mat < 10716) { // Tuff++
                                     smoothnessG = color.r * 0.3;
                                     smoothnessD = smoothnessG;
-
-                                    #if COLORED_LIGHTING_INTERNAL == 0
-                                        /* Tweak to make caves with Glow Lichen look better lit and closer to vanilla Minecraft. */
-                                        lmCoordM = pow(lmCoordM + 0.0001, vec2(0.65));
-                                    #endif
                                 }
                                 else /*if (mat < 10720)*/ { // Clay
                                     highlightMult = 2.0;
@@ -2459,40 +2457,78 @@ if (mat < 11024) {
                         else if (mat < 10924) { // Candles:Lit, Candle Cakes:Lit
                             #include "/lib/materials/specificMaterials/terrain/candle.glsl"
                         }
-                        else /*if (mat < 10928)*/ { //
+                        else /*if (mat < 10928)*/ { // Open Eyeblossom
+                            subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
+                            #ifdef GBUFFERS_TERRAIN
+                                DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, viewPos, nViewPos, lViewPos, dither);
+
+                                #ifdef COATED_TEXTURES
+                                    doTileRandomisation = false;
+                                #endif
+                            #endif
+
+                            #if SHADOW_QUALITY == -1
+                                shadowMult *= 1.0 - 0.3 * (signMidCoordPos.y + 1.0) * (1.0 - abs(signMidCoordPos.x))
+                                + 0.5 * (1.0 - signMidCoordPos.y) * invNoonFactor; // consistency357381
+                            #endif
+
+                            if (color.r > 0.7 && color.r > color.g * 1.2 && color.g > color.b * 2.0) { // Emissive Part
+                                lmCoordM.x = 0.5;
+                                emission = 5.0 * color.g;
+                                color.rgb *= color.rgb;
+                            }
                         }
                     } else {
                         if (mat < 10944) {
                             if (mat < 10936) {
-                                if (mat < 10932) { //
-
+                                if (mat < 10932) { // Pale Oak Planks++
+                                    #include "/lib/materials/specificMaterials/planks/paleOakPlanks.glsl"
                                 }
-                                else /*if (mat < 10936)*/ { //
-
+                                else /*if (mat < 10936)*/ { // // Pale Oak Log, Pale Oak Wood
+                                    if (color.g > 0.45) { // Pale Oak Log:Clean Part
+                                        #include "/lib/materials/specificMaterials/planks/paleOakPlanks.glsl"
+                                    } else { // Pale Oak Log:Wood Part, Pale Oak Wood
+                                        #include "/lib/materials/specificMaterials/terrain/paleOakWood.glsl"
+                                    }
                                 }
                             } else {
-                                if (mat < 10940) { //
-
+                                if (mat < 10940) { // Pale Oak Door
+                                    noSmoothLighting = true;
+                                    #include "/lib/materials/specificMaterials/planks/paleOakPlanks.glsl"
                                 }
-                                else /*if (mat < 10944)*/ { //
-
+                                else /*if (mat < 10944)*/ { // Resin++
+                                    smoothnessG = color.r * 0.25;
+                                    smoothnessD = smoothnessG;
                                 }
                             }
                         } else {
                             if (mat < 10952) {
-                                if (mat < 10948) { //
-
+                                if (mat < 10948) { // Creaking Heart: Inactive
+                                    #include "/lib/materials/specificMaterials/terrain/paleOakWood.glsl"
                                 }
-                                else /*if (mat < 10952)*/ { //
+                                else /*if (mat < 10952)*/ { // Creaking Heart: Active
+                                    #include "/lib/materials/specificMaterials/terrain/paleOakWood.glsl"
 
+                                    if (color.r + color.g > color.b * 4.0) {
+                                        emission = pow2(color.r) * 2.5 + 0.2;
+                                    }
                                 }
                             } else {
-                                if (mat < 10956) { //
+                                if (mat < 10956) { // Snow: Layers 1 to 7
+                                    #include "/lib/materials/specificMaterials/terrain/snow.glsl"
 
+                                    #if defined GBUFFERS_TERRAIN && defined TAA
+                                        float snowFadeOut = 0.0;
+                                        snowFadeOut = clamp01((playerPos.y) * 0.1);
+                                        snowFadeOut *= clamp01((lViewPos - 64.0) * 0.01);
+
+                                        if (dither + 0.25 < snowFadeOut) discard;
+                                    #endif
                                 }
-                                else /*if (mat < 10960)*/ { //
-
+                                else /*if (mat < 10960)*/ { // Target Block: Inactive
+                                    smoothnessG = pow2(color.r) * 0.5;
+                                    smoothnessD = smoothnessG * 0.5;
                                 }
                             }
                         }
@@ -2501,15 +2537,29 @@ if (mat < 11024) {
                     if (mat < 10992) {
                         if (mat < 10976) {
                             if (mat < 10968) {
-                                if (mat < 10964) { //
+                                if (mat < 10964) { // Target Block: Active
+                                    smoothnessG = pow2(color.r) * 0.5;
+                                    smoothnessD = smoothnessG * 0.5;
 
+                                    if (color.r > color.g + color.b) {
+                                        if (CheckForColor(color.rgb, vec3(220, 74, 74))) {
+                                            emission = 5.0;
+                                            color.rgb *= mix(vec3(1.0), pow2(color.rgb), 0.9);
+                                        } else {
+                                            emission = 3.0;
+                                            color.rgb *= pow2(color.rgb);
+                                        }
+                                    }
                                 }
-                                else /*if (mat < 10968)*/ { //
-
+                                else /*if (mat < 10968)*/ { // Sponge
+                                    smoothnessG = pow2(color.g) * 0.2;
+                                    smoothnessD = smoothnessG * 0.5;
                                 }
                             } else {
-                                if (mat < 10972) { //
-
+                                if (mat < 10972) { // Wet Sponge
+                                    smoothnessG = color.g * 0.75;
+                                    highlightMult = 0.3;
+                                    smoothnessD = smoothnessG * 0.25;
                                 }
                                 else /*if (mat < 10976)*/ { //
 

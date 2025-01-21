@@ -18,7 +18,7 @@ if (entityId < 50064) {
                 } else /*if (entityId == 50012)*/ { // Iron Golem
                     #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
 
-                    smoothnessD *= 0.6;
+                    smoothnessD *= 0.4;
                 }
             }
         } else {
@@ -123,9 +123,8 @@ if (entityId < 50064) {
                     emission = 7.5;
 
                     color.rgb *= color.rgb;
-                } else /*if (entityId == 50076)*/ { // Boat
-                    //playerPos.y += 0.18; // to avoid water shadow
-                    playerPos.y += 0.38; // to also avoid the black inner shadow bug
+                } else /*if (entityId == 50076)*/ { // Boats
+                    playerPos.y += 0.38; // to avoid water shadow and the black inner shadow bug
                 }
             }
         } else {
@@ -183,8 +182,12 @@ if (entityId < 50064) {
                             }
                         }
                     }
-                } else /*if (entityId == 50108)*/ { //
-
+                } else /*if (entityId == 50108)*/ { // Creaking
+                    if (color.r > 0.7 && color.r > color.g * 1.2 && color.g > color.b * 2.0) { // Eyes
+                        lmCoordM.x = 0.5;
+                        emission = 5.0 * color.g;
+                        color.rgb *= color.rgb;
+                    }
                 }
             }
         } else {

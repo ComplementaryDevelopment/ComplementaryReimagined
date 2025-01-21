@@ -92,6 +92,10 @@ uniform ivec3 previousCameraPositionInt;
 uniform vec3 cameraPositionFract;
 uniform vec3 previousCameraPositionFract;
 
+#ifdef IS_IRIS
+    uniform int renderStage;
+#endif
+
 #if SHADOW_QUALITY > -1 || defined LIGHTSHAFTS_ACTIVE || defined FF_BLOCKLIGHT
     uniform sampler2D shadowcolor0;
     uniform sampler2D shadowcolor1;
@@ -154,5 +158,4 @@ uniform float inCrimsonForest;
 uniform float inNetherWastes;
 uniform float inSoulValley;
 uniform float inWarpedForest;
-
-uniform vec3 skyColorSmooth;
+uniform float inPaleGarden;

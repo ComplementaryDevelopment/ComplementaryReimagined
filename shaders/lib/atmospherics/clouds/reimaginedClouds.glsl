@@ -46,6 +46,10 @@ vec4 GetVolumetricClouds(int cloudAltitude, float distanceThreshold, inout float
     tracePos += traceAdd * dither;
     tracePos.y -= traceAdd.y;
 
+    #ifdef FIX_AMD_REFLECTION_CRASH
+        sampleCount = min(sampleCount, 30); //BFARC
+    #endif
+
     for (int i = 0; i < sampleCount; i++) {
         tracePos += traceAdd;
 

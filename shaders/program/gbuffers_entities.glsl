@@ -98,8 +98,6 @@ void main() {
     #endif
     color *= glColor;
 
-    color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
-
     float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec3 normalM = normal;
 
@@ -124,7 +122,6 @@ void main() {
             #endif
 
             if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
-            else if (smoothnessD > 0.2) materialMask = 100.0;
 
             #ifdef GENERATED_NORMALS
                 if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
@@ -146,8 +143,12 @@ void main() {
                 #include "/lib/materials/specificMaterials/entities/lightningBolt.glsl"
             } else if (entityId == 50008) { // Item Frame, Glow Item Frame
                 noSmoothLighting = true;
+            } else if (entityId == 50076) { // Boats
+                playerPos.y += 0.38; // to avoid water shadow and the black inner shadow bug
             }
         #endif
+    
+        color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
 
         normalM = gl_FrontFacing ? normalM : -normalM; // Inverted Normal Workaround
         vec3 geoNormal = normalM;

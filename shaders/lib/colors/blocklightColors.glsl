@@ -114,7 +114,7 @@ vec4 GetSpecialBlocklightColor(int mat) {
 				} else {
 					if (mat == 56) return vec4(vec3(1.7, 0.9, 0.4) * 2.0, 0.0); // Copper Bulb:DimmerOnes:Lit
 					if (mat == 57) return vec4(vec3(0.1, 0.3, 0.4) * 0.5, 0.0005); // Sculk++
-					if (mat == 58) return vec4(vec3(0.0, 1.4, 1.4) * 1.5, 0.15); // End Portal Frame:Active
+					if (mat == 58) return vec4(vec3(0.0, 1.4, 1.4) * 4.0, 0.15); // End Portal Frame:Active
 					if (mat == 59) return vec4(0.0); // Bedrock
 					if (mat == 60) return vec4(vec3(3.1, 1.1, 0.3) * 0.125, 0.0125); // Command Block
 					if (mat == 61) return vec4(vec3(3.0, 0.9, 0.2) * 0.125, 0.0125); // Warped Fungus, Crimson Fungus
@@ -131,7 +131,7 @@ vec4 GetSpecialBlocklightColor(int mat) {
 					if (mat == 68) return vec4(vec3(0.75), 0.0); // Vault:Inactive
 					if (mat == 69) return vec4(vec3(1.3, 1.6, 1.6) * 1.0, 0.1); // Trial Spawner:Ominous:Active, Vault:Ominous:Active
 					if (mat == 70) return vec4(vec3(1.0, 0.1, 0.1) * candleColorMult, candleExtraLight); // Red Candles:Lit
-					if (mat == 71) return vec4(vec3(1.0, 0.5, 0.1) * candleColorMult, candleExtraLight); // Orange Candles:Lit
+					if (mat == 71) return vec4(vec3(1.0, 0.4, 0.1) * candleColorMult, candleExtraLight); // Orange Candles:Lit
 					if (mat == 72) return vec4(vec3(1.0, 1.0, 0.1) * candleColorMult, candleExtraLight); // Yellow Candles:Lit
 					if (mat == 73) return vec4(vec3(0.1, 1.0, 0.1) * candleColorMult, candleExtraLight); // Lime Candles:Lit
 				}
@@ -147,8 +147,8 @@ vec4 GetSpecialBlocklightColor(int mat) {
 					if (mat == 79) return vec4(vec3(1.0, 0.1, 1.0) * candleColorMult, candleExtraLight); // Magenta Candles:Lit
 				} else {
 					if (mat == 80) return vec4(vec3(1.0, 0.4, 1.0) * candleColorMult, candleExtraLight); // Pink Candles:Lit
-					if (mat == 81) return vec4(0.0);
-					if (mat == 82) return vec4(0.0);
+					if (mat == 81) return vec4(vec3(2.8, 1.1, 0.2) * 0.125, 0.0125); // Open Eyeblossom
+					if (mat == 82) return vec4(vec3(2.8, 1.1, 0.2) * 0.3, 0.05); // Creaking Heart: Active
 					if (mat == 83) return vec4(0.0);
 					if (mat == 84) return vec4(0.0);
 					if (mat == 85) return vec4(0.0);
@@ -180,7 +180,7 @@ vec3[] specialTintColor = vec3[](
 	// 200: White
 	vec3(1.0),
 	// 201: Orange
-	vec3(1.0, 0.5, 0.1),
+	vec3(1.0, 0.3, 0.1),
 	// 202: Magenta
 	vec3(1.0, 0.1, 1.0),
 	// 203: Light Blue

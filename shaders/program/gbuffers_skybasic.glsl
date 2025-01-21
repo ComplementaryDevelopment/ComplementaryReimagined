@@ -61,7 +61,16 @@ void main() {
     vec4 color = vec4(glColor.rgb, 1.0);
 
     #ifdef OVERWORLD
-    if (vanillaStars < 0.5) {
+        if (vanillaStars > 0.5) {
+            discard;
+        }
+
+        #if IRIS_VERSION >= 10800 && IRIS_VERSION < 10805
+            if (renderStage == MC_RENDER_STAGE_MOON) {
+                discard; // Fixes the vanilla sky gradient causing the sun to disappear
+            }
+        #endif
+
         vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
         vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
         viewPos /= viewPos.w;
@@ -154,7 +163,6 @@ void main() {
                 }
             }
         #endif
-    } else discard;
     #endif
 
     color.rgb *= 1.0 - maxBlindnessDarkness;

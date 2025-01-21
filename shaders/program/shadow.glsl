@@ -61,9 +61,17 @@ void main() {
                 #ifdef CONNECTED_GLASS_EFFECT
                     if (mat == 30008) { // Tinted Glass
                         DoSimpleConnectedGlass(color1);
+                        
+                        #if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
+                            positionYM = 0.0; // 86AHGA: For scene-aware light shafts to be less prone to get extreme under large glass planes
+                        #endif
                     }
                     if (mat >= 31000) { // Stained Glass, Stained Glass Pane
                         DoSimpleConnectedGlass(color1);
+
+                        #if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
+                            positionYM = 0.0; // 86AHGA
+                        #endif
                     }
                 #endif
                 DoNaturalShadowCalculation(color1, color2);
@@ -166,6 +174,10 @@ void main() {
                 if (color1.a > 0.5) color1 = vec4(0.0, 0.0, 0.0, 1.0);
                 else color1 = vec4(vec3(0.2 * (1.0 - GLASS_OPACITY)), 1.0);
                 color2.rgb = vec3(0.3);
+
+                #if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
+                    positionYM = 0.0; // 86AHGA
+                #endif
             } else {
                 DoNaturalShadowCalculation(color1, color2);
             }
@@ -222,7 +234,6 @@ attribute vec4 mc_Entity;
 vec2 lmCoord;
 
 #if COLORED_LIGHTING_INTERNAL > 0
-    uniform int renderStage;
     writeonly uniform uimage3D voxel_img;
 
     #ifdef PUDDLE_VOXELIZATION

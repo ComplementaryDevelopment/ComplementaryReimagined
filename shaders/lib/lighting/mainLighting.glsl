@@ -22,13 +22,24 @@
     #include "/lib/misc/voxelization.glsl"
 #endif
 
-//
 vec3 highlightColor = normalize(pow(lightColor, vec3(0.37))) * (0.3 + 1.5 * sunVisibility2) * (1.0 - 0.85 * rainFactor);
 
 //Lighting//
 void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 viewPos, float lViewPos, vec3 geoNormal, vec3 normalM,
                 vec3 worldGeoNormal, vec2 lightmap, bool noSmoothLighting, bool noDirectionalShading, bool noVanillaAO,
                 bool centerShadowBias, int subsurfaceMode, float smoothnessG, float highlightMult, float emission) {
+    #ifdef DO_PIXELATION_EFFECTS
+        vec2 pixelationOffset = ComputeTexelOffset(tex, texCoord);
+
+        #ifdef PIXELATED_SHADOWS
+            vec3 playerPosPixelated = TexelSnap(playerPos, pixelationOffset);
+        #endif 
+        #ifdef PIXELATED_BLOCKLIGHT
+            lightmap = clamp(TexelSnap(lightmap, pixelationOffset), 0.0, 1.0);
+            lViewPos = TexelSnap(lViewPos, pixelationOffset);
+        #endif
+    #endif
+
     float lightmapY2 = pow2(lightmap.y);
     float lightmapYM = smoothstep1(lightmap.y);
     float subsurfaceHighlight = 0.0;
@@ -131,8 +142,8 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
                         vec3 playerPosM = playerPos;
 
-                        #if PIXEL_SHADOW > 0 && !defined GBUFFERS_HAND
-                            playerPosM = floor((playerPosM + cameraPosition) * PIXEL_SHADOW + 0.001) / PIXEL_SHADOW - cameraPosition + 0.5 / PIXEL_SHADOW;
+                        #if defined DO_PIXELATION_EFFECTS && defined PIXELATED_SHADOWS
+                            playerPosM = playerPosPixelated;
                         #endif
 
                         #ifdef GBUFFERS_TEXTURED
@@ -238,6 +249,9 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
             #ifdef CLOUD_SHADOWS
                 vec3 worldPos = playerPos + cameraPosition;
+                #if defined DO_PIXELATION_EFFECTS && defined PIXELATED_SHADOWS
+                    worldPos = playerPosPixelated + cameraPosition;
+                #endif
 
                 #ifdef CLOUDS_REIMAGINED
                     float EdotL = dot(eastVec, lightVec);
@@ -266,7 +280,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                         float cloudSample2 = texture2D(gaux4, cloudPos2).b;
                         cloudSample2 *= clamp(distToCloudLayer2 * 0.1, 0.0, 1.0);
 
-                        cloudSample = max(cloudSample, cloudSample2);
+                        cloudSample = 1.0 - (1.0 - cloudSample) * (1.0 - cloudSample2);
                     #endif
 
                     cloudSample *= sqrt3(1.0 - abs(EdotL));
@@ -353,8 +367,15 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         #endif
 
         // Serve with distance fade
-        vec3 absPlayerPos = abs(playerPos);
-        float maxPlayerPos = max(absPlayerPos.x, max(absPlayerPos.y * 2.0, absPlayerPos.z));
+        vec3 absPlayerPosM = abs(playerPos);
+        #if COLORED_LIGHTING_INTERNAL <= 512
+            absPlayerPosM.y *= 2.0;
+        #elif COLORED_LIGHTING_INTERNAL == 768
+            absPlayerPosM.y *= 3.0;
+        #elif COLORED_LIGHTING_INTERNAL == 1024
+            absPlayerPosM.y *= 4.0;
+        #endif
+        float maxPlayerPos = max(absPlayerPosM.x, max(absPlayerPosM.y, absPlayerPosM.z));
         float blocklightDecider = pow2(min1(maxPlayerPos / effectiveACLdistance * 2.0));
         //if (heldItemId != 40000 || heldItemId2 == 40000) // Hold spider eye to see vanilla lighting
         blockLighting = mix(specialLighting, blockLighting, blocklightDecider);
@@ -363,6 +384,12 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
     #if HELD_LIGHTING_MODE >= 1
         float heldLight = heldBlockLightValue; float heldLight2 = heldBlockLightValue2;
+
+        #ifndef IS_IRIS
+            if (heldLight > 15.1) heldLight = 0.0;
+            if (heldLight2 > 15.1) heldLight2 = 0.0;
+        #endif
+
         #if COLORED_LIGHTING_INTERNAL == 0
             vec3 heldLightCol = blocklightCol; vec3 heldLightCol2 = blocklightCol;
 
@@ -523,10 +550,16 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Vanilla Ambient Occlusion
     float vanillaAO = 1.0;
     #if VANILLAAO_I > 0
-        if (subsurfaceMode != 0) vanillaAO = mix(min1(glColor.a * 1.15), 1.0, shadowMult.g);
+        vanillaAO = glColor.a;
+
+        #if defined DO_PIXELATION_EFFECTS && defined PIXELATED_AO
+            vanillaAO = TexelSnap(vanillaAO, pixelationOffset);
+        #endif
+
+        if (subsurfaceMode != 0) vanillaAO = mix(min1(vanillaAO * 1.15), 1.0, shadowMult.g);
         else if (!noVanillaAO) {
             #ifdef GBUFFERS_TERRAIN
-                vanillaAO = min1(glColor.a + 0.08);
+                vanillaAO = min1(vanillaAO + 0.08);
                 #ifdef OVERWORLD
                     vanillaAO = pow(
                         pow1_5(vanillaAO),
@@ -543,8 +576,6 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                         0.75 + NdotUmax0 * 0.25
                     );
                 #endif
-            #else
-                vanillaAO = glColor.a;
             #endif
             vanillaAO = vanillaAO * 0.9 + 0.1;
 

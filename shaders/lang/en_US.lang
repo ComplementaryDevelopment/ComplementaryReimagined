@@ -8,6 +8,7 @@ profile.MEDIUM=§aMedium
 profile.HIGH=§eHigh (Default)
 profile.VERYHIGH=§cVery High
 profile.ULTRA=§4§lUltra
+profile.COMPLEMENTARY=§4§l§n§oComplementary
 profile.comment=Shader profiles change performance settings with the most optimised visual fidelity to performance ratio. §e[*]§r It's recommended to use one of these profiles for your settings unless you know what you are doing. §e[*]§r All affected settings can all be found in the "Performance Settings" menu.
 
 #Information
@@ -154,10 +155,14 @@ screen.MOON_PHASE_INF_SETTINGS.comment=Settings to determine how different moon 
 screen.ACL_FEATURES_SETTINGS=ACL Exclusive Features §e[*]§r
 screen.ACL_FEATURES_SETTINGS.comment=Settings that are about features exclusive to Advanced Colored Lighting. §e[*]§r These features only work if Advanced Colored Lighting is enabled in Performance Settings and your system supports it.
 
+screen.PIXELATED_LIGHTING_SETTINGS=Pixelated Lighting
+screen.PIXELATED_LIGHTING_SETTINGS.comment=Settings to make certain lighting effects pixelated.
+
 screen.WATER_SETTINGS=Water
 screen.WATER_SETTINGS.comment=Settings that are about water.
 
 screen.WATER_COLOR_SETTINGS=Water Surface Color
+
 screen.UNDERWATER_COLOR_SETTINGS=Underwater Color
 
 screen.WATER_WAVE_SETTINGS=Waving Water Normals §e[*]§r
@@ -216,7 +221,7 @@ value.LIGHTSHAFT_QUALI_DEFINE.3=§cHigh
 value.LIGHTSHAFT_QUALI_DEFINE.4=§4§lVery High
 
 option.shadowDistance=Shadow Distance
-option.shadowDistance.comment=Adjusts the distance from the player which real-time shadows are rendered. §e[*]§r The value is internally capped at Render Distance. §c[-]§r Lower values may cause excessive Light Shaft leaking.
+option.shadowDistance.comment=Adjusts the distance from the player which real-time shadows are rendered. §e[*]§r The value is internally capped at Render Distance. §e[*]§r It's recommended to set this value to about 80% of your render distance for best performance and coverage. §c[-]§r Lower values may cause excessive Light Shaft leaking.
 value.shadowDistance.64.0=§a4 Chunks §c[-]
 value.shadowDistance.80.0=§a5 Chunks §c[-]
 value.shadowDistance.96.0=§a6 Chunks §c[-]
@@ -229,7 +234,7 @@ value.shadowDistance.256.0=§c16 Chunks
 value.shadowDistance.320.0=§c20 Chunks
 value.shadowDistance.384.0=§4§l24 Chunks
 value.shadowDistance.512.0=§4§l32 Chunks
-value.shadowDistance.768.0=§4§k-§r§4§l§n§o48 Chunks§r§4§k-
+value.shadowDistance.768.0=§4§l§n§o48 Chunks
 value.shadowDistance.1024.0=§4§k-§r§4§l§n§o64 Chunks§r§4§k-
 
 option.ENTITY_SHADOWS_DEFINE=Entity Shadows
@@ -269,13 +274,15 @@ value.ANISOTROPIC_FILTER.8=§e8x
 value.ANISOTROPIC_FILTER.16=§4§l16x
 
 option.COLORED_LIGHTING=Advanced Colored Lighting §e[*]§r
-option.COLORED_LIGHTING.comment=Uses voxelization and floodfill lighting to add color to blocklight, alongside introducing some new lights. §e[*]§r This feature only works on Iris and supported platforms. §e[*]§r This setting will be disabled if "Real-Time Shadows" is OFF. §a[+]§r This system also enables some other features which you can individually enable/disable in the "Other" -> "ACL Features" menu. §c[-]§r High chunk values for this effect impact performance way more than expected, each 2 chunk increment costs more than twice the performance of the previous tier.
+option.COLORED_LIGHTING.comment=Uses voxelization and floodfill lighting to add color to blocklight, alongside introducing some new lights. §e[*]§r This feature only works on Iris and supported platforms. §e[*]§r This setting will be disabled if "Real-Time Shadows" is OFF. §a[+]§r This system also enables some other features which you can individually enable/disable in the "Other" -> "ACL Features" menu. §c[-]§r High chunk values for this effect impact performance way more than expected, each increment can cost more than twice the performance of the previous tier.
 value.COLORED_LIGHTING.0=§aOFF
-value.COLORED_LIGHTING.128=§e4 Chunks
+value.COLORED_LIGHTING.128=§c4 Chunks
 value.COLORED_LIGHTING.192=§c6 Chunks
-value.COLORED_LIGHTING.256=§c8 Chunks
+value.COLORED_LIGHTING.256=§4§l8 Chunks
 value.COLORED_LIGHTING.384=§4§l12 Chunks
-value.COLORED_LIGHTING.512=§4§k-§r§4§l§n§o16 Chunks§r§4§k- §r§c[-]
+value.COLORED_LIGHTING.512=§4§l§n§o16 Chunks
+value.COLORED_LIGHTING.768=§4§l§n§o24 Chunks §r§c[-]
+value.COLORED_LIGHTING.1024=§4§k-§r§4§l§n§o32 Chunks§r§4§k- §r§c[-]
 
 option.SSAO_I=Edge Shadow Intensity (SSAO)
 option.SSAO_I.comment=Determines the strength of Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene. §e[*]§r This setting won't work if SSAO is disabled in "Performance Settings".
@@ -313,6 +320,9 @@ value.LIGHTSHAFT_BEHAVIOUR.3=Extreme §c[-]
 
 option.LIGHTSHAFT_SMOKE=Light Shaft Smoke
 option.LIGHTSHAFT_SMOKE.comment=Adds volumetric smoke to the light shafts. §c[-]§r This effect can impact performance.
+
+option.SPECIAL_PALE_GARDEN_LIGHTSHAFTS=Special Pale Garden Shafts
+option.SPECIAL_PALE_GARDEN_LIGHTSHAFTS.comment=Makes light shafts look extra spicy in the "Pale Garden" biome.
 
 option.LIGHTSHAFT_DAY_I=Light Shaft Day Multiplier
 option.LIGHTSHAFT_NIGHT_I=Light Shaft Night Multiplier
@@ -555,14 +565,24 @@ value.SHADOW_SMOOTHING.3=Smooth
 value.SHADOW_SMOOTHING.2=Sharp §c[-]
 value.SHADOW_SMOOTHING.1=Very Sharp §c[-]
 
-option.PIXEL_SHADOW=Pixelated Shadows
-option.PIXEL_SHADOW.comment=Modifies the world coordinates on a grid to make shadows pixelated. §e[*]§r This setting does not affect performance.
-value.PIXEL_SHADOW.0=OFF
-value.PIXEL_SHADOW.8=8x8 §e[*]
-value.PIXEL_SHADOW.16=16x16 §e[*]
-value.PIXEL_SHADOW.32=32x32 §e[*]
-value.PIXEL_SHADOW.64=64x64 §e[*]
-value.PIXEL_SHADOW.128=128x128 §e[*]
+option.PIXELATED_SHADOWS=Pixelated Shadows
+option.PIXELATED_SHADOWS.comment=Makes shadows cast from the sun and moon look pixelated.
+
+option.PIXELATED_BLOCKLIGHT=Pixelated Blocklight
+option.PIXELATED_BLOCKLIGHT.comment=Makes the lighting cast by light source blocks look pixelated.
+
+option.PIXELATED_AO=Pixelated Edge Shadows
+option.PIXELATED_AO.comment=Makes Minecraft's vanilla ambient occlusion look pixelated.
+
+option.PIXEL_SCALE=Pixelation Scale
+option.PIXEL_SCALE.comment=Scaling done on the textures resolution.
+value.PIXEL_SCALE.-2=0.25x
+value.PIXEL_SCALE.-1=0.5x
+value.PIXEL_SCALE.1=1x
+value.PIXEL_SCALE.2=2x
+value.PIXEL_SCALE.3=4x
+value.PIXEL_SCALE.4=8x
+value.PIXEL_SCALE.5=16x
 
 option.BLOOM=Bloom
 option.BLOOM.comment=Enables blurry glow from bright objects and humidity.
@@ -894,6 +914,9 @@ option.WORLD_OUTLINE_THICKNESS.comment=Determines the thickness of the World Out
 
 option.WORLD_OUTLINE_I=World Outline Brightness
 option.WORLD_OUTLINE_I.comment=Determines how intense the World Outline effect will be.
+
+option.WORLD_OUTLINE_ON_ENTITIES=World Outline on Entities
+option.WORLD_OUTLINE_ON_ENTITIES.comment=Determines if the World Outline effect will apply to entities or not. §c[-]§r This setting may not work perfectly with some custom PBR resource packs.
 
 option.DARK_OUTLINE=Dark Outline
 option.DARK_OUTLINE.comment=Adds dark outlines around blocks. §c[-]§r This effect can impact performance.

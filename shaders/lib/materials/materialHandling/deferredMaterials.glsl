@@ -1,4 +1,4 @@
-if (abs(materialMaskInt - 149.5) < 50.0) {
+if (abs(materialMaskInt - 149.5) < 50.0) { // Entity Reflection Handling (see common.glsl for details)
     materialMaskInt -= 100;
     entityOrHand = true;
 }

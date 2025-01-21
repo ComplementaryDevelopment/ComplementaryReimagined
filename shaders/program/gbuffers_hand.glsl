@@ -119,7 +119,6 @@ void main() {
                 #include "/lib/materials/materialHandling/irisMaterials.glsl"
 
                 if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
-                else if (smoothnessD > 0.2) materialMask = 100.0;
             #endif
 
             #ifdef GENERATED_NORMALS

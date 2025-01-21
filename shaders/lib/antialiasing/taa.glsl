@@ -15,14 +15,9 @@
 #endif
 
 // Previous frame reprojection from Chocapic13
-vec2 Reprojection(vec3 pos, vec3 cameraOffset) {
-    pos = pos * 2.0 - 1.0;
-
-    vec4 viewPosPrev = gbufferProjectionInverse * vec4(pos, 1.0);
-    viewPosPrev /= viewPosPrev.w;
-    viewPosPrev = gbufferModelViewInverse * viewPosPrev;
-
-    vec4 previousPosition = viewPosPrev + vec4(cameraOffset, 0.0);
+vec2 Reprojection(vec4 viewPos1) {
+    vec4 pos = gbufferModelViewInverse * viewPos1;
+    vec4 previousPosition = pos + vec4(cameraPosition - previousCameraPosition, 0.0);
     previousPosition = gbufferPreviousModelView * previousPosition;
     previousPosition = gbufferPreviousProjection * previousPosition;
     return previousPosition.xy / previousPosition.w * 0.5 + 0.5;
@@ -95,6 +90,20 @@ void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float z0, float z1,
 void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     int materialMask = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);
 
+    vec4 screenPos1 = vec4(texCoord, z1, 1.0);
+    vec4 viewPos1 = gbufferProjectionInverse * (screenPos1 * 2.0 - 1.0);
+    viewPos1 /= viewPos1.w;
+
+    #ifdef ENTITY_TAA_NOISY_CLOUD_FIX
+        float cloudLinearDepth =  texture2D(colortex4, texCoord).r;
+        float lViewPos1 = length(viewPos1);
+
+        if (pow2(cloudLinearDepth) * renderDistance < min(lViewPos1, renderDistance)) {
+            // Material in question is obstructed by the cloud volume
+            materialMask = 0;
+        }
+    #endif
+
     if (materialMask == 254) { // No SSAO, No TAA
         #ifndef CUSTOM_PBR
             if (z1 <= 0.56) return; // The edge pixel trick doesn't look nice on hand
@@ -109,17 +118,9 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     }
 
     float z0 = texelFetch(depthtex0, texelCoord, 0).r;
-    #ifndef TEMPORAL_FILTER
-        z1 = texelFetch(depthtex1, texelCoord, 0).r;
-    #endif
 
-    #ifdef CUSTOM_PBR
-        if (z1 <= 0.56) return; // materialMask might be occupied, so we do the check manually
-    #endif
-
-    vec3 coord = vec3(texCoord, z1);
-    vec3 cameraOffset = cameraPosition - previousCameraPosition;
-    vec2 prvCoord = Reprojection(coord, cameraOffset);
+    vec2 prvCoord = texCoord;
+    if (z1 > 0.56) prvCoord = Reprojection(viewPos1);
 
     vec3 tempColor = texture2D(colortex2, prvCoord).rgb;
     if (tempColor == vec3(0.0)) { // Fixes the first frame || Possibly fixes nans spreading around
@@ -146,7 +147,7 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     float blendFactor = float(prvCoord.x > 0.0 && prvCoord.x < 1.0 &&
                               prvCoord.y > 0.0 && prvCoord.y < 1.0);
     float velocityFactor = dot(velocity, velocity) * 10.0;
-    blendFactor *= max(exp(-velocityFactor) * blendVariable + blendConstant - length(cameraOffset) * edge, blendMinimum);
+    blendFactor *= max(exp(-velocityFactor) * blendVariable + blendConstant - length(cameraPosition - previousCameraPosition) * edge, blendMinimum);
 
     color = mix(color, tempColor, blendFactor);
     temp = color;

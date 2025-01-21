@@ -1,3 +1,5 @@
+color.rgb = mix(color.rgb, vec3(0.0), 0.65);
+
 beginTextM(8, vec2(6, 10));
     text.fgCol = vec4(1.0, 0.0, 0.0, 1.0);
     printString((_I, _m, _p, _o, _r, _t, _a, _n, _t, _space, _E, _r, _r, _o, _r));
