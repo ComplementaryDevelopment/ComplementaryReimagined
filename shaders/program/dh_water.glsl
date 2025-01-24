@@ -163,7 +163,7 @@ void main() {
         #endif
 
         vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
-                                        depthtex1, dither, skyLightFactor, fresnel,
+                                        dhDepthTex1, dither, skyLightFactor, fresnel,
                                         smoothnessG, geoNormal, color.rgb, shadowMult, highlightMult);
 
         color.rgb = mix(color.rgb, reflection.rgb, fresnelM);
