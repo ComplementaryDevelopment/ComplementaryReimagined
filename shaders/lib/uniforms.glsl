@@ -38,6 +38,7 @@ uniform float far;
 uniform float near;
 uniform float nightVision;
 uniform float rainStrength;
+uniform float thunderStrength;
 uniform float screenBrightness;
 uniform float viewHeight;
 uniform float viewWidth;
@@ -153,6 +154,9 @@ uniform float frameTimeSmooth;
 uniform float eyeBrightnessM;
 uniform float eyeBrightnessM2;
 uniform float rainFactor;
+#ifdef IS_IRIS
+    uniform float thunderFactor;
+#endif
 uniform float inBasaltDeltas;
 uniform float inCrimsonForest;
 uniform float inNetherWastes;

@@ -63,8 +63,25 @@
                 float visfactor = 0.075;
                 float glare = visfactor / (1.0 - (1.0 - visfactor) * VdotSM4) - visfactor;
 
-                glare *= 0.5 + pow2(noonFactor) * 1.2;
-                glare *= 1.0 - rainFactor * 0.5;
+                float glare_k = glare * 4;
+                float glare_clear = glare_k * SUN_MOON_GLARE_INTENSITY * invRainFactor;
+
+                // Thunder strength uniform is only available on Iris
+                #ifdef IS_IRIS
+                    glare_clear *= invThunderFactor;
+                #endif
+
+                float glare_noon = glare_clear * noonFactor;
+                float glare_night = glare_clear * nightFactor;
+                float glare_rain = glare_k * rainFactor * SUN_MOON_GLARE_INTENSITY_DURING_RAIN;
+                float glare_thunder = 0.0;
+
+                #ifdef IS_IRIS
+                    glare_rain *= invThunderFactor;
+                    glare_thunder = glare_k * thunderFactor * SUN_MOON_GLARE_INTENSITY_DURING_THUNDER;
+                #endif
+
+                glare *= glare_noon + glare_night + glare_rain + glare_thunder;
 
                 float glareWaterFactor = isEyeInWater * sunVisibility;
                 vec3 glareColor = mix(vec3(0.38, 0.4, 0.5) * 0.7, vec3(0.5), sunVisibility);
