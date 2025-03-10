@@ -38,7 +38,6 @@ uniform float far;
 uniform float near;
 uniform float nightVision;
 uniform float rainStrength;
-uniform float thunderStrength;
 uniform float screenBrightness;
 uniform float viewHeight;
 uniform float viewWidth;
@@ -95,6 +94,7 @@ uniform vec3 previousCameraPositionFract;
 
 #ifdef IS_IRIS
     uniform int renderStage;
+    uniform float thunderStrength;
 #endif
 
 #if SHADOW_QUALITY > -1 || defined LIGHTSHAFTS_ACTIVE || defined FF_BLOCKLIGHT
