@@ -82,7 +82,7 @@
     #define SUN_MOON_STYLE_DEFINE -1 //[-1 1 2 3]
     #define SUN_MOON_HORIZON
     #define SUN_MOON_DURING_RAIN
-    #define NIGHT_STAR_AMOUNT 2 //[1 2 3 4 5]
+    #define NIGHT_STAR_AMOUNT 2 //[0 1 2 3 4 5]
     #define RAINBOWS 1 //[0 1 3]
     #define CLOUD_STYLE_DEFINE -1 //[-1 0 1 3 50]
     //#define CLOUD_SHADOWS

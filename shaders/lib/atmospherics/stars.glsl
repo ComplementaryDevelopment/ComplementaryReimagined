@@ -12,6 +12,10 @@ vec2 GetStarCoord(vec3 viewPos, float sphereness) {
 }
 
 vec3 GetStars(vec2 starCoord, float VdotU, float VdotS) {
+    #if NIGHT_STAR_AMOUNT == 0
+        return vec3(0.0, 0.0, 0.0);
+    #endif
+
     if (VdotU < 0.0) return vec3(0.0);
 
     starCoord *= 0.2;
@@ -39,6 +43,7 @@ vec3 GetStars(vec2 starCoord, float VdotU, float VdotS) {
         star -= 0.55;
         star *= 0.6;
     #endif
+
     star = max0(star);
     star *= star;
 

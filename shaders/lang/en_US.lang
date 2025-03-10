@@ -517,6 +517,7 @@ option.SUN_MOON_DURING_RAIN.comment=Determines if the sun and moon will be visib
 
 option.NIGHT_STAR_AMOUNT=Night Star Amount
 option.NIGHT_STAR_AMOUNT.comment=Determines the amount of stars in the night sky.
+value.NIGHT_STAR_AMOUNT.0=Off
 value.NIGHT_STAR_AMOUNT.1=Few
 value.NIGHT_STAR_AMOUNT.2=Fewer
 value.NIGHT_STAR_AMOUNT.3=Medium
