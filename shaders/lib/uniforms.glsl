@@ -94,6 +94,7 @@ uniform vec3 previousCameraPositionFract;
 
 #ifdef IS_IRIS
     uniform int renderStage;
+    uniform float thunderStrength;
 #endif
 
 #if SHADOW_QUALITY > -1 || defined LIGHTSHAFTS_ACTIVE || defined FF_BLOCKLIGHT
@@ -153,6 +154,9 @@ uniform float frameTimeSmooth;
 uniform float eyeBrightnessM;
 uniform float eyeBrightnessM2;
 uniform float rainFactor;
+#ifdef IS_IRIS
+    uniform float thunderFactor;
+#endif
 uniform float inBasaltDeltas;
 uniform float inCrimsonForest;
 uniform float inNetherWastes;

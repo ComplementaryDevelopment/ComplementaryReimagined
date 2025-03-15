@@ -184,6 +184,10 @@
     #define DIRECTIONAL_BLOCKLIGHT 0 //[0 3 7 11]
 
     #define MINIMUM_LIGHT_MODE 2 //[0 1 2 3 4 5 6]
+    #define NON_DIRECTIONAL_SHADOWS_RAIN 0 //[0 1]
+    #define NON_DIRECTIONAL_SHADOWS_RAIN_MULT 1.00 //[0.00 0.10 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
+    #define NON_DIRECTIONAL_SHADOWS_THUNDER 0 //[0 1]
+    #define NON_DIRECTIONAL_SHADOWS_THUNDER_MULT 1.00 //[0.00 0.10 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
     #define HELD_LIGHTING_MODE 2 //[0 1 2]
     #define BLOCKLIGHT_FLICKERING 0 //[0 2 3 4 5 6 7 8 9 10]
     #define AMBIENT_MULT 100 //[50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
@@ -654,6 +658,9 @@
     float rainFactor2 = rainFactor * rainFactor;
     float invRainFactor = 1.0 - rainFactor;
     float invRainFactorSqrt = 1.0 - rainFactor * rainFactor;
+    #ifdef IS_IRIS
+        float invThunderFactor = 1.0 - thunderFactor;
+    #endif
     float invNoonFactor = 1.0 - noonFactor;
     float invNoonFactor2 = invNoonFactor * invNoonFactor;
 

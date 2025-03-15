@@ -222,7 +222,22 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             }
                         #endif
 
-                        shadowMult *= GetShadow(shadowPos, lViewPos, lightmap.y, offset, leaves);
+                        float dirShadowsFactor = 1.0;
+                        float nonDirShadowsMult = 0.0;
+
+                        #if NON_DIRECTIONAL_SHADOWS_RAIN == 1
+                            dirShadowsFactor *= invRainFactor;
+                            nonDirShadowsMult += pow(skyLightShadowMult, NON_DIRECTIONAL_SHADOWS_RAIN_MULT) * rainFactor;
+                        #endif
+
+                        #if NON_DIRECTIONAL_SHADOWS_THUNDER == 1 && defined IS_IRIS
+                            nonDirShadowsMult *= invThunderFactor;
+                            nonDirShadowsMult += pow(skyLightShadowMult, NON_DIRECTIONAL_SHADOWS_THUNDER_MULT) * thunderFactor;
+                        #endif
+
+                        vec3 directionalShadow = GetShadow(shadowPos, lViewPos, lightmap.y, offset, leaves);
+
+                        shadowMult *= directionalShadow * dirShadowsFactor + nonDirShadowsMult;
                     }
 
                     float shadowSmooth = 16.0;

@@ -158,6 +158,9 @@ screen.ACL_FEATURES_SETTINGS.comment=Settings that are about features exclusive 
 screen.PIXELATED_LIGHTING_SETTINGS=Pixelated Lighting
 screen.PIXELATED_LIGHTING_SETTINGS.comment=Settings to make certain lighting effects pixelated.
 
+screen.RAINY_WEATHER_SETTINGS=Rainy Weather
+screen.RAINY_WEATHER_SETTINGS.comment=Settings to adjust effects during rain or thunder.
+
 screen.WATER_SETTINGS=Water
 screen.WATER_SETTINGS.comment=Settings that are about water.
 
@@ -583,6 +586,22 @@ value.PIXEL_SCALE.2=2x
 value.PIXEL_SCALE.3=4x
 value.PIXEL_SCALE.4=8x
 value.PIXEL_SCALE.5=16x
+
+option.NON_DIRECTIONAL_SHADOWS_RAIN=Non-directional shadows in rain
+option.NON_DIRECTIONAL_SHADOWS_RAIN.comment=Enable non-directional shadows during rain.
+value.NON_DIRECTIONAL_SHADOWS_RAIN.0=OFF
+value.NON_DIRECTIONAL_SHADOWS_RAIN.1=ON
+
+option.NON_DIRECTIONAL_SHADOWS_RAIN_MULT=N/d shadows intensity in rain
+option.NON_DIRECTIONAL_SHADOWS_RAIN_MULT.comment=Adjusts the intensity of non-directional shadows during rain.
+
+option.NON_DIRECTIONAL_SHADOWS_THUNDER=Non-directional shadows in thunder
+option.NON_DIRECTIONAL_SHADOWS_THUNDER.comment=Enable non-directional shadows during thunder. §e[*]§r This setting only works on Iris.
+value.NON_DIRECTIONAL_SHADOWS_THUNDER.0=OFF
+value.NON_DIRECTIONAL_SHADOWS_THUNDER.1=ON
+
+option.NON_DIRECTIONAL_SHADOWS_THUNDER_MULT=N/d shadows intensity in thunder
+option.NON_DIRECTIONAL_SHADOWS_THUNDER_MULT.comment=Adjusts the intensity of non-directional shadows during thunder.
 
 option.BLOOM=Bloom
 option.BLOOM.comment=Enables blurry glow from bright objects and humidity.
