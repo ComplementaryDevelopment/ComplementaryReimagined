@@ -221,7 +221,7 @@ void main() {
             dlbColor += texelFetch(colortex0, texelCoord + ivec2( 0,-dlbo), 0).rgb;
             dlbColor += texelFetch(colortex0, texelCoord + ivec2( dlbo, 0), 0).rgb;
             dlbColor += texelFetch(colortex0, texelCoord + ivec2(-dlbo, 0), 0).rgb;
-            dlbColor *= 0.2;
+            dlbColor = max(color, dlbColor * 0.2);
             float dlbMix = GetDistantLightBokehMix(lViewPos);
             color = mix(color, dlbColor, dlbMix);
         #endif
@@ -383,6 +383,9 @@ void main() {
         #endif
 
         #ifdef WORLD_OUTLINE
+            #ifndef WORLD_OUTLINE_ON_ENTITIES
+                if (!entityOrHand)
+            #endif
             DoWorldOutline(color, linearZ0);
         #endif
 

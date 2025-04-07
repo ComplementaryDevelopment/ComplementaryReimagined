@@ -17,6 +17,6 @@ if (color.a > 0.001) {
 
         color.a = max(color.a, GLASS_OPACITY);
     #else
-        discard;
+        //discard;
     #endif
 }

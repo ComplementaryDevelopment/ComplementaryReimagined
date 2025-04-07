@@ -98,18 +98,10 @@ void main() {
     #endif
     color *= glColor;
 
-    color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
-
-    float alphaCheck = color.a;
-    #ifdef USE_TEXEL_OFFSET
-        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
-        alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
-    #endif
-
     float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec3 normalM = normal;
 
-    if (alphaCheck > 0.001) {
+    if (color.a > 0.001) {
         vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
         vec3 viewPos = ScreenToView(screenPos);
         vec3 nViewPos = normalize(viewPos);
@@ -120,9 +112,6 @@ void main() {
         bool noGeneratedNormals = false;
         float smoothnessG = 0.0, highlightMult = 0.0, emission = 0.0, noiseFactor = 0.75;
         vec2 lmCoordM = lmCoord;
-        #if PIXEL_SHADING > 2
-            lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
-        #endif
         vec3 shadowMult = vec3(1.0);
         #ifdef IPBR
             #include "/lib/materials/materialHandling/entityMaterials.glsl"
@@ -133,7 +122,6 @@ void main() {
             #endif
 
             if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
-            else if (smoothnessD > 0.2) materialMask = 100.0;
 
             #ifdef GENERATED_NORMALS
                 if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
@@ -155,26 +143,20 @@ void main() {
                 #include "/lib/materials/specificMaterials/entities/lightningBolt.glsl"
             } else if (entityId == 50008) { // Item Frame, Glow Item Frame
                 noSmoothLighting = true;
+            } else if (entityId == 50076) { // Boats
+                playerPos.y += 0.38; // to avoid water shadow and the black inner shadow bug
             }
         #endif
+    
+        color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
 
         normalM = gl_FrontFacing ? normalM : -normalM; // Inverted Normal Workaround
         vec3 geoNormal = normalM;
-        #if PIXEL_NORMALS > 0
-            normalM = TexelSnap(normalM, texelOffset);
-            geoNormal = normalM;
-        #endif
         vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
-        #if PIXEL_SHADING > 0
-            DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                       worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
-                       true, 0, smoothnessG, highlightMult, emission, texelOffset);
-        #else
-            DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                       worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
-                       true, 0, smoothnessG, highlightMult, emission);
-        #endif
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+                   true, 0, smoothnessG, highlightMult, emission);
 
         #if defined IPBR && defined IS_IRIS
             color.rgb += maRecolor;

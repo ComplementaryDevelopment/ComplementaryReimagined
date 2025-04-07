@@ -34,11 +34,20 @@ void DoSimpleConnectedGlass(inout vec4 color) {
 
 #ifdef GBUFFERS_WATER
     void DoConnectedGlass(inout vec4 colorP, inout vec4 color, inout bool noGeneratedNormals, vec3 playerPos, vec3 worldGeoNormal, uint voxelID, bool isPane) {
-        vec3 playerPosM = playerPos - worldGeoNormal * 0.25;
+        vec3 worldGeoNormalM = vec3( // Fixes Iris 1.8 normal precision issues causing the coordinates to be imperfect
+            round(worldGeoNormal.x),
+            round(worldGeoNormal.y),
+            round(worldGeoNormal.z)
+        );
+        vec3 playerPosM = playerPos - worldGeoNormalM * 0.25;
         vec3 voxelPos = SceneToVoxel(playerPosM);
 
         if (CheckInsideVoxelVolume(voxelPos)) {
-            float epsilon2 = 0.001;
+            #if IRIS_VERSION >= 10800
+                float epsilon2 = 0.0;
+            #else
+                float epsilon2 = 0.001;
+            #endif
             float pixelOffset = 0.5 / (absMidCoordPos.y * atlasSize.y);
             float pixelOffsetPlus = pixelOffset + epsilon2;
             float pixelOffsetMinus = pixelOffset - epsilon2;
@@ -47,7 +56,7 @@ void DoSimpleConnectedGlass(inout vec4 color) {
             vec4 colorPvanilla = colorP;
 
             vec2 midCoordM = GetModifiedMidCoord();
-            vec3 worldPos = playerPosM + cameraPosition;
+            vec3 worldPos = playerPosM + cameraPositionBestFract;
             vec3 floorWorldPos = floor(worldPos);
 
             // Remove edges
@@ -86,7 +95,7 @@ void DoSimpleConnectedGlass(inout vec4 color) {
                     uint voxel = texelFetch(voxel_sampler, ivec3(voxelPos) - ivec3(0, 1, 0), 0).r;
                     if (voxel == voxelID) discard;
                 }
-            } 
+            }
             
             #ifdef CONNECTED_GLASS_CORNER_FIX
             else {

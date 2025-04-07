@@ -22,7 +22,7 @@ if (currentRenderedItemId < 45064) {
                     smoothnessD = 0.5;
 
                     #ifdef GLOWING_ARMOR_TRIM
-                        emission = 1.5;
+                        emission = 1.0;
                     #endif
                 } else if (currentRenderedItemId == 45004) { // Wooden Tools, Bow, Fishing Rod
                     #include "/lib/materials/specificMaterials/planks/sprucePlanks.glsl"

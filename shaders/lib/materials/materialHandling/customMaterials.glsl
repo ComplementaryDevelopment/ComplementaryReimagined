@@ -133,7 +133,7 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
     emission = GetCustomEmission(specularMap, texCoordM);
 
     #ifndef GBUFFERS_WATER
-        #ifdef GBUFFERS_ENTITIES
+        #if defined GBUFFERS_ENTITIES || defined GBUFFERS_HAND
             if (
                 materialMask > OSIEBCA * 240.1
                 && specularMap.g < 0.01

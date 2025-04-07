@@ -49,12 +49,23 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 
         if (sunVisibility < 0.5) {
             vlSceneIntensity = 0.0;
-            vlMult *= 0.6 + 0.4 * max0(far - lViewPos1) / far;
+            
+            float vlMultNightModifier = 0.6 + 0.4 * max0(far - lViewPos1) / far;
+            #ifdef SPECIAL_PALE_GARDEN_LIGHTSHAFTS
+                vlMultNightModifier = mix(vlMultNightModifier, 1.0, inPaleGarden);
+            #endif
+            vlMult *= vlMultNightModifier;
+
             vlColor = normalize(pow(vlColor, vec3(1.0 - max0(1.0 - 1.5 * nightFactor))));
             vlColor *= 0.0766 + 0.0766 * vsBrightness;
         } else {
             vlColorReducer = 1.0 / sqrt(vlColor);
         }
+
+        #ifdef SPECIAL_PALE_GARDEN_LIGHTSHAFTS
+            vlSceneIntensity = mix(vlSceneIntensity, 1.0, inPaleGarden);
+            vlMult *= 1.0 + (3.0 * inPaleGarden) * (1.0 - sunVisibility);
+        #endif
 
         float rainyNight = (1.0 - sunVisibility) * rainFactor;
         float VdotLM = max((VdotL + 1.0) / 2.0, 0.0);
@@ -238,9 +249,12 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
                         ivec2 icoord = ivec2(coord * shadowMapResolutionM);
                         float salsSample = texelFetch(shadowtex0, icoord, 0).x; // read 28A3DK6
                         if (salsSample < 0.55) {
-                            float sampledHeight = max0(texture2D(shadowcolor1, coord).a - 0.25) / 0.05; // consistencyMEJHRI7DG
-                            salsSampleSum += sampledHeight;
-                            salsSampleCount++;
+                            float sampledHeight = texture2D(shadowcolor1, coord).a;
+                            if (sampledHeight > 0.0) {
+                                sampledHeight = max0(sampledHeight - 0.25) / 0.05; // consistencyMEJHRI7DG
+                                salsSampleSum += sampledHeight;
+                                salsSampleCount++;
+                            }
                         }
                     }
                 }
@@ -277,15 +291,19 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
         vlColor = pow(vlColor, vec3(0.5 + 0.5 * invNoonFactor * invRainFactor + 0.3 * rainFactor));
         vlColor *= 1.0 - (0.3 + 0.3 * noonFactor) * rainFactor - 0.5 * rainyNight;
 
-        #if LIGHTSHAFT_DAY_I != 100 || LIGHTSHAFT_NIGHT_I != 100
+        #if LIGHTSHAFT_DAY_I != 100 || LIGHTSHAFT_NIGHT_I != 100 || LIGHTSHAFT_RAIN_I != 100
             #define LIGHTSHAFT_DAY_IM LIGHTSHAFT_DAY_I * 0.01
             #define LIGHTSHAFT_NIGHT_IM LIGHTSHAFT_NIGHT_I * 0.01
-            vlColor.rgb *= mix(LIGHTSHAFT_NIGHT_IM, LIGHTSHAFT_DAY_IM, sunVisibility);
-        #endif
-
-        #if LIGHTSHAFT_RAIN_I != 100
             #define LIGHTSHAFT_RAIN_IM LIGHTSHAFT_RAIN_I * 0.01
-            vlColor.rgb *= mix(1.0, LIGHTSHAFT_RAIN_IM, rainFactor);
+
+            if (isEyeInWater == 0) {
+                #if LIGHTSHAFT_DAY_I != 100 || LIGHTSHAFT_NIGHT_I != 100
+                    vlColor.rgb *= mix(LIGHTSHAFT_NIGHT_IM, LIGHTSHAFT_DAY_IM, sunVisibility);
+                #endif
+                #if LIGHTSHAFT_RAIN_I != 100
+                    vlColor.rgb *= mix(1.0, LIGHTSHAFT_RAIN_IM, rainFactor);
+                #endif
+            }
         #endif
 
         volumetricLight.rgb *= vlColor;

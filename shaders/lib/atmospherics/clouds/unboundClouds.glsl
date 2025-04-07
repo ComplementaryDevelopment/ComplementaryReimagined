@@ -141,6 +141,10 @@ vec4 GetVolumetricClouds(int cloudAltitude, float distanceThreshold, inout float
     float VdotSM2 = pow2(VdotSM1) * abs(sunVisibility - 0.5) * 2.0;
     float VdotSM3 = VdotSM2 * (2.5 + rainFactor) + 1.5 * rainFactor;
 
+    #ifdef FIX_AMD_REFLECTION_CRASH
+        sampleCount = min(sampleCount, 30); //BFARC
+    #endif
+
     for (int i = 0; i < sampleCount; i++) {
         tracePos += traceAdd;
 

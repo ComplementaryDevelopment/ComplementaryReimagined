@@ -57,7 +57,7 @@ void main() {
         color.rgb *= color.rgb * 4.0;
     #endif
 
-    color.rgb *= 0.5 + 0.5 * exp(- lViewPos * 0.04);
+    color.rgb *= 0.5 + 0.5 * exp(-lViewPos * 0.04);
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);

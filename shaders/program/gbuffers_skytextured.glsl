@@ -53,15 +53,27 @@ void main() {
         float VdotS = dot(nViewPos, sunVec);
         float VdotU = dot(nViewPos, upVec);
 
-        if (abs(tSize.y - 264.0) < 248.5) { //tSize.y must range from 16 to 512
+        #ifdef IS_IRIS
+            bool isSun = renderStage == MC_RENDER_STAGE_SUN;
+            bool isMoon = renderStage == MC_RENDER_STAGE_MOON;
+        #else
+            bool tSizeCheck = abs(tSize.y - 264.0) < 248.5; //tSize.y must range from 16 to 512
+            bool sunSideCheck = VdotS > 0.0;
+            bool isSun = tSizeCheck && sunSideCheck;
+            bool isMoon = tSizeCheck && !sunSideCheck;
+        #endif
+
+        if (isSun || isMoon) {
             #if SUN_MOON_STYLE >= 2
                 discard;
             #endif
 
-            if (VdotS > 0.0) { // Sun
+            if (isSun) {
                 color.rgb *= dot(color.rgb, color.rgb) * normalize(lightColor) * 3.2;
                 color.rgb *= 0.25 + (0.75 - 0.25 * rainFactor) * sunVisibility2;
-            } else { // Moon
+            }
+
+            if (isMoon) {
                 color.rgb *= smoothstep1(min1(length(color.rgb))) * 1.3;
             }
 

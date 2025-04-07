@@ -1,3 +1,5 @@
+color.rgb = mix(color.rgb, vec3(0.0), 0.65);
+
 beginTextM(8, vec2(6, 10));
     text.fgCol = vec4(1.0, 0.0, 0.0, 1.0);
     printString((_I, _m, _p, _o, _r, _t, _a, _n, _t, _space, _E, _r, _r, _o, _r));
@@ -56,5 +58,21 @@ beginTextM(2, vec2(30, 155));
         _f, _e, _a, _t, _u, _r, _e, _s, _comma, _space, _l, _e, _s, _s, _space, _b, _u, _g, _s,
         _comma, _space, _a, _n, _d, _space, _m, _o, _r, _e, _space,
         _p, _e, _r, _f, _o, _r, _m, _a, _n, _c, _e, _dot
+    ));
+endText(color.rgb);
+
+beginTextM(2, vec2(30, 200));
+    printLine();
+    text.fgCol = vec4(vec3(0.65), 1.0);
+    printString((
+        _P, _l, _e, _a, _s, _e, _space, _n, _o, _t, _e, _space, _t, _h, _a, _t, _space,
+        _u, _s, _i, _n, _g, _space, _a, _n, _space, _o, _l, _d, _space, _I, _r, _i, _s, _space,
+        _v, _e, _r, _s, _i, _o, _n, _space, _w, _i, _l, _l, _space, _n, _o, _t, _space
+    ));
+    printLine();
+    printString((
+        _w, _o, _r, _k, _space, _a, _n, _d, _space, _m, _a, _y, _space,
+        _s, _t, _i, _l, _l, _space, _c, _a, _u, _s, _e, _space, _t, _h, _i, _s, _space,
+        _e, _r, _r, _o, _r, _space, _t, _o, _space, _a, _p, _p, _e, _a, _r, _dot
     ));
 endText(color.rgb);
