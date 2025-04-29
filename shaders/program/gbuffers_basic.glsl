@@ -66,7 +66,7 @@ void main() {
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
     #ifndef GBUFFERS_LINE
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
                    worldGeoNormal, lmCoord, false, false, false,
                    false, 0, 0.0, 0.0, 0.0);
     #endif

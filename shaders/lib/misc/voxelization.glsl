@@ -235,7 +235,7 @@
                         if (mat == 10704) return  57; // Sculk Sensor:Lit
                         #ifdef DO_IPBR_LIGHTS
                         if (mat == 10708) return  53; // Spawner
-                        if (mat == 10736) return  64; // Structure Block, Jigsaw Block
+                        if (mat == 10736) return  64; // Structure Block, Jigsaw Block, Test Block, Test Instance Block
                         if (mat == 10776) return  61; // Warped Fungus, Crimson Fungus
                         #endif
                     } else {
@@ -274,8 +274,10 @@
                         if (mat == 10920) return  79; // Magenta Candles:Lit
                         if (mat == 10922) return  80; // Pink Candles:Lit
                         #endif
-                        if (mat == 10924) return  81; // Open Eyeblossom
                         if (mat == 10948) return  82; // Creaking Heart: Active
+                        if (mat == 10972) return  83; // Firefly Bush
+                        if (mat == 10976) return  81; // Open Eyeblossom
+                        if (mat == 10980) return  81; // Potted Open Eyeblossom
                         if (mat == 30008) return 254; // Tinted Glass
                         if (mat == 30012) return 213; // Slime Block
                         if (mat == 30016) return 201; // Honey Block
@@ -296,8 +298,9 @@
 
     #if defined SHADOW && defined VERTEX_SHADER
         void UpdateVoxelMap(int mat) {
-            if (mat == 32000 || // Water
-                mat < 30000 && mat % 4 == 1 // Non-solid terrain
+            if (mat == 32000 // Water
+            || mat < 30000 && mat % 4 == 1 // Non-solid terrain
+            || mat < 10000 // Block entities or unknown blocks that we treat as non-solid
             ) return;
 
             vec3 modelPos = gl_Vertex.xyz + at_midBlock / 64.0;

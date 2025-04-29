@@ -128,6 +128,12 @@ void main() {
         #endif
     #endif
 
+    #ifdef VIGNETTE_R
+        vec2 texCoordMin = texCoordM.xy - 0.5;
+        float vignette = 1.0 - dot(texCoordMin, texCoordMin) * (1.0 - GetLuminance(color));
+        color *= vignette;
+    #endif
+
     /* DRAWBUFFERS:0 */
     gl_FragData[0] = vec4(color, 1.0);
 }

@@ -119,17 +119,18 @@ void main() {
                      playerPos, lmCoord, snowFactor, snowMinNdotU, NdotU, subsurfaceMode);
     #endif
 
-    float lengthCylinder = max(length(playerPos.xz), abs(playerPos.y));
+    vec3 playerPosAlt = ViewToPlayer(viewPos); // AMD has problems with vertex playerPos and DH
+    float lengthCylinder = max(length(playerPosAlt.xz), abs(playerPosAlt.y));
     highlightMult *= 0.5 + 0.5 * pow2(1.0 - smoothstep(far, far * 1.5, lengthCylinder));
     color.a *= smoothstep(far * 0.5, far * 0.7, lengthCylinder);
-    if (color.a < dither) discard;
+    if (color.a < min(dither, 1.0)) discard;
 
     vec3 noisePos = floor((playerPos + cameraPosition) * 4.0 + 0.001) / 32.0;
     float noiseTexture = Noise3D(noisePos) + 0.5;
     float noiseFactor = max0(1.0 - 0.3 * dot(color.rgb, color.rgb));
     color.rgb *= pow(noiseTexture, 0.6 * noiseFactor);
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
     /* DRAWBUFFERS:0 */

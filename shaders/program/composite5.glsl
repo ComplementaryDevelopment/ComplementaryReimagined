@@ -175,12 +175,6 @@ void main() {
 
     DoBSLColorSaturation(color);
 
-    #ifdef VIGNETTE_R
-        vec2 texCoordMin = texCoord.xy - 0.5;
-        float vignette = 1.0 - dot(texCoordMin, texCoordMin) * (1.0 - GetLuminance(color));
-        color *= vignette;
-    #endif
-
     float filmGrain = dither;
     color += vec3((filmGrain - 0.25) / 128.0);
 
