@@ -4,7 +4,7 @@
     #ifdef OVERWORLD
         vec3 skyColorSqrt = sqrt(skyColor);
         // Doing these things because vanilla skyColor gets to 0 during a thunderstorm
-        float invRainStrength2 = pow2(1.0 - rainStrength);
+        float invRainStrength2 = (1.0 - rainStrength) * (1.0 - rainStrength);
         vec3 skyColorM = mix(max(skyColorSqrt, vec3(0.63, 0.67, 0.73)), skyColorSqrt, invRainStrength2);
         vec3 skyColorM2 = mix(max(skyColor, sunFactor * vec3(0.265, 0.295, 0.35)), skyColor, invRainStrength2);
 

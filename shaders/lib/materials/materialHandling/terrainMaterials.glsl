@@ -1360,21 +1360,31 @@ if (mat < 11024) {
                                     noDirectionalShading = true;
 
                                     #ifdef GBUFFERS_TERRAIN
-                                        vec3 fractPos = abs(fract(playerPos + cameraPosition) - 0.5);
-                                        float maxCoord = max(fractPos.x, max(fractPos.y, fractPos.z));
-                                        lmCoordM.x = maxCoord < 0.4376 ? 0.97 : 0.8;
+                                        noSmoothLighting = true;
+                                        lmCoordM.x = 0.92;
                                     #else
                                         lmCoordM.x = 0.9;
                                     #endif
 
                                     float dotColor = dot(color.rgb, color.rgb);
                                     if (dotColor > 2.0) {
-                                        emission = 2.8;
+                                        emission = 3.3;
                                         emission *= 0.4 + max0(0.6 - 0.006 * lViewPos);
 
                                         color.rgb = pow2(color.rgb);
                                         color.g *= 0.95;
                                     }
+
+                                    #ifdef GBUFFERS_TERRAIN
+                                        else { // Directional Self-light Effect
+                                            vec3 fractPos = abs(fract(playerPos + cameraPosition) - 0.5);
+                                            float maxCoord = max(fractPos.x, max(fractPos.y, fractPos.z));
+                                            if (maxCoord < 0.4376) {
+                                                lmCoordM.x = 1.0;
+                                                color.rgb *= 1.8;
+                                            }
+                                        }
+                                    #endif
 
                                     #ifdef DISTANT_LIGHT_BOKEH
                                         DoDistantLightBokehMaterial(emission, 4.0, lViewPos);

@@ -14,7 +14,7 @@ noperspective in vec2 texCoord;
 #include "/lib/pipelineSettings.glsl"
 
 //Common Variables//
-#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING_INTERNAL > 0
+#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0
     #define ANY_ERROR_MESSAGE
 #endif
 
@@ -22,15 +22,15 @@ noperspective in vec2 texCoord;
     #define OPTIFINE_AF_ERROR
 #endif
 
-#if COLORED_LIGHTING_INTERNAL > 0 && !defined IS_IRIS
+#if COLORED_LIGHTING > 0 && !defined IS_IRIS
     #define OPTIFINE_ACL_ERROR
 #endif
 
-#if COLORED_LIGHTING_INTERNAL > 0 && defined MC_OS_MAC
+#if COLORED_LIGHTING > 0 && defined MC_OS_MAC
     #define APPLE_ACL_ERROR
 #endif
 
-#if COLORED_LIGHTING_INTERNAL > 0
+#if COLORED_LIGHTING > 0
     #define COORDINATES_ACL_ERROR
     #define SHADOWDISTANCE_ACL_ERROR
 #endif
