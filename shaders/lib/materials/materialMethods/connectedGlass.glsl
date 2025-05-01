@@ -98,17 +98,15 @@ void DoSimpleConnectedGlass(inout vec4 color) {
             }
             
             #ifdef CONNECTED_GLASS_CORNER_FIX
-            else {
                 // Restores corners
                 for (int i = 0; i < 12; i++) {
                     uint voxel = texelFetch(voxel_sampler, ivec3(voxelPos) + glassCornerOffsets[i], 0).r;
-                    if (voxel != voxelID) {
+                    if ((voxel != voxelID) && (!isPane || voxel > 0u)) {
                         if (floor((worldPos - glassCornerOffsets[i] * (1.0 - pixelOffsetMinus))) == floorWorldPos) {
                             colorP = colorPvanilla;
                         }
                     }
                 }
-            }
             #endif
         
             color = colorP * vec4(glColor.rgb, 1.0);

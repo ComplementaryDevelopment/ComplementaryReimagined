@@ -1,3 +1,16 @@
+#ifdef FXAA_TAA_INTERACTION
+    ivec2 neighbourhoodOffsets[8] = ivec2[8](
+        ivec2( 1, 1),
+        ivec2( 1,-1),
+        ivec2(-1, 1),
+        ivec2(-1,-1),
+        ivec2( 1, 0),
+        ivec2( 0, 1),
+        ivec2(-1, 0),
+        ivec2( 0,-1)
+    );
+#endif
+
 //FXAA 3.11 from http://blog.simonrodriguez.fr/articles/30-07-2016_implementing_fxaa.html
 float quality[12] = float[12] (1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 2.0, 2.0, 2.0, 2.0, 4.0, 8.0);
 
@@ -146,6 +159,36 @@ void FXAA311(inout vec3 color) {
             finalUv.x += finalOffset * stepLength;
         }
 
-        color = texture2D(colortex3, finalUv).rgb;
+        #if defined TAA && defined FXAA_TAA_INTERACTION && TAA_MODE == 1
+            // Less FXAA when moving
+            vec3 newColor = texture2D(colortex3, finalUv).rgb;
+            float skipFactor = min1(
+                20.0 * length(cameraPosition - previousCameraPosition)
+                #ifdef TAA_MOVEMENT_IMPROVEMENT_FILTER
+                    + 0.25 // Catmull-Rom sampling gives us headroom to still do a bit of fxaa
+                #endif
+            );
+
+            float z0 = texelFetch(depthtex0, texelCoord, 0).r;
+            float z1 = texelFetch(depthtex1, texelCoord, 0).r;
+            bool edge = false;
+            for (int i = 0; i < 8; i++) {
+                ivec2 texelCoordM = texelCoord + neighbourhoodOffsets[i];
+
+                float z0Check = texelFetch(depthtex0, texelCoordM, 0).r;
+                float z1Check = texelFetch(depthtex1, texelCoordM, 0).r;
+                if (max(abs(GetLinearDepth(z0Check) - GetLinearDepth(z0)), abs(GetLinearDepth(z1Check) - GetLinearDepth(z1))) > 0.09) {
+                    edge = true;
+                    break;
+                }
+            }
+            if (edge) skipFactor = 0.0;
+
+            if (dot(texelFetch(colortex2, texelCoord, 0).rgb, vec3(1.0)) < 0.01) skipFactor = 0.0;
+            
+            color = mix(newColor, color, skipFactor);
+        #else
+            color = texture2D(colortex3, finalUv).rgb;
+        #endif
     }
 }

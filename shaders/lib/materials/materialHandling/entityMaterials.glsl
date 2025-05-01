@@ -124,7 +124,7 @@ if (entityId < 50064) {
 
                     color.rgb *= color.rgb;
                 } else /*if (entityId == 50076)*/ { // Boats
-                    playerPos.y += 0.38; // to avoid water shadow and the black inner shadow bug
+                    playerPos.y += 0.38; // consistentBOAT2176: to avoid water shadow and the black inner shadow bug
                 }
             }
         } else {
@@ -192,8 +192,13 @@ if (entityId < 50064) {
             }
         } else {
             if (entityId < 50120) {
-                if (entityId == 50112) { //
-
+                if (entityId == 50112) { // Name Tag
+                    noDirectionalShading = true;
+                    color.rgb *= 1.5;
+                    if (color.a < 0.5) {
+                        color.a = 0.12;
+                        color.rgb *= 5.0;
+                    }
                 } else /*if (entityId == 50116)*/ { //
 
                 }

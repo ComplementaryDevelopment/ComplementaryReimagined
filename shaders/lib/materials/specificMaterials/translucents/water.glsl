@@ -1,3 +1,4 @@
+// ============================== Step 1: Color Prep ============================== //
 #if MC_VERSION >= 11300
     #if WATERCOLOR_MODE >= 2
         vec3 glColorM = glColor.rgb;
@@ -36,6 +37,7 @@
 #ifdef WATERCOLOR_CHANGED
     color.rgb *= vec3(WATERCOLOR_RM, WATERCOLOR_GM, WATERCOLOR_BM);
 #endif
+// ============================== End of Step 1 ============================== //
 
 #define PHYSICS_OCEAN_INJECTION
 #if defined GENERATED_NORMALS && (WATER_STYLE >= 2 || defined PHYSICS_OCEAN) && !defined DH_WATER
@@ -44,7 +46,11 @@
 
 #if defined GBUFFERS_WATER || defined DH_WATER
     lmCoordM.y = min(lmCoord.y * 1.07, 1.0); // Iris/Sodium skylight inconsistency workaround
+    
+    float fresnel2 = pow2(fresnel);
+    float fresnel4 = pow2(fresnel2);
 
+    // ============================== Step 2: Water Normals ============================== //
     reflectMult = 1.0;
 
     #if WATER_MAT_QUALITY >= 3
@@ -64,7 +70,6 @@
         waterPos = 0.032 * (waterPos + worldPos.y * 2.0);
     #endif
 
-    // Water Normals
     #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && WATER_MAT_QUALITY >= 2
         vec3 normalMap = vec3(0.0, 0.0, 1.0);
         #if WATER_STYLE >= 2
@@ -129,20 +134,18 @@
             fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
         #endif
     #endif
-    ////
+    // ============================== End of Step 2 ============================== //
 
-    float fresnel2 = pow2(fresnel);
-    float fresnel4 = pow2(fresnel2);
-
+    // ============================== Step 3: Water Material Features ============================== //
     #if WATER_MAT_QUALITY >= 2
         if (isEyeInWater != 1) {
-            // Noise Coloring
+            // Noise Coloring //
             float noise = texture2D(noisetex, (waterPos + wind) * 0.25).g;
                   noise = noise - 0.5;
                   noise *= 0.25;
             color.rgb = pow(color.rgb, vec3(1.0 + noise));
 
-            // Water Alpha
+            // Water Alpha //
             #ifdef GBUFFERS_WATER
                 float depthT = texelFetch(depthtex1, texelCoord, 0).r;
             #elif defined DH_WATER
@@ -186,7 +189,7 @@
             #endif
             ////
 
-            // Water Foam
+            // Water Foam //
             #if WATER_FOAM_I > 0 && defined GBUFFERS_WATER
                 if (NdotU > 0.99) {
                     vec3 matrixM = vec3(
@@ -245,8 +248,9 @@
     #else
         shadowMult = vec3(0.0);
     #endif
+    // ============================== End of Step 3 ============================== //
 
-    // Final Tweaks
+    // ============================== Step 4: Final Tweaks ============================== //
     reflectMult *= 0.5 + 0.5 * NdotUmax0;
 
     color.a = mix(color.a, 1.0, fresnel4);
@@ -268,4 +272,5 @@
             highlightMult *= (16.0 - 15.0 * fresnel2) * (sunVisibility > 0.5 ? 0.85 : 0.425);
         #endif
     #endif
+    // ============================== End of Step 4 ============================== //
 #endif
