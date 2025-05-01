@@ -552,6 +552,18 @@ option.RAIN_STYLE.comment=Determines the style of rainy weather.
 value.RAIN_STYLE.1=Light & Warmer
 value.RAIN_STYLE.2=Heavy & Colder
 
+option.SUN_MOON_GLARE_INTENSITY=Sun/Moon Glare Intensity
+option.SUN_MOON_GLARE_INTENSITY.comment=Adjusts the brightness of sun/moon glare on clear weather.
+value.SUN_MOON_GLARE_INTENSITY.0.00=OFF
+
+option.SUN_MOON_GLARE_INTENSITY_DURING_RAIN=Sun/Moon Glare Intensity During Rain
+option.SUN_MOON_GLARE_INTENSITY_DURING_RAIN.comment=Adjusts the brightness of sun/moon glare during rain.
+value.SUN_MOON_GLARE_INTENSITY_DURING_RAIN.0.00=OFF
+
+option.SUN_MOON_GLARE_INTENSITY_DURING_THUNDER=Sun/Moon Glare Intensity During Thunder
+option.SUN_MOON_GLARE_INTENSITY_DURING_THUNDER.comment=Adjusts the brightness of sun/moon glare during thunder. §e[*]§r This feature only works on Iris.
+value.SUN_MOON_GLARE_INTENSITY_DURING_THUNDER.0.00=OFF
+
 option.SPECIAL_BIOME_WEATHER=Special Cold/Dry Weather
 option.SPECIAL_BIOME_WEATHER.comment=Changes the atmosphere balance in cold and dry biomes to make things feel like a snowstorm or sandstorm.
 
