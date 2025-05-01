@@ -101,7 +101,13 @@ void main() {
     float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec3 normalM = normal;
 
-    if (color.a > 0.001) {
+    float alphaCheck = color.a;
+    #ifdef DO_PIXELATION_EFFECTS
+        // Fixes artifacts on fragment edges with non-nvidia gpus
+        alphaCheck = max(fwidth(color.a), alphaCheck);
+    #endif
+
+    if (alphaCheck > 0.001) {
         vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
         vec3 viewPos = ScreenToView(screenPos);
         vec3 nViewPos = normalize(viewPos);
@@ -109,7 +115,7 @@ void main() {
         float lViewPos = length(viewPos);
 
         bool noSmoothLighting = atlasSize.x < 600.0; // To fix fire looking too dim
-        bool noGeneratedNormals = false;
+        bool noGeneratedNormals = false, noDirectionalShading = false, noVanillaAO = false;
         float smoothnessG = 0.0, highlightMult = 0.0, emission = 0.0, noiseFactor = 0.75;
         vec2 lmCoordM = lmCoord;
         vec3 shadowMult = vec3(1.0);
@@ -144,7 +150,7 @@ void main() {
             } else if (entityId == 50008) { // Item Frame, Glow Item Frame
                 noSmoothLighting = true;
             } else if (entityId == 50076) { // Boats
-                playerPos.y += 0.38; // to avoid water shadow and the black inner shadow bug
+                playerPos.y += 0.38; // consistentBOAT2176
             }
         #endif
     
@@ -154,8 +160,8 @@ void main() {
         vec3 geoNormal = normalM;
         vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, false, false,
+        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
+                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                    true, 0, smoothnessG, highlightMult, emission);
 
         #if defined IPBR && defined IS_IRIS

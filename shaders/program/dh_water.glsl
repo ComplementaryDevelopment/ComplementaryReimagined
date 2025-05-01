@@ -142,7 +142,7 @@ void main() {
     float lengthCylinder = max(length(playerPos.xz), abs(playerPos.y) * 2.0);
     color.a *= smoothstep(far * 0.5, far * 0.7, lengthCylinder);
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
 

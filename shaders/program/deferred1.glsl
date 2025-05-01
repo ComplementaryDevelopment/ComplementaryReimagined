@@ -243,27 +243,27 @@ void main() {
         float smoothnessD = texture6.r;
         vec3 reflectColor = vec3(1.0);
 
-        #ifdef IPBR
-            #include "/lib/materials/materialHandling/deferredMaterials.glsl"
-        #else
-            if (materialMaskInt <= 240) {
-                #ifdef CUSTOM_PBR
-                    #if RP_MODE == 2 // seuspbr
-                        float metalness = materialMaskInt / 240.0;
+        if (materialMaskInt <= 240) {
+            #ifdef IPBR
+                #include "/lib/materials/materialHandling/deferredMaterials.glsl"
+            #elif defined CUSTOM_PBR
+                #if RP_MODE == 2 // seuspbr
+                    float metalness = materialMaskInt / 240.0;
 
-                        intenseFresnel = metalness;
-                    #elif RP_MODE == 3 // labPBR
-                        float metalness = float(materialMaskInt >= 230);
+                    intenseFresnel = metalness;
+                #elif RP_MODE == 3 // labPBR
+                    float metalness = float(materialMaskInt >= 230);
 
-                        intenseFresnel = materialMaskInt / 240.0;
-                    #endif
-                    reflectColor = mix(reflectColor, color.rgb / max(color.r + 0.00001, max(color.g, color.b)), metalness);
+                    intenseFresnel = materialMaskInt / 240.0;
                 #endif
-            } else {
-                if (materialMaskInt == 254) // No SSAO, No TAA
-                    ssao = 1.0;
+                reflectColor = mix(reflectColor, color.rgb / max(color.r + 0.00001, max(color.g, color.b)), metalness);
+            #endif
+        } else {
+            if (materialMaskInt == 254) { // No SSAO, No TAA
+                ssao = 1.0;
+                entityOrHand = true;
             }
-        #endif
+        }
 
         color.rgb *= ssao;
 
@@ -284,7 +284,6 @@ void main() {
             fresnelM = fresnelM * sqrt1(smoothnessD) - dither * 0.001;
 
             if (fresnelM > 0.0) {
-                vec2 roughCoord = gl_FragCoord.xy / 128.0;
                 #ifdef TAA
                     float noiseMult = 0.3;
                 #else
@@ -305,7 +304,12 @@ void main() {
                 #endif
                 noiseMult *= pow2(1.0 - smoothnessD);
 
-                vec3 roughNoise = vec3(texture2D(noisetex, roughCoord).r, texture2D(noisetex, roughCoord + 0.1).r, texture2D(noisetex, roughCoord + 0.2).r);
+                vec2 roughCoord = gl_FragCoord.xy / 128.0;
+                vec3 roughNoise = vec3(
+                    texture2D(noisetex, roughCoord).r,
+                    texture2D(noisetex, roughCoord + 0.09375).r,
+                    texture2D(noisetex, roughCoord + 0.1875).r
+                );
                 roughNoise = fract(roughNoise + vec3(dither, dither * goldenRatio, dither * pow2(goldenRatio)));
                 roughNoise = noiseMult * (roughNoise - vec3(0.5));
 
@@ -376,7 +380,7 @@ void main() {
                     color += colorAdd * fresnelM;
                 #endif
 
-                color = max(colorP * max(intenseFresnel, 1.0 - pow2(smoothnessD)) * 0.9, color);
+                color = max(colorP, color); // Prevents reflections from making a surface darker
 
                 //if (gl_FragCoord.x > 960) color = vec3(5.25,0,5.25);
             }

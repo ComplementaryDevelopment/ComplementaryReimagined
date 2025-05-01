@@ -132,11 +132,11 @@ void main() {
             GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
         #endif
 
-        if (blockEntityId == 60025) { // End Portal, End Gateway
+        if (blockEntityId == 5025) { // End Portal, End Gateway
             #ifdef SPECIAL_PORTAL_EFFECTS
                 #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
             #endif
-        } else if (blockEntityId == 60004) { // Signs
+        } else if (blockEntityId == 5004) { // Signs
             noSmoothLighting = true;
             if (glColor.r + glColor.g + glColor.b <= 2.99 || lmCoord.x > 0.999) { // Sign Text
                 #include "/lib/materials/specificMaterials/others/signText.glsl"
@@ -154,7 +154,7 @@ void main() {
         CoatTextures(color.rgb, noiseFactor, playerPos, false);
     #endif
 
-    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
                false, 0, smoothnessG, highlightMult, emission);
 
@@ -249,13 +249,13 @@ void main() {
     if (normal != normal) normal = -upVec; // Mod Fix: Fixes Better Nether Fireflies
 
     #ifdef IPBR
-        /*if (blockEntityId == 60024) { // End Portal, End Gateway
+        /*if (blockEntityId == 5024) { // End Portal, End Gateway
             gl_Position.z -= 0.002;
         }*/
     #endif
 
     #if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-        if (blockEntityId == 60008) { // Chest
+        if (blockEntityId == 5008) { // Chest
             float fractWorldPosY = fract((gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex).y + cameraPosition.y);
             if (fractWorldPosY > 0.56 && 0.57 > fractWorldPosY) gl_Position.z -= 0.0001;
         }

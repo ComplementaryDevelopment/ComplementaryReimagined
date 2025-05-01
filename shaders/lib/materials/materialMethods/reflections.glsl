@@ -21,24 +21,24 @@ vec3 refPos = vec3(0.0);
 vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, float lViewPos, float z0,
                    sampler2D depthtex, float dither, float skyLightFactor, float fresnel,
                    float smoothness, vec3 geoNormal, vec3 color, vec3 shadowMult, float highlightMult) {
-    // Step 1: Prepare
+    // ============================== Step 1: Prepare ============================== //
     vec2 rEdge = vec2(0.6, 0.55);
     vec3 normalMR = normalM;
 
     #if defined GBUFFERS_WATER && WATER_STYLE == 1 && defined GENERATED_NORMALS
-        normalMR = mix(geoNormal, normalM, 0.05);
+        normalMR = normalize(mix(geoNormal, normalM, 0.05));
     #endif
 
-    vec3 nViewPosR = reflect(nViewPos, normalMR);
-    float RVdotU = dot(normalize(nViewPosR), upVec);
-    float RVdotS = dot(normalize(nViewPosR), sunVec);
+    vec3 nViewPosR = normalize(reflect(nViewPos, normalMR));
+    float RVdotU = dot(nViewPosR, upVec);
+    float RVdotS = dot(nViewPosR, sunVec);
 
     #if defined GBUFFERS_WATER && WATER_STYLE >= 2
-        normalMR = mix(geoNormal, normalM, 0.8);
+        normalMR = normalize(mix(geoNormal, normalM, 0.8));
     #endif
-    // End Step 1
+    // ============================== End of Step 1 ============================== //
 
-    // Step 2: Calculate Terrain Reflection and Alpha
+    // ============================== Step 2: Calculate Terrain Reflection and Alpha ============================== //
     vec4 reflection = vec4(0.0);
     #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 1
         #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 2 && !defined DH_WATER
@@ -47,7 +47,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
             // Ray Marching
             vec3 start = viewPos + normalMR * (lViewPos * 0.025 * (1.0 - fresnel) + 0.05);
             #if defined GBUFFERS_WATER && WATER_STYLE >= 2
-                vec3 vector = reflect(nViewPos, normalize(normalMR)); // Not using nViewPosR because normalMR changed
+                vec3 vector = normalize(reflect(nViewPos, normalMR)); // Not using nViewPosR because normalMR changed
             #else
                 vec3 vector = nViewPosR;
             #endif
@@ -159,9 +159,9 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
         }
         #endif
     #endif
-    // End Step 2
+    // ============================== End of Step 2 ============================== //
 
-    // Step 3: Add Sky Reflection
+    // ============================== Step 3: Add Sky Reflection ============================== //
     #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 1
         if (reflection.a < 1.0)
     #endif
@@ -239,7 +239,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
 
         reflection.rgb = mix(skyReflection, reflection.rgb, reflection.a);
     } 
-    // End Step 3
+    // ============================== End of Step 3 ============================== //
 
     return reflection;
 }

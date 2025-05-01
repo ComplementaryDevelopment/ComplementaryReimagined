@@ -8,7 +8,7 @@ void AddSpecialLightDetail(inout vec3 light, vec3 albedo, float emission) {
 	light += pow2(lightM / (albedo + 0.1));
 }
 
-vec3 fireSpecialLightColor = vec3(2.0, 0.87, 0.27) * 3.8;
+vec3 fireSpecialLightColor = vec3(2.05, 0.83, 0.27) * 3.8;
 vec3 lavaSpecialLightColor = vec3(3.0, 0.9, 0.2) * 4.0;
 vec3 netherPortalSpecialLightColor = vec3(1.8, 0.4, 2.2) * 0.8;
 vec3 redstoneSpecialLightColor = vec3(4.0, 0.1, 0.1);
@@ -33,7 +33,7 @@ vec4 GetSpecialBlocklightColor(int mat) {
 					#else
 						if (mat == 3) return vec4(vec3(1.25, 0.5, 1.25) * 4.0, 0.0); // End Rod in the End dimension
 					#endif
-					if (mat == 4) return vec4(vec3(1.0, 1.5, 2.0) * 3.0, 0.0); // Beacon
+					if (mat == 4) return vec4(vec3(0.7, 1.5, 2.0) * 3.0, 0.0); // Beacon
 					if (mat == 5) return vec4(fireSpecialLightColor, 0.0); // Fire
 					if (mat == 6) return vec4(vec3(0.7, 1.5, 1.5) * 1.7, 0.0); // Sea Pickle:Waterlogged
 					if (mat == 7) return vec4(vec3(1.1, 0.85, 0.35) * 5.0, 0.0); // Ochre Froglight
@@ -43,7 +43,7 @@ vec4 GetSpecialBlocklightColor(int mat) {
 					if (mat == 10) return vec4(vec3(1.7, 0.9, 0.4) * 4.0, 0.0); // Glowstone
 					if (mat == 11) return vec4(fireSpecialLightColor, 0.0); // Jack o'Lantern
 					if (mat == 12) return vec4(fireSpecialLightColor, 0.0); // Lantern
-					if (mat == 13) return vec4(lavaSpecialLightColor, 0.0); // Lava
+					if (mat == 13) return vec4(lavaSpecialLightColor, 0.8); // Lava
 				}
 			} else {
 				if (mat < 20) {
@@ -123,7 +123,7 @@ vec4 GetSpecialBlocklightColor(int mat) {
 				if (mat < 68) {
 					if (mat == 62) return vec4(vec3(3.5, 0.6, 0.4) * 0.3, 0.05); // Crimson Stem, Crimson Hyphae
 					if (mat == 63) return vec4(vec3(0.3, 1.9, 1.5) * 0.3, 0.05); // Warped Stem, Warped Hyphae
-					if (mat == 64) return vec4(vec3(1.1, 0.7, 1.1) * 0.45, 0.1); // Structure Block, Jigsaw Block
+					if (mat == 64) return vec4(vec3(1.0, 1.0, 1.0) * 0.45, 0.1); // Structure Block, Jigsaw Block, Test Block, Test Instance Block
 					if (mat == 65) return vec4(vec3(3.0, 0.9, 0.2) * 0.125, 0.0125); // Weeping Vines Plant
 					if (mat == 66) return vec4(redstoneSpecialLightColor * 0.05, 0.002); // Redstone Wire:Lit, Comparator:Unlit:Subtract
 					if (mat == 67) return vec4(redstoneSpecialLightColor * 0.125, 0.0125); // Repeater:Lit, Comparator:Lit
@@ -149,7 +149,7 @@ vec4 GetSpecialBlocklightColor(int mat) {
 					if (mat == 80) return vec4(vec3(1.0, 0.4, 1.0) * candleColorMult, candleExtraLight); // Pink Candles:Lit
 					if (mat == 81) return vec4(vec3(2.8, 1.1, 0.2) * 0.125, 0.0125); // Open Eyeblossom
 					if (mat == 82) return vec4(vec3(2.8, 1.1, 0.2) * 0.3, 0.05); // Creaking Heart: Active
-					if (mat == 83) return vec4(0.0);
+					if (mat == 83) return vec4(vec3(1.6, 1.6, 0.7) * 0.3, 0.05); // Firefly Bush
 					if (mat == 84) return vec4(0.0);
 					if (mat == 85) return vec4(0.0);
 				}
