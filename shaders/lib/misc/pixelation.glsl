@@ -89,24 +89,4 @@
 
         return value + valueOffset;
     }
-
-    vec4 TexelSnap(vec4 value, vec2 texCoords, vec4 texelSize) {
-        vec2 xyOffset = ComputeTexelOffset(texCoords, texelSize);
-        return TexelSnap(value, xyOffset);
-    }
-
-    vec3 TexelSnap(vec3 value, vec2 texCoords, vec4 texelSize) {
-        vec2 xyOffset = ComputeTexelOffset(texCoords, texelSize);
-        return TexelSnap(value, xyOffset);
-    }
-
-    vec2 TexelSnap(vec2 value, vec2 texCoords, vec4 texelSize) {
-        vec2 xyOffset = ComputeTexelOffset(texCoords, texelSize);
-        return TexelSnap(value, xyOffset);
-    }
-
-    float TexelSnap(float value, vec2 texCoords, vec4 texelSize) {
-        vec2 xyOffset = ComputeTexelOffset(texCoords, texelSize);
-        return TexelSnap(value, xyOffset);
-    }
 #endif

@@ -60,10 +60,9 @@ if (materialMaskInt != 0) {
 
                 }
             } else {
-                if (materialMaskInt == 254) { // No SSAO, No TAA
-                    ssao = 1.0;
-                    entityOrHand = true;
-                } else /*if (materialMaskInt == "15 to 255 except 254")*/ { //
+                if (materialMaskInt == 15) { //
+                
+                } else { // materialMaskInt >= 16 && <= 240
 
                 }
             }

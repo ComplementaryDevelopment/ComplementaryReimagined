@@ -28,7 +28,7 @@
     #define ANISOTROPIC_FILTER 0 //[0 4 8 16]
 
     #define COLORED_LIGHTING 0 //[128 192 256 384 512 768 1024]
-    #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && !defined MC_OS_MAC
+    #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && !defined MC_OS_MAC && !(defined DH_TERRAIN || defined DH_WATER)
         #define COLORED_LIGHTING_INTERNAL COLORED_LIGHTING
         #if COLORED_LIGHTING_INTERNAL > 0
             #define COLORED_LIGHT_SATURATION 100 //[50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125]
@@ -173,6 +173,7 @@
     //#define GLOWING_ARMOR_TRIM
 
     #define IPBR_EMISSIVE_MODE 1 //[1 3 2]
+    //#define IPBR_COMPATIBILITY_MODE
 
     #define NORMAL_MAP_STRENGTH 100 //[0 10 15 20 30 40 60 80 100 120 140 160 180 200]
     #define CUSTOM_EMISSION_INTENSITY 100 //[0 5 7 10 15 20 25 30 35 40 45 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 225 250]
@@ -183,7 +184,7 @@
     //#define POM_ALLOW_CUTOUT
     #define DIRECTIONAL_BLOCKLIGHT 0 //[0 3 7 11]
 
-    #define MINIMUM_LIGHT_MODE 2 //[0 1 2 3 4 5 6]
+    #define CAVE_LIGHTING 100 //[0 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300 325 350 375 400 425 450 475 500 550 600 650 700 750 800 850 900 950 1000 1100 1200 1300 1400 1500 1600]
     #define NON_DIRECTIONAL_SHADOWS_RAIN 0 //[0 1]
     #define NON_DIRECTIONAL_SHADOWS_RAIN_MULT 1.00 //[0.00 0.10 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
     #define NON_DIRECTIONAL_SHADOWS_THUNDER 0 //[0 1]
@@ -444,10 +445,10 @@
     #endif
 
     #if SHADOW_QUALITY >= 1
-        #if SHADOW_SMOOTHING >= 3
-            const int shadowMapResolution = 2048;
-        #else
+        #if SHADOW_QUALITY > 4 || SHADOW_SMOOTHING < 3
             const int shadowMapResolution = 4096;
+        #else
+            const int shadowMapResolution = 2048;
         #endif
     #else
         const int shadowMapResolution = 1024;
@@ -489,6 +490,8 @@
     #if DETAIL_QUALITY >= 2 // Medium
         #undef WATER_MAT_QUALITY
         #define WATER_MAT_QUALITY 2
+        #define FXAA_TAA_INTERACTION
+        #define TAA_MOVEMENT_IMPROVEMENT_FILTER
     #endif
     #if DETAIL_QUALITY >= 3 // High
         #undef WATER_MAT_QUALITY
@@ -498,6 +501,7 @@
         #define CONNECTED_GLASS_CORNER_FIX
         #define ACL_CORNER_LEAK_FIX
         #define DO_NETHER_VINE_WAVING_OUTSIDE_NETHER
+        #define DO_MORE_FOLIAGE_WAVING
         #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && RAIN_PUDDLES > 0 && COLORED_LIGHTING_INTERNAL > 0
             #define PUDDLE_VOXELIZATION
         #endif
@@ -542,6 +546,10 @@
         #if !defined GBUFFERS_BASIC && !defined DH_TERRAIN && !defined DH_WATER
             #define DO_PIXELATION_EFFECTS
         #endif
+    #endif
+
+    #ifndef GBUFFERS_TERRAIN
+        #undef PIXELATED_BLOCKLIGHT
     #endif
 
     #ifdef BLOOM_FOG
@@ -637,10 +645,6 @@
 
     #include "/lib/util/commonFunctions.glsl"
 
-    #ifdef DO_PIXELATION_EFFECTS
-        #include "/lib/misc/pixelation.glsl"
-    #endif
-
     #ifndef DISTANT_HORIZONS
         float renderDistance = far;
     #else
@@ -657,7 +661,6 @@
     float invNightFactor = 1.0 - nightFactor;
     float rainFactor2 = rainFactor * rainFactor;
     float invRainFactor = 1.0 - rainFactor;
-    float invRainFactorSqrt = 1.0 - rainFactor * rainFactor;
     #ifdef IS_IRIS
         float invThunderFactor = 1.0 - thunderFactor;
     #endif
@@ -683,11 +686,11 @@
     #include "/lib/colors/blocklightColors.glsl"
 
     const vec3 caveFogColorRaw = vec3(0.13, 0.13, 0.15);
-    #if MINIMUM_LIGHT_MODE <= 1
+    #if CAVE_LIGHTING < 100
         vec3 caveFogColor = caveFogColorRaw * 0.7;
-    #elif MINIMUM_LIGHT_MODE == 2
+    #elif CAVE_LIGHTING == 100
         vec3 caveFogColor = caveFogColorRaw * (0.7 + 0.3 * vsBrightness); // Default
-    #elif MINIMUM_LIGHT_MODE >= 3
+    #elif CAVE_LIGHTING > 100
         vec3 caveFogColor = caveFogColorRaw;
     #endif
 

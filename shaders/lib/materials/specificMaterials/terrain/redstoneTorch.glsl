@@ -1,6 +1,3 @@
-noSmoothLighting = true; noDirectionalShading = true;
-lmCoordM.x = min(lmCoordM.x * 0.9, 0.77);
-
 if (color.r > 0.65) {
     emission = (3.5 - 2.25 * color.g) * 0.97;
     color.rgb *= color.rgb;

@@ -34,7 +34,7 @@ vec4 textureAF(sampler2D texSampler, vec2 uv) {
     float lod = 0.0;
     #if ANISOTROPIC_FILTER >= 8 && defined GBUFFERS_TERRAIN
         // Fix257062 - Checking if absMidCoordPos is fine or else miplevel will be broken. This can be an issue for flowing lava.
-        if (absMidCoordPos.x > 0.0001)
+        if (absMidCoordPos.x > 0.0001 && absMidCoordPos.y > 0.0001)
         // Excluding cutout blocks for better looks
         if (texture2DLod(texSampler, uv, 10000.0).a == 1.0)
             lod = miplevel * 0.4;
@@ -44,16 +44,25 @@ vec4 textureAF(sampler2D texSampler, vec2 uv) {
     vec2 ADivSamples = A / ANISOTROPIC_FILTER;
 
     vec4 filteredColor = vec4(0.0);
+    float totalModifiedAlpha = 0.0;
     vec4 spriteBoundsM = mix(spriteBounds, vec4(midCoord, midCoord), 0.0001); // Fixes some mods causing issues with cutout blocks
     for (float i = -samplesDiv2 + 0.5; i < samplesDiv2; i++) {
         vec2 sampleUV = uv + ADivSamples * i;
         sampleUV = clamp(sampleUV, spriteBoundsM.xy, spriteBoundsM.zw);
         vec4 colorSample = texture2DLod(texSampler, sampleUV, lod);
+        
+        #if !defined POM || !defined POM_ALLOW_CUTOUT
+            float modifiedAlpha = colorSample.a;
+        #else
+            // To avoid NaNs because we don't discard low alpha if POM_ALLOW_CUTOUT is enabled (see 6WIR4HT23)
+            float modifiedAlpha = max(colorSample.a, 0.00001);
+        #endif
 
-        filteredColor.rgb += colorSample.rgb * colorSample.a;
+        totalModifiedAlpha += modifiedAlpha;
+        filteredColor.rgb += colorSample.rgb * modifiedAlpha;
         filteredColor.a += colorSample.a;
     }
-    filteredColor.rgb /= filteredColor.a;
+    filteredColor.rgb /= totalModifiedAlpha;
     filteredColor.a /= ANISOTROPIC_FILTER;
 
     return filteredColor;
