@@ -36,10 +36,6 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
     vec2  prevLC = vec2(1e9); // impossible to hit
     float prevH = 0.0;
 
-    #define SAMPLE_H(local) ( \
-        (all(lessThan(abs((local) - prevLC), vec2(1e-6)))) ? \
-            prevH : (prevLC = (local), prevH = ReadNormalLocal(prevLC).a))
-
     // Coarse march: fast but rough (bigger stride = faster, less precise)
     const float COARSE_STRIDE = 2.0;
     vec2 baseLC = vTexCoord.st;
@@ -48,7 +44,8 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
     // Ensure texDepth matches current start layer
     {
         vec2 lc0 = baseLC + i * layerStep;
-        h = SAMPLE_H(lc0);
+        h = (all(lessThan(abs(lc0 - prevLC), vec2(1e-6)))) ? prevH
+            : (prevLC = lc0, prevH = ReadNormalLocal(prevLC).a);
     }
 
     // March forward by stride until we cross the height threshold
@@ -58,7 +55,8 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
         vec2 lc = baseLC + i * layerStep;
         hPrev = h;
         iPrev = i;
-        h = SAMPLE_H(lc);
+        h = (all(lessThan(abs(lc - prevLC), vec2(1e-6)))) ? prevH
+            : (prevLC = lc, prevH = ReadNormalLocal(prevLC).a);
     }
 
     // If we ran out of layers without crossing, clamp to last valid layer and return
@@ -69,7 +67,6 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
         traceCoordDepth.z  -= pI * invParallaxQuality;
         vec2 localCoord = fract(baseLC + pI * layerStep);
         newCoord = ATLAS(localCoord);
-        #undef SAMPLE_H
         return localCoord;
     }
 
@@ -84,7 +81,8 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
         float mid = 0.5 * (lo + hi);
         float threshold = 1.0 - mid * invParallaxQuality;
         vec2  lcMid = baseLC + mid * layerStep;
-        float hMid = SAMPLE_H(lcMid);
+        float hMid = (all(lessThan(abs(lcMid - prevLC), vec2(1e-6)))) ? prevH
+                    : (prevLC = lcMid, prevH = ReadNormalLocal(prevLC).a);
 
         bool below = (hMid <= threshold);
         lo = below ? mid : lo;
@@ -103,7 +101,6 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
     vec2 localCoord = fract(baseLC + pI * layerStep);
     newCoord = ATLAS(localCoord);
 
-    #undef SAMPLE_H
     return localCoord;
 }
 
