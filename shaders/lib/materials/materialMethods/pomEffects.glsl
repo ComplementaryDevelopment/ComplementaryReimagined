@@ -25,8 +25,8 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
     vec2 normalMapM = normalMap.xy * 2.0 - 1.0;
     float normalCheck = normalMapM.x + normalMapM.y;
 
-    // Early-outs: grazing view, flat height, extreme normal
-    if (viewVector.z >= 0.0 || normalMap.a >= minHeight || normalCheck <= -1.999) return vTexCoord.st;
+    // Early-outs: grazing view, flat height, extreme normal and nearly faded
+    if (viewVector.z >= 0.0 || normalMap.a >= minHeight || normalCheck <= -1.999 || parallaxFade > 0.98) return vTexCoord.st;
     // Layer step in tangent plane (scaled by depth & fade)
     vec2 layerStep = viewVector.xy * (0.25 * (1.0 - parallaxFade) * POM_DEPTH) / (-viewVector.z * POM_QUALITY);
 
@@ -110,19 +110,35 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
 }
 
 float GetParallaxShadow(float parallaxFade, float dither, float height, vec2 coord, vec3 lightVec, mat3 tbn) {
-    float parallaxshadow = 1.0;
+    // Skip shadowing when far or almost faded
+    if (parallaxFade >= 0.98) return 1.0;
 
     vec3 parallaxdir = tbn * lightVec;
-    parallaxdir.xy *= 1.0 * POM_DEPTH; // Angle
+    // Degenerate / near-parallel to plane
+    if (abs(parallaxdir.z) < 1e-4) return 1.0;
 
-    for (int i = 0; i < 4 && parallaxshadow >= 0.01; i++) {
-        float stepLC = 0.025 * (i + dither);
+    parallaxdir.xy *= POM_DEPTH;
+
+    // Fewer steps as fade increases (scene-aware)
+    int MAX_STEPS = (parallaxFade < 0.25) ? 4 : 2;
+
+    float parallaxshadow = 1.0;
+
+    vec2 pq = vTexCoordAM.pq;
+    vec2 st = vTexCoordAM.st;
+
+    vec2 baseLocal = fract(coord);
+
+    for (int i = 0; i < MAX_STEPS && parallaxshadow >= 0.01; ++i) {
+        float stepLC = 0.025 * (float(i) + dither);
 
         float currentHeight = height + parallaxdir.z * stepLC;
 
-        vec2 parallaxCoord = fract(coord + parallaxdir.xy * stepLC) * vTexCoordAM.pq + vTexCoordAM.st;
-        float offsetHeight = textureGrad(normals, parallaxCoord, dcdx, dcdy).a;
+        vec2 lc = fract(baseLocal + parallaxdir.xy * stepLC);
+        vec2 atlasCoord = lc * pq + st;
 
+        float offsetHeight = textureGrad(normals, atlasCoord, dcdx, dcdy).a;
+        // Attenuate when the traced surface (offsetHeight) rises above the ray
         parallaxshadow *= clamp(1.0 - (offsetHeight - currentHeight) * 4.0, 0.0, 1.0);
     }
 
