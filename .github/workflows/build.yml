@@ -5,8 +5,8 @@ on:
     branches:
       - dev
       - main
-    # paths:
-    #   - 'shaders/**'
+    paths:
+      - 'shaders/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
