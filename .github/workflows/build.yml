@@ -39,24 +39,43 @@ jobs:
           with:
             file_path: "pakku.json"
 
-        - name: Increment Semantic Version
+        # - name: Increment Semantic Version
+        #   id: increment
+        #   uses: christian-draeger/increment-semantic-version@1.2.3
+        #   with:
+        #     current-version: ${{ steps.pakku_info.outputs.version }}
+        #     version-fragment: 'patch'
+
+        - name: Incrementally Update a Semantic Version
           id: increment
-          uses: christian-draeger/increment-semantic-version@1.2.3
+          uses: henryupton/action-increment-version@v1.2.0
           with:
-            current-version: ${{ steps.pakku_info.outputs.version }}
-            version-fragment: 'patch'
+            update_file: pakku.json
+            update_pattern: '"version": "[^"]*"'
+            update_replacement: '"version": "{version}"'
+            commit_message: 'bump version to {version}'
+            create_release: false
 
         - name: 🔍 Check if tag exists
           uses: mukunku/tag-exists-action@v1.6.0
           id: check_tag
           with:
-            tag: ${{ steps.increment.outputs.next-version }}
+            tag: ${{ steps.increment.outputs.new_version }}
+
+        # - name: Sync release version.
+        #   uses: tj-actions/sync-release-version@v13.16
+        #   with:
+        #     pattern: '"version": '
+        #     current_version: ${{ steps.pakku_info.outputs.version }}
+        #     new_version: ${{ steps.increment.outputs.next-version }}
+        #     paths: |
+        #       pakku.json
 
         - name: 🔍 Check
           id: check
           shell: bash
           run: |  
-            echo "project_version=${{ steps.increment.outputs.next-version }}" >> $GITHUB_OUTPUT
+            echo "project_version=${{ steps.increment.outputs.new_version }}" >> $GITHUB_OUTPUT
 
             echo "project_name=${{ steps.pakku_info.outputs.name }}" >> $GITHUB_OUTPUT
             echo "release_type=${{ steps.pakku_info.outputs.release_type }}" >> $GITHUB_OUTPUT
@@ -163,15 +182,16 @@ jobs:
     needs: [info, build-project, release-github]
     runs-on: ubuntu-latest
     if: ${{ needs.info.outputs.make_release == 'true' }}
-    outputs:
-      id: ${{ steps.release.outputs.id }}
 
     steps:
-      - name: 🔒 Check if CURSEFORGE_TOKEN exist
+      - name: 🔒 Check if TOKEN exist
         shell: bash
         run: |
           if [ "${{ secrets.CURSEFORGE_TOKEN }}" == '' ]; then
             echo '::error::No value found for secret key `CURSEFORGE_TOKEN`. See https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository' && exit 1
+          fi
+          if [ "${{ secrets.MODRINTH_TOKEN }}" == '' ]; then
+            echo '::error::No value found for secret key `MODRINTH_TOKEN`. See https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository' && exit 1
           fi  
 
       - name: 📦 Download artifact
@@ -191,7 +211,7 @@ jobs:
           fi
           echo "✔️ All artifacts found"
 
-      - name: 🚀 Upload Reimagined Platforms
+      - name: 🚀 Upload Reimagined to platforms
         uses: Kir-Antipov/mc-publish@v3.3.0
         with:
           modrinth-id: ${{ vars.MODRINTH_ID }}
@@ -200,52 +220,45 @@ jobs:
           curseforge-id: ${{ vars.CURSEFORGE_ID }}
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
 
-          files: |
-            ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
-            ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
-          name: "${{ needs.info.outputs.project_name }}-${{ needs.info.outputs.project_version }}"
+          loaders: |
+            Iris
+            OptiFine
+
+          game-versions: |
+            1.12.2
+            1.20.1
+
+          files: ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
+          name: "${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}"
           version: ${{ needs.info.outputs.project_version }}
           version-type: ${{ needs.info.outputs.release_type }}
-          game-versions: ${{ needs.info.outputs.minecraft_version }}
           game-version-filter: none
           retry-attempts: 2
           retry-delay: 10000
           fail-mode: fail
 
-      # - name: 🚀 Upload Reimagined Platforms
-      #   uses: Kir-Antipov/mc-publish@v3.3.0
-      #   with:
-      #     modrinth-id: ${{ vars.MODRINTH_ID }}
-      #     modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+      - name: 🚀 Upload Unbound to platforms
+        uses: Kir-Antipov/mc-publish@v3.3.0
+        with:
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
 
-      #     curseforge-id: ${{ vars.CURSEFORGE_ID }}
-      #     curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
 
-      #     files: ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
-      #     name: "${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}"
-      #     version: ${{ needs.info.outputs.project_version }}
-      #     version-type: ${{ needs.info.outputs.release_type }}
-      #     game-versions: ${{ needs.info.outputs.minecraft_version }}
-      #     game-version-filter: none
-      #     retry-attempts: 2
-      #     retry-delay: 10000
-      #     fail-mode: fail
+          loaders: |
+            Iris
+            OptiFine
 
-      # - name: 🚀 Upload Unbound Platforms
-      #   uses: Kir-Antipov/mc-publish@v3.3.0
-      #   with:
-      #     modrinth-id: ${{ vars.MODRINTH_ID }}
-      #     modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          game-versions: |
+            1.12.2
+            1.20.1
 
-      #     curseforge-id: ${{ vars.CURSEFORGE_ID }}
-      #     curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-
-      #     files: ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip
-      #     name: "${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}"
-      #     version: ${{ needs.info.outputs.project_version }}
-      #     version-type: ${{ needs.info.outputs.release_type }}
-      #     game-versions: ${{ needs.info.outputs.minecraft_version }}
-      #     game-version-filter: none
-      #     retry-attempts: 2
-      #     retry-delay: 10000
-      #     fail-mode: fail
+          files: ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip
+          name: "${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}"
+          version: ${{ needs.info.outputs.project_version }}
+          version-type: ${{ needs.info.outputs.release_type }}
+          game-version-filter: none
+          retry-attempts: 2
+          retry-delay: 10000
+          fail-mode: fail
