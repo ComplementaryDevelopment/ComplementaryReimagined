@@ -49,9 +49,9 @@ jobs:
       
       - name: 📁 Preparing the artifact Unbound
         run: |
-          mkdir -p build/Unbound
-          cp -r shaders/ build/Unbound/
-          cd build/Unbound
+          mkdir -p build/unbound
+          cp -r shaders/ build/unbound/
+          cd build/unbound
           sed -i 's/#define SHADER_STYLE .* \/\/\[1 4\]/#define SHADER_STYLE 1 \/\/\[1 4\]/g' shaders/lib/common.glsl
           zip -r ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip shaders/
           
@@ -59,16 +59,16 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         with:
           name: ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}
-          path: ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip
+          path: ./build/unbound/${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip
           if-no-files-found: error
 
       - name: 📁 Preparing the artifact Reimagined
         run: |
-          mkdir -p build/Reimagined
-          cp -r shaders/ build/Reimagined/
-          cd build/Reimagined
+          mkdir -p build/reimagined
+          cp -r shaders/ build/reimagined/
+          cd build/reimagined
           sed -i 's/#define SHADER_STYLE .* \/\/\[1 4\]/#define SHADER_STYLE 4 \/\/\[1 4\]/g' shaders/lib/common.glsl
-          zip -r ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip shaders/
+          zip -r ./build/reimagined/${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip shaders/
           
       - name: 🚀 Upload artifact Reimagined
         uses: actions/upload-artifact@v4.6.2
