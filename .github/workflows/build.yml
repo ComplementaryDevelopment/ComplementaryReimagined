@@ -1,0 +1,26 @@
+name: Project Build
+run-name: "📦 Project Build #${{ github.run_number }}"
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEV_ENVIRONMENT: ${{ github.ref_name != 'main' }}
+
+jobs:    
+  info:
+    name: 🖥️ Project Info
+    runs-on: ubuntu-latest
+    if: ${{  github.repository_owner == 'TerraFirmaGreg-Team' }}
+
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
