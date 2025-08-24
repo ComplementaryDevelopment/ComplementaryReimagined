@@ -68,11 +68,11 @@ jobs:
           cp -r shaders/ build/reimagined/
           cd build/reimagined
           sed -i 's/#define SHADER_STYLE .* \/\/\[1 4\]/#define SHADER_STYLE 4 \/\/\[1 4\]/g' shaders/lib/common.glsl
-          zip -r ./build/reimagined/${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip shaders/
+          zip -r ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip shaders/
           
       - name: 🚀 Upload artifact Reimagined
         uses: actions/upload-artifact@v4.6.2
         with:
           name: ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}
-          path: ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
+          path: ./build/reimagined/${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
           if-no-files-found: error
