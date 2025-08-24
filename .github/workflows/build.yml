@@ -14,7 +14,6 @@ concurrency:
 
 env:
   DEV_ENVIRONMENT: ${{ github.ref_name != 'main' }}
-  PROJECT_NAME: TerraFirmaGreg-Shaders
 
 jobs:    
   info:
@@ -24,6 +23,9 @@ jobs:
     outputs:
       project_version: ${{ steps.check.outputs.project_version }}
       project_name: ${{ steps.check.outputs.project_name }}
+      release_type: ${{ steps.check.outputs.release_type }}
+      exists: ${{ steps.check.outputs.exists }}
+      make_release: ${{ steps.check.outputs.make_release }}
 
     steps:
         - name: 📦 Checkout
@@ -31,12 +33,47 @@ jobs:
           with:
             fetch-depth: 0
 
+        - name: 📥 Get Pakku Info
+          id: pakku_info
+          uses: ActionsTools/read-json-action@v1.0.5
+          with:
+            file_path: "pakku.json"
+
+        - name: Increment Semantic Version
+          id: increment
+          uses: christian-draeger/increment-semantic-version@1.2.3
+          with:
+            current-version: ${{ steps.pakku_info.outputs.version }}
+            version-fragment: 'patch'
+
+        - name: 🔍 Check if tag exists
+          uses: mukunku/tag-exists-action@v1.6.0
+          id: check_tag
+          with:
+            tag: ${{ steps.increment.outputs.next-version }}
+
         - name: 🔍 Check
           id: check
           shell: bash
           run: |  
-            echo "project_version=build_#${{ github.run_number }}" >> $GITHUB_OUTPUT
-            echo "project_name=${{ env.PROJECT_NAME }}" >> $GITHUB_OUTPUT
+            echo "project_version=${{ steps.increment.outputs.next-version }}" >> $GITHUB_OUTPUT
+
+            echo "project_name=${{ steps.pakku_info.outputs.name }}" >> $GITHUB_OUTPUT
+            echo "release_type=${{ steps.pakku_info.outputs.release_type }}" >> $GITHUB_OUTPUT
+            echo "exists=${{ steps.check_tag.outputs.exists }}" >> $GITHUB_OUTPUT
+            echo "make_release=${{ steps.check_tag.outputs.exists == 'false' && env.DEV_ENVIRONMENT == 'false' }}" >> $GITHUB_OUTPUT
+
+        - name: 📝 Generate Github Summary
+          uses: WcAServices/markdown-template-action@v1.1.1
+          with:
+            template: |
+              📃 **Name**: ${{ steps.check.outputs.project_name }}
+              📃 **Release**:  `${{ steps.check.outputs.project_version }}`
+              📃 **Release Type**: `${{ steps.check.outputs.release_type }}`
+
+              📃 **Dev Environment**: `${{ env.DEV_ENVIRONMENT }}`
+              📃 **Tag Exists**: `${{ steps.check.outputs.exists }}`
+              📃 **Make Release**: `${{ steps.check.outputs.make_release }}`
             
 
   build-project:
@@ -76,3 +113,139 @@ jobs:
           name: ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}
           path: ./build/reimagined/${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
           if-no-files-found: error
+
+  release-github:
+    name: 🚀 Release to GitHub
+    needs: [info, build-project]
+    runs-on: ubuntu-latest
+    if: ${{ needs.info.outputs.make_release == 'true' }}
+    outputs:
+      url: ${{ steps.release.outputs.url }}
+
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v5.0.0
+
+      - name: 📦 Download artifact
+        uses: actions/download-artifact@v5.0.0
+        with:
+          merge-multiple: true
+
+      - name: 🔍 Check if artifact exist
+        id: check_artifact
+        shell: bash
+        run: |
+          if [ ! -f ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip ]; then
+            echo '::error::No value found for artifact `Reimagined.zip`.' && exit 1
+          fi
+          if [ ! -f ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip ]; then
+            echo '::error::No value found for artifact `Unbound.zip`.' && exit 1
+          fi
+          echo "✔️ All artifacts found"
+
+
+      - name: 🚀 Create release
+        id: release
+        uses: softprops/action-gh-release@v2.3.2
+        with:
+          name: ${{ needs.info.outputs.project_version }}
+          tag_name: ${{ needs.info.outputs.project_version }}
+          target_commitish: ${{ github.ref_name }}
+          files: |
+            ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
+            ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip
+          prerelease: ${{ needs.info.outputs.release_type != 'release' }}
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-platforms:
+    name: 🚀 Release to Platforms
+    needs: [info, build-project, release-github]
+    runs-on: ubuntu-latest
+    if: ${{ needs.info.outputs.make_release == 'true' }}
+    outputs:
+      id: ${{ steps.release.outputs.id }}
+
+    steps:
+      - name: 🔒 Check if CURSEFORGE_TOKEN exist
+        shell: bash
+        run: |
+          if [ "${{ secrets.CURSEFORGE_TOKEN }}" == '' ]; then
+            echo '::error::No value found for secret key `CURSEFORGE_TOKEN`. See https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository' && exit 1
+          fi  
+
+      - name: 📦 Download artifact
+        uses: actions/download-artifact@v5.0.0
+        with:
+          merge-multiple: true
+
+      - name: 🔍 Check if artifact exist
+        id: check_artifact
+        shell: bash
+        run: |
+          if [ ! -f ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip ]; then
+            echo '::error::No value found for artifact `Reimagined.zip`.' && exit 1
+          fi
+          if [ ! -f ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip ]; then
+            echo '::error::No value found for artifact `Unbound.zip`.' && exit 1
+          fi
+          echo "✔️ All artifacts found"
+
+      - name: 🚀 Upload Reimagined Platforms
+        uses: Kir-Antipov/mc-publish@v3.3.0
+        with:
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+          files: |
+            ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
+            ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
+          name: "${{ needs.info.outputs.project_name }}-${{ needs.info.outputs.project_version }}"
+          version: ${{ needs.info.outputs.project_version }}
+          version-type: ${{ needs.info.outputs.release_type }}
+          game-versions: ${{ needs.info.outputs.minecraft_version }}
+          game-version-filter: none
+          retry-attempts: 2
+          retry-delay: 10000
+          fail-mode: fail
+
+      # - name: 🚀 Upload Reimagined Platforms
+      #   uses: Kir-Antipov/mc-publish@v3.3.0
+      #   with:
+      #     modrinth-id: ${{ vars.MODRINTH_ID }}
+      #     modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+      #     curseforge-id: ${{ vars.CURSEFORGE_ID }}
+      #     curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+      #     files: ${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}.zip
+      #     name: "${{ needs.info.outputs.project_name }}-Reimagined-${{ needs.info.outputs.project_version }}"
+      #     version: ${{ needs.info.outputs.project_version }}
+      #     version-type: ${{ needs.info.outputs.release_type }}
+      #     game-versions: ${{ needs.info.outputs.minecraft_version }}
+      #     game-version-filter: none
+      #     retry-attempts: 2
+      #     retry-delay: 10000
+      #     fail-mode: fail
+
+      # - name: 🚀 Upload Unbound Platforms
+      #   uses: Kir-Antipov/mc-publish@v3.3.0
+      #   with:
+      #     modrinth-id: ${{ vars.MODRINTH_ID }}
+      #     modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+      #     curseforge-id: ${{ vars.CURSEFORGE_ID }}
+      #     curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+      #     files: ${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}.zip
+      #     name: "${{ needs.info.outputs.project_name }}-Unbound-${{ needs.info.outputs.project_version }}"
+      #     version: ${{ needs.info.outputs.project_version }}
+      #     version-type: ${{ needs.info.outputs.release_type }}
+      #     game-versions: ${{ needs.info.outputs.minecraft_version }}
+      #     game-version-filter: none
+      #     retry-attempts: 2
+      #     retry-delay: 10000
+      #     fail-mode: fail
