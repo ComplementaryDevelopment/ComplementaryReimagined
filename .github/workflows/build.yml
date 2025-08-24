@@ -53,7 +53,7 @@ jobs:
             version_bump: patch
             tag_prefix: ''
             update_file: pakku.json
-            update_pattern: '"version": "*"'
+            update_pattern: '"version": "${{ steps.pakku_info.outputs.version }}"'
             update_replacement: '"version": "{version}"'
             commit_message: 'bump version to {version}'
             create_release: false
