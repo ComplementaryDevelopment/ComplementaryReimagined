@@ -50,6 +50,8 @@ jobs:
           id: increment
           uses: henryupton/action-increment-version@v1.2.0
           with:
+            version_bump: patch
+            tag_prefix: ''
             update_file: pakku.json
             update_pattern: '"version": "[^"]*"'
             update_replacement: '"version": "{version}"'
