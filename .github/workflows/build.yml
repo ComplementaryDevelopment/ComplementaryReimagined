@@ -20,7 +20,34 @@ jobs:
     if: ${{  github.repository_owner == 'TerraFirmaGreg-Team' }}
 
     steps:
-      - name: 📦 Checkout
-        uses: actions/checkout@v5.0.0
-        with:
-          fetch-depth: 0
+        - name: 📦 Checkout
+          uses: actions/checkout@v5.0.0
+          with:
+            fetch-depth: 0
+
+        - name: Get commit count
+          id: count
+          run: echo "COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
+            
+        - name: Create version number
+          id: version
+          run: echo "VERSION=5.5.${{ steps.count.outputs.COUNT }}" >> $GITHUB_OUTPUT
+            
+        - name: Setup archives
+          run: |
+            mkdir -p build/Unbound build/Reimagined
+            cp -r shaders/ build/Unbound/
+            cp -r shaders/ build/Reimagined/
+            
+        - name: Modify Unbound version
+          run: |
+            sed -i 's/#define SHADER_STYLE .* \/\/\[1 4\]/#define SHADER_STYLE 1 \/\/\[1 4\]/g' build/Unbound/shaders/lib/common.glsl
+            
+        - name: Modify Reimagined version
+          run: |
+            sed -i 's/#define SHADER_STYLE .* \/\/\[1 4\]/#define SHADER_STYLE 4 \/\/\[1 4\]/g' build/Reimagined/shaders/lib/common.glsl
+            
+        - name: Create zip archives
+          run: |
+            cd build/Unbound && zip -r "../../TerraFirmaGreg-Shaders-Unbound-${{ steps.version.outputs.VERSION }}.zip" shaders/
+            cd ../Reimagined && zip -r "../../TerraFirmaGreg-Shaders-Reimagined-${{ steps.version.outputs.VERSION }}.zip" shaders/
