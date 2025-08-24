@@ -56,7 +56,7 @@ jobs:
         - name: Sync release version.
           uses: tj-actions/sync-release-version@v13.16
           with:
-            pattern: '"version": "1.0.0"'
+            pattern: '"version": "'
             current_version: ${{ steps.pakku_info.outputs.version }}
             new_version: ${{ steps.increment.outputs.next-version }}
             paths: |
@@ -175,12 +175,6 @@ jobs:
           prerelease: ${{ needs.info.outputs.release_type != 'release' }}
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: pocket-apps/action-update-version@v1
-        with:
-          files: 'pakku.json'
-          version-regexp: '\d+.\d+.\d+'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   release-platforms:
     name: 🚀 Release to Platforms
