@@ -40,7 +40,7 @@ jobs:
           with:
             file_path: "pakku.json"
 
-        - name: Increment Semantic Version
+        - name: 📝 Increment Semantic Version
           id: increment
           uses: christian-draeger/increment-semantic-version@1.2.3
           with:
@@ -53,7 +53,7 @@ jobs:
           with:
             tag: ${{ steps.increment.outputs.next-version }}
 
-        - name: Sync release version.
+        - name: 📝 Sync release version.
           uses: tj-actions/sync-release-version@v13.16
           with:
             pattern: '"version": "'
@@ -62,13 +62,13 @@ jobs:
             paths: |
               pakku.json
 
-        - name: Push changes
+        - name: 📝 Push changes
           uses: EndBug/add-and-commit@v9.1.4
           with:
             committer_name: GitHub Actions
             committer_email: actions@github.com
             add: 'pakku.json'
-            message: 'update files'
+            message: 'Bump version to ${{ steps.increment.outputs.next-version }}'
 
         - name: 🔍 Check
           id: check
