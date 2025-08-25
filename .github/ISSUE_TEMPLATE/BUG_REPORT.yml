@@ -1,0 +1,56 @@
+name: "[🐛]: Bug report"
+description: "Report a bug where something is not working as expected."
+title: "[🐛]: "
+labels: [ "Status: Backlog" ]
+projects: ["TerraFirmaGreg-Team/16"]
+type: "Bug"
+
+body:
+  - type: checkboxes
+    id: exists
+    attributes:
+      label: "Was this bug reported before?"
+      description: "Please search open/closed issues before submitting, as the issue may have already been reported/addressed."
+      options:
+        - label: "No, it was not."
+          required: true
+
+  - type: textarea
+    id: expected
+    validations:
+      required: true
+    attributes:
+      label: "Expected Behavior"
+      description: "What you expected to happen. Attach screenshots here as necessary."
+      placeholder: "Example: Expected to produce X by consuming Y."
+
+  - type: textarea
+    id: result
+    validations:
+      required: true
+    attributes:
+      label: "Actual Behavior"
+      description: "What happened despite your expectations. Attach screenshots here as necessary."
+      placeholder: "Example: Produced one X but Y was not consumed."
+
+  - type: textarea
+    id: reproduction
+    validations:
+      required: true
+    attributes:
+      label: "Steps to Reproduce"
+      description: "How to reproduce the bug."
+      placeholder: "Example: 1) I did X..."
+
+  - type: textarea
+    id: additional-info
+    validations:
+      required: false
+    attributes:
+      label: "Additional Information"
+      description: "Any additional information you wish to provide. Please add anything which did not fit into the other sections here."
+      placeholder: "Example: This is likely caused by X because..."
+
+  - type: markdown
+    attributes:
+      value: Thank you for taking the time to fill out this bug report.
