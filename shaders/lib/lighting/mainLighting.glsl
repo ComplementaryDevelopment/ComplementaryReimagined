@@ -22,10 +22,14 @@
     #include "/lib/misc/voxelization.glsl"
 #endif
 
+#ifdef DO_PIXELATION_EFFECTS
+    #include "/lib/misc/pixelation.glsl"
+#endif
+
 vec3 highlightColor = normalize(pow(lightColor, vec3(0.37))) * (0.3 + 1.5 * sunVisibility2) * (1.0 - 0.85 * rainFactor);
 
 //Lighting//
-void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 viewPos, float lViewPos, vec3 geoNormal, vec3 normalM,
+void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 viewPos, float lViewPos, vec3 geoNormal, vec3 normalM, float dither,
                 vec3 worldGeoNormal, vec2 lightmap, bool noSmoothLighting, bool noDirectionalShading, bool noVanillaAO,
                 bool centerShadowBias, int subsurfaceMode, float smoothnessG, float highlightMult, float emission) {
     #ifdef DO_PIXELATION_EFFECTS
@@ -33,10 +37,23 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
         #ifdef PIXELATED_SHADOWS
             vec3 playerPosPixelated = TexelSnap(playerPos, pixelationOffset);
-        #endif 
+
+            #ifdef GBUFFERS_ENTITIES
+                if (entityId == 50076) { // Boats
+                    playerPosPixelated.y += 0.38; // consistentBOAT2176
+                }
+            #endif
+            #ifdef GBUFFERS_TERRAIN
+                if (subsurfaceMode == 1) {
+                    playerPosPixelated.y += 0.05; // Fixes grounded foliage having dark bottom pixels depending on the random y-offset
+                }
+            #endif
+        #endif
         #ifdef PIXELATED_BLOCKLIGHT
-            lightmap = clamp(TexelSnap(lightmap, pixelationOffset), 0.0, 1.0);
-            lViewPos = TexelSnap(lViewPos, pixelationOffset);
+            if (!noSmoothLighting) {
+                lightmap = clamp(TexelSnap(lightmap, pixelationOffset), 0.0, 1.0);
+                lViewPos = TexelSnap(lViewPos, pixelationOffset);
+            }
         #endif
     #endif
 
@@ -141,53 +158,66 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                         #endif
 
                         vec3 playerPosM = playerPos;
+                        vec3 centerPlayerPos = floor(playerPos + cameraPosition + worldGeoNormal * 0.01) - cameraPosition + 0.5;
 
                         #if defined DO_PIXELATION_EFFECTS && defined PIXELATED_SHADOWS
                             playerPosM = playerPosPixelated;
+                            offset *= 0.75;
                         #endif
 
-                        #ifdef GBUFFERS_TEXTURED
-                            vec3 centerPlayerPos = floor(playerPos + cameraPosition) - cameraPosition + 0.5;
+                        // Fix light leaking in caves //
+                        #ifdef GBUFFERS_TERRAIN
+                            if (centerShadowBias || subsurfaceMode == 1) {
+                                #ifdef OVERWORLD
+                                    playerPosM = mix(centerPlayerPos, playerPosM, 0.5 + 0.5 * lightmapYM);
+                                #endif
+                            } else {
+                                #if !defined DO_PIXELATION_EFFECTS || !defined PIXELATED_SHADOWS
+                                    float centerFactor = max(glColor.a, lightmapYM);
+
+                                    #if defined PERPENDICULAR_TWEAKS && SHADOW_QUALITY >= 2
+                                        // Fake Variable Penumbra Shadows
+                                        // Making centerFactor also work in daylight if AO gradient is facing towards sun
+                                        if (NdotU > 0.99) {
+                                            vec3 aoGradView = dFdx(glColor.a) * normalize(dFdx(playerPos.xyz))
+                                                            + dFdy(glColor.a) * normalize(dFdy(playerPos.xyz));
+                                            if (dot(normalize(aoGradView.xz), normalize(ViewToPlayer(lightVec).xz)) < 0.3 + 0.4 * dither)
+                                                if (dot(lightVec, upVec) < 0.99999) centerFactor = sqrt1(max0(glColor.a - 0.55) / 0.45);
+                                        }
+                                    #endif
+                                #else
+                                    // This works very well with Pixelated Shadows (at least at 16x)
+                                    float centerFactor = 1.0 - (1.0 - glColor.a) * max(max0(signMidCoordPos.y), NdotUmax0);
+                                #endif
+
+                                playerPosM = mix(playerPosM, centerPlayerPos, 0.2 * (1.0 - pow2(pow2(centerFactor))));
+                            }
+                        #elif defined GBUFFERS_HAND
+                            playerPosM = mix(vec3(0.0), playerPosM, 0.2 + 0.8 * lightmapYM);
+                        #elif defined GBUFFERS_TEXTURED
                             playerPosM = mix(centerPlayerPos, playerPosM + vec3(0.0, 0.02, 0.0), lightmapYM);
                         #else
-                            // Shadow bias without peter-panning
-                            float distanceBias = pow(dot(playerPos, playerPos), 0.75);
-                            distanceBias = 0.12 + 0.0008 * distanceBias;
-                            vec3 bias = worldGeoNormal * distanceBias * (2.0 - 0.95 * NdotLmax0); // 0.95 fixes pink petals noon shadows
+                            playerPosM = mix(playerPosM, centerPlayerPos, 0.2 * (1.0 - lightmapYM));
+                        #endif
 
+                        // Shadow bias without peter-panning //
+                        #ifndef GBUFFERS_TEXTURED
                             #ifdef GBUFFERS_TERRAIN
-                                if (subsurfaceMode == 2) {
-                                    bias *= vec3(0.0, 0.0, -0.75);
-                                } else if (subsurfaceMode == 1) {
-                                    bias = vec3(0.0);
-                                    centerShadowBias = true;
-                                }
+                                if (subsurfaceMode != 1)
                             #endif
+                            {
+                                float distanceBias = pow(dot(playerPos, playerPos), 0.75);
+                                distanceBias = 0.12 + 0.0008 * distanceBias;
+                                vec3 bias = worldGeoNormal * distanceBias * (2.0 - 0.95 * NdotLmax0); // 0.95 fixes pink petals noon shadows
 
-                            // Fix light leaking in caves
-                            if (lightmapYM < 0.999) {
-                                #ifdef GBUFFERS_HAND
-                                    playerPosM = mix(vec3(0.0), playerPosM, 0.2 + 0.8 * lightmapYM);
-                                #else
-                                    if (centerShadowBias) {
-                                        #ifdef OVERWORLD
-                                            vec3 centerPos = floor(playerPosM + cameraPosition) - cameraPosition + 0.5;
-                                            playerPosM = mix(centerPos, playerPosM, 0.5 + 0.5 * lightmapYM);
-                                        #endif
-                                    } else {
-                                        vec3 edgeFactor = 0.2 * (0.5 - fract(playerPosM + cameraPosition + worldGeoNormal * 0.01));
-
-                                        #ifdef GBUFFERS_WATER
-                                            bias *= 0.7;
-                                            playerPosM += (1.0 - lightmapYM) * edgeFactor;
-                                        #endif
-
-                                        playerPosM += (1.0 - pow2(pow2(max(glColor.a, lightmapYM)))) * edgeFactor;
+                                #ifdef GBUFFERS_TERRAIN
+                                    if (subsurfaceMode == 2) {
+                                        bias *= vec3(0.0, 0.0, -0.75);
                                     }
                                 #endif
-                            }
 
-                            playerPosM += bias;
+                                playerPosM += bias;
+                            }
                         #endif
 
                         vec3 shadowPos = GetShadowPos(playerPosM);
@@ -353,7 +383,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         }
 
         // Add extra articial light for blocks that request it
-        lightmapXM = mix(lightmapXM, 10.0, lightVolume.a);
+        lightmapXM = max(lightmapXM, mix(lightmapXM, 10.0, lightVolume.a));
         specialLighting *= 1.0 + 50.0 * lightVolume.a;
 
         // Color Balance
@@ -431,15 +461,11 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #endif
 
     // Minimum Light
-    #if !defined END && MINIMUM_LIGHT_MODE > 0
-        #if MINIMUM_LIGHT_MODE == 1
-            vec3 minLighting = vec3(0.0038);
-        #elif MINIMUM_LIGHT_MODE == 2
-            vec3 minLighting = vec3(0.005625 + vsBrightness * 0.043);
-        #elif MINIMUM_LIGHT_MODE == 3
-            vec3 minLighting = vec3(0.0625);
-        #elif MINIMUM_LIGHT_MODE >= 4
-            vec3 minLighting = vec3(0.07 * pow2(MINIMUM_LIGHT_MODE - 2.5));
+    #if !defined END && CAVE_LIGHTING > 0
+        vec3 minLighting = vec3(0.005625 + vsBrightness * 0.043);
+        #if CAVE_LIGHTING != 100
+            #define CAVE_LIGHTING_M CAVE_LIGHTING * 0.01
+            minLighting *= CAVE_LIGHTING_M;
         #endif
         minLighting *= vec3(0.45, 0.475, 0.6);
         minLighting *= 1.0 - lightmapYM;

@@ -68,10 +68,6 @@ void main() {
     vec4 colorP = color;
     color *= glColor;
 
-    #ifdef USE_TEXEL_OFFSET
-        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
-    #endif
-
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     vec3 viewPos = ScreenToView(screenPos);
     float lViewPos = length(viewPos);
@@ -96,13 +92,6 @@ void main() {
     float emission = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
-    #if PIXEL_SHADING > 2
-        lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
-    #endif
-    #if PIXEL_NORMALS > 0
-        normalM = TexelSnap(normalM, texelOffset);
-        geoNormal = normalM;
-    #endif
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
     #if defined IPBR && defined IPBR_PARTICLE_FEATURES
         // We don't want to detect particles from the block atlas
@@ -168,15 +157,9 @@ void main() {
         }
     #endif
 
-    #if PIXEL_SHADING > 0
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, false, true,
-                   false, 0, 0.0, 1.0, emission, texelOffset);
-    #else
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, false, true,
-                   false, 0, 0.0, 1.0, emission);
-    #endif
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, dither,
+               worldGeoNormal, lmCoordM, noSmoothLighting, false, true,
+               false, 0, 0.0, 1.0, emission);
 
     #if MC_VERSION >= 11500
         vec3 nViewPos = normalize(viewPos);

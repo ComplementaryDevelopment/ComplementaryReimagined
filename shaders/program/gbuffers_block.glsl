@@ -105,10 +105,6 @@ void main() {
     #endif
     color *= glColor;
 
-    #ifdef USE_TEXEL_OFFSET
-        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
-    #endif
-
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
@@ -123,13 +119,6 @@ void main() {
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0;
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
-    #if PIXEL_SHADING > 2
-        lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
-    #endif
-    #if PIXEL_NORMALS > 0
-        normalM = TexelSnap(normal, texelOffset);
-        geoNormal = normalM;
-    #endif
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
     #ifdef IPBR
@@ -143,11 +132,11 @@ void main() {
             GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
         #endif
 
-        if (blockEntityId == 60025) { // End Portal, End Gateway
+        if (blockEntityId == 5025) { // End Portal, End Gateway
             #ifdef SPECIAL_PORTAL_EFFECTS
                 #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
             #endif
-        } else if (blockEntityId == 60004) { // Signs
+        } else if (blockEntityId == 5004) { // Signs
             noSmoothLighting = true;
             if (glColor.r + glColor.g + glColor.b <= 2.99 || lmCoord.x > 0.999) { // Sign Text
                 #include "/lib/materials/specificMaterials/others/signText.glsl"
@@ -165,15 +154,9 @@ void main() {
         CoatTextures(color.rgb, noiseFactor, playerPos, false);
     #endif
 
-    #if PIXEL_SHADING > 0
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
-                   false, 0, smoothnessG, highlightMult, emission, texelOffset);
-    #else
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
-                   false, 0, smoothnessG, highlightMult, emission);
-    #endif
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
+               worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
+               false, 0, smoothnessG, highlightMult, emission);
 
     #ifdef PBR_REFLECTIONS
         #ifdef OVERWORLD
@@ -266,13 +249,13 @@ void main() {
     if (normal != normal) normal = -upVec; // Mod Fix: Fixes Better Nether Fireflies
 
     #ifdef IPBR
-        /*if (blockEntityId == 60024) { // End Portal, End Gateway
+        /*if (blockEntityId == 5024) { // End Portal, End Gateway
             gl_Position.z -= 0.002;
         }*/
     #endif
 
     #if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
-        if (blockEntityId == 60008) { // Chest
+        if (blockEntityId == 5008) { // Chest
             float fractWorldPosY = fract((gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex).y + cameraPosition.y);
             if (fractWorldPosY > 0.56 && 0.57 > fractWorldPosY) gl_Position.z -= 0.0001;
         }

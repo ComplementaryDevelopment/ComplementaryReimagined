@@ -12,24 +12,17 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
         vec2 parallaxLocalCoord;
         vec3 parallaxTraceCoordDepth;
         vec4 normalMap;
-
-        #if defined GBUFFERS_TERRAIN
-            bool skipPom = (mat == 20000);
-        #elif defined GBUFFERS_BLOCK
-            bool skipPom = (blockEntityId == 20000);
-        #else
-            bool skipPom = false;
-        #endif
+        bool skipPom = false;
 
         if (!skipPom) {
             texCoordM = vTexCoord.xy * vTexCoordAM.zw + vTexCoordAM.xy;
 
-            parallaxFade = pow2(lViewPos / POM_DISTANCE); // Still enabled to test: Lava, Painting
+            parallaxFade = pow2(lViewPos / POM_DISTANCE);
             #ifdef GBUFFERS_ENTITIES
                 if (entityId == 50008) parallaxFade = 1.1; // Item Frame, Glow Item Frame
             #endif
             #ifdef GBUFFERS_BLOCK
-                if (blockEntityId == 60004) parallaxFade = 1.1; // Signs
+                if (blockEntityId == 5004) parallaxFade = 1.1; // Signs
             #endif
             #ifdef GBUFFERS_HAND
                 if (heldItemId == 40004 || heldItemId2 == 40004) parallaxFade = 1.1; // Filled Map

@@ -174,9 +174,6 @@ void main() {
         #ifdef OVERWORLD
             lightFogMult *= 0.2 + 0.6 * mix(1.0, 1.0 - sunFactor * invRainFactor, eyeBrightnessM);
         #endif
-
-        color /= 1.0 + pow2(GetLuminance(lightFog)) * lightFogMult * 2.0;
-        color += lightFog * lightFogMult * 0.5;
     #endif
 
     if (isEyeInWater == 1) {
@@ -185,13 +182,23 @@ void main() {
         vec3 underwaterMult = vec3(0.80, 0.87, 0.97);
         color.rgb *= underwaterMult * 0.85;
         volumetricEffect.rgb *= pow2(underwaterMult * 0.71);
-    } else {
-        if (isEyeInWater == 2) {
-            if (z1 == 1.0) color.rgb = fogColor * 5.0;
 
-            volumetricEffect.rgb *= 0.0;
-        }
+        #ifdef COLORED_LIGHT_FOG
+            lightFog *= underwaterMult;
+        #endif
+    } else if (isEyeInWater == 2) {
+        if (z1 == 1.0) color.rgb = fogColor * 5.0;
+
+        volumetricEffect.rgb *= 0.0;
+        #ifdef COLORED_LIGHT_FOG
+            lightFog *= 0.0;
+        #endif
     }
+
+    #ifdef COLORED_LIGHT_FOG
+        color /= 1.0 + pow2(GetLuminance(lightFog)) * lightFogMult * 2.0;
+        color += lightFog * lightFogMult * 0.5;
+    #endif
 
     color = pow(color, vec3(2.2));
 

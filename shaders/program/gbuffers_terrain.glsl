@@ -18,6 +18,7 @@ flat in vec2 midCoord;
 
 flat in vec3 upVec, sunVec, northVec, eastVec;
 in vec3 normal;
+in vec3 vertexPos;
 
 in vec4 glColorRaw;
 
@@ -75,8 +76,10 @@ void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, inout float s
     float factor = max(80.0 - lViewPos, 0.0);
     shadowMult *= 1.0 + 0.004 * noonFactor * factor;
 
-    if (signMidCoordPos.x < 0.0) color.rgb *= 1.08;
-    else color.rgb *= 0.93;
+    #if defined IPBR && !defined IPBR_COMPATIBILITY_MODE
+        if (signMidCoordPos.x < 0.0) color.rgb *= 1.08;
+        else color.rgb *= 0.93;
+    #endif
 
     #ifdef FOLIAGE_ALT_SUBSURFACE
         float edgeSize = 0.12;
@@ -179,14 +182,8 @@ void main() {
 
     float smoothnessD = 0.0, materialMask = 0.0, skyLightFactor = 0.0;
 
-    float alphaCheck = color.a;
-    #ifdef USE_TEXEL_OFFSET
-        vec2 texelOffset = ComputeTexelOffset(tex, texCoord);
-        alphaCheck = max(fwidth(color.a), alphaCheck); // extend alpha clip to remove edge artifacts
-    #endif
-
     #if !defined POM || !defined POM_ALLOW_CUTOUT
-        if (alphaCheck <= 0.00001) discard;
+        if (color.a <= 0.00001) discard; // 6WIR4HT23
     #endif
 
     vec3 colorP = color.rgb;
@@ -200,7 +197,7 @@ void main() {
     #endif
     float lViewPos = length(viewPos);
     vec3 nViewPos = normalize(viewPos);
-    vec3 playerPos = ViewToPlayer(viewPos);
+    vec3 playerPos = vertexPos;
 
     float dither = Bayer64(gl_FragCoord.xy);
     #ifdef TAA
@@ -212,21 +209,11 @@ void main() {
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0, snowFactor = 1.0, snowMinNdotU = 0.0, noPuddles = 0.0;
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
-    #if PIXEL_SHADING > 2
-        lmCoordM = clamp(TexelSnap(lmCoord, texelOffset), 0.0, 1.0);
-    #endif
-    #if PIXEL_NORMALS > 0
-        normalM = TexelSnap(normal, texelOffset);
-        geoNormal = normalM;
-    #endif
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
     #ifdef IPBR
         vec3 maRecolor = vec3(0.0);
         #include "/lib/materials/materialHandling/terrainMaterials.glsl"
-
-        //int blockEntityId = mat;
-        //#include "/lib/materials/materialHandling/blockEntityMaterials.glsl"
 
         #ifdef GENERATED_NORMALS
             if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
@@ -340,15 +327,9 @@ void main() {
         #include "/lib/misc/showLightLevels.glsl"
     #endif
 
-    #if PIXEL_SHADING > 0
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
-                   centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission, texelOffset);
-    #else
-        DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM,
-                   worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
-                   centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
-    #endif
+    DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, dither,
+               worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
+               centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
 
     #ifdef IPBR
         color.rgb += maRecolor;
@@ -391,6 +372,7 @@ flat out vec2 midCoord;
 
 flat out vec3 upVec, sunVec, northVec, eastVec;
 out vec3 normal;
+out vec3 vertexPos;
 
 out vec4 glColorRaw;
 
@@ -456,22 +438,15 @@ void main() {
         if (mc_Entity.y > 0.5 && dot(normal, upVec) < 0.999) absMidCoordPos = vec2(0.0); // Fix257062
     #endif
 
+    vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
+    vertexPos = position.xyz;
+
     #ifdef WAVING_ANYTHING_TERRAIN
-        vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
-
         DoWave(position.xyz, mat);
-
-        gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
-    #else
-        gl_Position = ftransform();
-
-        #ifndef WAVING_LAVA
-            if (mat == 10068) { // Lava
-                // G8FL735 Fixes Optifine-Iris parity. Optifine has 0.9 gl_Color.rgb on a lot of versions
-                glColorRaw.rgb = min(glColorRaw.rgb, vec3(0.9));
-            }
-        #endif
     #endif
+
+    gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+
 
     #ifdef FLICKERING_FIX
         if (mat == 10257) gl_Position.z -= 0.00001; // Iron Bars

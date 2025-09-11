@@ -15,6 +15,9 @@ noperspective in vec2 texCoord;
 //Common Variables//
 
 //Common Functions//
+float GetLinearDepth(float depth) {
+    return (2.0 * near) / (far + near - depth * (far - near));
+}
 
 //Includes//
 #if FXAA_DEFINE == 1
