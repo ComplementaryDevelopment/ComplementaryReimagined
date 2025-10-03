@@ -104,11 +104,12 @@ if (mat < 32008) {
 
                         float lColor = length(color.rgb);
                         vec3 baseColor = vec3(0.1, 1.0, 0.92);
-                        if (lColor > 1.5)       color.rgb = baseColor + 0.22;
-                        else if (lColor > 1.3)  color.rgb = baseColor + 0.15;
-                        else if (lColor > 1.15) color.rgb = baseColor + 0.09;
-                        else                    color.rgb = baseColor + 0.05;
-                        emission = 4.0;
+                        if (lColor > 1.65)      color.rgb = baseColor + 0.2;
+                        else if (lColor > 1.5)  color.rgb = baseColor + 0.15;
+                        else if (lColor > 1.3)  color.rgb = baseColor + 0.08;
+                        else if (lColor > 1.15) color.rgb = baseColor + 0.035;
+                        else                    color.rgb = baseColor;
+                        emission = 3.5;
                     }
                 } else { // Beacon:Obsidian
                     float factor = color.r * 1.5;

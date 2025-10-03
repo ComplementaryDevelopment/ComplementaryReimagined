@@ -28,18 +28,70 @@ vec2 view = vec2(viewWidth, viewHeight);
 #endif
 
 //Common Functions//
-void DoBSLTonemap(inout vec3 color) {
-    color = T_EXPOSURE * color;
-    color = color / pow(pow(color, vec3(TM_WHITE_CURVE)) + 1.0, vec3(1.0 / TM_WHITE_CURVE));
-    color = pow(color, mix(vec3(T_LOWER_CURVE), vec3(T_UPPER_CURVE), sqrt(color)));
+void LinearToRGB(inout vec3 color) {
+    const vec3 k = vec3(0.055);
+    color = mix((vec3(1.0) + k) * pow(color, vec3(1.0 / 2.4)) - k, 12.92 * color, lessThan(color, vec3(0.0031308)));
+}
 
-    color = pow(color, vec3(1.0 / 2.2));
+void DoCompTonemap(inout vec3 color) {
+    // Lottes tonemap modified for Complementary Shaders
+    // Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
+    // http://32ipi028l5q82yhj72224m8j.wpengine.netdna-cdn.com/wp-content/uploads/2016/03/GdcVdrLottes.pdf
+    color = TM_EXPOSURE * color;
+
+    float colorMax = max(color.r, max(color.g, color.b));
+    float initialLuminance = GetLuminance(color);
+
+    vec3 a      = vec3(TM_CONTRAST); // General Contrast
+    vec3 d      = vec3(1.0); // Roll-off control
+    vec3 hdrMax = vec3(8.0); // Maximum input brightness
+    vec3 midIn  = vec3(0.25); // Input middle gray
+    vec3 midOut = vec3(0.25); // Output middle gray
+
+    vec3 a_d = a * d;
+    vec3 hdrMaxA = pow(hdrMax, a);
+    vec3 hdrMaxAD = pow(hdrMax, a_d);
+    vec3 midInA = pow(midIn, a);
+    vec3 midInAD = pow(midIn, a_d);
+    vec3 HM1 = hdrMaxA * midOut;
+    vec3 HM2 = hdrMaxAD - midInAD;
+
+    vec3 b = (-midInA + HM1) / (HM2 * midOut);
+    vec3 c = (hdrMaxAD * midInA - HM1 * midInAD) / (HM2 * midOut);
+
+    vec3 colorOut = pow(color, a) / (pow(color, a_d) * b + c);
+
+    LinearToRGB(colorOut);
+
+    // Remove tonemapping from darker colors for better readability
+    const float darkLiftStart = 0.1;
+    const float darkLiftMix = 0.75;
+    float darkLift = smoothstep(darkLiftStart, 0.0, initialLuminance);
+    vec3 smoothColor = pow(color, vec3(1.0 / 2.2));
+    colorOut = mix(colorOut, smoothColor, darkLift * darkLiftMix * max0(0.55 - abs(1.05 - TM_CONTRAST)) / 0.55);
+    
+    // Path to White
+    const float wpInputCurveStart = 0.0;
+    const float wpInputCurveMax = 16.0; // Increase this value to reduce the effect of white path
+    float modifiedLuminance = pow(initialLuminance / wpInputCurveMax, 2.0 - TM_WHITE_PATH) * wpInputCurveMax;
+    float whitePath = smoothstep(wpInputCurveStart, wpInputCurveMax, modifiedLuminance);
+    colorOut = mix(colorOut, vec3(1.0), whitePath);
+
+    // Desaturate dark colors
+    const float dpInputCurveStart = 0.1;
+    const float dpInputCurveMax = 0.0;
+    float desaturatePath = smoothstep(dpInputCurveStart, dpInputCurveMax, initialLuminance);
+    colorOut = mix(colorOut, vec3(GetLuminance(colorOut)), desaturatePath * TM_DARK_DESATURATION);
+    
+    color = clamp01(colorOut);
 }
 
 void DoBSLColorSaturation(inout vec3 color) {
+    float saturationFactor = T_SATURATION + 0.07;
+
     float grayVibrance = (color.r + color.g + color.b) / 3.0;
     float graySaturation = grayVibrance;
-    if (T_SATURATION < 1.00) graySaturation = dot(color, vec3(0.299, 0.587, 0.114));
+    if (saturationFactor < 1.00) graySaturation = dot(color, vec3(0.299, 0.587, 0.114));
 
     float mn = min(color.r, min(color.g, color.b));
     float mx = max(color.r, max(color.g, color.b));
@@ -48,10 +100,10 @@ void DoBSLColorSaturation(inout vec3 color) {
 
     color = mix(color, mix(color, lightness, 1.0 - T_VIBRANCE), sat);
     color = mix(color, lightness, (1.0 - lightness) * (2.0 - T_VIBRANCE) / 2.0 * abs(T_VIBRANCE - 1.0));
-    color = color * T_SATURATION - graySaturation * (T_SATURATION - 1.0);
+    color = color * saturationFactor - graySaturation * (saturationFactor - 1.0);
 }
 
-#ifdef BLOOM
+#if BLOOM_ENABLED == 1
     vec2 rescale = max(vec2(viewWidth, viewHeight) / vec2(1920.0, 1080.0), vec2(1.0));
     vec3 GetBloomTile(float lod, vec2 coord, vec2 offset) {
         float scale = exp2(lod);
@@ -97,7 +149,7 @@ void DoBSLColorSaturation(inout vec3 color) {
     #include "/lib/atmospherics/fog/bloomFog.glsl"
 #endif
 
-#ifdef BLOOM
+#if BLOOM_ENABLED == 1
     #include "/lib/util/dither.glsl"
 #endif
 
@@ -108,15 +160,18 @@ void DoBSLColorSaturation(inout vec3 color) {
 //Program//
 void main() {
     vec3 color = texture2D(colortex0, texCoord).rgb;
-
+    
     #if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
         float z0 = texture2D(depthtex0, texCoord).r;
-
         vec4 screenPos = vec4(texCoord, z0, 1.0);
         vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
         viewPos /= viewPos.w;
         float lViewPos = length(viewPos.xyz);
+    #else
+        float lViewPos = 0.0;
+    #endif
 
+    #if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
         #if defined DISTANT_HORIZONS && defined NETHER
             float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
             vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
@@ -124,11 +179,9 @@ void main() {
             viewPosDH /= viewPosDH.w;
             lViewPos = min(lViewPos, length(viewPosDH.xyz));
         #endif
-    #else
-        float lViewPos = 0.0;
     #endif
 
-    float dither = texture2D(noisetex, texCoord * view / 128.0).b;
+    float dither = texture2DLod(noisetex, texCoord * view / 128.0, 0.0).b;
     #ifdef TAA
         dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
@@ -137,7 +190,7 @@ void main() {
         color /= GetBloomFog(lViewPos);
     #endif
 
-    #ifdef BLOOM
+    #if BLOOM_ENABLED == 1
         DoBloom(color, texCoord, dither, lViewPos);
     #endif
 
@@ -149,7 +202,7 @@ void main() {
         color *= 0.01;
     #endif
 
-    DoBSLTonemap(color);
+    DoCompTonemap(color);
 
     #if defined GREEN_SCREEN_LIME || SELECT_OUTLINE == 4
         int materialMaskInt = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);
@@ -174,9 +227,6 @@ void main() {
     #endif
 
     DoBSLColorSaturation(color);
-
-    float filmGrain = dither;
-    color += vec3((filmGrain - 0.25) / 128.0);
 
     /* DRAWBUFFERS:3 */
     gl_FragData[0] = vec4(color, 1.0);

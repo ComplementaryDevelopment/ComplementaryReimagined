@@ -19,7 +19,7 @@ void CoatTextures(inout vec3 color, float noiseFactor, vec3 playerPos, bool doTi
         noiseCoord += 0.84 * (floorWorldPos.xz + floorWorldPos.y);
     }
 
-    float noiseTexture = texture2D(noisetex, noiseCoord).r;
+    float noiseTexture = texture2DLod(noisetex, noiseCoord, 0.0).r;
     noiseTexture = noiseTexture + 0.6;
     float colorBrightness = dot(color, color) * 0.3;
     #define COATED_TEXTURE_MULT_M COATED_TEXTURE_MULT * 0.0027

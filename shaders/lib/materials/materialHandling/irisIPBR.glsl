@@ -9,7 +9,7 @@ bool centerShadowBias;
 float noPuddles;
 
 if (currentRenderedItemId < 45000) {
-    #include "/lib/materials/materialHandling/terrainMaterials.glsl"
+    #include "/lib/materials/materialHandling/terrainIPBR.glsl"
 } else
 
 if (currentRenderedItemId < 45064) {
@@ -46,7 +46,7 @@ if (currentRenderedItemId < 45064) {
             }
         } else {
             if (currentRenderedItemId < 45024) {
-                if (currentRenderedItemId == 45016) { // Golden Tools, Golden Armor, Gold Ingot, Gold Nugget, Golden Apple, Enchanted Golden Apple, Golden Carrot, Golden Horse Armor, Copper Ingot
+                if (currentRenderedItemId == 45016) { // Golden Tools, Golden Armor, Gold Ingot, Gold Nugget, Golden Apple, Enchanted Golden Apple, Golden Carrot, Golden Horse Armor
                     if (CheckForStick(color.rgb)) {
                         #include "/lib/materials/specificMaterials/planks/sprucePlanks.glsl"
                     } else {
@@ -211,8 +211,10 @@ if (currentRenderedItemId < 45064) {
                 if (currentRenderedItemId == 45112) { // Trial Key, Ominous Trial Key
                     emission = abs(color.r - color.b) * 3.0;
                     color.rgb = pow(color.rgb, vec3(1.0 + 0.5 * sqrt(emission)));
-                } else /*if (currentRenderedItemId == 45116)*/ { //
+                } else /*if (currentRenderedItemId == 45116)*/ { // Copper Tools, Copper Armor, Copper Ingot, Copper Horse Armor
+                    #include "/lib/materials/specificMaterials/terrain/copperBlock.glsl"
 
+                    smoothnessD *= 0.5;
                 }
             } else {
                 if (currentRenderedItemId == 45120) { //

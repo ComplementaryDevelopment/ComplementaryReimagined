@@ -1,5 +1,5 @@
 #if COLORED_LIGHTING_INTERNAL > 0
-    #include "/lib/misc/voxelization.glsl"
+    #include "/lib/voxelization/lightVoxelization.glsl"
 #endif
 
 vec3 GetRawWave(in vec3 pos, float wind) {
@@ -27,12 +27,6 @@ vec3 GetWave(in vec3 pos, float waveSpeed) {
         wave = mix(wave, waveRain, rainFactor);
     #endif
 
-    #ifdef NO_WAVING_INDOORS
-        wave *= clamp(lmCoord.y - 0.87, 0.0, 0.1);
-    #else
-        wave *= 0.1;
-    #endif
-
     float wavingIntensity = WAVING_I * mix(1.0, WAVING_I_RAIN_MULT_M, rainFactor);
 
     return wave * wavingIntensity;
@@ -46,6 +40,12 @@ void DoWave_Foliage(inout vec3 playerPos, vec3 worldPos, float waveMult) {
     wave.y = 0.0;
     wave.z = wave.z * 3.0;
 
+    #ifdef NO_WAVING_INDOORS
+        wave *= clamp(lmCoord.y - 0.87, 0.0, 0.1);
+    #else
+        wave *= 0.1;
+    #endif
+
     playerPos.xyz += wave * waveMult;
 }
 
@@ -56,6 +56,12 @@ void DoWave_Leaves(inout vec3 playerPos, vec3 worldPos, float waveMult) {
     wave *= vec3(8.0, 3.0, 4.0);
 
     wave *= 1.0 - inSnowy; // Leaves with snow on top look wrong
+
+    #ifdef NO_WAVING_INDOORS
+        wave *= clamp(lmCoord.y - 0.87, 0.0, 0.1);
+    #else
+        wave *= 0.1;
+    #endif
 
     playerPos.xyz += wave * waveMult;
 }
@@ -101,7 +107,6 @@ void DoWave(inout vec3 playerPos, int mat) {
                 #ifdef DO_MORE_FOLIAGE_WAVING
                     || mat == 10769
                     || mat == 10924
-                    || mat == 10972
                 #endif
             ) { // Grounded Waving Foliage
                 if (gl_MultiTexCoord0.t < mc_midTexCoord.t || fract(worldPos.y + 0.21) > 0.26)
@@ -111,6 +116,19 @@ void DoWave(inout vec3 playerPos, int mat) {
             else if (mat == 10021) { // Upper Layer Waving Foliage
                 DoWave_Foliage(playerPos.xyz, worldPos, 1.0);
             }
+
+            #ifdef DO_MORE_FOLIAGE_WAVING
+                else if (mat == 10972) { // Firefly Bush
+                    if (gl_MultiTexCoord0.t < mc_midTexCoord.t || fract(worldPos.y + 0.21) > 0.26) {
+                        vec3 wave = GetWave(worldPos, 170.0);
+                        wave.x = wave.x * 8.0 + wave.y * 4.0;
+                        wave.y = 0.0;
+                        wave.z = wave.z * 3.0;
+
+                        playerPos.xyz += wave * 0.1 * eyeBrightnessM; // lmCoord.y is unreliable for firefly bushes
+                    }
+                }
+            #endif
 
             #if defined WAVING_LEAVES || defined WAVING_LAVA || defined WAVING_LILY_PAD
                 else
@@ -134,8 +152,8 @@ void DoWave(inout vec3 playerPos, int mat) {
                         vec3 voxelPosN = SceneToVoxel(playerPosN);
 
                         if (CheckInsideVoxelVolume(voxelPosP)) {
-                            int voxelP = int(texelFetch(voxel_sampler, ivec3(voxelPosP), 0).r);
-                            int voxelN = int(texelFetch(voxel_sampler, ivec3(voxelPosN), 0).r);
+                            int voxelP = int(GetVoxelVolume(ivec3(voxelPosP)));
+                            int voxelN = int(GetVoxelVolume(ivec3(voxelPosN)));
                             if (voxelP != 0 && voxelP != 65 || voxelN != 0 && voxelN != 65) // not air, not weeping vines
                                 waveMult = 0.0;
                         }

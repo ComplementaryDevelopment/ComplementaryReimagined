@@ -87,13 +87,19 @@ void main() {
         ColorCodeProgram(color, -1);
     #endif
 
-    // We do border fog here as well because the outer layer of the beam has broken depth in later programs
+    // We do fog here as well because the outer layer of the beam has broken depth in later programs
     float sky = 0.0;
-    if (playerPos.y > 0.0) {
-        playerPos.y = pow(playerPos.y / renderDistance, 0.15) * renderDistance;
-    }
-    DoFog(color.rgb, sky, lViewPos, playerPos, VdotU, VdotS, dither);
-    color.a *= 1.0 - sky;
+    #ifndef NETHER
+        if (playerPos.y > 0.0) {
+            playerPos.y = pow(playerPos.y / far, 0.15) * far;
+        }
+    #endif
+
+    float prevAlpha = color.a;
+    DoFog(color, sky, lViewPos, playerPos, VdotU, VdotS, dither);
+    color.a = prevAlpha * (1.0 - sky);
+    
+    if (color.a < 0.2 * dither) discard;
 
     /* DRAWBUFFERS:06 */
     gl_FragData[0] = color;

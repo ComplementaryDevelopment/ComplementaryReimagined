@@ -111,7 +111,7 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     viewPos1 /= viewPos1.w;
 
     #ifdef ENTITY_TAA_NOISY_CLOUD_FIX
-        float cloudLinearDepth =  texture2D(colortex4, texCoord).r;
+        float cloudLinearDepth =  texture2D(colortex5, texCoord).a;
         float lViewPos1 = length(viewPos1);
 
         if (pow2(cloudLinearDepth) * renderDistance < min(lViewPos1, renderDistance)) {
@@ -120,7 +120,14 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
         }
     #endif
 
-    if (materialMask == 254) { // No SSAO, No TAA
+    if (
+        abs(materialMask - 149.5) < 50.0 // Entity Reflection Handling (see common.glsl for details)
+        || materialMask == 254 // No SSAO, No TAA
+    ) { 
+        return;
+    }
+
+    /*if (materialMask == 254) { // No SSAO, No TAA
         #ifndef CUSTOM_PBR
             if (z1 <= 0.56) return; // The edge pixel trick doesn't look nice on hand
         #endif
@@ -131,7 +138,7 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
             i++;
         } // Checking edge-pixels prevents flickering
         if (i == 4) return;
-    }
+    }*/
 
     float z0 = texelFetch(depthtex0, texelCoord, 0).r;
 

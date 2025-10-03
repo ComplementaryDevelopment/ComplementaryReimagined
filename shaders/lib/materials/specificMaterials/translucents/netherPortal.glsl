@@ -58,7 +58,7 @@ emission = clamp(emission * 120.0, 0.03, 1.2) * 8.0;
 
         float edge = 0.0;
         for (int i = 0; i < 6; i++) {
-            uint voxel = texelFetch(voxel_sampler, ivec3(voxelPos + portalOffsets[i]), 0).r;
+            uint voxel = GetVoxelVolume(ivec3(voxelPos + portalOffsets[i]));
             if (voxel != uint(25)) {
                 edge = 1.0; break;
             }

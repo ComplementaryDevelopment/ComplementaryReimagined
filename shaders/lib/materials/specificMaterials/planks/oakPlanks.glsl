@@ -1,5 +1,4 @@
-smoothnessG = pow2(pow2(pow2(color.g))) * 12.0;
-smoothnessG = min1(smoothnessG);
+smoothnessG = pow2(dot(color.rgb, color.rgb)) * 0.105;
 smoothnessD = smoothnessG;
 
 #ifdef COATED_TEXTURES

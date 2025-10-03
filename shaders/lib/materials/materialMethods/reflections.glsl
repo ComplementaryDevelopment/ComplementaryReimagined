@@ -1,7 +1,9 @@
+#include "/lib/misc/reprojection.glsl"
+
 #ifdef OVERWORLD
     #include "/lib/atmospherics/sky.glsl"
 #endif
-#if defined END && defined DEFERRED1
+#if defined END && defined COMPOSITE
     #include "/lib/atmospherics/enderBeams.glsl"
 #endif
 
@@ -12,17 +14,32 @@
     #include "/lib/colors/moonPhaseInfluence.glsl"
 #endif
 
+#if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+    #include "/lib/voxelization/lightVoxelization.glsl"
+    #include "/lib/materials/materialMethods/worldSpaceRef.glsl"
+#endif
+
+float GetApproxDistance(float depth) {
+    return near * far / (far - depth * far);
+}
+
 vec3 nvec3(vec4 pos) {
     return pos.xyz/pos.w;
 }
 
-vec3 refPos = vec3(0.0);
+float refDist = far;
+
+#include "/lib/materials/materialMethods/reflectionBackground.glsl"
 
 vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, float lViewPos, float z0,
                    sampler2D depthtex, float dither, float skyLightFactor, float fresnel,
                    float smoothness, vec3 geoNormal, vec3 color, vec3 shadowMult, float highlightMult) {
     // ============================== Step 1: Prepare ============================== //
-    vec2 rEdge = vec2(0.6, 0.55);
+    #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1
+        vec2 rEdge = vec2(0.6, 0.55);
+    #else
+        vec2 rEdge = vec2(0.525, 0.525);
+    #endif
     vec3 normalMR = normalM;
 
     #if defined GBUFFERS_WATER && WATER_STYLE == 1 && defined GENERATED_NORMALS
@@ -39,9 +56,23 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
     // ============================== End of Step 1 ============================== //
 
     // ============================== Step 2: Calculate Terrain Reflection and Alpha ============================== //
+    #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && defined COMPOSITE && WATER_REFLECT_QUALITY >= 1
+        // In COMPOSITE for translucents we just need to return WSR and that's it
+        if (z0 != z1) {
+            /*vec4 reflection;
+            AddBackgroundReflection(reflection, color, playerPos, normalM, normalMR, nViewPos, nViewPosR,
+                                    shadowMult, RVdotU, RVdotS, dither, skyLightFactor, smoothness, highlightMult);
+
+            return reflection;*/
+            vec4 reflection = getWSR(playerPos, normalMR, nViewPosR, RVdotU, RVdotS, dither);
+            refDist = length(playerPos - wsrHitPos);
+            return reflection;
+        }
+    #endif
+
     vec4 reflection = vec4(0.0);
-    #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 1
-        #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 2 && !defined DH_WATER
+    #if (defined COMPOSITE || WATER_REFLECT_QUALITY >= 1) && (WORLD_SPACE_REFLECTIONS_INTERNAL == -1 || WORLD_SPACE_REF_MODE == 2)
+        #if defined COMPOSITE || WATER_REFLECT_QUALITY >= 2 && !defined DH_WATER
             // Method 1: Ray Marched Reflection //
 
             // Ray Marching
@@ -54,13 +85,24 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
             //vector = normalize(vector - 0.5 * (1.0 - smoothness) * (1.0 - fresnel) * normalMR); // reflection anisotropy test
             //vector = normalize(vector - 0.075 * dither * (1.0 - pow2(pow2(fresnel))) * normalMR);
             vector *= 0.5;
+            vec3 vectorBase = vector;
             vec3 viewPosRT = viewPos + vector;
             vec3 tvector = vector;
 
+            #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1
+                int sampleCount = 30;
+                int refinementCount = 6;
+            #else
+                int sampleCount = 38;
+                int refinementCount = 10;
+            #endif
+
             int sr = 0;
             float dist = 0.0;
+            vec3 refPos = vec3(0.0);
             vec3 rfragpos = vec3(0.0);
-            for (int i = 0; i < 30; i++) {
+            float err = 9999999.0;
+            for (int i = 0; i < sampleCount; i++) {
                 refPos = nvec3(gbufferProjection * vec4(viewPosRT, 1.0)) * 0.5 + 0.5;
                 if (abs(refPos.x - 0.5) > rEdge.x || abs(refPos.y - 0.5) > rEdge.y) break;
 
@@ -68,11 +110,10 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
                 rfragpos = nvec3(gbufferProjectionInverse * vec4(rfragpos * 2.0 - 1.0, 1.0));
                 dist = length(start - rfragpos);
 
-                float err = length(viewPosRT - rfragpos);
-
-                if (err < length(vector) * 3.0) {
+                err = length(viewPosRT - rfragpos);
+                if (err * 0.33333 < length(vector)) {
                     sr++;
-                    if (sr >= 6) break;
+                    if (sr >= refinementCount) break;
                     tvector -= vector;
                     vector *= 0.1;
                 }
@@ -81,8 +122,13 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
                 viewPosRT = start + tvector;
             }
 
-            // Finalizing Terrain Reflection and Alpha 
-            if (refPos.z < 0.99997) {
+            // Finalizing Terrain Reflection and Alpha
+            if (
+                refPos.z < 0.99997
+                #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+                    && err < 3.0 + lViewPos
+                #endif
+            ) {
                 vec2 absPos = abs(refPos.xy - 0.5);
                 vec2 cdist = absPos / rEdge;
                 float border = clamp(1.0 - pow(max(cdist.x, cdist.y), 50.0), 0.0, 1.0);
@@ -92,9 +138,14 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
 
                 if (reflection.a > 0.001) {
                     vec2 edgeFactor = pow2(pow2(pow2(cdist)));
-                    refPos.y += (dither - 0.5) * (0.05 * (edgeFactor.x + edgeFactor.y));
+                    #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1
+                        refPos.y += (dither - 0.5) * (0.05 * (edgeFactor.x + edgeFactor.y));
+                    #endif
 
-                    #ifdef DEFERRED1
+                    #ifdef GBUFFERS_WATER
+                        reflection = texture2D(gaux2, refPos.xy);
+                        reflection.rgb = pow2(reflection.rgb * 2.0);
+                    #else
                         float smoothnessDM = pow2(smoothness);
                         float lodFactor = 1.0 - exp(-0.125 * (1.0 - smoothnessDM) * dist);
                         float lod = log2(viewHeight / 8.0 * (1.0 - smoothnessDM) * lodFactor) * 0.45;
@@ -102,33 +153,36 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
                         lod = max(lod - 1.0, 0.0);
 
                         reflection.rgb = texture2DLod(colortex0, refPos.xy, lod).rgb;
-                    #else
-                        reflection = texture2D(gaux2, refPos.xy);
-                        reflection.rgb = pow2(reflection.rgb + 1.0);
                     #endif
 
                     float skyFade = 0.0;
-                    DoFog(reflection.rgb, skyFade, lViewPosRT, ViewToPlayer(rfragpos.xyz), RVdotU, RVdotS, dither);
+
+                    float reflectionPrevAlpha = reflection.a;
+                    DoFog(reflection, skyFade, lViewPosRT, ViewToPlayer(rfragpos.xyz), RVdotU, RVdotS, dither);
+                    reflection.a = reflectionPrevAlpha;
+                    //reflection.a *= 1.0 - skyFade;
 
                     edgeFactor.x = pow2(edgeFactor.x);
                     edgeFactor = 1.0 - edgeFactor;
-                    reflection.a *= pow(edgeFactor.x * edgeFactor.y, 2.0 + 3.0 * GetLuminance(reflection.rgb));
+                    float refFactor = pow(edgeFactor.x * edgeFactor.y, 2.0 + 3.0 * GetLuminance(reflection.rgb));
+                    #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && defined GBUFFERS_WATER
+                        refFactor = min(refFactor, 0.1) * 10.0;
+                    #endif
+                    reflection.a *= refFactor;
+                    refDist = dist;
                 }
 
                 float posDif = lViewPosRT - lViewPos;
                 reflection.a *= clamp(posDif + 3.0, 0.0, 1.0);
             }
-            #if defined DEFERRED1 && defined TEMPORAL_FILTER
-                else refPos.z = 1.0;
-            #endif
-            #if !defined DEFERRED1 && defined DISTANT_HORIZONS
+            #if !defined COMPOSITE && defined DISTANT_HORIZONS
                 else
             #endif
         #endif
-        #if !defined DEFERRED1 && (WATER_REFLECT_QUALITY < 2 || defined DISTANT_HORIZONS) || defined DH_WATER
+        #if !defined COMPOSITE && (WATER_REFLECT_QUALITY < 2 || defined DISTANT_HORIZONS) || defined DH_WATER
         {   // Method 2: Mirorred Image Reflection //
 
-            #if WATER_REFLECT_QUALITY < 2
+            #if WATER_REFLECT_QUALITY < 2 && !defined DISTANT_HORIZONS
                 float verticalStretch = 0.013; // for potato quality reflections
             #else
                 float verticalStretch = 0.0025; // for distant horizons reflections
@@ -141,103 +195,52 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
             if (screenPosRM.x < rEdge.x && screenPosRM.y < rEdge.y) {
                 vec2 edgeFactor = pow2(pow2(pow2(screenPosRM / rEdge)));
                 screenPosR.y += (dither - 0.5) * (0.03 * (edgeFactor.x + edgeFactor.y) + 0.004);
-
-                screenPosR.z = texture2D(depthtex1, screenPosR.xy).x;
+                float z1R = texture2D(depthtex1, screenPosR.xy).x;
+                screenPosR.z = z1R;
                 vec3 viewPosR = ScreenToView(screenPosR);
-                if (lViewPos <= 2.0 + length(viewPosR)) {
-                    reflection = texture2D(gaux2, screenPosR.xy);
-                    reflection.rgb = pow2(reflection.rgb + 1.0);
+                float lViewPosR = length(viewPosR);
+
+                #ifdef DISTANT_HORIZONS
+                    float z1RDH = texture2D(dhDepthTex, screenPosR.xy).x;
+                    vec4 screenPos1DH = vec4(screenPosR.xy, z1RDH, 1.0);
+                    vec4 viewPos1DH = dhProjectionInverse * (screenPos1DH * 2.0 - 1.0);
+                    viewPos1DH /= viewPos1DH.w;
+                    lViewPosR = min(lViewPosR, length(viewPos1DH.xyz));
+                    
+                    z1R = min(z1R, z1RDH);
+                #endif
+
+                if (z1R < 0.9997 && lViewPos <= 2.0 + lViewPosR) {
+                    reflection.rgb = texture2D(gaux2, screenPosR.xy).rgb;
+                    reflection.rgb = pow2(reflection.rgb * 2.0);
+
+                    edgeFactor = 1.0 - edgeFactor;
+                    reflection.a = edgeFactor.x * pow2(edgeFactor.y);
+                    reflection.a *= clamp01((dot(nViewPos, nViewPosR) - 0.45) * 10.0); // Fixes perpendicular ref bug
+
+                    #ifdef BORDER_FOG
+                        float fog = lViewPosR / renderDistance;
+                        fog = pow2(pow2(fog));
+                        #ifndef DISTANT_HORIZONS
+                            fog = pow2(pow2(fog));
+                        #endif
+                        reflection.a *= exp(-3.0 * fog);
+                    #endif
                 }
-
-                edgeFactor.x = pow2(edgeFactor.x);
-                edgeFactor = 1.0 - edgeFactor;
-                reflection.a *= edgeFactor.x * edgeFactor.y;
             }
-
-            reflection.a *= reflection.a;
-            reflection.a *= clamp01((dot(nViewPos, nViewPosR) - 0.45) * 10.0); // Fixes perpendicular ref
         }
         #endif
     #endif
+
     // ============================== End of Step 2 ============================== //
 
-    // ============================== Step 3: Add Sky Reflection ============================== //
-    #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 1
+    // ============================== Step 3: Add Sky or WSR Reflection ============================== //
+    #if defined COMPOSITE || WATER_REFLECT_QUALITY >= 1
         if (reflection.a < 1.0)
     #endif
     {
-        #ifdef OVERWORLD
-            #if defined DEFERRED1 || WATER_REFLECT_QUALITY >= 2
-                vec3 skyReflection = GetSky(RVdotU, RVdotS, dither, true, true);
-            #else
-                vec3 skyReflection = GetLowQualitySky(RVdotU, RVdotS, dither, true, true);
-            #endif
-
-            #ifdef ATM_COLOR_MULTS
-                skyReflection *= atmColorMult;
-            #endif
-            #ifdef MOON_PHASE_INF_ATMOSPHERE
-                skyReflection *= moonPhaseInfluence;
-            #endif
-
-            #ifdef DEFERRED1
-                skyReflection *= skyLightFactor;
-            #else
-                float specularHighlight = GGX(normalM, nViewPos, lightVec, max(dot(normalM, lightVec), 0.0), smoothness);
-                skyReflection += specularHighlight * highlightColor * shadowMult * highlightMult * invRainFactor;
-                
-                #if WATER_REFLECT_QUALITY >= 1
-                    #ifdef SKY_EFFECT_REFLECTION
-                        float cloudLinearDepth = 1.0;
-                        float skyFade = 1.0;
-                        vec3 auroraBorealis = vec3(0.0);
-                        vec3 nightNebula = vec3(0.0);
-
-                        #if AURORA_STYLE > 0
-                            auroraBorealis = GetAuroraBorealis(nViewPosR, RVdotU, dither);
-                            skyReflection += auroraBorealis;
-                        #endif
-                        #ifdef NIGHT_NEBULA
-                            nightNebula += GetNightNebula(nViewPosR, RVdotU, RVdotS);
-                            skyReflection += nightNebula;
-                        #endif
-                        
-                        vec2 starCoord = GetStarCoord(nViewPosR, 0.5);
-                        skyReflection += GetStars(starCoord, RVdotU, RVdotS);
-
-                        #ifdef VL_CLOUDS_ACTIVE
-                            vec3 worldNormalMR = normalize(mat3(gbufferModelViewInverse) * normalMR);
-                            vec3 RCameraPos = cameraPosition + 2.0 * worldNormalMR * dot(playerPos, worldNormalMR);
-                            vec3 RPlayerPos = normalize(mat3(gbufferModelViewInverse) * nViewPosR);
-                            float RlViewPos = 100000.0;
-
-                            vec4 clouds = GetClouds(cloudLinearDepth, skyFade, RCameraPos, RPlayerPos,
-                                                    RlViewPos, RVdotS, RVdotU, dither, auroraBorealis, nightNebula);
-
-                            skyReflection = mix(skyReflection, clouds.rgb, clouds.a);
-                        #endif
-                    #endif
-
-                    skyReflection = mix(color * 0.5, skyReflection, skyLightFactor);
-                #else
-                    skyReflection = mix(color, skyReflection, skyLightFactor * 0.5);
-                #endif
-            #endif
-        #elif defined END
-            #ifdef DEFERRED1
-                vec3 skyReflection = (endSkyColor + 0.4 * DrawEnderBeams(RVdotU, playerPos)) * skyLightFactor;
-            #else
-                vec3 skyReflection = endSkyColor * shadowMult;
-            #endif
-
-            #ifdef ATM_COLOR_MULTS
-                skyReflection *= atmColorMult;
-            #endif
-        #else
-            vec3 skyReflection = vec3(0.0);
-        #endif
-
-        reflection.rgb = mix(skyReflection, reflection.rgb, reflection.a);
+        AddBackgroundReflection(reflection, color, playerPos, normalM, normalMR, nViewPos, nViewPosR,
+                                shadowMult, RVdotU, RVdotS, dither, skyLightFactor, smoothness, highlightMult);
     } 
     // ============================== End of Step 3 ============================== //
 

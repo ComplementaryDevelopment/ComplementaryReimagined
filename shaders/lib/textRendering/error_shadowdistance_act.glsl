@@ -9,8 +9,8 @@ beginTextM(4, vec2(15, 36));
     printLine();
     text.fgCol = vec4(vec3(1.0), 1.0);
     printString((
-        _T, _h, _e, _space, _quote, _A, _d, _v, _a, _n, _c, _e, _d, _space, _C, _o, _l, _o, _r, _e, _d, _space,
-        _L, _i, _g, _h, _t, _i, _n, _g, _quote
+        _T, _h, _e, _space, _quote, _A, _d, _v, _a, _n, _c, _e, _d, _space, _C, _o, _l, _o, _r, _space,
+        _T, _r, _a, _c, _i, _n, _g, _quote
     ));
     printLine();
     printString((
@@ -40,7 +40,7 @@ beginTextM(4, vec2(15, 36));
     ));
     printLine();
     printString((
-        _t, _h, _e, _space, _A, _d, _v, _a, _n, _c, _e, _d, _space, _C, _o, _l, _o, _r, _e, _d, _space,
-        _L, _i, _g, _h, _t, _i, _n, _g, _space, _s, _e, _t, _t, _i, _n, _g
+        _t, _h, _e, _space, _A, _d, _v, _a, _n, _c, _e, _d, _space,  _C, _o, _l, _o, _r, _space,
+        _T, _r, _a, _c, _i, _n, _g, _space, _s, _e, _t, _t, _i, _n, _g
     ));
 endText(color.rgb);

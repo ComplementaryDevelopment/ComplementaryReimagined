@@ -38,23 +38,9 @@ vec2 offsetDist(float x, int s) {
     return vec2(cos(n), sin(n)) * 1.4 * x / s;
 }
 
-vec3 SampleTAAFilteredShadow(vec3 shadowPos, float lViewPos, float offset, bool leaves, float colorMult, float colorPow) {
+vec3 SampleTAAFilteredShadow(vec3 shadowPos, float offset, int shadowSamples, bool leaves, float colorMult, float colorPow) {
     vec3 shadow = vec3(0.0);
     float gradientNoise = InterleavedGradientNoiseForShadows();
-
-    #if SHADOW_QUALITY == 0
-        int shadowSamples = 0; // We don't use SampleTAAFilteredShadow on Shadow Quality 0
-    #elif SHADOW_QUALITY == 1
-        int shadowSamples = 1;
-    #elif SHADOW_QUALITY == 2 || SHADOW_QUALITY == 3
-        int shadowSamples = 2;
-    #elif SHADOW_QUALITY == 4
-        int shadowSamples = 2;
-        if (lViewPos < 10.0) shadowSamples = 6;
-    #elif SHADOW_QUALITY == 5
-        int shadowSamples = 6;
-        if (lViewPos < 10.0) shadowSamples = 12;
-    #endif
 
     #if !defined GBUFFERS_ENTITIES && !defined GBUFFERS_HAND && !defined GBUFFERS_TEXTURED
         offset *= 1.3875;
@@ -92,9 +78,9 @@ vec3 SampleBasicFilteredShadow(vec3 shadowPos, float offset) {
     return vec3(shadow * 0.25);
 }
 
-vec3 GetShadow(vec3 shadowPos, float lViewPos, float lightmapY, float offset, bool leaves) {
+vec3 GetShadow(vec3 shadowPos, float lightmapY, float offset, int shadowSamples, bool leaves) {
     #if SHADOW_QUALITY > 0
-        #if ENTITY_SHADOWS_DEFINE == -1 && defined GBUFFERS_BLOCK
+        #if ENTITY_SHADOW <= 1 && defined GBUFFERS_BLOCK
             offset *= 4.0;
         #else
             #ifdef OVERWORLD
@@ -109,7 +95,7 @@ vec3 GetShadow(vec3 shadowPos, float lViewPos, float lightmapY, float offset, bo
     float colorPow = 1.1 - 0.6 * pow2(pow2(pow2(lightmapY)));
 
     #if SHADOW_QUALITY >= 1
-        vec3 shadow = SampleTAAFilteredShadow(shadowPos, lViewPos, offset, leaves, colorMult, colorPow);
+        vec3 shadow = SampleTAAFilteredShadow(shadowPos, offset, shadowSamples, leaves, colorMult, colorPow);
     #else
         vec3 shadow = SampleBasicFilteredShadow(shadowPos, offset);
     #endif

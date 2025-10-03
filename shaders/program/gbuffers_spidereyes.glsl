@@ -27,16 +27,13 @@ in vec4 glColor;
 void main() {
     vec4 color = texture2D(tex, texCoord) * glColor;
 
-    #ifdef IPBR
-        if (CheckForColor(color.rgb, vec3(224, 121, 250))) { // Enderman Eye Edges
-            color.rgb = vec3(0.8, 0.25, 0.8);
-        }
-    #endif
-
-    color.rgb *= 1.0 - 0.6 * pow2(pow2(min1(GetLuminance(color.rgb) * 1.2))); // Fixes ultra bright Breeze
-
-    color.rgb = pow1_5(color.rgb);
-    color.rgb *= pow2(1.0 + color.b + 0.5 * color.g) * 1.5;
+    color.rgb = pow1_5(color.rgb) * (
+        1.5
+        + vec3(4.1, 3.0, 4.1) * max0(color.r * color.b - color.g) // Tweak for Enderman
+        + 5.0 * max0(color.g * color.b - color.r) // Tweak for Warden
+        - 0.5 * sqrt(color.r * color.g * color.b) // Tweak for Breeze
+        - vec3(0.0, 0.7, 0.7) * max0(color.r * color.g - color.b) // Tweak for Copper Golem
+    );
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);

@@ -34,6 +34,9 @@ float GetBloomFog(float lViewPos) {
         bloomFog *= float(isEyeInWater == 0);
 
         float bloomFogMult = netherBloomAdd;
+    #else
+        float bloomFog = 0.0;
+        float bloomFogMult = 0.0;
     #endif
 
     bloomFogMult *= BLOOM_STRENGTH * 8.33333;

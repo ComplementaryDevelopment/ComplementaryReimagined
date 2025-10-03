@@ -29,7 +29,7 @@ vec2 GetModifiedMidCoord() {
 }
 
 void DoSimpleConnectedGlass(inout vec4 color) {
-    color = texture2DLod(tex, GetModifiedMidCoord(), 0);
+    color = texture2DLod(tex, GetModifiedMidCoord() - 0.125 * absMidCoordPos, 0);
 }
 
 #ifdef GBUFFERS_WATER
@@ -61,7 +61,7 @@ void DoSimpleConnectedGlass(inout vec4 color) {
 
             // Remove edges
             for (int i = 0; i < 6; i++) {
-                uint voxel = texelFetch(voxel_sampler, ivec3(voxelPos) + glassOffsets[i], 0).r;
+                uint voxel = GetVoxelVolume(ivec3(voxelPos) + glassOffsets[i]);
                 if (voxel == voxelID) {
                     if (floor(worldPos + glassOffsets[i] * pixelOffsetPlus) != floorWorldPos) {
                         colorP = texture2DLod(tex, midCoordM, 0);
@@ -76,7 +76,7 @@ void DoSimpleConnectedGlass(inout vec4 color) {
 
             // Fixes the connections by restoring the edges that aren't connected
             for (int i = 0; i < 6; i++) {
-                uint voxel = texelFetch(voxel_sampler, ivec3(voxelPos) + glassOffsets[i], 0).r;
+                uint voxel = GetVoxelVolume(ivec3(voxelPos) + glassOffsets[i]);
                 if (voxel != voxelID) {
                     //if (floor(worldPos + glassOffsets[i] * 0.0625) != floorWorldPos) {
                     if (floor(worldPos + glassOffsets[i] * pixelOffsetMinus) != floorWorldPos) {
@@ -88,11 +88,11 @@ void DoSimpleConnectedGlass(inout vec4 color) {
             if (isPane) {
                 // Fixes lines between layers of glass panes
                 if (NdotU > 0.9) {
-                    uint voxel = texelFetch(voxel_sampler, ivec3(voxelPos) + ivec3(0, 1, 0), 0).r;
+                    uint voxel = GetVoxelVolume(ivec3(voxelPos) + ivec3(0, 1, 0));
                     if (voxel == voxelID) discard;
                 }
                 if (NdotU < -0.9) {
-                    uint voxel = texelFetch(voxel_sampler, ivec3(voxelPos) - ivec3(0, 1, 0), 0).r;
+                    uint voxel = GetVoxelVolume(ivec3(voxelPos) - ivec3(0, 1, 0));
                     if (voxel == voxelID) discard;
                 }
             }
@@ -100,7 +100,7 @@ void DoSimpleConnectedGlass(inout vec4 color) {
             #ifdef CONNECTED_GLASS_CORNER_FIX
                 // Restores corners
                 for (int i = 0; i < 12; i++) {
-                    uint voxel = texelFetch(voxel_sampler, ivec3(voxelPos) + glassCornerOffsets[i], 0).r;
+                    uint voxel = GetVoxelVolume(ivec3(voxelPos) + glassCornerOffsets[i]);
                     if ((voxel != voxelID) && (!isPane || voxel > 0u)) {
                         if (floor((worldPos - glassCornerOffsets[i] * (1.0 - pixelOffsetMinus))) == floorWorldPos) {
                             colorP = colorPvanilla;

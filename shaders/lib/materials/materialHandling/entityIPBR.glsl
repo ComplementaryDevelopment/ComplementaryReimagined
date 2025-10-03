@@ -199,8 +199,10 @@ if (entityId < 50064) {
                         color.a = 0.12;
                         color.rgb *= 5.0;
                     }
-                } else /*if (entityId == 50116)*/ { //
+                } else /*if (entityId == 50116)*/ { // Copper Golem
+                    #include "/lib/materials/specificMaterials/terrain/copperBlock.glsl"
 
+                    smoothnessD *= 0.5;
                 }
             } else {
                 if (entityId == 50120) { //

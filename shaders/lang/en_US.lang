@@ -35,9 +35,9 @@ option.info4=What is RP Support
 value.info4.0=
 option.info4.comment=RP Support option determines how the shader pack treats the different blocks of Minecraft. For example, §bIntegratedPBR+§r treats gold blocks as reflective things, while §elabPBR§r or §eseuspbr§r require you to install a resource pack to tell that to the shader. Setting RP Support to §aBasic§r will make it so that no block is "special" other than a couple exceptions like water.
 
-option.info5=How to fix mod issues
+option.info5=What are yellow settings
 value.info5.0=
-option.info5.comment=Mod incompatibilities are inevitable with shader packs because of the way they work, but you can check out this information page about mod issues with Complementary to view a bunch of known fixes. www.complementary.dev/mod-issues
+option.info5.comment=A setting with a yellow name means that the setting impacts performance by a measurable amount despite not being in the "Performance Settings" category. If enabling it results in a red option text, it means that the performance cost is very high.
 
 option.info6=
 value.info6.0=
@@ -57,7 +57,7 @@ option.info9.comment=Best way to support the development of Complementary is to 
 
 option.info10=Credits
 value.info10.0=
-option.info10.comment=EminGT: The main developer of Complementary. Capt Tatsu: Developer of BSL Shaders, his generosity is what made Complementary possible in the first place. Special Thanks: IMS212, sp614x, Chocapic13, Robobo1221, SixthSurge, null511, fayer3, catlikecoding, Builderb0y, Jessie, SpacEagle17, isuewo, flytrap
+option.info10.comment=EminGT: The main developer of Complementary. Capt Tatsu: Developer of BSL Shaders, his generosity is what made Complementary possible in the first place. Special Thanks: IMS212, sp614x, Chocapic13, Robobo1221, SixthSurge, null511, fayer3, catlikecoding, Builderb0y, Jessie, SpacEagle17, isuewo, flytrap, gri573, FoZy-STYLE
 
 #Style
 option.SHADER_STYLE=Visual Style
@@ -147,13 +147,13 @@ screen.NETHER_LIGHT_MULTS=The Nether Dimension
 screen.END_LIGHT_MULTS=The End Dimension
 
 screen.BLOCKLIGHT_COLOR_SETTINGS=Blocklight Color §e[*]§r
-screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Settings to adjust the color emitted from light source blocks. §e[*]§r These color settings won't affect most lights if the Advanced Colored Lighting setting is enabled, except for the Blocklight Intensity slider.
+screen.BLOCKLIGHT_COLOR_SETTINGS.comment=Settings to adjust the color emitted from light source blocks. §e[*]§r These color settings won't affect most lights if the Advanced Color Tracing setting is enabled, except for the Blocklight Intensity slider.
 
 screen.MOON_PHASE_INF_SETTINGS=Moon Phase Influence
 screen.MOON_PHASE_INF_SETTINGS.comment=Settings to determine how different moon phases affect the night lighting.
 
-screen.ACL_FEATURES_SETTINGS=ACL Exclusive Features §e[*]§r
-screen.ACL_FEATURES_SETTINGS.comment=Settings that are about features exclusive to Advanced Colored Lighting. §e[*]§r These features only work if Advanced Colored Lighting is enabled in Performance Settings and your system supports it.
+screen.ACT_FEATURES_SETTINGS=ACT Exclusive Features §e[*]§r
+screen.ACT_FEATURES_SETTINGS.comment=Settings that are about features exclusive to Advanced Color Tracing. §e[*]§r These features only work if Advanced Color Tracing is on in Performance Settings and your system supports it.
 
 screen.PIXELATED_LIGHTING_SETTINGS=Pixelated Lighting
 screen.PIXELATED_LIGHTING_SETTINGS.comment=Settings to make certain lighting effects pixelated.
@@ -196,10 +196,9 @@ value.WATER_REFLECT_QUALITY.1=§ePotato
 value.WATER_REFLECT_QUALITY.2=§cMedium
 
 option.BLOCK_REFLECT_QUALITY=Block Reflection Quality §e[*]§r
-option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §cHigh§r: Sun/moon highlights + smoother specular reflections using a temporal filter. §eMedium§r: Sun/moon highlights + specular reflections. §aLow§r: Sun/moon highlights only. §e[*]§r RP Support option must be set to anything but Basic for any specular reflections to appear.
+option.BLOCK_REFLECT_QUALITY.comment=Adjusts the visual quality of reflections that appear on solid materials. §cHigh§r: Sun/moon highlights + advanced specular reflections. §eLow§r: Sun/moon highlights only. §e[*]§r RP Support option must be set to anything but Basic for any specular reflections to appear.
 value.BLOCK_REFLECT_QUALITY.0=§aOFF
 value.BLOCK_REFLECT_QUALITY.1=§eLow
-value.BLOCK_REFLECT_QUALITY.2=§cMedium
 value.BLOCK_REFLECT_QUALITY.3=§cHigh
 
 option.SHADOW_QUALITY=Real-Time Shadows
@@ -221,7 +220,7 @@ value.LIGHTSHAFT_QUALI_DEFINE.3=§cHigh
 value.LIGHTSHAFT_QUALI_DEFINE.4=§4§lVery High
 
 option.shadowDistance=Shadow Distance
-option.shadowDistance.comment=Adjusts the distance from the player which real-time shadows are rendered. §e[*]§r The value is internally capped at Render Distance. §e[*]§r It's recommended to set this value to about 80% of your render distance for best performance and coverage. §c[-]§r Lower values may cause excessive Light Shaft leaking.
+option.shadowDistance.comment=Adjusts the distance from the player which real-time shadows are rendered. §c[-]§r Lower values may cause excessive Light Shaft leaking.
 value.shadowDistance.64.0=§a4 Chunks §c[-]
 value.shadowDistance.80.0=§a5 Chunks §c[-]
 value.shadowDistance.96.0=§a6 Chunks §c[-]
@@ -237,13 +236,14 @@ value.shadowDistance.512.0=§4§l32 Chunks
 value.shadowDistance.768.0=§4§l§n§o48 Chunks
 value.shadowDistance.1024.0=§4§k-§r§4§l§n§o64 Chunks§r§4§k-
 
-option.ENTITY_SHADOWS_DEFINE=Entity Shadows
-option.ENTITY_SHADOWS_DEFINE.comment=Enables the ability for entities and block entities to cast shadows. §c[-]§r Entity Shadows impact performance way more than expected, costing more than 50% of your fps in some cases.
-value.ENTITY_SHADOWS_DEFINE.-1=§aOFF
-value.ENTITY_SHADOWS_DEFINE.1=§4§k-§r§4§l§n§oON§r§4§k- §r§c[-]
+option.ENTITY_SHADOW=Entity Shadows
+option.ENTITY_SHADOW.comment=Enables the ability for entities and block entities to cast shadows. §c[-]§r Entity Shadows impact performance way more than expected, costing more than 50% of your fps in some cases.
+value.ENTITY_SHADOW.-1=§aOFF
+value.ENTITY_SHADOW.1=§cRegular Entities
+value.ENTITY_SHADOW.2=§4§k-§r§4§l§n§oFull§r§4§k- §r§c[-]
 
 option.DETAIL_QUALITY=Detail Quality
-option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: Water material, TAA, lighting tweaks, Night Nebula, Nether Storm, Ender Beams, sky effect reflections, rain puddle accuracy, waving effect
+option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: Water material, TAA, lighting tweaks, Night Nebula, Nether Storm, Ender Beams, sky effect reflections, rain puddle accuracy, waving effect, motion blur
 value.DETAIL_QUALITY.0=§aPotato
 value.DETAIL_QUALITY.2=§eMedium
 value.DETAIL_QUALITY.3=§cHigh
@@ -273,8 +273,8 @@ value.ANISOTROPIC_FILTER.4=§e4x
 value.ANISOTROPIC_FILTER.8=§e8x
 value.ANISOTROPIC_FILTER.16=§4§l16x
 
-option.COLORED_LIGHTING=Advanced Colored Lighting §e[*]§r
-option.COLORED_LIGHTING.comment=Uses voxelization and floodfill lighting to add color to blocklight, alongside introducing some new lights. §e[*]§r This feature only works on Iris and supported platforms. §e[*]§r This setting will be disabled if "Real-Time Shadows" is OFF. §a[+]§r This system also enables some other features which you can individually enable/disable in the "Other" -> "ACL Features" menu. §c[-]§r High chunk values for this effect impact performance way more than expected, each increment can cost more than twice the performance of the previous tier.
+option.COLORED_LIGHTING=Advanced Color Tracing §e[*]§r
+option.COLORED_LIGHTING.comment=Uses voxelization and floodfill lighting to add color to blocklight, alongside introducing some new lights. §e[*]§r This feature only works on Iris and supported platforms. §e[*]§r This setting will be disabled if "Real-Time Shadows" is OFF. §a[+]§r The Advanced Color Tracing system also enables some other features which you can individually enable/disable in the "Other" -> "ACT Features" menu. §c[-]§r High chunk values for this effect impact performance way more than expected, each increment can cost more than twice the performance of the previous tier. §c[-]§r Colored lighting can produce some light color leaking issues when dealing with non-full blocks or modded blocks.
 value.COLORED_LIGHTING.0=§aOFF
 value.COLORED_LIGHTING.128=§c4 Chunks
 value.COLORED_LIGHTING.192=§c6 Chunks
@@ -283,6 +283,16 @@ value.COLORED_LIGHTING.384=§4§l12 Chunks
 value.COLORED_LIGHTING.512=§4§l§n§o16 Chunks
 value.COLORED_LIGHTING.768=§4§l§n§o24 Chunks §r§c[-]
 value.COLORED_LIGHTING.1024=§4§k-§r§4§l§n§o32 Chunks§r§4§k- §r§c[-]
+
+option.WORLD_SPACE_REFLECTIONS=World-Space Reflections §e[*]§r
+option.WORLD_SPACE_REFLECTIONS.comment=Calculates reflections in world-space rather than screen-space. §e[*]§r This feature only works if Advanced Color Tracing is on in Performance Settings and your system supports it. §e[*]§r The maximum distance of this effect depends on the Advanced Color Tracing distance, but it is internally capped at 16 chunks for technical reasons. §c[-]§r This effect can severely impact performance especially with higher Advanced Color Tracing distances. §c[-]§r World-space reflections can completely break after changing resource packs, but it will be fixed after restarting your game. §c[-]§r World-space reflections can cause intense flickering with mods, or resource packs that use higher than 16x resolution for any block textures. 
+value.WORLD_SPACE_REFLECTIONS.-1=§aOFF
+value.WORLD_SPACE_REFLECTIONS.1=§4§l§n§oON
+
+option.WORLD_SPACE_REF_MODE=WSR Mode §e[*]§r
+option.WORLD_SPACE_REF_MODE.comment=Determines the operation mode of world-space reflections. §e[*]§r The "WSR Only" mode is good for eliminating all screen-space reflection artifacts as it only shows the world-space reflections, but the "WSR + SSR" mode is better for getting more total detail in the reflections as screen-space reflections have access to all the details that are on the screen without being limited to blocks or a set distance.
+value.WORLD_SPACE_REF_MODE.1=WSR Only
+value.WORLD_SPACE_REF_MODE.2=WSR + SSR
 
 option.SSAO_I=Edge Shadow Intensity (SSAO)
 option.SSAO_I.comment=Determines the strength of Screen-Space Ambient Occlusion (SSAO) which adds extra ambient shadowing to the edges of the scene. §e[*]§r This setting won't work if SSAO is disabled in "Performance Settings".
@@ -318,8 +328,8 @@ value.LIGHTSHAFT_BEHAVIOUR.1=Scene Aware §a[+]
 value.LIGHTSHAFT_BEHAVIOUR.2=Regular
 value.LIGHTSHAFT_BEHAVIOUR.3=Extreme §c[-]
 
-option.LIGHTSHAFT_SMOKE=Light Shaft Smoke
-option.LIGHTSHAFT_SMOKE.comment=Adds volumetric smoke to the light shafts. §c[-]§r This effect can impact performance.
+option.LIGHTSHAFT_SMOKE=§eLight Shaft Smoke§r
+option.LIGHTSHAFT_SMOKE.comment=Adds volumetric smoke to the light shafts. §c[-]§r This effect can severely impact performance.
 
 option.SPECIAL_PALE_GARDEN_LIGHTSHAFTS=Special Pale Garden Shafts
 option.SPECIAL_PALE_GARDEN_LIGHTSHAFTS.comment=Makes light shafts look extra spicy in the "Pale Garden" biome.
@@ -369,7 +379,7 @@ option.DOUBLE_REIM_CLOUDS.comment=Enables a secondary Reimagined cloud layer. §
 option.CLOUD_ALT2=Cloud Layer 2 Altitude
 option.CLOUD_ALT2.comment=Determines the world height which the second layer clouds will appear at. §e[*]§r This setting only works when the "Double Reimagined Clouds" option is enabled with the "Reimagined" Cloud Style.
 
-option.NETHER_STORM=Nether Storm
+option.NETHER_STORM=§eNether Storm§r
 option.NETHER_STORM.comment=Adds a smoke-like volumetric effect to the Nether dimension. §c[-]§r This effect can impact performance.
 
 option.NETHER_STORM_I=Nether Storm Opacity
@@ -381,7 +391,7 @@ option.NETHER_STORM_LOWER_ALT.comment=Determines the lower starting point of the
 option.NETHER_STORM_HEIGHT=Nether Storm Height
 option.NETHER_STORM_HEIGHT.comment=Determines how tall the Nether Storm will form. Decrasing this value will result in the Nether Storm gathering near the "Nether Storm Lower Altitude".
 
-option.NETHER_VIEW_LIMIT=Nether View Limit
+option.NETHER_VIEW_LIMIT=§eNether View Limit§r
 option.NETHER_VIEW_LIMIT.comment=Determines the maximum distance that the fog allows to be visible in the Nether. §c[-]§r Increasing this setting can impact performance when "Nether Storm" is enabled.
 value.NETHER_VIEW_LIMIT.96.0=6 Chunks
 value.NETHER_VIEW_LIMIT.112.0=7 Chunks
@@ -403,23 +413,23 @@ value.NETHER_COLOR_MODE.3=Biome Based (Modified)
 value.NETHER_COLOR_MODE.2=Biome Based
 value.NETHER_COLOR_MODE.0=Constant
 
-option.T_EXPOSURE=General Brightness
-option.T_EXPOSURE.comment=Also known as "Tonemap Exposure". Adjusts the overall brightness of the whole image.
+option.TM_EXPOSURE=General Brightness
+option.TM_EXPOSURE.comment=Also known as "Tonemap Exposure". Adjusts the overall brightness of the whole image.
 
-option.TM_WHITE_CURVE=White Brightness
-option.TM_WHITE_CURVE.comment=Also known as "Tonemap White Curve". Adjusts how easily the colors reach to full white.
-
-option.T_UPPER_CURVE=Contrast of Brighter Colors
-option.T_UPPER_CURVE.comment=Also known as "Tonemap Upper Curve". Adjusts contrast of brighter colors.
-
-option.T_LOWER_CURVE=Contrast of Darker Colors
-option.T_LOWER_CURVE.comment=Also known as "Tonemap Lower Curve". Adjusts contrast of darker colors.
+option.TM_CONTRAST=General Contrast
+option.TM_CONTRAST.comment=Adjusts the darkness of dark colors and brightness of bright colors.
 
 option.T_SATURATION=Saturation
 option.T_SATURATION.comment=Adjusts overall colorfulness of the image.
 
 option.T_VIBRANCE=Saturation of Paler Colors
 option.T_VIBRANCE.comment=Also known as "Vibrance". Adjusts the colorfulness of the image, but already colorful pixels are less affected.
+
+option.TM_DARK_DESATURATION=Darkness Desaturation
+option.TM_DARK_DESATURATION.comment=Adjusts the amount of color-dulling effect that is going to be applied to darker areas.
+
+option.TM_WHITE_PATH=White Reachability
+option.TM_WHITE_PATH.comment=Adjusts how easy brighter colors reach to white.
 
 option.COLORGRADING=§eColor Grading
 option.COLORGRADING.comment=Enables settings to freely mix up the final color channels.
@@ -517,8 +527,11 @@ option.SUN_MOON_DURING_RAIN.comment=Determines if the sun and moon will be visib
 
 option.NIGHT_STAR_AMOUNT=Night Star Amount
 option.NIGHT_STAR_AMOUNT.comment=Determines the amount of stars in the night sky.
+value.NIGHT_STAR_AMOUNT.0=Off
+value.NIGHT_STAR_AMOUNT.1=Low
 value.NIGHT_STAR_AMOUNT.2=Medium
 value.NIGHT_STAR_AMOUNT.3=High
+value.NIGHT_STAR_AMOUNT.4=Very High
 
 option.RAINBOWS=Rainbows
 option.RAINBOWS.comment=Enables rainbows that appear at the opposite side of the sun during the morning/evening.
@@ -541,8 +554,10 @@ value.AURORA_CONDITION.2=Snowy Biome
 value.AURORA_CONDITION.3=Full Moon in Snowy Biome
 value.AURORA_CONDITION.4=Full Moon or Snowy Biome
 
-option.NIGHT_NEBULA=Night Nebulae
-option.NIGHT_NEBULA.comment=Adds galaxy-style nebulae to the night sky. The nebulae are procedurally generated, and they will look different every night. §c[-]§r This effect can impact performance. §e[*]§r "Nebulae" isn't a typo, it's the plural of Nebula =D
+option.NIGHT_NEBULAE=§eNight Nebulae§r
+option.NIGHT_NEBULAE.comment=Adds galaxy-style nebulae to the night sky. The nebulae are procedurally generated, and they will look different every night. §c[-]§r This effect can impact performance. §e[*]§r "Nebulae" isn't a typo, it's the plural of Nebula =D
+value.NIGHT_NEBULAE.-1=OFF
+value.NIGHT_NEBULAE.1=§eON
 
 option.NIGHT_NEBULA_I=Night Nebula Brightness
 option.NIGHT_NEBULA_I.comment=Adjusts the brightness of Night Nebulae.
@@ -558,12 +573,12 @@ option.SPECIAL_BIOME_WEATHER.comment=Changes the atmosphere balance in cold and 
 option.WEATHER_TEX_OPACITY=Weather Texture Opacity
 option.WEATHER_TEX_OPACITY.comment=Adjusts the opacity of the rainfall/snowfall weather textures.
 
-option.SHADOW_SMOOTHING=Shadow Smoothing
+option.SHADOW_SMOOTHING=§eShadow Smoothing§r
 option.SHADOW_SMOOTHING.comment=Determines the sharpness of shadows. §c[-]§r Lowering this setting will increase shadow flickering and impact performance. §e[*]§r This setting only works if "Real-Time Shadows" is set to Low or higher.
-value.SHADOW_SMOOTHING.4=Very Smooth
-value.SHADOW_SMOOTHING.3=Smooth
-value.SHADOW_SMOOTHING.2=Sharp §c[-]
-value.SHADOW_SMOOTHING.1=Very Sharp §c[-]
+value.SHADOW_SMOOTHING.4=§aVery Smooth
+value.SHADOW_SMOOTHING.3=§aSmooth
+value.SHADOW_SMOOTHING.2=§cSharp [-]
+value.SHADOW_SMOOTHING.1=§cVery Sharp [-]
 
 option.PIXELATED_SHADOWS=Pixelated Shadows
 option.PIXELATED_SHADOWS.comment=Makes shadows cast from the sun and moon look pixelated.
@@ -584,8 +599,10 @@ value.PIXEL_SCALE.3=4x
 value.PIXEL_SCALE.4=8x
 value.PIXEL_SCALE.5=16x
 
-option.BLOOM=Bloom
-option.BLOOM.comment=Enables blurry glow from bright objects and humidity.
+option.BLOOM_ENABLED=§eBloom§r
+option.BLOOM_ENABLED.comment=Enables blurry glow from bright objects and humidity. §c[-]§r This effect can impact performance.
+value.BLOOM_ENABLED.-1=OFF
+value.BLOOM_ENABLED.1=§eON
 
 option.BLOOM_STRENGTH=Bloom Strength
 option.BLOOM_STRENGTH.comment=Determines the intensity of glow on bright things, and the bloom from rain/cave humidity. §c[-]§r Too much bloom will cause the image to get blurrier and brighter than intended, especially in humid conditions.
@@ -628,35 +645,37 @@ value.IMAGE_SHARPENING.8=8x §c[-]
 value.IMAGE_SHARPENING.9=9x §c[-]
 value.IMAGE_SHARPENING.10=10x §c[-]
 
-option.LENSFLARE_MODE=Lens Flare
+option.LENSFLARE_MODE=§eLens Flare§r
 option.LENSFLARE_MODE.comment=Adds camera lens reflection effect when towards the sun or moon. §c[-]§r This effect can severely impact performance.
 value.LENSFLARE_MODE.0=OFF
-value.LENSFLARE_MODE.1=Sun Only
-value.LENSFLARE_MODE.2=Sun & Moon
+value.LENSFLARE_MODE.1=§cSun Only
+value.LENSFLARE_MODE.2=§cSun & Moon
 
 option.LENSFLARE_I=Lens Flare Intensity
 option.LENSFLARE_I.comment=Adjusts the strength of the Lens Flare effect.
 
-option.TAA_MODE=Temporal Filter
+option.TAA_MODE=§eTemporal Filter§r
 option.TAA_MODE.comment=Determines the behaviour of temporal anti aliasing. Smart & Subtle §a[+]§r: Temporal filter is applied in small amounts to the image in a way that won't cause artifacts. Intense §e[*]§r: Provides better anti-aliasing, but it will cause extra smudging and flickering; it might be the better choice at a higher frame rate and resolution. OFF §c[-]§r: Turning this off will cause worse performance and worse effect quality.
 value.TAA_MODE.1=Smart & Subtle §a[+]
 value.TAA_MODE.2=Intense §e[*]
-value.TAA_MODE.0=OFF §c[-]
+value.TAA_MODE.0=§cOFF [-]
 
 option.DISTANT_LIGHT_BOKEH=Distant Light Bokeh
 option.DISTANT_LIGHT_BOKEH.comment=Makes distant light sources look scattered by applying a single pixel blur in the distance. §a[+]§r This effect benefits from IntegratedPBR+ (optional) by adjusting distant light sources for better looks.
 
-option.MOTION_BLURRING=Motion Blur
-option.MOTION_BLURRING.comment=Applies blur to the image when moving the camera.
+option.MOTION_BLUR_EFFECT=§eMotion Blur§r
+option.MOTION_BLUR_EFFECT.comment=Applies blur to the image when moving the camera. §c[-]§r This effect can impact performance.
+value.MOTION_BLUR_EFFECT.-1=OFF
+value.MOTION_BLUR_EFFECT.1=§eON
 
 option.MOTION_BLURRING_STRENGTH=Motion Blur Strength
 option.MOTION_BLURRING_STRENGTH.comment=Adjusts the intensity of motion blur.
 
-option.WORLD_BLUR=§eWorld Blur
+option.WORLD_BLUR=§eWorld Blur§r
 option.WORLD_BLUR.comment=Enables world blurring. Distance Blur: Blur gets applied like fog, depending on the distance from the camera. Depth of Field: Blurring happens depending on the focus point of the camera. §c[-]§r This effect can severely impact performance.
-value.WORLD_BLUR.0=OFF
-value.WORLD_BLUR.1=Distance Blur
-value.WORLD_BLUR.2=Depth of Field
+value.WORLD_BLUR.0=§aOFF
+value.WORLD_BLUR.1=§cDistance Blur
+value.WORLD_BLUR.2=§cDepth of Field
 
 option.WB_FOV_SCALED=FOV Scaled Blur
 option.WB_FOV_SCALED.comment=Scales World Blur to the camera Field of View. World Blur will get more intense if you zoom in with this enabled.
@@ -697,8 +716,8 @@ value.IPBR_EMISSIVE_MODE.1=IPBR+ Only
 value.IPBR_EMISSIVE_MODE.3=labPBR > IPBR+
 value.IPBR_EMISSIVE_MODE.2=seuspbr > IPBR+
 
-option.IPBR_COMPATIBILITY_MODE=IPBR+ Compatibility Mode
-option.IPBR_COMPATIBILITY_MODE.comment=Changes how some IPBR+ features are calculated to be less aggressive in order to cause less problems with resource packs, or mods.
+option.IPBR_COMPAT_MODE_DEFINE=IPBR+ Compatibility Mode
+option.IPBR_COMPAT_MODE_DEFINE.comment=Changes how some IPBR+ features are calculated to be less aggressive in order to cause less problems with resource packs, or mods.
 
 option.IPBR_PARTICLE_FEATURES=IPBR+ Particle Features
 option.IPBR_PARTICLE_FEATURES.comment=Enables several features for particles, including things like glowing lava particles and better-colored water particles.
@@ -811,7 +830,7 @@ option.NORMAL_MAP_STRENGTH.comment=Adjusts the strength of bumpy details on surf
 option.CUSTOM_EMISSION_INTENSITY=Custom Emission Intensity
 option.CUSTOM_EMISSION_INTENSITY.comment=Adjusts the intensity of glowing surfaces. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 
-option.POM=Parallax Occlusion Mapping
+option.POM=§eParallax Occlusion Mapping§r
 option.POM.comment=Enables 3D effect on surfaces. §c[-]§r This effect can severely impact performance. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 value.POM.false=OFF
 value.POM.true=ON §c[-]
@@ -819,7 +838,7 @@ value.POM.true=ON §c[-]
 option.POM_DEPTH=POM Depth
 option.POM_DEPTH.comment=Adjusts the depth of parallax occlusion mapping. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 
-option.POM_QUALITY=POM Quality
+option.POM_QUALITY=§ePOM Quality§r
 option.POM_QUALITY.comment=Adjusts the sharpness/accuracy of parallax occlusion mapping. §c[-]§r Values higher than 200 can severely impact performance. §e[*]§r Values lower than 100 will force "POM Lighting Mode" to "Smooth". §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 value.POM_QUALITY.16=16 §e[*]
 value.POM_QUALITY.32=32 §e[*]
@@ -827,7 +846,7 @@ value.POM_QUALITY.64=64 §e[*]
 value.POM_QUALITY.256=256 §c[-]
 value.POM_QUALITY.512=512 §c[-]
 
-option.POM_DISTANCE=POM Distance
+option.POM_DISTANCE=§ePOM Distance§r
 option.POM_DISTANCE.comment=Adjusts how far parallax occlusion mapping is calculated. §e[*]§r It's recommended to keep this value below 50 to get a small performance gain. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 value.POM_DISTANCE.64=64 §e[*]
 value.POM_DISTANCE.128=128 §e[*]
@@ -840,10 +859,10 @@ option.POM_LIGHTING_MODE.comment=Adjusts the lighting style for POM-affected sur
 value.POM_LIGHTING_MODE.1=Smooth
 value.POM_LIGHTING_MODE.2=Sharp
 
-option.POM_ALLOW_CUTOUT=POM on Cutout Surfaces §c[-]§r
+option.POM_ALLOW_CUTOUT=§ePOM on Cutout Surfaces §c[-]§r
 option.POM_ALLOW_CUTOUT.comment=Makes POM be able to work on cutout block sections (like gaps of leaves). §c[-]§r This effect can severely impact performance.
 
-option.DIRECTIONAL_BLOCKLIGHT=Directional Blocklight
+option.DIRECTIONAL_BLOCKLIGHT=§eDirectional Blocklight§r
 option.DIRECTIONAL_BLOCKLIGHT.comment=Adds depth to blocklight depending on the surface normal. §c[-]§r May cause visual artifacts in some situations. §c[-]§r This effect can impact performance. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 value.DIRECTIONAL_BLOCKLIGHT.0=OFF
 value.DIRECTIONAL_BLOCKLIGHT.3=Subtle §c[-]
@@ -874,7 +893,7 @@ value.WAVING_I.50.0=§cInsane
 option.NO_WAVING_INDOORS=No Waving in Closed Areas
 option.NO_WAVING_INDOORS.comment=Prevents blocks from waving in closed areas using skylight. §c[-]§r This setting being enabled can cause problems with some resource packs or mods.
 
-option.WAVING_I_RAIN_MULT=Waving Rain Multiplier
+option.WAVING_I_RAIN_MULT=§eWaving Rain Multiplier§r
 option.WAVING_I_RAIN_MULT.comment=Multiplies the speed and intensity of waving during rain. §c[-]§r Too much waving intensity can cause waving blocks to clip in and out of other blocks. §c[-]§r This setting can impact performance when increased above 100.
 value.WAVING_I.125=125 §c[-]
 value.WAVING_I.150=150 §c[-]
@@ -902,10 +921,15 @@ option.WAVING_RAIN.comment=Adds movement to falling rain and snow textures to ma
 option.SPECIAL_PORTAL_EFFECTS=Special Portal Effects
 option.SPECIAL_PORTAL_EFFECTS.comment=Adds special animations and emission to Nether Portals, End Portals, and End Gateways.
 
-option.WORLD_OUTLINE=World Outline
+option.REFLECTION_RES=§eReflection Resolution§r
+option.REFLECTION_RES.comment=Changes the resolution of PBR reflections on blocks (and the world-space reflections if you have that setting enabled) to gain performance. §c[-]§r "Full" resolution reflections can impact performance way more than expected in some situations. §e[*]§r This feature does not work on Optifine.
+value.REFLECTION_RES.1.0=§4§l§n§oFull
+value.REFLECTION_RES.0.5=§aHalf
+
+option.WORLD_OUTLINE=§eWorld Outline§r
 option.WORLD_OUTLINE.comment=Adds bright outlines around blocks. §c[-]§r This effect can impact performance.
 
-option.WORLD_OUTLINE_THICKNESS=World Outline Thickness
+option.WORLD_OUTLINE_THICKNESS=§eWorld Outline Thickness§r
 option.WORLD_OUTLINE_THICKNESS.comment=Determines the thickness of the World Outline effect. §c[-]§r Increasing this setting can impact performance.
 
 option.WORLD_OUTLINE_I=World Outline Brightness
@@ -914,19 +938,19 @@ option.WORLD_OUTLINE_I.comment=Determines how intense the World Outline effect w
 option.WORLD_OUTLINE_ON_ENTITIES=World Outline on Entities
 option.WORLD_OUTLINE_ON_ENTITIES.comment=Determines if the World Outline effect will apply to entities or not. §c[-]§r This setting may not work perfectly with some custom PBR resource packs.
 
-option.DARK_OUTLINE=Dark Outline
+option.DARK_OUTLINE=§eDark Outline§r
 option.DARK_OUTLINE.comment=Adds dark outlines around blocks. §c[-]§r This effect can impact performance.
 
-option.DARK_OUTLINE_THICKNESS=Dark Outline Thickness
+option.DARK_OUTLINE_THICKNESS=§eDark Outline Thickness§r
 option.DARK_OUTLINE_THICKNESS.comment=Determines the thickness of the Dark Outline effect. §c[-]§r Increasing this setting can impact performance.
 
-option.RAIN_PUDDLES=Rain Puddles
+option.RAIN_PUDDLES=§eRain Puddles§r
 option.RAIN_PUDDLES.comment=Adds water puddles to the terrain during rain. §c[-]§r Rain puddles can severely impact performance.
-value.RAIN_PUDDLES.0=OFF
-value.RAIN_PUDDLES.1=§aON - Puddles
-value.RAIN_PUDDLES.2=§aON - Full Coverage
-value.RAIN_PUDDLES.3=§aON - §cAlways§a Puddles
-value.RAIN_PUDDLES.4=§aON - §cAlways§a Full
+value.RAIN_PUDDLES.0=§aOFF
+value.RAIN_PUDDLES.1=§cPuddles in Rain
+value.RAIN_PUDDLES.2=§cFull Coverage in Rain
+value.RAIN_PUDDLES.3=§cPuddles Always
+value.RAIN_PUDDLES.4=§cFull Coverage Always
 
 option.UNDERWATER_DISTORTION=Underwater Distortion
 option.UNDERWATER_DISTORTION.comment=Adds subtle refraction to the screen when the camera is inside water.
@@ -966,22 +990,22 @@ option.MOON_PHASE_DARK=Dark Moon Intensity
 option.MOON_PHASE_DARK.comment=Adjusts the moon phase influence during New Moon (darkest phase).
 
 option.CONNECTED_GLASS_EFFECT=Connected Glass
-option.CONNECTED_GLASS_EFFECT.comment=Makes all types of glass connect to each other. §e[*]§r This feature only works if Advanced Colored Lighting is enabled in Performance Settings and your system supports it. §e[*]§r This feature will be automatically disable itself if the "Continuity" mod is installed.
+option.CONNECTED_GLASS_EFFECT.comment=Makes all types of glass connect to each other. §e[*]§r This feature only works if Advanced Color Tracing is on in Performance Settings and your system supports it. §e[*]§r This feature will be automatically disable itself if the "Continuity" mod is installed.
 
 option.PORTAL_EDGE_EFFECT=Glowing Portal Edges
-option.PORTAL_EDGE_EFFECT.comment=Adds an emissive border effect to end and nether portals. §e[*]§r This feature only works if Advanced Colored Lighting is enabled in Performance Settings and your system supports it.
+option.PORTAL_EDGE_EFFECT.comment=Adds an emissive border effect to end and nether portals. §e[*]§r This feature only works if Advanced Color Tracing is on in Performance Settings and your system supports it.
 
 option.PUDDLE_VOXELIZATION=Fix Puddles Under Glass
-option.PUDDLE_VOXELIZATION.comment=Prevents rain puddles from forming in closed areas with glass roofs when the Rain Puddles setting is enabled. §e[*]§r This feature only works if Advanced Colored Lighting is enabled in Performance Settings and your system supports it.
+option.PUDDLE_VOXELIZATION.comment=Prevents rain puddles from forming in closed areas with glass roofs when the Rain Puddles setting is enabled. §e[*]§r This feature only works if Advanced Color Tracing is enabled and Detail Quality is set to High or above.
 
 option.COLORED_CANDLE_LIGHT=Colored Candle Lighting
 option.COLORED_CANDLE_LIGHT.comment=Makes lights cast by candles to be the same color as their bases. §e[*]§r The desaturated candle color variants will continue to use the usual fire color.
 
 option.COLORED_LIGHT_SATURATION=Colored Lighting Saturation
-option.COLORED_LIGHT_SATURATION.comment=Adjusts how saturated the colors produced from Advanced Colored Lighting will be. §e[*]§r It's not recommended to change this value, as the visuals are designed to look the most balanced with the default saturation.
+option.COLORED_LIGHT_SATURATION.comment=Adjusts how saturated the colors produced from Advanced Color Tracing will be. §e[*]§r It's not recommended to change this value, as the visuals are designed to look the most balanced with the default saturation.
 
-option.COLORED_LIGHT_FOG=Colored Light Fog
-option.COLORED_LIGHT_FOG.comment=Adds volumetric blocklight fog to the scene, most visible during the night or underground. §e[*]§r This feature only works if Advanced Colored Lighting is enabled in Performance Settings and your system supports it. §c[-]§r This effect can severely impact performance.
+option.COLORED_LIGHT_FOG=§eColored Light Fog§r
+option.COLORED_LIGHT_FOG.comment=Adds volumetric blocklight fog to the scene, most visible during the night or underground. §e[*]§r This feature only works if Advanced Color Tracing is on in Performance Settings and your system supports it. §c[-]§r This effect can severely impact performance.
 
 option.COLORED_LIGHT_FOG_I=Light Fog Intensity
 option.COLORED_LIGHT_FOG_I.comment=Determines the brightness of the Colored Light Fog.

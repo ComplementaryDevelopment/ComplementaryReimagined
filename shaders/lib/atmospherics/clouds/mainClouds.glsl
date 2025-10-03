@@ -1,3 +1,7 @@
+#if CLOUD_UNBOUND_SIZE_MULT != 100
+    #define CLOUD_UNBOUND_SIZE_MULT_M CLOUD_UNBOUND_SIZE_MULT * 0.01
+#endif
+
 #include "/lib/colors/lightAndAmbientColors.glsl"
 #include "/lib/colors/cloudColors.glsl"
 #include "/lib/atmospherics/sky.glsl"
@@ -41,7 +45,7 @@ float InterleavedGradientNoiseForClouds() {
     #include "/lib/atmospherics/clouds/unboundClouds.glsl"
 #endif
 
-vec4 GetClouds(inout float cloudLinearDepth, float skyFade, vec3 cameraPos, vec3 playerPos,
+vec4 GetClouds(inout float cloudLinearDepth, float skyFade, vec3 cameraPosOffset, vec3 playerPos,
                float lViewPos, float VdotS, float VdotU, float dither, vec3 auroraBorealis, vec3 nightNebula) {
     vec4 clouds = vec4(0.0);
 
@@ -49,11 +53,35 @@ vec4 GetClouds(inout float cloudLinearDepth, float skyFade, vec3 cameraPos, vec3
     float lViewPosM = lViewPos < renderDistance * 1.5 ? lViewPos - 1.0 : 1000000000.0;
     float skyMult0 = pow2(skyFade * 3.333333 - 2.333333);
 
-    float thresholdMix = pow2(clamp01(VdotU * 5.0));
-    float thresholdF = mix(far, 1000.0, thresholdMix * 0.5 + 0.5);
-    #ifdef DISTANT_HORIZONS
-        thresholdF = max(thresholdF, renderDistance);
+    #if IRIS_VERSION >= 10800
+        #ifdef CLOUDS_REIMAGINED
+            vec2 cameraPositionBIM = mod(cameraPositionBestInt.xz, 1.0 / cloudNarrowness * 256.0);
+        #else
+            #if CLOUD_UNBOUND_SIZE_MULT == 100
+                vec2 cameraPositionBIM = mod(cameraPositionBestInt.xz, 1.0 / cloudNarrowness);
+            #else
+                vec2 cameraPositionBIM = mod(cameraPositionBestInt.xz, 1.0 / (cloudNarrowness * CLOUD_UNBOUND_SIZE_MULT_M));
+            #endif
+        #endif
+
+        vec3 cameraPos = vec3(
+            cameraPositionBIM.x + cameraPositionBestFract.x,
+            cameraPosition.y,
+            cameraPositionBIM.y + cameraPositionBestFract.z
+        );
+    #else
+        vec3 cameraPos = cameraPosition;
     #endif
+    cameraPos += cameraPosOffset;
+
+    #ifdef CLOUDS_REIMAGINED
+        float thresholdF = 4000.0;
+    #else
+        float thresholdF = 4000.0;
+    #endif
+
+    //float thresholdMix = pow2(clamp01(VdotU * 15.0));
+    //thresholdF = mix(far, thresholdF, thresholdMix * 0.5 + 0.5);
 
     #ifdef CLOUDS_REIMAGINED
         cloudAmbientColor *= 1.0 - 0.25 * rainFactor;
@@ -100,7 +128,7 @@ vec4 GetClouds(inout float cloudLinearDepth, float skyFade, vec3 cameraPos, vec3
     #if AURORA_STYLE > 0
         clouds.rgb += auroraBorealis * 0.1;
     #endif
-    #ifdef NIGHT_NEBULA
+    #if NIGHT_NEBULAE == 1
         clouds.rgb += nightNebula * 0.2;
     #endif
 

@@ -13,7 +13,7 @@ vec2 darkOutlineOffsets[12] = vec2[12](
                                vec2( 2.0,0.0)
 );
 
-void DoDarkOutline(inout vec3 color, inout float skyFade, float z0, float dither) {
+void DoDarkOutline(inout vec3 color, float z0) {
     vec2 scale = vec2(1.0 / view);
 
     float outline = 1.0;
@@ -45,7 +45,6 @@ void DoDarkOutline(inout vec3 color, inout float skyFade, float z0, float dither
         float VdotS = dot(nViewPos, sunVec);
 
         vec3 newColor = vec3(0.0);
-        DoFog(newColor, skyFade, lViewPos, playerPos, VdotU, VdotS, dither);
 
         color = mix(color, newColor, 1.0 - outline * 1.1);
     }
