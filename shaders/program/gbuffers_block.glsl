@@ -94,7 +94,7 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #endif
 
 #ifdef PORTAL_EDGE_EFFECT
-    #include "/lib/misc/voxelization.glsl"
+    #include "/lib/voxelization/lightVoxelization.glsl"
 #endif
 
 //Program//
@@ -115,14 +115,14 @@ void main() {
     vec3 playerPos = ViewToPlayer(viewPos);
 
     bool noSmoothLighting = false, noDirectionalShading = false;
-    float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = 0.0;
+    float smoothnessD = 0.0, materialMask = 0.0;
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0;
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
     #ifdef IPBR
-        #include "/lib/materials/materialHandling/blockEntityMaterials.glsl"
+        #include "/lib/materials/materialHandling/blockEntityIPBR.glsl"
 
         #if IPBR_EMISSIVE_MODE != 1
             emission = GetCustomEmissionForIPBR(color, emission);
@@ -158,13 +158,7 @@ void main() {
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
                false, 0, smoothnessG, highlightMult, emission);
 
-    #ifdef PBR_REFLECTIONS
-        #ifdef OVERWORLD
-            skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
-        #else
-            skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
-        #endif
-    #endif
+    float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, blockEntityId);
@@ -175,7 +169,7 @@ void main() {
     gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
     #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE != 0
-        /* DRAWBUFFERS:065 */
+        /* DRAWBUFFERS:064 */
         gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
     #endif
 }

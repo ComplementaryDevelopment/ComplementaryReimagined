@@ -3,7 +3,7 @@ vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, f
 
     float stepMult = 8.0;
 
-    float maxDist = min(effectiveACLdistance * 0.5, far);
+    float maxDist = min(effectiveACTdistance * 0.5, far);
     int sampleCount = int(maxDist / stepMult + 0.001);
     vec3 traceAdd = nPlayerPos * stepMult;
     vec3 tracePos = traceAdd * dither;

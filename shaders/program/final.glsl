@@ -14,7 +14,9 @@ noperspective in vec2 texCoord;
 #include "/lib/pipelineSettings.glsl"
 
 //Common Variables//
-#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0
+vec2 view = vec2(viewWidth, viewHeight);
+
+#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0 || WORLD_SPACE_REFLECTIONS > 0 && COLORED_LIGHTING == 0
     #define ANY_ERROR_MESSAGE
 #endif
 
@@ -23,16 +25,20 @@ noperspective in vec2 texCoord;
 #endif
 
 #if COLORED_LIGHTING > 0 && !defined IS_IRIS
-    #define OPTIFINE_ACL_ERROR
+    #define OPTIFINE_ACT_ERROR
 #endif
 
 #if COLORED_LIGHTING > 0 && defined MC_OS_MAC
-    #define APPLE_ACL_ERROR
+    #define APPLE_ACT_ERROR
 #endif
 
 #if COLORED_LIGHTING > 0
-    #define COORDINATES_ACL_ERROR
-    #define SHADOWDISTANCE_ACL_ERROR
+    #define COORDINATES_ACT_ERROR
+    #define SHADOWDISTANCE_ACT_ERROR
+#endif
+
+#if WORLD_SPACE_REFLECTIONS > 0 && COLORED_LIGHTING == 0
+    #define WSR_MISSING_ACT_ERROR
 #endif
 
 //Common Functions//
@@ -110,20 +116,22 @@ void main() {
 
     #ifdef OPTIFINE_AF_ERROR
         #include "/lib/textRendering/error_optifine_af.glsl"
-    #elif defined OPTIFINE_ACL_ERROR
-        #include "/lib/textRendering/error_optifine_acl.glsl"
-    #elif defined APPLE_ACL_ERROR
-        #include "/lib/textRendering/error_apple_acl.glsl"
+    #elif defined OPTIFINE_ACT_ERROR
+        #include "/lib/textRendering/error_optifine_act.glsl"
+    #elif defined APPLE_ACT_ERROR
+        #include "/lib/textRendering/error_apple_act.glsl"
+    #elif defined WSR_MISSING_ACT_ERROR
+        #include "/lib/textRendering/error_wsr_missing_act.glsl"
     #else
-        #ifdef COORDINATES_ACL_ERROR
+        #ifdef COORDINATES_ACT_ERROR
             ivec2 absCameraPositionIntXZ = abs(cameraPositionInt.xz);
             if (max(absCameraPositionIntXZ.x, absCameraPositionIntXZ.y) > 8388550) {
-                #include "/lib/textRendering/error_coordinates_acl.glsl"
+                #include "/lib/textRendering/error_coordinates_act.glsl"
             }
         #endif
-        #ifdef SHADOWDISTANCE_ACL_ERROR
+        #ifdef SHADOWDISTANCE_ACT_ERROR
             if (COLORED_LIGHTING_INTERNAL > shadowDistance*2) {
-                #include "/lib/textRendering/error_shadowdistance_acl.glsl"
+                #include "/lib/textRendering/error_shadowdistance_act.glsl"
             }
         #endif
     #endif
@@ -133,6 +141,9 @@ void main() {
         float vignette = 1.0 - dot(texCoordMin, texCoordMin) * (1.0 - GetLuminance(color));
         color *= vignette;
     #endif
+
+    float dither = texture2DLod(noisetex, texCoord * view / 128.0, 0.0).b;
+    color += vec3((dither - 0.25) / 128.0);
 
     /* DRAWBUFFERS:0 */
     gl_FragData[0] = vec4(color, 1.0);

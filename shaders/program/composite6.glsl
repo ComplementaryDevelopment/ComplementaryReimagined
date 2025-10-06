@@ -35,23 +35,14 @@ void main() {
     vec3 temp = vec3(0.0);
     float z1 = 0.0;
 
-    #if defined TAA || defined TEMPORAL_FILTER
-        z1 = texelFetch(depthtex1, texelCoord, 0).r;
-    #endif
-
     #ifdef TAA
+        z1 = texelFetch(depthtex1, texelCoord, 0).r;
         DoTAA(color, temp, z1);
     #endif
 
     /* DRAWBUFFERS:32 */
     gl_FragData[0] = vec4(color, 1.0);
     gl_FragData[1] = vec4(temp, 1.0);
-
-    // Supposed to be #ifdef TEMPORAL_FILTER but Optifine bad
-    #if BLOCK_REFLECT_QUALITY >= 3 && RP_MODE >= 1
-        /* DRAWBUFFERS:321 */
-        gl_FragData[2] = vec4(z1, 1.0, 1.0, 1.0);
-    #endif
 }
 
 #endif

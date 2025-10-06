@@ -1,4 +1,4 @@
-smoothnessG = color.r * 0.7;
+smoothnessG = dot(color.rgb, vec3(0.2));
 smoothnessD = smoothnessG;
 
 #ifdef COATED_TEXTURES

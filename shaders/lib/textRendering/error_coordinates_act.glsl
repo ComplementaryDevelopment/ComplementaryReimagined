@@ -31,6 +31,6 @@ beginTextM(4, vec2(15, 36));
     printLine();
     printString((
         _P, _e, _r, _f, _o, _r, _m, _a, _n, _c, _e, _space, _gt, _space,
-        _A, _d, _v, _a, _n, _c, _e, _d, _space, _C, _o, _l, _o, _r, _e, _d, _space, _L, _i, _g, _h, _t, _i, _n, _g
+        _A, _d, _v, _a, _n, _c, _e, _d, _space, _C, _o, _l, _o, _r, _space, _T, _r, _a, _c, _i, _n, _g
     ));
 endText(color.rgb);

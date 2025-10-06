@@ -73,7 +73,7 @@ mat4 gbufferProjectionInverse = dhProjectionInverse;
             #include "/lib/atmospherics/auroraBorealis.glsl"
         #endif
 
-        #ifdef NIGHT_NEBULA
+        #if NIGHT_NEBULAE == 1
             #include "/lib/atmospherics/nightNebula.glsl"
         #else
             #include "/lib/atmospherics/stars.glsl"
@@ -114,7 +114,7 @@ void main() {
     #endif
 
     #ifdef VL_CLOUDS_ACTIVE
-        float cloudLinearDepth = texelFetch(gaux1, texelCoord, 0).r;
+        float cloudLinearDepth = texelFetch(gaux2, texelCoord, 0).a;
 
         if (pow2(cloudLinearDepth + OSIEBCA * dither) * renderDistance < min(lViewPos, renderDistance)) discard;
     #endif
@@ -138,6 +138,8 @@ void main() {
     if (mat == DH_BLOCK_WATER) {
         #include "/lib/materials/specificMaterials/translucents/water.glsl"
     }
+    
+    float fresnelM = (pow3(fresnel) * 0.85 + 0.15) * reflectMult;
 
     float lengthCylinder = max(length(playerPos.xz), abs(playerPos.y) * 2.0);
     color.a *= smoothstep(far * 0.5, far * 0.7, lengthCylinder);
@@ -155,12 +157,7 @@ void main() {
             highlightColor *= pow2(moonPhaseInfluence);
         #endif
 
-        float fresnelM = (pow3(fresnel) * 0.85 + 0.15) * reflectMult;
-
-        float skyLightFactor = pow2(max(lmCoordM.y - 0.7, 0.0) * 3.33333);
-        #if SHADOW_QUALITY > -1 && WATER_REFLECT_QUALITY >= 2 && WATER_MAT_QUALITY >= 2
-            skyLightFactor = max(skyLightFactor, min1(dot(shadowMult, shadowMult)));
-        #endif
+        float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
 
         vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
                                         depthtex1, dither, skyLightFactor, fresnel,
@@ -171,11 +168,20 @@ void main() {
     ////
 
     float sky = 0.0;
-    DoFog(color.rgb, sky, lViewPos, playerPos, VdotU, VdotS, dither);
-    color.a *= 1.0 - sky;
+
+    float prevAlpha = color.a;
+    DoFog(color, sky, lViewPos, playerPos, VdotU, VdotS, dither);
+    float fogAlpha = color.a;
+    color.a = prevAlpha * (1.0 - sky);
 
     /* DRAWBUFFERS:0 */
     gl_FragData[0] = color;
+
+    #if WORLD_SPACE_REFLECTIONS > 0
+        /* DRAWBUFFERS:048 */
+        gl_FragData[1] = vec4(mat3(gbufferModelViewInverse) * normalM, sqrt(fresnelM * color.a * fogAlpha));
+        gl_FragData[2] = vec4(reflection.rgb * fresnelM * color.a * fogAlpha, reflection.a);
+    #endif
 }
 
 #endif

@@ -75,8 +75,8 @@ if (blockEntityId < 5028) {
                 } else {
                     #include "/lib/materials/specificMaterials/terrain/stone.glsl"
                 }
-            } else /*if (blockEntityId == 5032)*/ { //
-            
+            } else /*if (blockEntityId == 5032)*/ { // Copper Chest+, Copper Golem+
+                #include "/lib/materials/specificMaterials/terrain/copperBlock.glsl"
             }
         } else {
             if (blockEntityId == 5036) { //

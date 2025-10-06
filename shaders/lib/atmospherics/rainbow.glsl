@@ -11,7 +11,7 @@ vec3 GetRainbow(vec3 translucentMult, float z0, float z1, float lViewPos, float 
     #endif
 
     if (rainbowTime > 0.001) {
-        float cloudLinearDepth = texelFetch(colortex4, texelCoord, 0).r;
+        float cloudLinearDepth = texelFetch(colortex5, texelCoord, 0).a;
         float cloudDistance = pow2(cloudLinearDepth + OSIEBCA * dither) * far;
         if (cloudDistance < lViewPos1) lViewPos = cloudDistance;
 

@@ -112,8 +112,8 @@
                 vec2 puddleWind = vec2(frameTimeCounter) * 0.015;
                 vec2 pNormalCoord1 = puddlePos + vec2(puddleWind.x, puddleWind.y);
                 vec2 pNormalCoord2 = puddlePos + vec2(puddleWind.x * -1.5, puddleWind.y * -1.0);
-                vec3 pNormalNoise1 = texture2D(noisetex, pNormalCoord1).rgb;
-                vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
+                vec3 pNormalNoise1 = texture2DLod(noisetex, pNormalCoord1, 0.0).rgb;
+                vec3 pNormalNoise2 = texture2DLod(noisetex, pNormalCoord2, 0.0).rgb;
 
                 normalMap.xy = (pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult;
         #endif
@@ -140,7 +140,7 @@
     #if WATER_MAT_QUALITY >= 2
         if (isEyeInWater != 1) {
             // Noise Coloring //
-            float noise = texture2D(noisetex, (waterPos + wind) * 0.25).g;
+            float noise = texture2DLod(noisetex, (waterPos + wind) * 0.25, 0.0).g;
                   noise = noise - 0.5;
                   noise *= 0.25;
             color.rgb = pow(color.rgb, vec3(1.0 + noise));
@@ -204,7 +204,7 @@
                         float dotColorPM = dot(colorPM, colorPM);
                         float foamThreshold = min(pow2(dotColorPM) * 1.6, 1.2);
                     #else
-                        float foamThreshold = pow2(texture2D(noisetex, waterPos * 4.0 + wind * 0.5).g) * 1.6;
+                        float foamThreshold = pow2(texture2DLod(noisetex, waterPos * 4.0 + wind * 0.5, 0.0).g) * 1.6;
                     #endif
                     float foam = pow2(clamp((foamThreshold + yPosDif) / foamThreshold, 0.0, 1.0));
                     #ifndef END
