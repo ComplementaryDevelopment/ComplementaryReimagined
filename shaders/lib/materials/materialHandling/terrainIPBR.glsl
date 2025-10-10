@@ -1351,6 +1351,8 @@ if (mat < 11024) {
                                             #else
                                                 lmCoordM.x = 0.82;
                                             #endif
+                                        } else {
+                                            lmCoordM.x = 0.7;
                                         }
                                     #else
                                         else {

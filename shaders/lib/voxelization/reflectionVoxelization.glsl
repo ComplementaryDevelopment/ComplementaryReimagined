@@ -94,7 +94,7 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
                 || mat == 10759 // Bamboo, Bamboo Mosaic
                 || mat == 10763 // Cherry
                 || mat == 10931 // Pale Oak
-                || mat == 10953 // Snow Layers < 8
+                
             ) {
                 if (textureRad.y < 5.0 / atlasSize.y) {
                     // Discarding if textureRad is too small to fix (somewhat rare) flickering on stairs
@@ -111,7 +111,7 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
                 if (normal.y < 0.5) storeToAllFacesExceptTop = true; // Not overriding top face or else carpets look broken on top of slabs
             }
 
-            if (mat == 10669 || mat == 10925) { // Wool Carpets, Moss Carpet
+            if (mat == 10669 || mat == 10925 || mat == 10953) { // Wool Carpets, Moss Carpet, Snow Layers < 8
                 if (normal.y > 0.5) {
                     voxelPos.y -= 1.0;
                     doSolidBlockCheck = false;
