@@ -218,6 +218,8 @@ value.LIGHTSHAFT_QUALI_DEFINE.1=§eLow
 value.LIGHTSHAFT_QUALI_DEFINE.2=§eMedium
 value.LIGHTSHAFT_QUALI_DEFINE.3=§cHigh
 value.LIGHTSHAFT_QUALI_DEFINE.4=§4§lVery High
+value.LIGHTSHAFT_QUALI_DEFINE.5=§4§lUltra
+value.LIGHTSHAFT_QUALI_DEFINE.6=§4§l§n§oUltra+
 
 option.shadowDistance=Shadow Distance
 option.shadowDistance.comment=Adjusts the distance from the player which real-time shadows are rendered. §c[-]§r Lower values may cause excessive Light Shaft leaking.

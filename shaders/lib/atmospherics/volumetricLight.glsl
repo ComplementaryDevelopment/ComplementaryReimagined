@@ -66,7 +66,11 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
         vlMult *= mix(VdotUM * VdotLM, 1.0, 0.4 * rainyNight) * vlTime;
         vlMult *= mix(invNoonFactor2 * 0.875 + 0.125, 1.0, max(vlSceneIntensity, rainFactor2));
 
-        #if LIGHTSHAFT_QUALI == 4
+        #if LIGHTSHAFT_QUALI == 6
+            int sampleCount = vlSceneIntensity < 0.5 ? 80 : 130;
+        #elif LIGHTSHAFT_QUALI == 5
+            int sampleCount = vlSceneIntensity < 0.5 ? 50 : 80;
+        #elif LIGHTSHAFT_QUALI == 4
             int sampleCount = vlSceneIntensity < 0.5 ? 30 : 50;
         #elif LIGHTSHAFT_QUALI == 3
             int sampleCount = vlSceneIntensity < 0.5 ? 15 : 30;
