@@ -670,7 +670,7 @@
     float invNoonFactor = 1.0 - noonFactor;
     float invNoonFactor2 = invNoonFactor * invNoonFactor;
 
-    float vsBrightness = clamp(screenBrightness, 0.0, 1.0);
+    float vsBrightness = clamp(screenBrightness, 0.0, 32.0);
 
     int modifiedWorldDay = int(mod(worldDay, 100) + 5.0);
     float syncedTime = (worldTime + modifiedWorldDay * 24000) * 0.05;
