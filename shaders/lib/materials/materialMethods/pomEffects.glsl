@@ -9,14 +9,6 @@ vec4 ReadNormal(vec2 coord) {
     return textureGrad(normals, coord, dcdx, dcdy);
 }
 
-vec4 ReadNormalLocalNoWrap(vec2 localCoord) {
-    vec2 tileSize = atlasSize * vTexCoordAM.pq;
-    vec2 eps = 0.5 / tileSize;
-    vec2 lc = clamp(localCoord, eps, 1.0 - eps);
-    vec2 atlasCoord = lc * vTexCoordAM.pq + vTexCoordAM.st;
-    return textureGrad(normals, atlasCoord, dcdx, dcdy);
-}
-
 #define ATLAS(_local_) (fract(_local_) * vTexCoordAM.pq + vTexCoordAM.st)
 
 // Created a new function to mitigate the side effects in case the original one has any reference outside this scope
@@ -25,78 +17,66 @@ vec4 ReadNormalLocal(vec2 localCoord) {
     return textureGrad(normals, atlasCoord, dcdx, dcdy);
 }
 
-vec2 GetParallaxCoord(float parallaxFade, float dither,
-                      inout vec2 newCoord, inout float texDepth, inout vec3 traceCoordDepth)
-{
-    float invQ = 1.0 / POM_QUALITY;
-    float minHeight = 1.0 - invQ;
+vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, inout float texDepth, inout vec3 traceCoordDepth) {
+    float invParallaxQuality = 1.0 / POM_QUALITY;
+    float minHeight = 1.0 - invParallaxQuality;
 
-    vec4 nm = ReadNormal(vTexCoord.st);
-    vec2 nmM = nm.xy * 2.0 - 1.0;
-    float normalCheck = nmM.x + nmM.y;
+    vec4 normalMap = ReadNormal(vTexCoord.st);
+    vec2 normalMapM = normalMap.xy * 2.0 - 1.0;
+    float normalCheck = normalMapM.x + normalMapM.y;
 
-    if (viewVector.z >= 0.0 || nm.a >= minHeight || normalCheck <= -1.999 || parallaxFade > 0.98)
-        return vTexCoord.st;
-
-    vec2 layerStep = viewVector.xy * (0.25 * (1.0 - parallaxFade) * POM_DEPTH) / (max(-viewVector.z, 1e-4) * POM_QUALITY);
+    // Early-outs: grazing view, flat height, extreme normal and nearly faded
+    if (viewVector.z >= 0.0 || normalMap.a >= minHeight || normalCheck <= -1.999 || parallaxFade > 0.98) return vTexCoord.st;
+    // Layer step in tangent plane (scaled by depth & fade)
+    vec2 layerStep = viewVector.xy * (0.25 * (1.0 - parallaxFade) * POM_DEPTH) / (-viewVector.z * POM_QUALITY);
 
     float i = 0.0;
-    vec2  local0 = vTexCoord.st;
-    vec2  eps = TileEpsilon();
 
-    // Start height (use no-wrap read)
-    float h = ReadNormalLocalNoWrap(local0).a;
-    float iPrev = 0.0, hPrev = h;
+    vec2 baseLC = vTexCoord.st;
+    float h = texDepth; // if a caller-provided history exists; otherwise first sample overwrites
+
+    // Ensure texDepth matches current start layer
+    {
+        vec2 lc0 = baseLC + i * layerStep;
+        h = ReadNormalLocal(lc0).a;
+    }
 
     #if defined GBUFFERS_TERRAIN || defined GBUFFERS_BLOCK
-    if (texDepth <= 1.0 - i * invQ) {
-        i = dither;
-        vec2 lc1 = local0 + i * layerStep;
-        // stop POM if we left the tile already
-        if (any(lessThan(lc1, eps)) || any(greaterThan(lc1, 1.0 - eps))) {
-            newCoord = AtlasClamp(clamp(local0, 0.0, 1.0));
-            texDepth = h;
-            return clamp(local0, 0.0, 1.0);
+        if (texDepth <= 1.0 - i * invParallaxQuality) {
+            i = dither;
+            vec2 lc1 = baseLC + i * layerStep;
+            h = texDepth = ReadNormalLocal(lc1).a;
         }
-        h = texDepth = ReadNormalLocalNoWrap(lc1).a;
-    }
     #endif
 
+    // Calculate stride based on |z|
     float viewFlat = clamp(1.0 - abs(viewVector.z), 0.0, 1.0);
     float coarseStride = mix(1.0, 2.0, clamp(0.4 * parallaxFade + 0.4 * viewVector.z*viewVector.z, 0.0, 1.0));
     coarseStride = (viewFlat > 0.7) ? 1.0 : coarseStride;
 
     // March forward by stride until we cross the height threshold
-    // But no wrap
-    for (; i < POM_QUALITY && h <= (1.0 - i * invQ); i += coarseStride) {
-        vec2 lc = local0 + i * layerStep;
-        if (any(lessThan(lc, eps)) || any(greaterThan(lc, 1.0 - eps))) {
-            // left tile -> clamp to edge, return last valid
-            float pI = max(iPrev, 0.0);
-            vec2 lcSafe = clamp(local0 + pI * layerStep, eps, 1.0 - eps);
-            traceCoordDepth.xy -= pI * layerStep;
-            traceCoordDepth.z  -= pI * invQ;
-            newCoord = lcSafe * vTexCoordAM.pq + vTexCoordAM.st;
-            texDepth = ReadNormalLocalNoWrap(lcSafe).a;
-            return lcSafe;
-        }
-        hPrev = h; iPrev = i;
-        h = ReadNormalLocalNoWrap(lc).a;
+    float iPrev = i;
+    float hPrev = h;
+    for (; i < POM_QUALITY && h <= (1.0 - i * invParallaxQuality); i += coarseStride) {
+        vec2 lc = baseLC + i * layerStep;
+        hPrev = h;
+        iPrev = i;
+        h = ReadNormalLocal(lc).a;
     }
 
     // If we ran out of layers without crossing, clamp to last valid layer and return
-    if (i >= POM_QUALITY && h <= (1.0 - (POM_QUALITY - 1.0) * invQ)) {
-        float pI = float(max(int(POM_QUALITY) - 1, 0));
-        vec2 lcSafe = clamp(local0 + pI * layerStep, eps, 1.0 - eps);
+    if (i >= POM_QUALITY && h <= (1.0 - (POM_QUALITY - 1.0) * invParallaxQuality)) {
+        i = POM_QUALITY;
+        float pI = float(max(int(i) - 1, 0));
         traceCoordDepth.xy -= pI * layerStep;
-        traceCoordDepth.z  -= pI * invQ;
-        newCoord = lcSafe * vTexCoordAM.pq + vTexCoordAM.st;
-        texDepth = ReadNormalLocalNoWrap(lcSafe).a;
-        return lcSafe;
+        traceCoordDepth.z  -= pI * invParallaxQuality;
+        vec2 localCoord = fract(baseLC + pI * layerStep);
+        newCoord = ATLAS(localCoord);
+        texDepth = ReadNormalLocal(baseLC + pI * layerStep).a;
+        return localCoord;
     }
 
     // Refine with a short binary search in the [iPrev, i] bracket
-    // no wrap again
     float lo = max(iPrev, 0.0);
     float hi = clamp(i, 0.0, POM_QUALITY);
     float hLo = hPrev;
@@ -104,65 +84,61 @@ vec2 GetParallaxCoord(float parallaxFade, float dither,
 
     for (int it = 0; it < 3; ++it) {
         float mid = 0.5 * (lo + hi);
-        float thr = 1.0 - mid * invQ;
-        vec2  lcMid = local0 + mid * layerStep;
+        float threshold = 1.0 - mid * invParallaxQuality;
+        vec2  lcMid = baseLC + mid * layerStep;
+        float hMid  = ReadNormalLocal(lcMid).a;
 
-        if (any(lessThan(lcMid, eps)) || any(greaterThan(lcMid, 1.0 - eps))) {
-            hi = mid;
-            continue;
-        }
-
-        float hMid = ReadNormalLocalNoWrap(lcMid).a;
-        bool below = (hMid <= thr);
+        bool below = (hMid <= threshold);
         lo = below ? mid : lo;
         hi = below ? hi  : mid;
         hLo = below ? hMid: hLo;
         hHi = below ? hHi : hMid;
     }
 
+    // Pick the layer just before the crossing
     float pI = max(lo, 0.0);
+
+    // Accumulate trace offsets (xy: coord, z: layer depth)
     traceCoordDepth.xy -= pI * layerStep;
-    traceCoordDepth.z  -= pI * invQ;
+    traceCoordDepth.z  -= pI * invParallaxQuality;
 
-    vec2 lcFinal = clamp(local0 + pI * layerStep, eps, 1.0 - eps);
-    newCoord = lcFinal * vTexCoordAM.pq + vTexCoordAM.st;
-    texDepth = ReadNormalLocalNoWrap(lcFinal).a;
-    return lcFinal;
+    vec2 localCoord = fract(baseLC + pI * layerStep);
+    newCoord = ATLAS(localCoord);
+    texDepth = ReadNormalLocal(baseLC + pI * layerStep).a;
+
+    return localCoord;
 }
-
 
 float GetParallaxShadow(float parallaxFade, float dither, float height, vec2 coord, vec3 lightVec, mat3 tbn) {
     // Skip shadowing when far or almost faded
     if (parallaxFade >= 0.98) return 1.0;
 
     vec3 parallaxdir = tbn * lightVec;
+    // Degenerate / near-parallel to plane
     if (abs(parallaxdir.z) < 1e-4) return 1.0;
 
-    // scale to depth
     parallaxdir.xy *= POM_DEPTH;
 
     // Fewer steps as fade increases (scene-aware)
     int MAX_STEPS = (parallaxFade < 0.25) ? 4 : 2;
 
     float parallaxshadow = 1.0;
-    vec2  baseLocal = coord;
-    vec2  eps = TileEpsilon();
+
+    vec2 pq = vTexCoordAM.pq;
+    vec2 st = vTexCoordAM.st;
+
+    vec2 baseLocal = fract(coord);
 
     for (int i = 0; i < MAX_STEPS && parallaxshadow >= 0.01; ++i) {
         float stepLC = 0.025 * (float(i) + dither);
 
         float currentHeight = height + parallaxdir.z * stepLC;
 
-        vec2 lc = baseLocal + parallaxdir.xy * stepLC;
+        vec2 lc = fract(baseLocal + parallaxdir.xy * stepLC);
+        vec2 atlasCoord = lc * pq + st;
 
-        // trying to prevent seam shadows
-        if (any(lessThan(lc, eps)) || any(greaterThan(lc, 1.0 - eps))) {
-            break;
-        }
-
-        float offsetHeight = ReadNormalLocalNoWrap(lc).a;
-
-        // soften when the surface rises above the ray
+        float offsetHeight = textureGrad(normals, atlasCoord, dcdx, dcdy).a;
+        // Attenuate when the traced surface (offsetHeight) rises above the ray
         parallaxshadow *= clamp(1.0 - (offsetHeight - currentHeight) * 4.0, 0.0, 1.0);
     }
 
