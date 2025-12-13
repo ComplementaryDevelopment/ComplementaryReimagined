@@ -9,6 +9,22 @@ vec4 ReadNormal(vec2 coord) {
     return textureGrad(normals, coord, dcdx, dcdy);
 }
 
+vec2 TileEpsilon() {
+    vec2 tileSize = atlasSize * vTexCoordAM.pq;
+    return 0.5 / tileSize;
+}
+
+vec2 AtlasClamp(vec2 local) {
+    vec2 eps = TileEpsilon();
+    vec2 lc  = clamp(local, eps, 1.0 - eps);
+    return lc * vTexCoordAM.pq + vTexCoordAM.st;
+}
+
+vec4 ReadNormalLocalNoWrap(vec2 localCoord) {
+    vec2 atlasCoord = AtlasClamp(localCoord);
+    return textureGrad(normals, atlasCoord, dcdx, dcdy);
+}
+
 #define ATLAS(_local_) (fract(_local_) * vTexCoordAM.pq + vTexCoordAM.st)
 
 // Created a new function to mitigate the side effects in case the original one has any reference outside this scope
@@ -70,10 +86,10 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
         float pI = float(max(int(i) - 1, 0));
         traceCoordDepth.xy -= pI * layerStep;
         traceCoordDepth.z  -= pI * invParallaxQuality;
-        vec2 localCoord = fract(baseLC + pI * layerStep);
-        newCoord = ATLAS(localCoord);
-        texDepth = ReadNormalLocal(baseLC + pI * layerStep).a;
-        return localCoord;
+        vec2 localCoord = baseLC + pI * layerStep;
+        newCoord = AtlasClamp(localCoord);
+        texDepth = ReadNormalLocalNoWrap(localCoord).a;
+        return clamp(localCoord, 0.0, 1.0);
     }
 
     // Refine with a short binary search in the [iPrev, i] bracket
@@ -109,41 +125,45 @@ vec2 GetParallaxCoord(float parallaxFade, float dither, inout vec2 newCoord, ino
     return localCoord;
 }
 
-float GetParallaxShadow(float parallaxFade, float dither, float height, vec2 coord, vec3 lightVec, mat3 tbn) {
-    // Skip shadowing when far or almost faded
+float GetParallaxShadow(float parallaxFade, float dither, float height,
+                        vec2 coord /* local [0..1] */, vec3 lightVec, mat3 tbn) {
     if (parallaxFade >= 0.98) return 1.0;
 
     vec3 parallaxdir = tbn * lightVec;
-    // Degenerate / near-parallel to plane
     if (abs(parallaxdir.z) < 1e-4) return 1.0;
 
+    // scale to your POM depth (same as main trace)
     parallaxdir.xy *= POM_DEPTH;
 
-    // Fewer steps as fade increases (scene-aware)
+    // steps tuned by fade
     int MAX_STEPS = (parallaxFade < 0.25) ? 4 : 2;
 
     float parallaxshadow = 1.0;
-
-    vec2 pq = vTexCoordAM.pq;
-    vec2 st = vTexCoordAM.st;
-
-    vec2 baseLocal = fract(coord);
+    vec2 baseLocal = coord;
+    vec2 eps = TileEpsilon();
 
     for (int i = 0; i < MAX_STEPS && parallaxshadow >= 0.01; ++i) {
         float stepLC = 0.025 * (float(i) + dither);
 
         float currentHeight = height + parallaxdir.z * stepLC;
 
-        vec2 lc = fract(baseLocal + parallaxdir.xy * stepLC);
-        vec2 atlasCoord = lc * pq + st;
+        // NO fract: march in local, and bail if we’d leave the tile
+        vec2 lc = baseLocal + parallaxdir.xy * stepLC;
 
-        float offsetHeight = textureGrad(normals, atlasCoord, dcdx, dcdy).a;
-        // Attenuate when the traced surface (offsetHeight) rises above the ray
+        // If off the tile, treat as unoccluded and stop (prevents seam shadows)
+        if (any(lessThan(lc, eps)) || any(greaterThan(lc, 1.0 - eps))) {
+            break;
+        }
+
+        float offsetHeight = ReadNormalLocalNoWrap(lc).a;
+
+        // soften when the surface rises above the ray
         parallaxshadow *= clamp(1.0 - (offsetHeight - currentHeight) * 4.0, 0.0, 1.0);
     }
 
     return mix(parallaxshadow, 1.0, parallaxFade);
 }
+
 
 // Big thanks to null511 for slope normals
 vec3 GetParallaxSlopeNormal(vec2 texCoord, float traceDepth, vec3 viewDir) {
