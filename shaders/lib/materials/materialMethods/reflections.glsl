@@ -14,7 +14,7 @@
     #include "/lib/colors/moonPhaseInfluence.glsl"
 #endif
 
-#if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+#if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && defined COMPOSITE
     #include "/lib/voxelization/lightVoxelization.glsl"
     #include "/lib/materials/materialMethods/worldSpaceRef.glsl"
 #endif

@@ -103,17 +103,17 @@ void DoWave(inout vec3 playerPos, int mat) {
 
     #if defined GBUFFERS_TERRAIN || defined SHADOW
         #ifdef WAVING_FOLIAGE
-            if (mat == 10005
+            if (mat == 10005 // Grounded Foliage
                 #ifdef DO_MORE_FOLIAGE_WAVING
-                    || mat == 10769
-                    || mat == 10924
+                    || mat == 10769 // Torchflower
+                    || mat == 10976 // Open Eyeblossom
                 #endif
-            ) { // Grounded Waving Foliage
+            ) {
                 if (gl_MultiTexCoord0.t < mc_midTexCoord.t || fract(worldPos.y + 0.21) > 0.26)
                 DoWave_Foliage(playerPos.xyz, worldPos, 1.0);
             }
             
-            else if (mat == 10021) { // Upper Layer Waving Foliage
+            else if (mat == 10021) { // Upper Layer Foliage
                 DoWave_Foliage(playerPos.xyz, worldPos, 1.0);
             }
 

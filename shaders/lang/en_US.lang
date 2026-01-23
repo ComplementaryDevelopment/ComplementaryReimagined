@@ -237,7 +237,7 @@ value.shadowDistance.768.0=§4§l§n§o48 Chunks
 value.shadowDistance.1024.0=§4§k-§r§4§l§n§o64 Chunks§r§4§k-
 
 option.ENTITY_SHADOW=Entity Shadows
-option.ENTITY_SHADOW.comment=Enables the ability for entities and block entities to cast shadows. §c[-]§r Entity Shadows impact performance way more than expected, costing more than 50% of your fps in some cases.
+option.ENTITY_SHADOW.comment=Enables shadows cast from entities and block entities. "Regular Entities" include things like animals and monsters, while the "Full" option also includes block entities like chests. §c[-]§r Entity Shadows impact performance way more than expected, costing more than 50% of your fps in some cases.
 value.ENTITY_SHADOW.-1=§aOFF
 value.ENTITY_SHADOW.1=§cRegular Entities
 value.ENTITY_SHADOW.2=§4§k-§r§4§l§n§oFull§r§4§k- §r§c[-]

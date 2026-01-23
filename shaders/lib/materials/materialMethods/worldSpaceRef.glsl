@@ -71,7 +71,7 @@ vec4 getShadedReflection(faceData faceData, int mat, vec3 voxelPos, vec3 playerP
     vec2 textureCoord = faceData.textureBounds.xy + 2.0 * textureRadVec2 * localTexCoord;
     vec4 color = texture2D(textureAtlas, textureCoord) * vec4(faceData.glColor, 1.0);
 
-    if (color.a < 0.0001) return vec4(-1.0);
+    if (color.a < 0.0041) return vec4(-1.0); // Note that the cutout parts of leaves have a color.a of about 0.004
 
     bool noSmoothLighting = false, noDirectionalShading = false;
     int subsurfaceMode = 0;
@@ -181,7 +181,7 @@ vec4 getShadedReflection(faceData faceData, int mat, vec3 voxelPos, vec3 playerP
 
 vec3 wsrHitPos = vec3(-100000);
 
-vec4 traceHighLOD(vec3 rayDir ,vec3 stepDir, vec3 stepSizes, vec3 oldPlayerPos, vec3 newPlayerPos, vec3 voxelPos, float RVdotU, float RVdotS, float dither,
+vec4 traceHighLOD(vec3 rayDir, vec3 stepDir, vec3 stepSizes, vec3 oldPlayerPos, vec3 newPlayerPos, vec3 voxelPos, float RVdotU, float RVdotS, float dither,
                   vec3 voxelPosStart, uint matStart) {
     vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(voxelPos)) / rayDir;
     float closestDist = 0.0;
@@ -197,9 +197,6 @@ vec4 traceHighLOD(vec3 rayDir ,vec3 stepDir, vec3 stepSizes, vec3 oldPlayerPos, 
 
         uint mat = texelFetch(wsr_sampler, ivec3(voxelPos), 0).r;
         if (mat != 0u) {
-            // Fix for half slabs reflecting themselves
-            //if (mat == matStart && length(voxelPosStart.xz - voxelPos.xz) < 3.0 && abs(voxelPosStart.y - voxelPos.y) < 0.1) continue;
-
             vec3 normal = -stepAxis * stepDir;
             faceData faceData = getFaceData(ivec3(voxelPos), normal);
             if (faceData.textureBounds.z > 1e-6) {
@@ -263,9 +260,20 @@ vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float R
     vec3 normalOffset = normalize(mat3(gbufferModelViewInverse) * normalMR);
     playerPos += normalOffset * 0.003;
     vec3 voxelPos = playerToSceneVoxel(playerPos);
+
+    // Fixes slabs, stairs, dirt paths, and farmlands reflecting themselves
+    if (z0 == z1) {
+        vec3 playerPosFractAdded = playerPos + cameraPositionBestFract + 256.0;
+        vec3 normalOffsetM = normalOffset * (0.04 - 0.01 * dither);
+        ivec3 voxelPosCheck1 = ivec3(playerPosFractAdded - normalOffsetM);
+        ivec3 voxelPosCheck2 = ivec3(playerPosFractAdded + normalOffsetM);
+        if (voxelPosCheck1 == voxelPosCheck2) playerPos += normalOffset * 0.5;
+    }
     
-    // Fixes slabs reflecting themselves (or the ones right next to each other)
-    playerPos += normalOffset * pow2(max0(0.5 - 1.1 * abs(fract(voxelPos.y) - 0.5)) * 2.0) * 0.5 * abs(normalOffset.y);
+    // Alternative fix that doesn't work on stairs
+    // float voxelPosYFract = fract(voxelPos.y);
+    // if (abs(voxelPosYFract - 0.5) < 0.46)
+    // playerPos = playerPos + normalOffset * (normalOffset.y > 0.0 ? 1.0 - voxelPosYFract : voxelPosYFract);
 
     if (CheckInsideSceneVoxelVolume(voxelPos)) {
         vec3 voxelPosStart = voxelPos;

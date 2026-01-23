@@ -35,6 +35,7 @@ float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
 float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 float farMinusNear = far - near;
+float z0;
 float z1;
 
 vec2 view = vec2(viewWidth, viewHeight);
@@ -62,7 +63,7 @@ void main() {
     vec4 color = texelFetch(colortex0, texelCoord, 0);
     vec4 texture4 = texelFetch(colortex4, texelCoord, 0);
     
-    float z0 = texelFetch(depthtex0, texelCoord, 0).r;
+    z0 = texelFetch(depthtex0, texelCoord, 0).r;
     z1 = texelFetch(depthtex1, texelCoord, 0).r;
 
     #ifdef ATM_COLOR_MULTS
