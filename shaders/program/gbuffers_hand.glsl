@@ -64,6 +64,7 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 //Includes//
 #include "/lib/util/spaceConversion.glsl"
 #include "/lib/lighting/mainLighting.glsl"
+#include "/lib/materials/materialHandling/checkIPBR.glsl"
 
 #if defined GENERATED_NORMALS || defined COATED_TEXTURES
     #include "/lib/util/miplevel.glsl"
@@ -119,9 +120,12 @@ void main() {
         float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 0.6;
         vec3 geoNormal = normalM;
         vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
-        #ifdef IPBR
-            #ifdef IS_IRIS
-                vec3 maRecolor = vec3(0.0);
+
+        #if defined IPBR && defined IS_IRIS
+            vec3 maRecolor = vec3(0.0);
+        #endif
+        if (CheckIPBR()) {
+            #if defined IPBR && defined IS_IRIS
                 #include "/lib/materials/materialHandling/irisIPBR.glsl"
 
                 if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
@@ -138,11 +142,11 @@ void main() {
             #if IPBR_EMISSIVE_MODE != 1
                 emission = GetCustomEmissionForIPBR(color, emission);
             #endif
-        #else
+        } else {
             #ifdef CUSTOM_PBR
                 GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, 0.0);
             #endif
-        #endif
+        }
 
         DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM, 0.5,
                    worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,

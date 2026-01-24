@@ -190,6 +190,7 @@
         #define IPBR_COMPAT_MODE
     #endif
 
+    //#define IPBR_FALLBACK
     #define NORMAL_MAP_STRENGTH 100 //[0 10 15 20 30 40 60 80 100 120 140 160 180 200]
     #define CUSTOM_EMISSION_INTENSITY 100 //[0 5 7 10 15 20 25 30 35 40 45 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 225 250]
     #define POM_DEPTH 0.80 //[0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
@@ -375,6 +376,9 @@
     #if RP_MODE >= 2
         #define CUSTOM_PBR
         #define POM
+        #ifdef IPBR_FALLBACK
+            #define IPBR
+        #endif
     #endif
 
     #if SHADER_STYLE == 1

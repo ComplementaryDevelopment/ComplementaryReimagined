@@ -824,6 +824,9 @@ option.EMISSIVE_LAPIS_BLOCK=Glowing Lapis Lazuli Block
 option.GLOWING_ARMOR_TRIM=Glowing Armor Trim §e[*]§r
 option.GLOWING_ARMOR_TRIM.comment=Makes armor trims emissive. §e[*]§r This feature only works on Iris, as Optifine doesn't support armor trim detection.
 
+option.IPBR_FALLBACK=IPBR+ Fallback Mode
+option.IPBR_FALLBACK.comment=Enables IPBR+ alongside the selected Custom PBR mode (LabPBR/seusbpr). §e[*]§r Prioritizes Custom PBR maps when available, and falls back to IPBR+ for blocks without them.
+
 option.NORMAL_MAP_STRENGTH=Normal Map Strength
 option.NORMAL_MAP_STRENGTH.comment=Adjusts the strength of bumpy details on surfaces. §e[*]§r RP Support option must be set to labPBR/seuspbr, and a compatible resource pack must be used.
 

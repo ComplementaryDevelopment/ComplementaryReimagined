@@ -89,6 +89,8 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/materials/materialHandling/customMaterials.glsl"
 #endif
 
+#include "/lib/materials/materialHandling/checkIPBR.glsl"
+
 #ifdef COLOR_CODED_PROGRAMS
     #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
@@ -121,13 +123,13 @@ void main() {
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
-    #ifdef IPBR
+        if (CheckIPBR()) {
         #include "/lib/materials/materialHandling/blockEntityIPBR.glsl"
 
         #if IPBR_EMISSIVE_MODE != 1
             emission = GetCustomEmissionForIPBR(color, emission);
         #endif
-    #else
+    } else {
         #ifdef CUSTOM_PBR
             GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
         #endif
@@ -144,7 +146,7 @@ void main() {
         } else {
             noSmoothLighting = true;
         }
-    #endif
+    }
 
     #ifdef GENERATED_NORMALS
         GenerateNormals(normalM, colorP);
@@ -242,11 +244,11 @@ void main() {
 
     if (normal != normal) normal = -upVec; // Mod Fix: Fixes Better Nether Fireflies
 
-    #ifdef IPBR
+    // if (CheckIPBR()) {
         /*if (blockEntityId == 5024) { // End Portal, End Gateway
             gl_Position.z -= 0.002;
         }*/
-    #endif
+    // }
 
     #if defined GENERATED_NORMALS || defined COATED_TEXTURES || defined POM
         if (blockEntityId == 5008) { // Chest

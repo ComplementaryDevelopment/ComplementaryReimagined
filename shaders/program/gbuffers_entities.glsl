@@ -65,6 +65,7 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #include "/lib/util/dither.glsl"
 #include "/lib/util/spaceConversion.glsl"
 #include "/lib/lighting/mainLighting.glsl"
+#include "/lib/materials/materialHandling/checkIPBR.glsl"
 
 #if defined GENERATED_NORMALS || defined COATED_TEXTURES
     #include "/lib/util/miplevel.glsl"
@@ -118,11 +119,14 @@ void main() {
         bool noSmoothLighting = atlasSize.x < 600.0; // To fix fire looking too dim
         bool noGeneratedNormals = false, noDirectionalShading = false, noVanillaAO = false;
         float smoothnessG = 0.0, highlightMult = 0.0, emission = 0.0, noiseFactor = 0.75;
-        #ifdef IPBR
+
+        #if defined IPBR && defined IS_IRIS
+            vec3 maRecolor = vec3(0.0);
+        #endif
+        if (CheckIPBR()) {
             #include "/lib/materials/materialHandling/entityIPBR.glsl"
 
-            #ifdef IS_IRIS
-                vec3 maRecolor = vec3(0.0);
+            #if defined IPBR && defined IS_IRIS
                 #include "/lib/materials/materialHandling/irisIPBR.glsl"
             #endif
 
@@ -139,7 +143,7 @@ void main() {
             #if IPBR_EMISSIVE_MODE != 1
                 emission = GetCustomEmissionForIPBR(color, emission);
             #endif
-        #else
+        } else {
             #ifdef CUSTOM_PBR
                 GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
             #endif
@@ -151,7 +155,7 @@ void main() {
             } else if (entityId == 50076) { // Boats
                 playerPos.y += 0.38; // consistentBOAT2176
             }
-        #endif
+        }
     
         color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
 

@@ -128,6 +128,7 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
 #include "/lib/util/spaceConversion.glsl"
 #include "/lib/lighting/mainLighting.glsl"
 #include "/lib/util/dither.glsl"
+#include "/lib/materials/materialHandling/checkIPBR.glsl"
 
 #ifdef TAA
     #include "/lib/antialiasing/jitter.glsl"
@@ -212,9 +213,13 @@ void main() {
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
-    #ifdef IPBR
+    #if defined IPBR
         vec3 maRecolor = vec3(0.0);
-        #include "/lib/materials/materialHandling/terrainIPBR.glsl"
+    #endif
+    if (CheckIPBR()) {
+        #ifdef IPBR
+            #include "/lib/materials/materialHandling/terrainIPBR.glsl"
+        #endif
 
         #ifdef GENERATED_NORMALS
             if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
@@ -227,7 +232,7 @@ void main() {
         #if IPBR_EMISSIVE_MODE != 1
             emission = GetCustomEmissionForIPBR(color, emission);
         #endif
-    #else
+    } else {
         #ifdef CUSTOM_PBR
             GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMask, viewPos, lViewPos);
         #endif
@@ -261,7 +266,7 @@ void main() {
         #endif
 
         else if (lmCoord.x > 0.99999) lmCoordM.x = 0.95;
-    #endif
+    }
 
     #ifdef SNOWY_WORLD
         DoSnowyWorld(color, smoothnessG, highlightMult, smoothnessD, emission,
@@ -332,7 +337,7 @@ void main() {
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
 
-    #ifdef IPBR
+    #if defined IPBR
         color.rgb += maRecolor;
     #endif
 

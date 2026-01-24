@@ -67,6 +67,7 @@ float GetLinearDepth(float depth) {
 #include "/lib/util/spaceConversion.glsl"
 #include "/lib/lighting/mainLighting.glsl"
 #include "/lib/atmospherics/fog/mainFog.glsl"
+#include "/lib/materials/materialHandling/checkIPBR.glsl"
 
 #ifdef OVERWORLD
     #include "/lib/atmospherics/sky.glsl"
@@ -182,7 +183,7 @@ void main() {
     vec3 shadowMult = vec3(1.0);
     float fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
     float fresnelM = pow3(fresnel);
-    #ifdef IPBR
+    if (CheckIPBR()) {
         #include "/lib/materials/materialHandling/translucentIPBR.glsl"
 
         #ifdef GENERATED_NORMALS
@@ -192,7 +193,7 @@ void main() {
         #if IPBR_EMISSIVE_MODE != 1
             emission = GetCustomEmissionForIPBR(color, emission);
         #endif
-    #else
+    } else {
         #ifdef CUSTOM_PBR
             float smoothnessD, materialMaskPh;
             GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMaskPh, viewPos, lViewPos);
@@ -206,7 +207,7 @@ void main() {
                 #include "/lib/materials/specificMaterials/translucents/netherPortal.glsl"
             #endif
         }
-    #endif
+    }
 
     #if WATER_MAT_QUALITY >= 3 && SELECT_OUTLINE == 4
         int materialMaskInt = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);
