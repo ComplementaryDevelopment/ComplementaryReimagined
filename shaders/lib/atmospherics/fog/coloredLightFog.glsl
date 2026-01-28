@@ -46,6 +46,7 @@ vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, f
     #endif
 
     lightFog *= 1.0 - maxBlindnessDarkness;
+    lightFog = pow(lightFog / sampleCount, vec3(0.25));
 
-    return pow(lightFog / sampleCount, vec3(0.25));
+    return lightFog;
 }

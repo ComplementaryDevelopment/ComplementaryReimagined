@@ -52,16 +52,15 @@ vec4 GetLightSample(sampler3D lightSampler, ivec3 pos) {
 }
 
 vec4 GetLightCalculated(sampler3D lightSampler, ivec3 pos, ivec3 voxelVolumeSize, uint voxel) {
-	vec4 light_old = GetLightSample(lightSampler, pos);
-	vec4 light_px  = GetLightSample(lightSampler, clamp(pos + ivec3( 1,  0,  0), ivec3(0), voxelVolumeSize - 1));
-	vec4 light_py  = GetLightSample(lightSampler, clamp(pos + ivec3( 0,  1,  0), ivec3(0), voxelVolumeSize - 1));
-	vec4 light_pz  = GetLightSample(lightSampler, clamp(pos + ivec3( 0,  0,  1), ivec3(0), voxelVolumeSize - 1));
-	vec4 light_nx  = GetLightSample(lightSampler, clamp(pos + ivec3(-1,  0,  0), ivec3(0), voxelVolumeSize - 1));
-	vec4 light_ny  = GetLightSample(lightSampler, clamp(pos + ivec3( 0, -1,  0), ivec3(0), voxelVolumeSize - 1));
-	vec4 light_nz  = GetLightSample(lightSampler, clamp(pos + ivec3( 0,  0, -1), ivec3(0), voxelVolumeSize - 1));
+	vec4 light_px = GetLightSample(lightSampler, clamp(pos + ivec3( 1,  0,  0), ivec3(0), voxelVolumeSize - 1));
+	vec4 light_py = GetLightSample(lightSampler, clamp(pos + ivec3( 0,  1,  0), ivec3(0), voxelVolumeSize - 1));
+	vec4 light_pz = GetLightSample(lightSampler, clamp(pos + ivec3( 0,  0,  1), ivec3(0), voxelVolumeSize - 1));
+	vec4 light_nx = GetLightSample(lightSampler, clamp(pos + ivec3(-1,  0,  0), ivec3(0), voxelVolumeSize - 1));
+	vec4 light_ny = GetLightSample(lightSampler, clamp(pos + ivec3( 0, -1,  0), ivec3(0), voxelVolumeSize - 1));
+	vec4 light_nz = GetLightSample(lightSampler, clamp(pos + ivec3( 0,  0, -1), ivec3(0), voxelVolumeSize - 1));
 
-	vec4 light = light_old + light_px + light_py + light_pz + light_nx + light_ny + light_nz;
-    light /= 7.2; // Slightly higher than 7 to prevent the light from travelling too far
+	vec4 light = light_px + light_py + light_pz + light_nx + light_ny + light_nz;
+    light /= 6.42; // Slightly higher than 6 to prevent the light from travelling too far
 
 	if (voxel >= 200u) {
 		vec3 tint = specialTintColor[min(voxel - 200u, specialTintColor.length() - 1u)];
@@ -118,7 +117,9 @@ void main() {
 	#endif
 
 	vec4 light = vec4(0.0);	
-	uint voxel = GetVoxelVolume(pos);
+	uint rawData = GetVoxelVolumeRaw(pos);
+	uint voxel = rawData & 32767u;
+	uint isColorwheelGeometry = (rawData - voxel) >> 15u;
 
 	if (voxel == 1u) { // Solid Blocks
 		light = vec4(0.0);
@@ -138,8 +139,11 @@ void main() {
 		}
 	} else { // Light Sources
 		vec4 color = GetSpecialBlocklightColor(int(voxel));
+		if (isColorwheelGeometry == 1u) color.a = 1.0;
 		light = max(light, vec4(pow2(color.rgb), color.a));
 	}
+
+	light = clamp(light, vec4(0.0), vec4(1000.0)); // Prevents a random NaN from consuming the volume
 
 	if (int(framemod2) == 0) {
 		imageStore(floodfill_img_copy, pos, light);

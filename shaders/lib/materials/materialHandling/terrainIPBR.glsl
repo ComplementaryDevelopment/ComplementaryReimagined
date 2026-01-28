@@ -160,7 +160,12 @@ if (mat < 11024) {
                                     vec3 worldPos = playerPos + cameraPosition;
                                     vec3 fractPos = fract(worldPos.xyz);
                                     vec2 coordM = abs(fractPos.xz - 0.5);
-                                    if (max(coordM.x, coordM.y) < 0.375 && fractPos.y > 0.3 && NdotU > 0.9) {
+                                    bool cauldronInteriorCheck = max(coordM.x, coordM.y) < 0.375 && fractPos.y > 0.3;
+                                    #ifdef GBUFFERS_COLORWHEEL
+                                        vec2 centered = abs(fract(texCoord));
+                                        cauldronInteriorCheck = max(centered.x, centered.y) > 0.9;
+                                    #endif
+                                    if (cauldronInteriorCheck && NdotU > 0.9) {
                                         #if WATER_STYLE < 3
                                             vec3 colorP = color.rgb / glColor.rgb;
                                             smoothnessG = min(pow2(pow2(dot(colorP.rgb, colorP.rgb) * 0.4)), 1.0);
@@ -189,9 +194,12 @@ if (mat < 11024) {
                                     vec3 worldPos = playerPos + cameraPosition;
                                     vec3 fractPos = fract(worldPos.xyz);
                                     vec2 coordM = abs(fractPos.xz - 0.5);
-                                    if (max(coordM.x, coordM.y) < 0.375 &&
-                                        fractPos.y > 0.3 &&
-                                        NdotU > 0.9) {
+                                    bool cauldronInteriorCheck = max(coordM.x, coordM.y) < 0.375 && fractPos.y > 0.3;
+                                    #ifdef GBUFFERS_COLORWHEEL
+                                        vec2 centered = abs(fract(texCoord));
+                                        cauldronInteriorCheck = max(centered.x, centered.y) > 0.9;
+                                    #endif
+                                    if (cauldronInteriorCheck && NdotU > 0.9) {
 
                                         #include "/lib/materials/specificMaterials/terrain/snow.glsl"
                                     } else {
@@ -206,9 +214,12 @@ if (mat < 11024) {
                                     vec3 worldPos = playerPos + cameraPosition;
                                     vec3 fractPos = fract(worldPos.xyz);
                                     vec2 coordM = abs(fractPos.xz - 0.5);
-                                    if (max(coordM.x, coordM.y) < 0.375 &&
-                                        fractPos.y > 0.3 &&
-                                        NdotU > 0.9) {
+                                    bool cauldronInteriorCheck = max(coordM.x, coordM.y) < 0.375 && fractPos.y > 0.3;
+                                    #ifdef GBUFFERS_COLORWHEEL
+                                        vec2 centered = abs(fract(texCoord));
+                                        cauldronInteriorCheck = max(centered.x, centered.y) > 0.9;
+                                    #endif
+                                    if (cauldronInteriorCheck && NdotU > 0.9) {
 
                                         #include "/lib/materials/specificMaterials/terrain/lava.glsl"
                                     } else {
@@ -337,7 +348,7 @@ if (mat < 11024) {
                                 }
                             } else {
                                 if (mat < 10124) { // Dripstone+, Daylight Detector
-                                    smoothnessG = color.r * 0.35 + 0.2;
+                                    smoothnessG = pow2(GetLuminance(color.rgb)) * 0.9 + 0.1;
                                     smoothnessD = smoothnessG;
 
                                     #ifdef COATED_TEXTURES
@@ -599,7 +610,7 @@ if (mat < 11024) {
                                     #endif
                                 }
                                 else /*if (mat < 10240)*/ { // Red Sand
-                                    smoothnessG = pow(color.r * 1.08, 16.0) * 2.0;
+                                    smoothnessG = pow(color.r, 10.0);
                                     smoothnessG = min1(smoothnessG);
                                     smoothnessD = smoothnessG;
                                     highlightMult = 2.0;
@@ -631,7 +642,7 @@ if (mat < 11024) {
                                 }
                                 else /*if (mat < 10248)*/ { // Red Sandstone+
                                     highlightMult = 2.0;
-                                    smoothnessG = pow2(pow2(color.r * 1.08)) * 0.5;
+                                    smoothnessG = pow2(pow2(color.r)) * 0.35;
                                     smoothnessG = min1(smoothnessG);
                                     smoothnessD = smoothnessG;
 
@@ -1385,7 +1396,7 @@ if (mat < 11024) {
                                         color.g *= 0.95;
                                     }
 
-                                    #ifdef GBUFFERS_TERRAIN
+                                    #if defined GBUFFERS_TERRAIN && ! defined GBUFFERS_COLORWHEEL 
                                         else { // Directional Self-light Effect
                                             vec3 fractPos = abs(fract(playerPos + cameraPosition) - 0.5);
                                             float maxCoord = max(fractPos.x, max(fractPos.y, fractPos.z));
@@ -1866,7 +1877,7 @@ if (mat < 11024) {
                                 else /*if (mat < 10648)*/ { // Repeater, Comparator
                                     noSmoothLighting = true;
                                     
-                                    #if ANISOTROPIC_FILTER > 0
+                                    #if ANISOTROPIC_FILTER > 0 && !defined DURING_WORLDSPACE_REF
                                         color = texture2D(tex, texCoord); // Fixes artifacts
                                         color.rgb *= glColor.rgb;
                                     #endif

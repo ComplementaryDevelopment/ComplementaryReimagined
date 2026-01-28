@@ -1,9 +1,14 @@
 //Lighting Includes//
 #include "/lib/colors/lightAndAmbientColors.glsl"
 #include "/lib/lighting/ggx.glsl"
+#include "/lib/lighting/minimumLighting.glsl"
 
 #if SHADOW_QUALITY > -1 && (defined OVERWORLD || defined END)
     #include "/lib/lighting/shadowSampling.glsl"
+#endif
+
+#if HELD_LIGHTING_MODE >= 1
+    #include "/lib/lighting/heldLighting.glsl"
 #endif
 
 #ifdef CLOUD_SHADOWS
@@ -184,10 +189,15 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                     // Fake Variable Penumbra Shadows
                                     // Making centerFactor also work in daylight if AO gradient is facing towards sun
                                     if (geoNdotU > 0.99) {
-                                        vec3 aoGradView = dFdx(glColor.a) * normalize(dFdx(playerPos.xyz))
-                                                        + dFdy(glColor.a) * normalize(dFdy(playerPos.xyz));
-                                        if (dot(normalize(aoGradView.xz), normalize(ViewToPlayer(lightVec).xz)) < 0.3 + 0.4 * dither)
-                                            if (dot(lightVec, upVec) < 0.99999) centerFactor = sqrt1(max0(glColor.a - 0.55) / 0.45);
+                                        float dFdxGLCA = dFdx(glColor.a);
+                                        float dFdyGLCA = dFdy(glColor.a);
+
+                                        if (abs(dFdxGLCA) + abs(dFdyGLCA) > 0.00001) {
+                                            vec3 aoGradView = dFdxGLCA * normalize(dFdx(playerPos.xyz))
+                                                            + dFdyGLCA * normalize(dFdy(playerPos.xyz));
+                                            if (dot(normalize(aoGradView.xz), normalize(ViewToPlayer(lightVec).xz)) < 0.3 + 0.4 * dither)
+                                                if (dot(lightVec, upVec) < 0.99999) centerFactor = sqrt1(max0(glColor.a - 0.55) / 0.45);
+                                        }
                                     }
                                 #endif
 
@@ -214,7 +224,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                 #if defined GBUFFERS_TERRAIN && !defined DH_TERRAIN
                                     if (subsurfaceMode == 2) {
                                         bias *= vec3(0.0, 0.0, -0.5);
-                                        bias.z += distanceBias * signMidCoordPos.x * NdotE;
+                                        bias.z += 0.25 * signMidCoordPos.x * NdotE;
                                     }
                                 #endif
 
@@ -308,10 +318,13 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Blocklight
     float lightmapXM;
     if (!noSmoothLighting) {
-        float lightmapXMSteep = pow2(pow2(lightmap.x * lightmap.x))  * (3.8 - 0.6 * vsBrightness);
-        float lightmapXMCalm = (lightmap.x) * (1.8 + 0.6 * vsBrightness);
+        float lightmapXMSteep = pow2(pow2(lightmap.x * lightmap.x))  * (2.8 - 0.6 * vsBrightness + XLIGHT_CURVE);
+        float lightmapXMCalm = (lightmap.x) * (2.8 + 0.6 * vsBrightness - XLIGHT_CURVE);
         lightmapXM = pow(lightmapXMSteep + lightmapXMCalm, 2.25);
-    } else lightmapXM = pow2(lightmap.x) * lightmap.x * 10.0;
+    } else {
+        float xLightCurveM = XLIGHT_CURVE > 0.999 ? XLIGHT_CURVE : sqrt2(XLIGHT_CURVE);
+        lightmapXM = pow(lightmap.x, 3.0 * xLightCurveM) * 10.0;
+    }
 
     float daylightFactor = lightmapYM * invRainFactor * sunVisibility;
     emission *= 1.0 - 0.25 * daylightFactor; // Less emission under direct skylight
@@ -378,49 +391,13 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #endif
 
     #if HELD_LIGHTING_MODE >= 1
-        float heldLight = heldBlockLightValue; float heldLight2 = heldBlockLightValue2;
-
-        #ifndef IS_IRIS
-            if (heldLight > 15.1) heldLight = 0.0;
-            if (heldLight2 > 15.1) heldLight2 = 0.0;
-        #endif
-
-        #if COLORED_LIGHTING_INTERNAL == 0
-            vec3 heldLightCol = blocklightCol; vec3 heldLightCol2 = blocklightCol;
-
-            if (heldItemId == 45032) heldLight = 15; if (heldItemId2 == 45032) heldLight2 = 15; // Lava Bucket
+        #if !defined DO_PIXELATION_EFFECTS || !defined PIXELATED_BLOCKLIGHT
+            vec3 playerPosForHeldLighting = playerPos;
         #else
-            vec3 heldLightCol = GetSpecialBlocklightColor(heldItemId - 44000).rgb;
-            vec3 heldLightCol2 = GetSpecialBlocklightColor(heldItemId2 - 44000).rgb;
-
-            if (heldItemId == 45032) { heldLightCol = lavaSpecialLightColor; heldLight = 15; } // Lava Bucket
-            if (heldItemId2 == 45032) { heldLightCol2 = lavaSpecialLightColor; heldLight2 = 15; }
-
-            #if COLORED_LIGHT_SATURATION != 100
-                heldLightCol = mix(blocklightCol, heldLightCol, COLORED_LIGHT_SATURATION * 0.01);
-                heldLightCol2 = mix(blocklightCol, heldLightCol2, COLORED_LIGHT_SATURATION * 0.01);
-            #endif
+            vec3 playerPosForHeldLighting = playerPosPixelated;
         #endif
 
-        vec3 playerPosLightM = playerPos + relativeEyePosition;
-        #if defined DO_PIXELATION_EFFECTS && defined PIXELATED_BLOCKLIGHT
-            playerPosLightM = playerPosPixelated + relativeEyePosition;
-        #endif
-        playerPosLightM.y += 0.7;
-        float lViewPosL = length(playerPosLightM) + 6.0;
-        #if HELD_LIGHTING_MODE == 1
-            lViewPosL *= 1.5;
-        #endif
-
-        heldLight = pow2(pow2(heldLight * 0.47 / lViewPosL));
-        heldLight2 = pow2(pow2(heldLight2 * 0.47 / lViewPosL));
-
-        vec3 heldLighting = pow2(heldLight * DoLuminanceCorrection(heldLightCol + 0.001))
-                          + pow2(heldLight2 * DoLuminanceCorrection(heldLightCol2 + 0.001));
-
-        #if COLORED_LIGHTING_INTERNAL > 0
-            AddSpecialLightDetail(heldLighting, color.rgb, emission);
-        #endif
+        vec3 heldLighting = GetHeldLighting(playerPosForHeldLighting, color.rgb, emission);
 
         #ifdef GBUFFERS_HAND
             blockLighting *= 0.5;
@@ -428,20 +405,9 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         #endif
     #endif
 
-    // Minimum Light
-    #if !defined END && CAVE_LIGHTING > 0
-        vec3 minLighting = vec3(0.005625 + vsBrightness * 0.043);
-        #if CAVE_LIGHTING != 100
-            #define CAVE_LIGHTING_M CAVE_LIGHTING * 0.01
-            minLighting *= CAVE_LIGHTING_M;
-        #endif
-        minLighting *= vec3(0.45, 0.475, 0.6);
-        minLighting *= 1.0 - lightmapYM;
-    #else
-        vec3 minLighting = vec3(0.0);
-    #endif
-
-    minLighting += nightVision * vec3(0.5, 0.5, 0.75);
+    vec3 minLighting = GetMinimumLighting(lightmapYM);
+    vec3 shadowLightMult = shadowMult;
+    float shadowMultFloat = min1(GetLuminance(shadowMult));
 
     // Lighting Tweaks
     #ifdef OVERWORLD
@@ -454,15 +420,21 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         #endif
 
         #if AMBIENT_MULT != 100
-            #define AMBIENT_MULT_M (AMBIENT_MULT - 100) * 0.006
-            vec3 shadowMultP = shadowMult / (0.1 + 0.9 * sqrt2(max0(NdotLM)));
-            ambientMult *= 1.0 + pow2(pow2(max0(1.0 - dot(shadowMultP, shadowMultP)))) * AMBIENT_MULT_M *
-                           (0.5 + 0.2 * sunFactor + 0.8 * noonFactor) * (1.0 - rainFactor * 0.5);
+            #if AMBIENT_MULT < 100
+                #define AMBIENT_MULT_M (AMBIENT_MULT - 100) * 0.006
+                vec3 shadowMultP = shadowMult / (0.1 + 0.9 * sqrt2(max0(NdotLM)));
+                ambientMult *= 1.0 + pow2(pow2(max0(1.0 - dot(shadowMultP, shadowMultP)))) * AMBIENT_MULT_M *
+                            (0.5 + 0.2 * sunFactor + 0.8 * noonFactor) * (1.0 - rainFactor * 0.5);
+            #else
+                #define AMBIENT_MULT_M (AMBIENT_MULT - 100) * 0.002
+                shadowLightMult = mix(shadowLightMult, vec3(1.0), AMBIENT_MULT_M);
+                lightColorM = mix(lightColorM, GetLuminance(lightColorM) * DoLuminanceCorrection(ambientColorM), (1.0 - shadowMultFloat) * AMBIENT_MULT_M);
+            #endif
         #endif
 
         if (isEyeInWater != 1) {
             float lxFactor = (sunVisibility2 * 0.4 + (0.6 - 0.6 * pow2(invNoonFactor))) * (6.0 - 5.0 * rainFactor);
-            lxFactor *= lightmapY2 + lightmapY2 * 2.0 * pow2(shadowMult.r);
+            lxFactor *= lightmapY2 + lightmapY2 * 2.0 * pow2(shadowMultFloat);
             lxFactor = max0(lxFactor - emission * 1000000.0);
             blockLighting *= pow(lightmapXM / 60.0 + 0.001, 0.09 * lxFactor);
 
@@ -529,7 +501,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #endif
 
     // Scene Lighting Stuff
-    vec3 sceneLighting = lightColorM * shadowMult + ambientColorM * ambientMult;
+    vec3 sceneLighting = lightColorM * shadowLightMult + ambientColorM * ambientMult;
     float dotSceneLighting = dot(sceneLighting, sceneLighting);
 
     #if HELD_LIGHTING_MODE >= 1
@@ -554,7 +526,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             vanillaAO = TexelSnap(vanillaAO, pixelationOffset);
         #endif
 
-        if (subsurfaceMode != 0) vanillaAO = mix(min1(vanillaAO * 1.15), 1.0, shadowMult.g);
+        if (subsurfaceMode != 0) vanillaAO = mix(min1(vanillaAO * 1.15), 1.0, shadowMultFloat);
         else if (!noVanillaAO) {
             #ifdef GBUFFERS_TERRAIN
                 vanillaAO = min1(vanillaAO + 0.08);

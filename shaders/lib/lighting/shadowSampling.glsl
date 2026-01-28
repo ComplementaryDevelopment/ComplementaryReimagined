@@ -84,15 +84,21 @@ vec3 GetShadow(vec3 shadowPos, float lightmapY, float offset, int shadowSamples,
             offset *= 4.0;
         #else
             #ifdef OVERWORLD
-                offset *= 1.0 + rainFactor2 * 2.0;
+                offset *= 1.0 + rainFactor2
+                    #ifdef SUN_MOON_DURING_RAIN
+                        * 2.0
+                    #else
+                        * 4.0
+                    #endif
+                ;
             #else
                 offset *= 3.0;
             #endif
         #endif
     #endif
 
-    float colorMult = 1.2 + 3.8 * lightmapY; // Natural strength is 5.0
-    float colorPow = 1.1 - 0.6 * pow2(pow2(pow2(lightmapY)));
+    float colorMult = 2.5 + 5.5 * pow1_5(lightmapY) + 2.0 * pow2(lightmapY); // 423HDSS: Shadow color strength is stored 10 times lower to allow for water shadows going above 1.0
+    float colorPow = mix(1.5 + 0.5 * float(isEyeInWater == 0), 0.5, pow2(pow2(lightmapY)));
 
     #if SHADOW_QUALITY >= 1
         vec3 shadow = SampleTAAFilteredShadow(shadowPos, offset, shadowSamples, leaves, colorMult, colorPow);

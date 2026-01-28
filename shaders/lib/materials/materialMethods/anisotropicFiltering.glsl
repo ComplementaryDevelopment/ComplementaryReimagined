@@ -33,10 +33,13 @@ vec4 textureAF(sampler2D texSampler, vec2 uv) {
 
     float lod = 0.0;
     #if ANISOTROPIC_FILTER >= 8 && defined GBUFFERS_TERRAIN
+        #if MC_VERSION < 12111
+            // Excluding cutout blocks because cutout mipmaps suck in older mc versions
+            if (texture2DLod(texSampler, uv, 10000.0).a == 1.0)
+        #endif
+
         // Fix257062 - Checking if absMidCoordPos is fine or else miplevel will be broken. This can be an issue for flowing lava.
         if (absMidCoordPos.x > 0.0001 && absMidCoordPos.y > 0.0001)
-        // Excluding cutout blocks for better looks
-        if (texture2DLod(texSampler, uv, 10000.0).a == 1.0)
             lod = miplevel * 0.4;
     #endif
 
@@ -50,7 +53,9 @@ vec4 textureAF(sampler2D texSampler, vec2 uv) {
         vec2 sampleUV = uv + ADivSamples * i;
         sampleUV = clamp(sampleUV, spriteBoundsM.xy, spriteBoundsM.zw);
         vec4 colorSample = texture2DLod(texSampler, sampleUV, lod);
-        
+
+        colorSample.a = sqrt(colorSample.a); // Tweak to make cutout blocks look fuller in the distance
+
         #if !defined POM || !defined POM_ALLOW_CUTOUT
             float modifiedAlpha = colorSample.a;
         #else

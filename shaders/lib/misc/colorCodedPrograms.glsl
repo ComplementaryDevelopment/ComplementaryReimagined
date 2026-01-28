@@ -32,6 +32,8 @@ void ColorCodeProgram(inout vec4 color, int mat) {
         color.rgb = mix(vec3(0.0, 0.0, 0.0), vec3(1.5, 1.5, 1.5), mod(gl_FragCoord.y, 20.0) / 20.0);
     #elif defined GBUFFERS_SKYTEXTURED // Green-Blue Horizontal Stripes
         color.rgb = mix(vec3(0.0, 2.0, 0.0), vec3(0.0, 0.0, 2.0), mod(gl_FragCoord.y, 20.0) / 20.0);
+    #elif defined GBUFFERS_LIGHTNING // Yellow-Blue Horizontal Stripes
+        color.rgb = mix(vec3(2.0, 2.0, 0.0), vec3(0.0, 0.0, 2.0), mod(gl_FragCoord.y, 20.0) / 20.0);
     #endif
 
     color.rgb *= 0.75;

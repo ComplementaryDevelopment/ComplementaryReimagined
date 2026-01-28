@@ -4,6 +4,8 @@
     const ivec3 sceneVoxelVolumeSize = ivec3(512, 64, 512);
 #endif
 
+const ivec3 sceneVoxelLodVolumeSize = sceneVoxelVolumeSize / 4;
+
 vec3 playerToSceneVoxel(vec3 playerPos) {
     return playerPos + cameraPositionBestFract + 0.5 * vec3(sceneVoxelVolumeSize);
 }
@@ -11,8 +13,6 @@ vec3 playerToSceneVoxel(vec3 playerPos) {
 vec3 playerToPreviousSceneVoxel(vec3 previousPlayerPos) {
     return previousPlayerPos + previousCameraPositionBestFract + 0.5 * vec3(sceneVoxelVolumeSize);
 }
-
-#include "/lib/voxelization/reflectionVoxelData.glsl"
 
 bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
     #ifndef SHADOW
@@ -23,6 +23,8 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
     voxelPos /= vec3(sceneVoxelVolumeSize);
     return clamp01(voxelPos) == voxelPos;
 }
+
+#include "/lib/voxelization/reflectionVoxelData.glsl"
 
 #if defined SHADOW && defined VERTEX_SHADER
     void UpdateSceneVoxelMap(int mat, vec3 normal, vec3 position) {
@@ -52,7 +54,7 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
 
             if (mat == 10009) { // Leaves
                 doSolidBlockCheck = false;
-            } 
+            }
 
             if (mat == 10129 // Farmland:Dry
                 || mat == 10137 // Farmland:Wet
@@ -63,10 +65,9 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
                 origin.y += 2.0 / atlasSize.y;
             } 
 
-            if (mat == 10544 // Glow Lichen
-                || mat == 10068 // Lava
+            if (mat == 10068 // Lava
             ) { 
-                if (abs(dot(textureRad, vec2(atlasSize.x, -atlasSize.y))) < 4.5)
+                if (abs(dot(textureRad, vec2(atlasSize.x, -atlasSize.y))) < 6.5)
                     storeToAllFaces = true;
                 else return;
             }
@@ -94,7 +95,6 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
                 || mat == 10759 // Bamboo, Bamboo Mosaic
                 || mat == 10763 // Cherry
                 || mat == 10931 // Pale Oak
-                
             ) {
                 if (textureRad.y < 5.0 / atlasSize.y) {
                     // Discarding if textureRad is too small to fix (somewhat rare) flickering on stairs
@@ -104,21 +104,24 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
                     textureRad *= 0.5;
 
                     // P.S: Don't ask me how any of these checks make sense because I have absolutely no idea either
-                    // P.P.S: It seems like these checks only work well with default 16x textures but I don't have a better solution
                 }
 
                 doSolidBlockCheck = false;
                 if (normal.y < 0.5) storeToAllFacesExceptTop = true; // Not overriding top face or else carpets look broken on top of slabs
             }
 
-            if (mat == 10669 || mat == 10925 || mat == 10953) { // Wool Carpets, Moss Carpet, Snow Layers < 8
+            if (mat == 10669 || mat == 10845 || mat == 10925 || mat == 10953) { // Wool Carpets, Moss Carpet, Snow Layers < 8
                 if (normal.y > 0.5) {
                     voxelPos.y -= 1.0;
                     doSolidBlockCheck = false;
                 } else return;
             }
 
-            if (mat == 10072 || mat == 10076) { // Fire, Soul Fire
+            if (mat == 10072 // Fire
+                || mat == 10076 // Soul Fire
+                || mat == 10332 // Amethyst Clusters
+                || mat == 10544 // Glow Lichen
+            ) {
                 doSolidBlockCheck = false;
                 storeToAllFaces = true;
             }
@@ -132,13 +135,17 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
 
             // Blocks to remove from reflections
             if (mat == 10056 // Lava Cauldron
-                || mat == 10332 // Amethyst Clusters
+                || mat == 10404 // Sea Pickle
+                || mat == 10496 // Torch
                 || mat == 10500 // End Rod
                 || mat == 10508 // Chorus Flower:Alive
                 || mat == 10512 // Chorus Flower:Dead
+                || mat == 10528 // Soul Torch
                 || mat == 10556 // End Portal Frame:Active
                 || mat == 10572 // Dragon Egg
+                || mat == 10604 || mat == 10605 // Redstone Torch
                 || mat == 10632 // Cave Vines
+                || mat == 10644 // Powered Repeater, Powered Comparator
                 || mat == 10776 // Crimson Fungus, Warped Fungus
                 || mat == 10780 // Potted Crimson Fungus, Potted Warped Fungus
                 || mat == 10836 // Brewing Stand
@@ -150,7 +157,8 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
                 || abs(mat - 10599) <= 3 // Redstone Wire
                 || abs(mat - 10701) <= 3 // Non-Solid Sculk Stuff
                 || abs(mat - 10786) <= 2 // Calibrated Sculk Sensor
-                || abs(mat - 10911) <= 11 // Lit Candle Cakes
+                || abs(mat - 10911) <= 11 // Lit Candles & Candle Cakes
+                || mat == 10984 // Copper Torch
                 || mat == 10988 // Copper Lantern
             ) {
                 return;
@@ -167,8 +175,57 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
             imageStore(wsr_img, ivec3(voxelPos), uvec4(matM, 0u, 0u, 0u));
             storeFaceData(ivec3(voxelPos), round(normal), origin, textureRad.x, storeToAllFaces, storeToAllFacesExceptTop, scenePos);
 
-            float lodScale = 4.0;
-            imageStore(wsr_img_lod, ivec3(voxelPos / lodScale), uvec4(1u, 0u, 0u, 0u));
+            updateWsrBitmask(ivec3(voxelPos));
+            updateWsrLodBitmask(ivec3(voxelPos / 4.0));
         }
     }
+
+    #if WORLD_SPACE_PLAYER_REF == 1
+        uniform writeonly image2D playerAtlas_img;
+
+        #define updateAABB(aabb_min, aabb_max, pos) \
+                      atomicMin(aabb_min.x, pos.x); \
+                      atomicMin(aabb_min.y, pos.y); \
+                      atomicMin(aabb_min.z, pos.z); \
+                      atomicMax(aabb_max.x, pos.x); \
+                      atomicMax(aabb_max.y, pos.y); \
+                      atomicMax(aabb_max.z, pos.z);
+
+
+        void UpdatePlayerVertexList(vec3 position) {
+            if (entityId == 50017 && textureSize(tex, 0) == ivec2(64) && gl_VertexID < 288) { // Current Player
+
+                // The atlas takes 4 frames to fully generate, reload every 600 frames
+                if (framemod600 > 5 && framemod600 <= 9 && gl_VertexID < 256) {
+                    int i = gl_VertexID * 4 + int(framemod4) * 1024;
+                    for (int j = 0; j < 4; j++) {
+                        ivec2 coord = ivec2((i + j) % 64, (i + j) / 64);
+                        imageStore(playerAtlas_img, coord, texelFetch(tex, coord, 0));
+                    }
+                }
+
+                ivec3 aabbPos = ivec3(position * 1000.0);
+
+                if (gl_VertexID < 48) { // Head
+                    updateAABB(playerVerticesSSBO.bounds.headMin, playerVerticesSSBO.bounds.headMax, aabbPos);
+                } else if (gl_VertexID < 96) { // Right Hand
+                    updateAABB(playerVerticesSSBO.bounds.rightHandMin, playerVerticesSSBO.bounds.rightHandMax, aabbPos);
+                } else if (gl_VertexID < 144) { // Left Leg
+                    updateAABB(playerVerticesSSBO.bounds.leftLegMin, playerVerticesSSBO.bounds.leftLegMax, aabbPos);
+                } else if (gl_VertexID < 192) { // Left Hand
+                    updateAABB(playerVerticesSSBO.bounds.leftHandMin, playerVerticesSSBO.bounds.leftHandMax, aabbPos);
+                } else if (gl_VertexID < 240) { // Right leg
+                    updateAABB(playerVerticesSSBO.bounds.rightLegMin, playerVerticesSSBO.bounds.rightLegMax, aabbPos);
+                } else { // Torso
+                    updateAABB(playerVerticesSSBO.bounds.torsoMin, playerVerticesSSBO.bounds.torsoMax, aabbPos);
+                }
+
+                if (gl_VertexID % 4 != 3) {
+                    int ssboIndex = gl_VertexID - gl_VertexID / 4;
+                    playerVerticesSSBO.vertexPositions[ssboIndex] = position;
+                    playerVerticesSSBO.vertexData[ssboIndex] = texCoord;
+                }
+            }
+        }
+    #endif
 #endif

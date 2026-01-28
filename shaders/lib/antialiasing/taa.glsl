@@ -1,20 +1,33 @@
-#if TAA_MODE == 1
+#if TAA_SMOOTHING == 2
     float blendMinimum = 0.3;
+    float blendVariable = 0.3;
+    float blendConstant = 0.6;
+
+    float regularEdge = 10.0;
+    float extraEdgeMult = 2.0;
+    
+    float farEdgeDist = 128.0;
+#elif TAA_SMOOTHING == 3
+    float blendMinimum = 0.35;
     float blendVariable = 0.2;
     float blendConstant = 0.7;
 
-    float regularEdge = 20.0;
+    float regularEdge = 6.0;
     float extraEdgeMult = 3.0;
-#elif TAA_MODE == 2
-    float blendMinimum = 0.6;
-    float blendVariable = 0.2;
-    float blendConstant = 0.7;
+    
+    float farEdgeDist = 112.0;
+#elif TAA_SMOOTHING == 4
+    float blendMinimum = 0.5;
+    float blendVariable = 0.15;
+    float blendConstant = 0.75;
 
-    float regularEdge = 5.0;
-    float extraEdgeMult = 3.0;
+    float regularEdge = 4.0;
+    float extraEdgeMult = 3.5;
+    
+    float farEdgeDist = 96.0;
 #endif
 
-#ifdef TAA_MOVEMENT_IMPROVEMENT_FILTER
+#if TAA_MOVEMENT_IMPROVEMENT_FILTER == 1
     //Catmull-Rom sampling from Filmic SMAA presentation
     vec3 textureCatmullRom(sampler2D colortex, vec2 texcoord, vec2 view) {
         vec2 position = texcoord * view;
@@ -79,21 +92,24 @@ ivec2 neighbourhoodOffsets[8] = ivec2[8](
 );
 
 void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float z0, float z1, inout float edge) {
-    vec3 minclr = color;
-    vec3 maxclr = minclr;
+    vec3 minclr = color; vec3 maxclr = minclr;
 
     int cc = 2;
     ivec2 texelCoordM1 = clamp(texelCoord, ivec2(cc), ivec2(view) - cc); // Fixes screen edges
     for (int i = 0; i < 8; i++) {
         ivec2 texelCoordM2 = texelCoordM1 + neighbourhoodOffsets[i];
 
-        float z0Check = texelFetch(depthtex0, texelCoordM2, 0).r;
-        float z1Check = texelFetch(depthtex1, texelCoordM2, 0).r;
-        if (max(abs(GetLinearDepth(z0Check) - GetLinearDepth(z0)), abs(GetLinearDepth(z1Check) - GetLinearDepth(z1))) > 0.09) {
+        float z0CheckLinear = GetLinearDepth(texelFetch(depthtex0, texelCoordM2, 0).r);
+        float z1CheckLinear = GetLinearDepth(texelFetch(depthtex1, texelCoordM2, 0).r);
+        float z0Linear = GetLinearDepth(z0);
+        float z1Linear = GetLinearDepth(z1);
+        if (max(abs(z0CheckLinear - z0Linear), abs(z1CheckLinear - z1Linear)) > 0.09) {
             edge = regularEdge;
 
-            if (int(texelFetch(colortex6, texelCoordM2, 0).g * 255.1) == 253) // Reduced Edge TAA
-                edge *= extraEdgeMult;
+            float approxClosestDist = min(z0CheckLinear, z0Linear) * far;
+            if (approxClosestDist < farEdgeDist)
+                if (int(texelFetch(colortex6, texelCoordM2, 0).g * 255.1) == 253) // Reduced Edge TAA
+                    edge *= extraEdgeMult;
         }
 
         vec3 clr = texelFetch(colortex3, texelCoordM2, 0).rgb;
@@ -109,10 +125,10 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     vec4 screenPos1 = vec4(texCoord, z1, 1.0);
     vec4 viewPos1 = gbufferProjectionInverse * (screenPos1 * 2.0 - 1.0);
     viewPos1 /= viewPos1.w;
+    float lViewPos1 = length(viewPos1);
 
     #ifdef ENTITY_TAA_NOISY_CLOUD_FIX
         float cloudLinearDepth =  texture2D(colortex5, texCoord).a;
-        float lViewPos1 = length(viewPos1);
 
         if (pow2(cloudLinearDepth) * renderDistance < min(lViewPos1, renderDistance)) {
             // Material in question is obstructed by the cloud volume
@@ -145,10 +161,10 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     vec2 prvCoord = texCoord;
     if (z1 > 0.56) prvCoord = Reprojection(viewPos1);
 
-    #ifndef TAA_MOVEMENT_IMPROVEMENT_FILTER
-        vec3 tempColor = texture2D(colortex2, prvCoord).rgb;
-    #else
+    #if TAA_MOVEMENT_IMPROVEMENT_FILTER == 1
         vec3 tempColor = textureCatmullRom(colortex2, prvCoord, view);
+    #else
+        vec3 tempColor = texture2D(colortex2, prvCoord).rgb;
     #endif
 
     if (tempColor == vec3(0.0) || any(isnan(tempColor))) { // Fixes the first frame and nans
@@ -175,7 +191,7 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     float blendFactor = float(prvCoord.x > 0.0 && prvCoord.x < 1.0 &&
                               prvCoord.y > 0.0 && prvCoord.y < 1.0);
     float velocityFactor = dot(velocity, velocity) * 10.0;
-    blendFactor *= max(exp(-velocityFactor) * blendVariable + blendConstant - length(cameraPosition - previousCameraPosition) * edge, blendMinimum);
+    blendFactor *= max(exp(-velocityFactor) * blendVariable + blendConstant - min(length(cameraPosition - previousCameraPosition), 0.05) * edge, blendMinimum);
 
     color = mix(color, tempColor, blendFactor);
     temp = color;

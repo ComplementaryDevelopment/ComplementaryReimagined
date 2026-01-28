@@ -62,7 +62,7 @@ if (currentRenderedItemId < 45064) {
             } else {
                 if (currentRenderedItemId == 45024) { // Netherite Tools, Netherite Armor, Netherite Ingot
                     materialMask = OSIEBCA; // Intense Fresnel
-                    smoothnessG = color.r * 1.5;
+                    smoothnessG = color.b * 1.65;
                     smoothnessG = min1(smoothnessG);
                     highlightMult = smoothnessG * 2.0;
                     smoothnessD = smoothnessG * smoothnessG * 0.5;
@@ -217,8 +217,20 @@ if (currentRenderedItemId < 45064) {
                     smoothnessD *= 0.5;
                 }
             } else {
-                if (currentRenderedItemId == 45120) { //
-
+                if (currentRenderedItemId == 45120) { // Ghast Harness+
+                    vec2 tSize = textureSize(tex, 0);
+                    vec4 checkColorOneDown = texelFetch(tex, ivec2(texCoord * tSize) + ivec2(0, 1), 0);
+                    if (
+                        CheckForColor(color.rgb, vec3(139, 193, 205)) ||
+                        CheckForColor(color.rgb, vec3(208, 234, 233)) ||
+                        CheckForColor(color.rgb, vec3(109, 152, 161)) ||
+                        CheckForColor(color.rgb, vec3(255)) && CheckForColor(checkColorOneDown.rgb, vec3(109, 152, 161)) ||
+                        CheckForColor(color.rgb, vec3(168, 208, 217))
+                    ) {
+                        smoothnessG = 1.0;
+                        highlightMult = 2.0 - dot(color.rgb, vec3(0.25));
+                        smoothnessD = 1.0;
+                    }
                 } else /*if (currentRenderedItemId == 45124)*/ { //
 
                 }

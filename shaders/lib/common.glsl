@@ -39,6 +39,7 @@
 
             #if WORLD_SPACE_REFLECTIONS > 0
                 #define WORLD_SPACE_REFLECTIONS_INTERNAL 1
+                #define WORLD_SPACE_PLAYER_REF -1 //[-1 1]
             #else
                 #define WORLD_SPACE_REFLECTIONS_INTERNAL -1
             #endif
@@ -96,6 +97,7 @@
     #define SUN_MOON_DURING_RAIN
     #define NIGHT_STAR_AMOUNT 2 //[0 1 2 3 4]
     #define RAINBOWS 1 //[0 1 3]
+    #define RAINBOW_STYLE_DEFINE -1 //[-1 1 4]
     #define CLOUD_STYLE_DEFINE -1 //[-1 0 1 3 50]
     //#define CLOUD_SHADOWS
     #define CLOUD_CLOSED_AREA_CHECK
@@ -130,6 +132,7 @@
     #define LIGHTSHAFT_RAIN_I 100 //[1 3 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
     //#define LIGHTSHAFT_SMOKE
     #define SPECIAL_PALE_GARDEN_LIGHTSHAFTS
+    #define LIGHTSHAFT_SUNSET_SATURATION 0.25 //[-0.25 -0.20 -0.15 -0.10 -0.05 0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50]
 
     #define BLOOM_ENABLED 1 //[-1 1]
     #define BLOOM_STRENGTH 0.12 //[0.027 0.036 0.045 0.054 0.063 0.072 0.081 0.09 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 0.18 0.19 0.21 0.23 0.25 0.28 0.32 10.00]
@@ -141,8 +144,14 @@
     #define UNDERWATER_DISTORTION
     #define LENSFLARE_MODE 0 //[0 1 2]
     #define LENSFLARE_I 1.00 //[0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00 2.20 2.40 2.60 2.80 3.00 3.25 3.50 3.75 4.00 4.25 4.50 4.75 5.00]
-    #define TAA_MODE 1 //[1 2 0]
     #define DISTANT_LIGHT_BOKEH
+
+    #define TAA_MODE 1 //[0 1]
+    #define TAA_SMOOTHING 3 //[2 3 4]
+    #define TAA_JITTER 1 //[0 1 2 3]
+    #define TAA_MOVEMENT_IMPROVEMENT_FILTER 1 //[0 1]
+    #define FXAA_TAA_INTERACTION 10 //[0 2 4 6 8 10]
+    #define FXAA_STRENGTH 75 //[-1 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100]
 
     #define WORLD_BLUR 0 //[0 1 2]
     //#define WB_FOV_SCALED
@@ -202,7 +211,7 @@
     #define CAVE_LIGHTING 100 //[0 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300 325 350 375 400 425 450 475 500 550 600 650 700 750 800 850 900 950 1000 1100 1200 1300 1400 1500 1600]
     #define HELD_LIGHTING_MODE 2 //[0 1 2]
     #define BLOCKLIGHT_FLICKERING 0 //[0 2 3 4 5 6 7 8 9 10]
-    #define AMBIENT_MULT 100 //[50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
+    #define AMBIENT_MULT 100 //[50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300]
     #define PLAYER_SHADOW 1 //[-1 1]
 
     #define WAVING_SPEED 1.00 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.20 2.40 2.60 2.80 3.00 3.25 3.50 3.75 4.00 4.50 5.00]
@@ -330,6 +339,7 @@
     #define XLIGHT_G 1.00 //[0.01 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
     #define XLIGHT_B 1.00 //[0.01 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
     #define XLIGHT_I 1.00 //[0.01 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
+    #define XLIGHT_CURVE 1.00 //[0.20 0.25 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.80 2.00 2.20 2.40 2.60 2.80 3.00]
 
 //Internal Settings//
     #define SIDE_SHADOWING
@@ -363,7 +373,7 @@
     #define info9 0 //[0]
     #define info10 0 //[0]
 
-//Visual Style and Performance Setting Handling//
+//RP Mode, Visual Style and Performance Setting Handling//
     #if RP_MODE == 1
         #define IPBR
         #define IPBR_PARTICLE_FEATURES
@@ -371,6 +381,7 @@
         //#define COATED_TEXTURES
         //#define FANCY_GLASS
         //#define GREEN_SCREEN_LIME
+        //#define MIRROR_TINTED_GLASS
     #endif
     #if RP_MODE >= 2
         #define CUSTOM_PBR
@@ -383,12 +394,14 @@
         #define AURORA_STYLE_DEFAULT 1
         #define SUN_MOON_STYLE_DEFAULT 1
         #define CLOUD_STYLE_DEFAULT 1
+        #define RAINBOW_STYLE_DEFAULT 1
     #elif SHADER_STYLE == 4
         #define WATER_STYLE_DEFAULT 3
         //#define WATER_CAUSTIC_STYLE_DEFAULT 3
         #define AURORA_STYLE_DEFAULT 2
         #define SUN_MOON_STYLE_DEFAULT 2
         #define CLOUD_STYLE_DEFAULT 3
+        #define RAINBOW_STYLE_DEFAULT 4
     #endif
     #if WATER_STYLE_DEFINE == -1
         #define WATER_STYLE WATER_STYLE_DEFAULT
@@ -414,6 +427,11 @@
         #define CLOUD_STYLE CLOUD_STYLE_DEFAULT
     #else
         #define CLOUD_STYLE CLOUD_STYLE_DEFINE
+    #endif
+    #if RAINBOW_STYLE_DEFINE == -1
+        #define RAINBOW_STYLE RAINBOW_STYLE_DEFAULT
+    #else
+        #define RAINBOW_STYLE RAINBOW_STYLE_DEFINE
     #endif
     // Thanks to SpacEagle17 and isuewo for the sun angle handling
     #ifdef END
@@ -496,8 +514,6 @@
     #if DETAIL_QUALITY >= 2 // Medium
         #undef WATER_MAT_QUALITY
         #define WATER_MAT_QUALITY 2
-        #define FXAA_TAA_INTERACTION
-        #define TAA_MOVEMENT_IMPROVEMENT_FILTER
     #endif
     #if DETAIL_QUALITY >= 3 // High
         #undef WATER_MAT_QUALITY
@@ -671,6 +687,9 @@
     float invNoonFactor2 = invNoonFactor * invNoonFactor;
 
     float vsBrightness = clamp(screenBrightness, 0.0, 1.0);
+
+    float nightVisionWithAddedSupport = screenBrightness > 1.0 ? 1.0 : nightVision; // Add support for fullbright mods
+    #define nightVision nightVisionWithAddedSupport
 
     int modifiedWorldDay = int(mod(worldDay, 100) + 5.0);
     float syncedTime = (worldTime + modifiedWorldDay * 24000) * 0.05;

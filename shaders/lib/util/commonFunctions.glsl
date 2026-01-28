@@ -87,7 +87,11 @@ float GetSkyLightFactor(vec2 lmCoordM, vec3 shadowMult) {
             #endif
         #endif
     #else
-        float skyLightFactor = dot(shadowMult, shadowMult) * 0.333333;
+        #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1 || MC_VERSION < 12109
+            float skyLightFactor = dot(shadowMult, shadowMult) * 0.333333;
+        #else
+            float skyLightFactor = lmCoordM.y;
+        #endif
     #endif
 
     return skyLightFactor;
@@ -271,6 +275,10 @@ vec3 smoothstep1(vec3 x) {
 }
 vec4 smoothstep1(vec4 x) {
     return x * x * (3.0 - 2.0 * x);
+}
+
+float dot3(vec3 x) {
+    return dot(x, x);
 }
 
 vec3 rgb2hsv(vec3 c)

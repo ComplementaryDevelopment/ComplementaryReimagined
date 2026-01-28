@@ -42,6 +42,10 @@ vec2 view = vec2(viewWidth, viewHeight);
     float vlFactor = 0.0;
 #endif
 
+#ifdef IRIS_FEATURE_FADE_VARIABLE
+    float chunkFade = 1.0;
+#endif
+
 //Common Functions//
 float GetLinearDepth(float depth) {
     return (2.0 * near) / (far + near - depth * farMinusNear);
@@ -234,8 +238,11 @@ void main() {
             fresnelM = fresnelM * sqrt1(smoothnessD) - dither * 0.01;
         #endif
 
-        waterRefColor = color.rgb;
+        #ifdef IRIS_FEATURE_FADE_VARIABLE
+            chunkFade = texture6.b > 0.50001 ? (1.0 - texture6.b) * 2.0 : 1.0;
+        #endif
 
+        waterRefColor = color.rgb;
         DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither);
     } else { // Sky
         #ifdef DISTANT_HORIZONS

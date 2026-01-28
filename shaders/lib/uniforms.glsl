@@ -93,11 +93,12 @@ uniform vec3 cameraPositionFract;
 uniform vec3 previousCameraPositionFract;
 
 #ifdef IS_IRIS
+    uniform bool is_invisible;
+
     uniform int renderStage;
 
     #if MC_VERSION >= 12109
         uniform float endFlashIntensity;
-        uniform float previousEndFlashIntensity;
         uniform vec3 endFlashPosition;
     #endif
 #endif
@@ -144,7 +145,14 @@ uniform vec3 previousCameraPositionFract;
     uniform sampler2D textureAtlas;
 
     uniform usampler3D wsr_sampler;
-    uniform usampler3D wsr_sampler_lod;
+
+    #if WORLD_SPACE_PLAYER_REF == 1
+        uniform sampler2D playerAtlas_sampler;
+    #endif
+
+    #ifdef CLOUD_SHADOWS
+        uniform sampler2D cloudWaterTex;
+    #endif
 #endif
 
 /*-----------------------------------------------------------------------------
@@ -158,6 +166,7 @@ uniform vec3 previousCameraPositionFract;
 uniform float framemod2;
 uniform float framemod4;
 uniform float framemod8;
+uniform float framemod600;
 uniform float isEyeInCave;
 uniform float inDry;
 uniform float inRainy;

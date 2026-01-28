@@ -11,7 +11,11 @@
 flat in int mat;
 
 in vec2 texCoord;
-in vec2 lmCoord;
+#ifdef GBUFFERS_COLORWHEEL_TRANSLUCENT
+    vec2 lmCoord;
+#else
+    in vec2 lmCoord;
+#endif
 in vec2 signMidCoordPos;
 flat in vec2 absMidCoordPos;
 
@@ -28,6 +32,10 @@ in vec4 glColor;
 
 #ifdef POM
     in vec4 vTexCoordAM;
+#endif
+
+#ifdef IRIS_FEATURE_FADE_VARIABLE
+    flat in float chunkFade;
 #endif
 
 //Pipeline Constants//
@@ -60,6 +68,16 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 //Common Functions//
 float GetLinearDepth(float depth) {
     return (2.0 * near) / (far + near - depth * (far - near));
+}
+
+void DoTranslucentTweaks(vec4 color, inout float fresnelM, inout float reflectMult, float lViewPos) {
+    float tweakDistance = 128.0;
+    float tweakIntensity = 0.5;
+
+    float factor = tweakIntensity * smoothstep(0.0, tweakDistance, lViewPos);
+
+    fresnelM = mix(fresnelM, 1.0, factor);
+    reflectMult = mix(reflectMult, reflectMult / color.a, factor);
 }
 
 //Includes//
@@ -134,7 +152,17 @@ float GetLinearDepth(float depth) {
 //Program//
 void main() {
     vec4 colorP = texture2D(tex, texCoord);
-    vec4 color = colorP * vec4(glColor.rgb, 1.0);
+
+    #ifdef GBUFFERS_COLORWHEEL_TRANSLUCENT
+        float ao;
+        vec4 overlayColor;
+        
+        clrwl_computeFragment(colorP, colorP, lmCoord, ao, overlayColor);
+        vec4 color = mix(colorP, overlayColor, overlayColor.a);
+        lmCoord = clamp((lmCoord - 1.0 / 32.0) * 32.0 / 30.0, 0.0, 1.0);
+    #else
+        vec4 color = colorP * vec4(glColor.rgb, 1.0);
+    #endif
 
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     #ifdef TAA
@@ -260,6 +288,10 @@ void main() {
     float fogAlpha = color.a;
     color.a = prevAlpha * (1.0 - skyFade);
 
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        skyLightFactor *= 0.5;
+    #endif
+
     /* DRAWBUFFERS:03 */
     gl_FragData[0] = color;
     gl_FragData[1] = vec4(1.0 - translucentMult.rgb, translucentMult.a);
@@ -288,7 +320,11 @@ void main() {
 flat out int mat;
 
 out vec2 texCoord;
-out vec2 lmCoord;
+#ifdef GBUFFERS_COLORWHEEL_TRANSLUCENT
+    vec2 lmCoord;
+#else
+    out vec2 lmCoord;
+#endif
 out vec2 signMidCoordPos;
 flat out vec2 absMidCoordPos;
 
@@ -305,6 +341,10 @@ out vec4 glColor;
 
 #ifdef POM
     out vec4 vTexCoordAM;
+#endif
+
+#ifdef IRIS_FEATURE_FADE_VARIABLE
+    flat out float chunkFade;
 #endif
 
 //Attributes//
@@ -377,6 +417,10 @@ void main() {
 
     #ifdef TAA
         gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        chunkFade = mc_chunkFade;
     #endif
 }
 

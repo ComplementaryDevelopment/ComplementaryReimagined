@@ -1,6 +1,11 @@
 #extension GL_ARB_shader_image_load_store : enable
 
 #include "/lib/voxelization/reflectionVoxelization.glsl"
+#include "/lib/lighting/minimumLighting.glsl"
+
+#if WORLD_SPACE_PLAYER_REF == 1
+    #include "/lib/materials/materialMethods/playerRayTracer.glsl"
+#endif
 
 #if defined OVERWORLD || defined END
     #ifndef GBUFFERS_WATER 
@@ -21,6 +26,10 @@
     #endif
 #endif
 
+#if HELD_LIGHTING_MODE >= 1
+    #include "/lib/lighting/heldLighting.glsl"
+#endif
+
 #ifdef CLOUD_SHADOWS
     #include "/lib/lighting/cloudShadows.glsl"
 #endif
@@ -32,14 +41,9 @@
     #include "/lib/colors/moonPhaseInfluence.glsl"
 #endif
 
-vec2 getLocalTexCoord(vec3 local, vec3 normal, float dither) {
+vec2 getLocalTexCoord(vec3 local, vec3 normal) {
     vec3 absNormal = abs(normal);
-    local = 1.0 - local;
-    vec2 texCoord = local.zy * absNormal.x + local.xz * absNormal.y + local.xy * absNormal.z;
-    vec4 dFdUVxy = vec4(dFdx(texCoord), dFdy(texCoord));
-    float mipLevel = 5.0 * max(dot(dFdUVxy.xy, dFdUVxy.xy), dot(dFdUVxy.zw, dFdUVxy.zw));
-    vec2 localTexCoord = texCoord + mipLevel * (vec2(dither, fract(dither + goldenRatio)) * 2.0 - 1.0);
-    return clamp(localTexCoord, 0.01, 0.99);
+    return 1.0 - local.zy * absNormal.x - local.xz * absNormal.y - local.xy * absNormal.z;
 }
 
 float getVoxelSpaceAO(vec3 playerPos, ivec3 normal, vec2 localTexCoord) {
@@ -55,23 +59,50 @@ float getVoxelSpaceAO(vec3 playerPos, ivec3 normal, vec2 localTexCoord) {
     ivec3 voxel2 = voxelPos + up;
     ivec3 voxel3 = voxelPos - up;
 
-    float occlusion0 = mix(0.0, min1(texelFetch(wsr_sampler, voxel0, 0).r), centerFactorPos.x);
-    float occlusion1 = mix(0.0, min1(texelFetch(wsr_sampler, voxel1, 0).r), centerFactorNeg.x);
-    float occlusion2 = mix(0.0, min1(texelFetch(wsr_sampler, voxel2, 0).r), centerFactorPos.y);
-    float occlusion3 = mix(0.0, min1(texelFetch(wsr_sampler, voxel3, 0).r), centerFactorNeg.y);
+    float occlusion0 = mix(0.0, float(checkVoxelAt(voxel0)), centerFactorPos.x);
+    float occlusion1 = mix(0.0, float(checkVoxelAt(voxel1)), centerFactorNeg.x);
+    float occlusion2 = mix(0.0, float(checkVoxelAt(voxel2)), centerFactorPos.y);
+    float occlusion3 = mix(0.0, float(checkVoxelAt(voxel3)), centerFactorNeg.y);
 
     return 1.0 - (occlusion0 + occlusion1 + occlusion2 + occlusion3) * 0.25;
 }
 
-vec4 getShadedReflection(faceData faceData, int mat, vec3 voxelPos, vec3 playerPos, vec3 normal, float dither) {
-    vec2 localTexCoord = getLocalTexCoord(fract(playerPos + cameraPositionBestFract), normal, dither);
+vec4 getShadedReflection(ivec3 voxelPos, vec3 oldPlayerPos, vec3 playerPos, vec3 rayDir, vec3 normal, float dither) {
+    faceData faceData = getFaceData(voxelPos, normal);
+    if (faceData.textureBounds.z < 1e-6) return vec4(-1.0);
+     
+    vec2 localTexCoord = getLocalTexCoord(fract(playerPos + cameraPositionBestFract), normal);
+    
     vec2 textureSizeAtlas = textureSize(textureAtlas, 0);
-    float atlasRatio = atlasSize.x / atlasSize.y;
     vec2 textureRadVec2 = faceData.textureBounds.z * vec2(1.0, textureSizeAtlas.x / textureSizeAtlas.y);
     vec2 textureCoord = faceData.textureBounds.xy + 2.0 * textureRadVec2 * localTexCoord;
-    vec4 color = texture2D(textureAtlas, textureCoord) * vec4(faceData.glColor, 1.0);
+
+    float virtualDist   = length(playerPos - oldPlayerPos) + length(oldPlayerPos);
+    float textureFactor = length(textureRadVec2 * textureSizeAtlas) * 3.0;
+    float lod = 0.5 * log2(virtualDist * textureFactor / gbufferProjection[0][0] / abs(dot(normal, rayDir)) / viewHeight / REFLECTION_RES);
+
+    vec4 color = texture2DLod(textureAtlas, textureCoord, lod) * vec4(faceData.glColor, 1.0);
+
+    #if MC_VERSION >= 12111 && IRIS_VERSION < 11005
+        // stupid fake lods because custom texture lods broke with Iris in newer mc versions
+        vec2 lodCoordSpan = localTexCoord / pow(2.0, int(1.5 + pow2(max0(lod)) + 0.0 * dither));
+
+        vec2 lodCoord1 = faceData.textureBounds.xy + 2.0 * textureRadVec2 * (0.5 + lodCoordSpan);
+        vec2 lodCoord2 = faceData.textureBounds.xy + 2.0 * textureRadVec2 * (0.25 + lodCoordSpan);
+        vec2 lodCoord3 = faceData.textureBounds.xy + 2.0 * textureRadVec2 * lodCoordSpan;
+        vec4 lodColor1 = texture2DLod(textureAtlas, lodCoord1, lod) * vec4(faceData.glColor, 1.0);
+        vec4 lodColor2 = texture2DLod(textureAtlas, lodCoord2, lod) * vec4(faceData.glColor, 1.0);
+        vec4 lodColor3 = texture2DLod(textureAtlas, lodCoord3, lod) * vec4(faceData.glColor, 1.0);
+
+        float lodMix = clamp01(lod - 0.75 + 0.25 * dither);
+        color = mix(color, 0.333333 * (lodColor1 + lodColor2 + lodColor3), lodMix);
+        if (dot(color.rgb, vec3(0.333333)) - 0.5 < 0.49) color.a = mix(color.a, 1.0, lodMix);
+        //
+    #endif
 
     if (color.a < 0.0041) return vec4(-1.0); // Note that the cutout parts of leaves have a color.a of about 0.004
+
+    int mat = int(texelFetch(wsr_sampler, voxelPos, 0).r);
 
     bool noSmoothLighting = false, noDirectionalShading = false;
     int subsurfaceMode = 0;
@@ -129,27 +160,21 @@ vec4 getShadedReflection(faceData faceData, int mat, vec3 voxelPos, vec3 playerP
                 #else
                     int shadowSamples = 2;
                 #endif
-                shadow = GetShadow(GetShadowPos(playerPos + bias), 1.0, offset, shadowSamples, false);
+                shadow = GetShadow(GetShadowPos(playerPos + bias), faceData.lightmap.y, offset, shadowSamples, false);
             }
         }
-        #ifdef CLOUD_SHADOWS
-            //shadow *= GetCloudShadow(playerPos); // there are some issues with this rn
-        #endif
+        shadow *= dot(shadow, vec3(0.33333));
     #else
         vec3 shadow = vec3(1.0);
+    #endif
+
+    #ifdef CLOUD_SHADOWS
+        shadow *= GetCloudShadow(playerPos);
     #endif
 
     faceData.lightmap = pow2(pow2(faceData.lightmap));
     float AO = max(0.8, getVoxelSpaceAO(playerPos, ivec3(normal), localTexCoord));
     float directionalShading = noDirectionalShading ? 1.0 : (NdotU + 1.0) * 0.25 + 0.5;
-    #ifdef OVERWORLD
-        float ambientMult = 0.9 * faceData.lightmap.y;
-        float lightMult = (1.1 + 0.25 * subsurfaceMode) * lightingNdotL * shadowTime;
-        lightMult *= 1.0 + abs(NdotE) * 0.25;
-    #else
-        float ambientMult = 1.0;
-        float lightMult = 1.0 * lightingNdotL * shadowTime;
-    #endif
 
     vec3 centerPlayerPos = floor(playerPos + cameraPosition + normal * 0.01) - cameraPosition + 0.5;
     vec3 playerPosM = mix(centerPlayerPos, playerPos, (AO - 0.8) / 0.2);
@@ -157,8 +182,25 @@ vec4 getShadedReflection(faceData faceData, int mat, vec3 voxelPos, vec3 playerP
          voxelPosM = clamp01(voxelPosM / vec3(voxelVolumeSize));
     vec4 lightVolume = GetLightVolume(voxelPosM);
          lightVolume = max(lightVolume, vec4(0.000001));
-    vec3 specialLighting = pow(GetLuminance(lightVolume.rgb), 0.25) * pow2(lmCoordM.x) * DoLuminanceCorrection(pow(lightVolume.rgb, vec3(0.25)));
+    vec3 specialLighting = 0.8 * pow(GetLuminance(lightVolume.rgb), 0.25) * DoLuminanceCorrection(pow(lightVolume.rgb, vec3(0.3)));
     if (noSmoothLighting == true) specialLighting *= 0.6;
+
+    vec3 minLighting = 0.8 * sqrt(GetMinimumLighting(faceData.lightmap.y));
+
+    #if HELD_LIGHTING_MODE >= 1
+        vec3 heldLighting = GetHeldLighting(playerPos, color.rgb, emission);
+        specialLighting = sqrt(pow2(specialLighting) + sqrt(heldLighting));
+    #endif
+
+    #ifdef OVERWORLD
+        float ambientMult = 0.9 * faceData.lightmap.y;
+        float lightMult = (1.1 + 0.25 * subsurfaceMode) * lightingNdotL * shadowTime;
+        lightMult *= 1.0 + abs(NdotE) * 0.25;
+        specialLighting *= 1.0 - faceData.lightmap.y * sunFactor;
+    #else
+        float ambientMult = 1.0;
+        float lightMult = 1.0 * lightingNdotL * shadowTime;
+    #endif
 
     vec3 sceneLighting = ambientMult * ambientColor + lightMult * lightColor * shadow;
     #ifdef LIGHT_COLOR_MULTS
@@ -169,8 +211,8 @@ vec4 getShadedReflection(faceData faceData, int mat, vec3 voxelPos, vec3 playerP
         sceneLighting *= moonPhaseInfluence;
     #endif
 
-    vec3 lighting = sceneLighting + specialLighting * (1.0 - faceData.lightmap.y * sunFactor) * XLIGHT_I;
-    lighting = lighting * AO * directionalShading + emission;
+    vec3 lighting = sceneLighting + specialLighting * XLIGHT_I + minLighting;
+    lighting = lighting * AO * directionalShading + emission * 0.8;
 
     vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(playerPos));
     fadeout = sqrt3(fadeout) * 0.9 + 0.1;
@@ -181,8 +223,7 @@ vec4 getShadedReflection(faceData faceData, int mat, vec3 voxelPos, vec3 playerP
 
 vec3 wsrHitPos = vec3(-100000);
 
-vec4 traceHighLOD(vec3 rayDir, vec3 stepDir, vec3 stepSizes, vec3 oldPlayerPos, vec3 newPlayerPos, vec3 voxelPos, float RVdotU, float RVdotS, float dither,
-                  vec3 voxelPosStart, uint matStart) {
+vec4 traceHighLOD(vec3 rayDir, vec3 stepDir, vec3 stepSizes, vec3 oldPlayerPos, vec3 newPlayerPos, vec3 voxelPos, float RVdotU, float RVdotS, float dither) {
     vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(voxelPos)) / rayDir;
     float closestDist = 0.0;
 
@@ -195,36 +236,33 @@ vec4 traceHighLOD(vec3 rayDir, vec3 stepDir, vec3 stepSizes, vec3 oldPlayerPos, 
 
         if (!CheckInsideSceneVoxelVolume(voxelPos)) return vec4(0.0);
 
-        uint mat = texelFetch(wsr_sampler, ivec3(voxelPos), 0).r;
-        if (mat != 0u) {
+        if (checkVoxelAt(ivec3(voxelPos))) {
             vec3 normal = -stepAxis * stepDir;
-            faceData faceData = getFaceData(ivec3(voxelPos), normal);
-            if (faceData.textureBounds.z > 1e-6) {
-                vec3 intersection = newPlayerPos + rayDir * closestDist;
-                vec4 reflection = getShadedReflection(faceData, int(mat), voxelPos, intersection, normal, dither);
-                if (reflection.a < -0.5) continue;
+            vec3 intersection = newPlayerPos + rayDir * closestDist;
+            vec4 reflection = getShadedReflection(ivec3(voxelPos), oldPlayerPos, intersection, rayDir, normal, dither);
+            if (reflection.a < -0.5) continue;
 
-                wsrHitPos = intersection;
+            wsrHitPos = intersection;
 
-                vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(oldPlayerPos));
-                fadeout = sqrt3(fadeout) * 0.9 + 0.1;
-                reflection *= min(fadeout.x, min(fadeout.y, fadeout.z));
+            vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(oldPlayerPos));
+            fadeout = sqrt3(fadeout) * 0.9 + 0.1;
+            reflection *= min(fadeout.x, min(fadeout.y, fadeout.z));
 
-                float skyFade = 0.0;
-                float reflectionPrevAlpha = reflection.a;
+            float skyFade = 0.0;
+            float reflectionPrevAlpha = reflection.a;
 
-                DoFog(reflection, skyFade, length(intersection), intersection, RVdotU, RVdotS, dither);
+            DoFog(reflection, skyFade, length(intersection), intersection, RVdotU, RVdotS, dither);
 
-                return vec4(reflection.rgb, reflectionPrevAlpha * (1.0 - skyFade));
-            }
+            reflection.a = reflectionPrevAlpha * (1.0 - skyFade);
+
+            return reflection;
         }
     }
 
     return vec4(-1.0);
 }
 
-vec4 traceLowLOD(vec3 rayDir ,vec3 stepDir, vec3 stepSizes, vec3 playerPos, vec3 voxelPos, float RVdotU, float RVdotS, float dither,
-                 vec3 voxelPosStart, uint matStart) {
+vec4 traceLowLOD(vec3 rayDir ,vec3 stepDir, vec3 stepSizes, vec3 playerPos, vec3 voxelPos, vec3 normalOffset, float RVdotU, float RVdotS, float dither) {
     float lodScale = 4.0;
     vec3 lodVoxelPos = voxelPos / lodScale;
 
@@ -234,15 +272,17 @@ vec4 traceLowLOD(vec3 rayDir ,vec3 stepDir, vec3 stepSizes, vec3 playerPos, vec3
 
     float maxSteps = length(vec3(sceneVoxelVolumeSize)) / lodScale;
     for (int i = 0; i < maxSteps; i++) {
-        if (any(greaterThan(lodVoxelPos, vec3(sceneVoxelVolumeSize) / lodScale - 1.0)) || any(lessThan(lodVoxelPos, vec3(0.0))))
+        if (any(greaterThan(lodVoxelPos, vec3(sceneVoxelVolumeSize) / lodScale)) || any(lessThan(lodVoxelPos, vec3(0.0))))
             return vec4(0.0);
 
-        uint lodMat = texelFetch(wsr_sampler_lod, ivec3(lodVoxelPos), 0).r;
-        if (lodMat == 1u) {
+        if (checkLodVoxelAt(ivec3(lodVoxelPos))) {
             vec3 newPlayerPos = playerPos + rayDir * closestDistPrevious * lodScale;
+
+            // Fixes surfaces reflecting themselves at a distance with lower resolutions, but it can cause some rare artifacts
+            if (i <= 2) newPlayerPos += normalOffset * 0.06;
+
             vec3 newVoxelPos = playerToSceneVoxel(newPlayerPos);
-            vec4 try = traceHighLOD(rayDir, stepDir, stepSizes, playerPos, newPlayerPos, newVoxelPos, RVdotU, RVdotS, dither,
-                                    voxelPosStart, matStart);
+            vec4 try = traceHighLOD(rayDir, stepDir, stepSizes, playerPos, newPlayerPos, newVoxelPos, RVdotU, RVdotS, dither);
             if (try.a > -0.5) return try;
         }
 
@@ -256,34 +296,77 @@ vec4 traceLowLOD(vec3 rayDir ,vec3 stepDir, vec3 stepSizes, vec3 playerPos, vec3
     return vec4(0.0);
 }
 
-vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float RVdotS, float dither) {
+vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float RVdotS, float z0, float dither) {
     vec3 normalOffset = normalize(mat3(gbufferModelViewInverse) * normalMR);
-    playerPos += normalOffset * 0.003;
     vec3 voxelPos = playerToSceneVoxel(playerPos);
 
     // Fixes slabs, stairs, dirt paths, and farmlands reflecting themselves
-    if (z0 == z1) {
+    if (z0 == z1 && z0 > 0.56) {
         vec3 playerPosFractAdded = playerPos + cameraPositionBestFract + 256.0;
         vec3 normalOffsetM = normalOffset * (0.04 - 0.01 * dither);
         ivec3 voxelPosCheck1 = ivec3(playerPosFractAdded - normalOffsetM);
         ivec3 voxelPosCheck2 = ivec3(playerPosFractAdded + normalOffsetM);
         if (voxelPosCheck1 == voxelPosCheck2) playerPos += normalOffset * 0.5;
     }
-    
-    // Alternative fix that doesn't work on stairs
-    // float voxelPosYFract = fract(voxelPos.y);
-    // if (abs(voxelPosYFract - 0.5) < 0.46)
-    // playerPos = playerPos + normalOffset * (normalOffset.y > 0.0 ? 1.0 - voxelPosYFract : voxelPosYFract);
+
+    vec3 rayDir = mat3(gbufferModelViewInverse) * nViewPosR;
 
     if (CheckInsideSceneVoxelVolume(voxelPos)) {
-        vec3 voxelPosStart = voxelPos;
-        uint matStart = texelFetch(wsr_sampler, ivec3(voxelPosStart), 0).r;
-
-        vec3 rayDir = normalize(mat3(gbufferModelViewInverse) * nViewPosR);
         vec3 stepDir = sign(rayDir);
         vec3 stepSizes = 1.0 / abs(rayDir);
-        return traceLowLOD(rayDir, stepDir, stepSizes, playerPos, voxelPos, RVdotU, RVdotS, dither,
-                           voxelPosStart, matStart);
+        vec4 wsrResult = traceLowLOD(rayDir, stepDir, stepSizes, playerPos, voxelPos, normalOffset, RVdotU, RVdotS, dither);
+
+        #if WORLD_SPACE_PLAYER_REF == 1
+            if (!is_invisible && z0 > 0.56) {
+                float wsrTraceLength = length(wsrHitPos - playerPos);
+                vec3 albedo;
+                vec3 normal;
+
+                if (rayTracePlayer(playerPos - 0.01 * rayDir, rayDir, wsrTraceLength, albedo, normal)) {
+                    vec2 lmCoord = eyeBrightness / 240.0;
+
+                    #ifdef OVERWORLD
+                        float ambientMult = 1.5 * lmCoord.y;
+                        float lightMult = 0.2 * pow2(pow2(lmCoord.y));
+                    #else
+                        float ambientMult = 1.5;
+                        float lightMult = 0.0;
+                    #endif
+
+                    vec3 voxelPosM = SceneToVoxel(vec3(0.0));
+                        voxelPosM = clamp01(voxelPosM / vec3(voxelVolumeSize));
+                    vec4 lightVolume = GetLightVolume(voxelPosM);
+                        lightVolume = max(lightVolume, vec4(0.000001));
+                    vec3 specialLighting = pow(GetLuminance(lightVolume.rgb), 0.25) * DoLuminanceCorrection(pow(lightVolume.rgb, vec3(0.25)));
+
+                    #if HELD_LIGHTING_MODE >= 1
+                        vec3 heldLighting = GetHeldLighting(playerPos, vec3(999999.0), 0.0);
+                        specialLighting = sqrt(pow2(specialLighting) + sqrt(heldLighting));
+                    #endif
+
+                    vec3 minLighting = 0.8 * sqrt(GetMinimumLighting(lmCoord.y));
+
+                    vec3 sceneLighting = ambientMult * ambientColor + lightMult * lightColor;
+                    #ifdef LIGHT_COLOR_MULTS
+                        lightColorMult = GetLightColorMult();
+                        sceneLighting *= lightColorMult;
+                    #endif
+                    #ifdef MOON_PHASE_INF_LIGHT
+                        sceneLighting *= moonPhaseInfluence;
+                    #endif
+
+                    vec3 lighting = sceneLighting + specialLighting * (1.0 - lmCoord.y * sunFactor) * XLIGHT_I + minLighting;
+
+                    vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(playerPos));
+                    fadeout = sqrt3(fadeout) * 0.9 + 0.1;
+                    float alphaFade = min(fadeout.x, min(fadeout.y, fadeout.z));
+                    
+                    return vec4(albedo * lighting, alphaFade);
+                }
+            }
+        #endif
+
+        return wsrResult;
     }
 
     return vec4(0.0);

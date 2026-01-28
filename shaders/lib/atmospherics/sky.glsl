@@ -58,6 +58,9 @@
         if (doGlare) {
             if (0.0 < VdotSML) {
                 float glareScatter = 3.0 * (2.0 - clamp01(VdotS * 1000.0));
+                #ifndef SUN_MOON_DURING_RAIN
+                    glareScatter *= 1.0 - 0.75 * rainFactor2;
+                #endif
                 float VdotSM4 = pow(abs(VdotS), glareScatter);
 
                 float visfactor = 0.075;
@@ -70,15 +73,15 @@
 
                 #ifdef SUN_MOON_DURING_RAIN
                     glare *= 1.0 - 0.6 * rainFactor;
-                    #if RAIN_STYLE == 1
-                        float glareDesaturateFactor = 0.5 * rainFactor;
-                    #elif RAIN_STYLE == 2
-                        float glareDesaturateFactor = rainFactor;
-                    #endif
-                    glareColor = mix(glareColor, vec3(GetLuminance(glareColor)), glareDesaturateFactor);
                 #else
-                    glare *= 1.0 - rainFactor;
+                    glare *= 1.0 - 0.8 * rainFactor;
                 #endif
+                #if RAIN_STYLE == 1
+                    float glareDesaturateFactor = 0.5 * rainFactor;
+                #elif RAIN_STYLE == 2
+                    float glareDesaturateFactor = rainFactor;
+                #endif
+                glareColor = mix(glareColor, vec3(GetLuminance(glareColor)), glareDesaturateFactor);
 
                 finalSky += glareColor * glare * shadowTime;
             }

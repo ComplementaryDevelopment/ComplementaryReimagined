@@ -11,7 +11,11 @@
 flat in int mat;
 
 in vec2 texCoord;
-in vec2 lmCoord;
+#ifdef GBUFFERS_COLORWHEEL
+    vec2 lmCoord;
+#else
+    in vec2 lmCoord;
+#endif
 in vec2 signMidCoordPos;
 flat in vec2 absMidCoordPos;
 flat in vec2 midCoord;
@@ -34,6 +38,10 @@ in vec4 glColorRaw;
 
 #if ANISOTROPIC_FILTER > 0
     in vec4 spriteBounds;
+#endif
+
+#ifdef IRIS_FEATURE_FADE_VARIABLE
+    flat in float chunkFade;
 #endif
 
 //Pipeline Constants//
@@ -188,7 +196,17 @@ void main() {
     #endif
 
     vec3 colorP = color.rgb;
-    color.rgb *= glColor.rgb;
+
+    #ifdef GBUFFERS_COLORWHEEL
+        float ao;
+        vec4 overlayColor;
+        
+        clrwl_computeFragment(color, color, lmCoord, ao, overlayColor);
+        color.rgb = mix(color.rgb, overlayColor.rgb, overlayColor.a);
+        lmCoord = clamp((lmCoord - 1.0 / 32.0) * 32.0 / 30.0, 0.0, 1.0);
+    #else
+        color.rgb *= glColor.rgb;
+    #endif
 
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     #ifdef TAA
@@ -342,6 +360,11 @@ void main() {
         ColorCodeProgram(color, mat);
     #endif
 
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        skyLightFactor *= 0.5;
+        if (chunkFade < 1.0) skyLightFactor = 1.0 - chunkFade * 0.5;
+    #endif
+
     /* DRAWBUFFERS:06 */
     gl_FragData[0] = color;
     gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
@@ -360,7 +383,11 @@ void main() {
 flat out int mat;
 
 out vec2 texCoord;
-out vec2 lmCoord;
+#ifdef GBUFFERS_COLORWHEEL
+    vec2 lmCoord;
+#else
+    out vec2 lmCoord;
+#endif
 out vec2 signMidCoordPos;
 flat out vec2 absMidCoordPos;
 flat out vec2 midCoord;
@@ -383,6 +410,10 @@ out vec4 glColorRaw;
 
 #if ANISOTROPIC_FILTER > 0
     out vec4 spriteBounds;
+#endif
+
+#ifdef IRIS_FEATURE_FADE_VARIABLE
+    flat out float chunkFade;
 #endif
 
 //Attributes//
@@ -442,7 +473,6 @@ void main() {
 
     gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
 
-
     #ifdef FLICKERING_FIX
         if (mat == 10257) gl_Position.z -= 0.00001; // Iron Bars
     #endif
@@ -474,6 +504,10 @@ void main() {
         vec2 bottomLeft = mc_midTexCoord.xy - spriteRadius;
         vec2 topRight = mc_midTexCoord.xy + spriteRadius;
         spriteBounds = vec4(bottomLeft, topRight);
+    #endif
+
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        chunkFade = mc_chunkFade;
     #endif
 }
 

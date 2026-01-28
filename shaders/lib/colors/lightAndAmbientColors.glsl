@@ -42,7 +42,7 @@
             vec3 drlcRainM = vec3(0.0);
         #endif
         vec3 dayRainLightColor   = vec3(0.21, 0.16, 0.13) * 0.85 + noonFactor * vec3(0.0, 0.02, 0.06)
-                                + rainFactor * (drlcRainM + drlcSnowM + drlcDryM);
+                                 + drlcRainM + drlcSnowM + drlcDryM;
         vec3 dayRainAmbientColor = vec3(0.2, 0.2, 0.25) * (1.8 + 0.5 * vsBrightness);
 
         vec3 nightRainLightColor   = vec3(0.03, 0.035, 0.05) * (0.5 + 0.5 * vsBrightness);
@@ -59,8 +59,20 @@
         vec3 clearLightColor   = mix(nightClearLightColor, dayLightColor, sunVisibility2);
         vec3 clearAmbientColor = mix(nightClearAmbientColor, dayAmbientColor, sunVisibility2);
 
-        vec3 rainLightColor   = mix(nightRainLightColor, dayRainLightColor, sunVisibility2) * 2.5;
-        vec3 rainAmbientColor = mix(nightRainAmbientColor, dayRainAmbientColor, sunVisibility2);
+        float rainShadowVisReduce = 0.0
+            #ifdef SUN_MOON_DURING_RAIN
+                #ifdef SPECIAL_BIOME_WEATHER
+                    + 0.2 * inSnowy + 0.2 * inDry
+                #elif RAIN_STYLE == 2
+                    + 0.2
+                #endif
+            #else
+                + 0.4
+            #endif
+        ;
+
+        vec3 rainLightColor   = mix(nightRainLightColor, dayRainLightColor * (1.0 - rainShadowVisReduce), sunVisibility2) * 2.5;
+        vec3 rainAmbientColor = mix(nightRainAmbientColor, dayRainAmbientColor * (1.0 + rainShadowVisReduce), sunVisibility2);
 
         vec3 lightColor   = mix(clearLightColor, rainLightColor, rainFactor);
         vec3 ambientColor = mix(clearAmbientColor, rainAmbientColor, rainFactor);

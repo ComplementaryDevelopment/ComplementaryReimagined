@@ -89,7 +89,7 @@ vec4 GetSpecialBlocklightColor(int mat) {
 				} else {
 					if (mat < 35) {
 						if (mat == 32) return vec4(redstoneSpecialLightColor * 0.3, 0.1) * GLOWING_ORE_MULT; // Redstone Ores:Unlit
-						if (mat == 33) return vec4(vec3(1.4, 1.1, 0.5), 0.0); // Enchanting Table
+						if (mat == 33) return vec4(vec3(1.4, 1.1, 0.5), 0.05); // Enchanting Table
 						#if GLOWING_LICHEN > 0
 							if (mat == 34) return vec4(vec3(0.8, 1.1, 1.1), 0.05); // Glow Lichen with IntegratedPBR
 						#else

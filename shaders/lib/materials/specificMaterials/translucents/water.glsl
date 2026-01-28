@@ -60,7 +60,7 @@
     #if WATER_MAT_QUALITY >= 2 || WATER_STYLE >= 2
         #define WATER_SPEED_MULT_M WATER_SPEED_MULT * 0.018
         float rawWind = frameTimeCounter * WATER_SPEED_MULT_M;
-        vec2 wind = vec2(rawWind, 0.0);
+        vec2 wind = vec2(0.0, -rawWind);
         vec3 worldPos = playerPos + cameraPosition;
         vec2 waterPos = worldPos.xz;
         #if WATER_STYLE < 3 && defined GBUFFERS_WATER
@@ -115,7 +115,8 @@
                 vec3 pNormalNoise1 = texture2DLod(noisetex, pNormalCoord1, 0.0).rgb;
                 vec3 pNormalNoise2 = texture2DLod(noisetex, pNormalCoord2, 0.0).rgb;
 
-                normalMap.xy = (pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult;
+                normalMap.xy = (pNormalNoise1.xy + pNormalNoise2.yx - vec2(1.0)) * pNormalMult;
+                normalMap.xy *= 2.0 - 1.8 * fresnel2;
         #endif
 
             normalMap.z = sqrt(1.0 - (pow2(normalMap.x) + pow2(normalMap.y)));
@@ -243,6 +244,11 @@
                 #else
                     translucentMult.rgb *= 1.0 - 0.9 * max(0.5 * sqrt(fresnel4), fresnel4);
                 #endif
+            #endif
+
+            #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+                reflectMult = 1.0 / color.a;
+                fresnelM = 1.0;
             #endif
         }
     #else

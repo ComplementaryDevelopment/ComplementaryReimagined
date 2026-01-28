@@ -34,6 +34,7 @@
             beamOrangeIncreaser = mix(beamOrangeIncreaser, 1.0, endFlashFactor);
             beamPurpleReducer = mix(beamPurpleReducer, 1.6, endFlashFactor);
             beamPow = mix(beamPow, 0.7, endFlashFactor * (pow(VdotUM, 8.0) * 0.75 + 0.25 * pow(1.0 - abs(VdotU) * 0.1 - 0.9 * pow2(VdotU), 30.0)));
+            //beamPow = max(beamPow, 0.0001); // fix NaNs
             VdotUM = mix(VdotUM, sqrt2(VdotUM), endFlashFactor);
         #endif
 
@@ -53,6 +54,7 @@
                 noise *= 0.65;
                 float fireNoise = texture2DLod(noisetex, abs(planeCoord * 0.2) - wind, 0.0).b;
                 noise *= 0.5 * fireNoise + 0.75;
+                //noise = max0(noise); // fix NaNs
                 noise = pow(noise, 1.75) * 2.9 / sampleCount;
                 noise *= VdotUM2;
 
@@ -68,6 +70,8 @@
 
         beamMult *= pow(beams.a, beamPow) * 3.5;
         beams.rgb = sqrt(beams.rgb) * beamMult;
+
+        if(any(isnan(beams.rgb))) beams.rgb = vec3(0.0);
 
         return beams.rgb;
     }

@@ -93,48 +93,49 @@ void main() {
             float atlasCheck = 900.0;
         #endif
 
-    if (atlasSize.x < atlasCheck) {
-        if (color.b > 1.15 * (color.r + color.g) && color.g > color.r * 1.25 && color.g < 0.425 && color.b > 0.75) { // Water Particle
-            materialMask = 0.0;
-            color.rgb = sqrt3(color.rgb);
-            color.rgb *= 0.7;
-            if (dither > 0.4) discard;
-        #ifdef OVERWORLD
-        } else if (color.b > 0.7 && color.r < 0.28 && color.g < 0.425 && color.g > color.r * 1.4){ // physics mod rain
-            if (color.a < 0.1 || isEyeInWater == 3) discard;
-            color.a *= rainTexOpacity;
-            color.rgb = sqrt2(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + ambientColor * lmCoord.y * (0.7 + 0.35 * sunFactor));
-        } else if (color.rgb == vec3(1.0) && color.a < 0.765 && color.a > 0.605) { // physics mod snow (default snow opacity only)
-            if (color.a < 0.1 || isEyeInWater == 3) discard;
-            color.a *= snowTexOpacity;
-            color.rgb = sqrt2(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + lmCoord.y * (0.7 + 0.35 * sunFactor) + ambientColor * 0.2);
-        #endif
-        } else if (color.r == color.g && color.r - 0.5 * color.b < 0.06) { // Underwater Particle
-            if (isEyeInWater == 1) {
-                color.rgb = sqrt2(color.rgb) * 0.35;
-                if (fract(playerPos.y + cameraPosition.y) > 0.25) discard;
-            }
-        } else if (color.a < 0.99 && dot(color.rgb, color.rgb) < 1.0) { // Campfire Smoke
-            color.a *= 0.5;
-            materialMask = 0.0;
-        } else if (max(abs(colorP.r - colorP.b), abs(colorP.b - colorP.g)) < 0.001) { // Grayscale Particles
-            float dotColor = dot(color.rgb, color.rgb);
-            if (dotColor > 0.25 && color.g < 0.5 && (color.b > color.r * 1.1 && color.r > 0.3 || color.r > (color.g + color.b) * 3.0)) {
-                // Ender Particle, Crying Obsidian Particle, Redstone Particle
-                emission = clamp(color.r * 8.0, 1.6, 5.0);
-                color.rgb = pow1_5(color.rgb);
-                lmCoordM = vec2(0.0);
-            } else if (color.r > 0.83 && color.g > 0.23 && color.b < 0.4) {
-                // Lava Particles
-                emission = 2.0;
-                color.b *= 0.5;
-                color.r *= 1.2;
+        vec2 tSize = textureSize(tex, 0);
+        if (tSize.x < atlasCheck) {
+            if (color.b > 1.15 * (color.r + color.g) && color.g > color.r * 1.25 && color.g < 0.425 && color.b > 0.75) { // Water Particle
+                materialMask = 0.0;
+                color.rgb = sqrt3(color.rgb);
+                color.rgb *= 0.7;
+                if (dither > 0.4) discard;
+            #ifdef OVERWORLD
+            } else if (color.b > 0.7 && color.r < 0.28 && color.g < 0.425 && color.g > color.r * 1.4){ // physics mod rain
+                if (color.a < 0.1 || isEyeInWater == 3) discard;
+                color.a *= rainTexOpacity;
+                color.rgb = sqrt2(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + ambientColor * lmCoord.y * (0.7 + 0.35 * sunFactor));
+            } else if (color.rgb == vec3(1.0) && color.a < 0.765 && color.a > 0.605) { // physics mod snow (default snow opacity only)
+                if (color.a < 0.1 || isEyeInWater == 3) discard;
+                color.a *= snowTexOpacity;
+                color.rgb = sqrt2(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + lmCoord.y * (0.7 + 0.35 * sunFactor) + ambientColor * 0.2);
+            #endif
+            } else if (color.r == color.g && color.r - 0.5 * color.b < 0.06) { // Underwater Particle
+                if (isEyeInWater == 1) {
+                    color.rgb = sqrt2(color.rgb) * 0.35;
+                    if (fract(playerPos.y + cameraPosition.y) > 0.25) discard;
+                }
+            } else if (color.a < 0.99 && dot(color.rgb, color.rgb) < 1.0) { // Campfire Smoke
+                color.a *= 0.5;
+                materialMask = 0.0;
+            } else if (max(abs(colorP.r - colorP.b), abs(colorP.b - colorP.g)) < 0.001) { // Grayscale Particles
+                float dotColor = dot(color.rgb, color.rgb);
+                if (dotColor > 0.25 && color.g < 0.5 && (color.b > color.r * 1.1 && color.r > 0.3 || color.r > (color.g + color.b) * 3.0)) {
+                    // Ender Particle, Crying Obsidian Particle, Redstone Particle
+                    emission = clamp(color.r * 8.0, 1.6, 5.0);
+                    color.rgb = pow1_5(color.rgb);
+                    lmCoordM = vec2(0.0);
+                } else if (color.r > 0.83 && color.g > 0.23 && color.b < 0.4) {
+                    // Lava Particles
+                    emission = 2.0;
+                    color.b *= 0.5;
+                    color.r *= 1.2;
+                }
             }
         }
-    }
-    bool noSmoothLighting = false;
+        bool noSmoothLighting = false;
     #else
-    bool noSmoothLighting = true;
+        bool noSmoothLighting = true;
     #endif
 
     #ifdef REDUCE_CLOSE_PARTICLES

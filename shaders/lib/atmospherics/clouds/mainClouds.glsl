@@ -55,14 +55,18 @@ vec4 GetClouds(inout float cloudLinearDepth, float skyFade, vec3 cameraPosOffset
 
     #if IRIS_VERSION >= 10800
         #ifdef CLOUDS_REIMAGINED
-            vec2 cameraPositionBIM = mod(cameraPositionBestInt.xz, 1.0 / cloudNarrowness * 256.0);
+            float modFactor = 1.0 / cloudNarrowness * 256.0;
         #else
             #if CLOUD_UNBOUND_SIZE_MULT == 100
-                vec2 cameraPositionBIM = mod(cameraPositionBestInt.xz, 1.0 / cloudNarrowness);
+                float modFactor = 1.0 / cloudNarrowness;
             #else
-                vec2 cameraPositionBIM = mod(cameraPositionBestInt.xz, 1.0 / (cloudNarrowness * CLOUD_UNBOUND_SIZE_MULT_M));
+                float modFactor = 1.0 / (cloudNarrowness * CLOUD_UNBOUND_SIZE_MULT_M);
             #endif
         #endif
+
+        int modFactorM = int(modFactor);
+        
+        vec2 cameraPositionBIM = cameraPositionInt.xz - modFactorM * (cameraPositionInt.xz / modFactorM);
 
         vec3 cameraPos = vec3(
             cameraPositionBIM.x + cameraPositionBestFract.x,

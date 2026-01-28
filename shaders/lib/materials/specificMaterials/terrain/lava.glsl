@@ -1,4 +1,4 @@
-#if !defined IPBR_COMPAT_MODE && defined GBUFFERS_TERRAIN
+#if !defined IPBR_COMPAT_MODE && defined GBUFFERS_TERRAIN && !defined GBUFFERS_COLORWHEEL
     // Tweak to prevent the animation of lava causing brightness pulsing
     vec3 avgColor = vec3(0.0);
     ivec2 itexCoordC = ivec2(midCoord * atlasSize + 0.0001);

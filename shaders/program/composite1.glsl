@@ -177,6 +177,7 @@ void main() {
     #if defined LIGHTSHAFTS_ACTIVE || RAINBOWS > 0 && defined OVERWORLD
         vec3 nViewPos = normalize(viewPos1.xyz);
         float VdotL = dot(nViewPos, lightVec);
+        float VdotU = dot(nViewPos, upVec);
     #endif
 
     #if defined NETHER_STORM || defined COLORED_LIGHT_FOG
@@ -185,12 +186,11 @@ void main() {
     #endif
 
     #if RAINBOWS > 0 && defined OVERWORLD
-        if (isEyeInWater == 0) color += GetRainbow(translucentMult, z0, z1, lViewPos, lViewPos1, VdotL, dither);
+        color += GetRainbow(translucentMult, nViewPos, z0, z1, lViewPos, lViewPos1, VdotL, VdotU, dither);
     #endif
 
     #ifdef LIGHTSHAFTS_ACTIVE
         float vlFactorM = vlFactor;
-        float VdotU = dot(nViewPos, upVec);
 
         volumetricEffect = GetVolumetricLight(color, vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
     #endif
@@ -241,7 +241,13 @@ void main() {
 
     #ifdef COLORED_LIGHT_FOG
         color /= 1.0 + pow2(GetLuminance(lightFog)) * lightFogMult * 2.0;
-        color += lightFog * lightFogMult * 0.5;
+
+        lightFog = lightFog * lightFogMult * 0.5;
+        #ifdef TAA
+            // TAA neighbourhood clamping causes light fog to go too bandy. Extra dither fixes it.
+            lightFog = max(vec3(0.0), lightFog + (dither - 0.5) * 0.02);
+        #endif
+        color += lightFog;
     #endif
 
     color = pow(color, vec3(2.2));

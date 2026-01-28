@@ -1,4 +1,4 @@
-smoothnessG = pow2(color.g);
+smoothnessG = pow(color.g, 1.5) * 0.55;
 smoothnessG = smoothnessG;
 smoothnessD = smoothnessG;
 

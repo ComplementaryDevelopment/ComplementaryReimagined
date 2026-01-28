@@ -119,9 +119,9 @@ void main() {
         float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 0.6;
         vec3 geoNormal = normalM;
         vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
+        vec3 maRecolor = vec3(0.0);
         #ifdef IPBR
-            #ifdef IS_IRIS
-                vec3 maRecolor = vec3(0.0);
+            #if defined IS_IRIS || defined IS_ANGELICA && ANGELICA_VERSION >= 20000008
                 #include "/lib/materials/materialHandling/irisIPBR.glsl"
 
                 if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
@@ -148,7 +148,7 @@ void main() {
                    worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                    false, 0, smoothnessG, highlightMult, emission);
 
-        #if defined IPBR && defined IS_IRIS
+        #ifdef IPBR
             color.rgb += maRecolor;
         #endif
     }
@@ -157,6 +157,10 @@ void main() {
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);
+    #endif
+
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        skyLightFactor *= 0.5;
     #endif
 
     /* DRAWBUFFERS:06 */

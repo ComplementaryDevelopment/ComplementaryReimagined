@@ -57,7 +57,9 @@ void main() {
         #ifdef IS_IRIS
             bool isSun = renderStage == MC_RENDER_STAGE_SUN;
             bool isMoon = renderStage == MC_RENDER_STAGE_MOON;
-            if (sunSideCheck) isSun = true; // Workaround for sun rendering as MC_RENDER_STAGE_MOON in some Iris versions
+            #if IRIS_VERSION < 10902
+                if (sunSideCheck) isSun = true; // Workaround for sun rendering as MC_RENDER_STAGE_MOON in some Iris versions
+            #endif
         #else
             bool tSizeCheck = abs(tSize.y - 264.0) < 248.5; //tSize.y must range from 16 to 512
             bool isSun = tSizeCheck && sunSideCheck;

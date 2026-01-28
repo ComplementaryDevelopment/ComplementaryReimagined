@@ -17,7 +17,7 @@ if (materialMaskInt != 0) {
                 if (materialMaskInt == 3) { // Gold Fresnel
                     intenseFresnel = 1.0;
                     reflectColor = vec3(1.0, 0.8, 0.5);
-                } else /*if (materialMaskInt == 4)*/ { // End Portal
+                } else /*if (materialMaskInt == 4)*/ { //
 
                 }
             }

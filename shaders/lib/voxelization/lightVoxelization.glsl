@@ -28,56 +28,85 @@
     }
 
     uint GetVoxelVolume(ivec3 pos) {
+        return texelFetch(voxel_sampler, pos, 0).x & 32767u;
+    }
+
+    uint GetVoxelVolumeRaw(ivec3 pos) {
         return texelFetch(voxel_sampler, pos, 0).x;
     }
 
-    vec4 GetLightVolume(vec3 pos) {
+    vec4 GetComplexLightVolume(vec3 pos, sampler3D ff_sampler) {
         vec4 lightVolume;
 
         #if defined COMPOSITE1 || defined DEFERRED1
             #undef ACT_CORNER_LEAK_FIX
         #endif
 
-        #ifdef ACT_CORNER_LEAK_FIX
-            float minMult = 1.5;
+        #ifndef ACT_CORNER_LEAK_FIX
+            lightVolume = texture(ff_sampler, pos);
+        #else
+            // Manual light filtering
             ivec3 posTX = ivec3(pos * voxelVolumeSize);
+            vec3 texPos = pos * vec3(voxelVolumeSize) - 0.5;
+            ivec3 base = ivec3(floor(texPos));
+            vec3 frac = fract(texPos);
+            float lightDivide = 0.0;
 
-            ivec3[6] adjacentOffsets = ivec3[](
-                ivec3( 1, 0, 0),
-                ivec3(-1, 0, 0),
-                ivec3( 0, 1, 0),
-                ivec3( 0,-1, 0),
-                ivec3( 0, 0, 1),
-                ivec3( 0, 0,-1)
-            );
+            for (int x = 0; x <= 1; x++)
+            for (int y = 0; y <= 1; y++)
+            for (int z = 0; z <= 1; z++) {
+                ivec3 offset = ivec3(x, y, z);
+                ivec3 newPos = clamp(base + offset, ivec3(0), voxelVolumeSize - 1);
 
-            int adjacentCount = 0;
-            for (int i = 0; i < 6; i++) {
-                int voxel = int(GetVoxelVolume(posTX + adjacentOffsets[i]));
-                if (voxel == 1 || voxel >= 200) adjacentCount++;
+                // Light Leak Fix
+                ivec3 realOffset = newPos - posTX;
+                ivec3 absRealOffset = abs(realOffset);
+                int totalRealOffset = absRealOffset.x + absRealOffset.y + absRealOffset.z;
+                if (totalRealOffset == 2) {
+                    bool isReachable = false;
+                    ivec3 checkPos;
+
+                    if (realOffset.x != 0) {
+                        checkPos = posTX + ivec3(realOffset.x, 0, 0);
+                        if (int(GetVoxelVolume(checkPos)) == 0) isReachable = true;
+                    }
+                    if (realOffset.y != 0) {
+                        checkPos = posTX + ivec3(0, realOffset.y, 0);
+                        if (int(GetVoxelVolume(checkPos)) == 0) isReachable = true;
+                    }
+                    if (realOffset.z != 0) {
+                        checkPos = posTX + ivec3(0, 0, realOffset.z);
+                        if (int(GetVoxelVolume(checkPos)) == 0) isReachable = true;
+                    }
+
+                    if (!isReachable) continue;
+                } else if (totalRealOffset == 3) continue;
+
+                // Skip solids
+                if (int(GetVoxelVolume(newPos)) == 1)
+                    continue;
+
+                // Interpolation weight
+                vec3 w3 = mix(vec3(1.0) - frac, frac, vec3(offset));
+                float weight = w3.x * w3.y * w3.z;
+
+                lightVolume += weight * texelFetch(ff_sampler, newPos, 0);
+                lightDivide += weight;
             }
 
-            if (int(GetVoxelVolume(posTX)) >= 200) adjacentCount = 6;
+            if (lightDivide > 0.0) lightVolume /= lightDivide;
         #endif
 
+        return lightVolume;
+    }
+
+    vec4 GetLightVolume(vec3 pos) {
+        vec4 lightVolume;
+
         if (int(framemod2) == 0) {
-            lightVolume = texture(floodfill_sampler_copy, pos);
-            #ifdef ACT_CORNER_LEAK_FIX
-                if (adjacentCount >= 3) {
-                    vec4 lightVolumeTX = texelFetch(floodfill_sampler_copy, posTX, 0);
-                    if (dot(lightVolumeTX, lightVolumeTX) > 0.01)
-                    lightVolume.rgb = min(lightVolume.rgb, lightVolumeTX.rgb * minMult);
-                }
-            #endif
+            lightVolume = GetComplexLightVolume(pos, floodfill_sampler_copy);
         } else {
-            lightVolume = texture(floodfill_sampler, pos);
-            #ifdef ACT_CORNER_LEAK_FIX
-                if (adjacentCount >= 3) {
-                    vec4 lightVolumeTX = texelFetch(floodfill_sampler, posTX, 0);
-                    if (dot(lightVolumeTX, lightVolumeTX) > 0.01)
-                    lightVolume.rgb = min(lightVolume.rgb, lightVolumeTX.rgb * minMult);
-                }
-            #endif
+            lightVolume = GetComplexLightVolume(pos, floodfill_sampler);
         }
 
         return lightVolume;
@@ -374,15 +403,22 @@
                     if (scenePos.z < 0.0) return;
                 }
             #endif
-
-            bool isEligible = any(equal(ivec4(renderStage), ivec4(
-                MC_RENDER_STAGE_TERRAIN_SOLID,
-                MC_RENDER_STAGE_TERRAIN_TRANSLUCENT,
-                MC_RENDER_STAGE_TERRAIN_CUTOUT,
-                MC_RENDER_STAGE_TERRAIN_CUTOUT_MIPPED)));
+            #if defined GBUFFERS_COLORWHEEL || defined SHADOW_COLORWHEEL
+                bool isEligible = true;
+            #else
+                bool isEligible = any(equal(ivec4(renderStage), ivec4(
+                    MC_RENDER_STAGE_TERRAIN_SOLID,
+                    MC_RENDER_STAGE_TERRAIN_TRANSLUCENT,
+                    MC_RENDER_STAGE_TERRAIN_CUTOUT,
+                    MC_RENDER_STAGE_TERRAIN_CUTOUT_MIPPED)));
+            #endif
 
             if (isEligible && CheckInsideVoxelVolume(voxelPos)) {
                 int voxelData = GetVoxelIDs(mat);
+
+                #if defined GBUFFERS_COLORWHEEL || defined SHADOW_COLORWHEEL
+                    voxelData = voxelData | 32768;
+                #endif
                 
                 imageStore(voxel_img, ivec3(voxelPos), uvec4(voxelData, 0u, 0u, 0u));
             }

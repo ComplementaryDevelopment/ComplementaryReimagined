@@ -33,7 +33,7 @@ void DoNaturalShadowCalculation(inout vec4 color1, inout vec4 color2) {
     color1.rgb *= glColor.rgb;
     color1.rgb = mix(vec3(1.0), color1.rgb, pow(color1.a, (1.0 - color1.a) * 0.5) * 1.05);
     color1.rgb *= 1.0 - pow(color1.a, 64.0);
-    color1.rgb *= 0.2; // Natural Strength
+    color1.rgb *= 0.1; // 423HDSS: Shadow color strength is stored 10 times lower to allow for water shadows going above 1.0
 
     color2.rgb = normalize(color1.rgb) * 0.5;
 }
@@ -46,6 +46,13 @@ void DoNaturalShadowCalculation(inout vec4 color1, inout vec4 color2) {
 //Program//
 void main() {
     vec4 color1 = texture2DLod(tex, texCoord, 0); // Shadow Color
+    #ifdef SHADOW_COLORWHEEL
+        vec2 lmCoord; // needed as otherwise undeclared in the function below
+        float ao;
+        vec4 overlayColor;
+
+        clrwl_computeFragment(color1, color1, lmCoord, ao, overlayColor);
+    #endif
 
     #if SHADOW_QUALITY >= 1
         vec4 color2 = color1; // Light Shaft Color
@@ -90,9 +97,9 @@ void main() {
                         #endif
                     #else
                         #define WATER_SPEED_MULT_M WATER_SPEED_MULT * 0.035
-                        vec2 causticWind = vec2(frameTimeCounter * WATER_SPEED_MULT_M, 0.0);
-                        vec2 cPos1 = worldPos.xz * 0.10 - causticWind;
-                        vec2 cPos2 = worldPos.xz * 0.05 + causticWind;
+                        vec2 causticWind = vec2(0.0, frameTimeCounter * WATER_SPEED_MULT_M);
+                        vec2 cPos1 = worldPos.xz * 0.08 + causticWind;
+                        vec2 cPos2 = worldPos.xz * 0.06 - causticWind;
 
                         float cMult = 14.0;
                         float offset = 0.001;
@@ -117,6 +124,7 @@ void main() {
                         #endif
                     #endif
                     color1.rgb *= vec3(0.6, 0.8, 1.1);
+                    color1.rgb = pow(color1.rgb, vec3(0.75)) * 0.5;
                     ////
 
                     // Underwater Light Shafts
@@ -151,7 +159,7 @@ void main() {
                     color1.rgb *= color1.rgb;
                     color1.rgb = mix(vec3(1.0), color1.rgb, pow(color1.a, (1.0 - color1.a) * 0.5) * 1.05);
                     color1.rgb *= 1.0 - pow(color1.a, 64.0);
-                    color1.rgb *= 0.28;
+                    color1.rgb *= 0.14; // 423HDSS
 
                     color2.rgb = normalize(pow(color1.rgb, vec3(0.25))) * 0.5;
                 }
@@ -167,7 +175,7 @@ void main() {
                     }
                 #endif
                 if (color1.a > 0.5) color1 = vec4(0.0, 0.0, 0.0, 1.0);
-                else color1 = vec4(vec3(0.2 * (1.0 - GLASS_OPACITY)), 1.0);
+                else color1 = vec4(vec3(0.1 * (1.0 - GLASS_OPACITY)), color1.a); // 423HDSS
                 color2.rgb = vec3(0.3);
 
                 #if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
@@ -179,6 +187,7 @@ void main() {
         }
     #endif
 
+    /* DRAWBUFFERS:0 */
     gl_FragData[0] = color1; // Shadow Color
 
     #if SHADOW_QUALITY >= 1
@@ -186,6 +195,7 @@ void main() {
             color2.a = 0.25 + max0(positionYM * 0.05); // consistencyMEJHRI7DG
         #endif
 
+        /* DRAWBUFFERS:01 */
         gl_FragData[1] = color2; // Light Shaft Color
     #endif
 }
@@ -234,7 +244,6 @@ vec2 lmCoord;
 
     #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
         writeonly uniform uimage3D wsr_img;
-        writeonly uniform uimage3D wsr_img_lod;
     #endif
 #endif
 
@@ -309,6 +318,10 @@ void main() {
                 UpdateSceneVoxelMap(mat, normal, position.xyz);
             #endif
         }
+
+        #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && WORLD_SPACE_PLAYER_REF == 1
+            UpdatePlayerVertexList(position.xyz);
+        #endif
     #endif
 
     gl_Position = shadowProjection * shadowModelView * position;

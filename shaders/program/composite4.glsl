@@ -127,8 +127,8 @@ void main() {
                 vec3 sampleb = texture2DLod(colortex0, coordb, 0).rgb;
                 
                 #ifdef MOTION_BLUR_BLOOM_FOG_FIX
-                    float z0 = texture2D(depthtex0, coordb).r;
-                    vec4 screenPos = vec4(coordb, z0, 1.0);
+                    float z1 = texture2D(depthtex1, coordb).r;
+                    vec4 screenPos = vec4(coordb, z1, 1.0);
                     vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
                     viewPos /= viewPos.w;
                     float lViewPos = length(viewPos.xyz);

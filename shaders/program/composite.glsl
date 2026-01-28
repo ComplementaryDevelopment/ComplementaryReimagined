@@ -102,6 +102,11 @@ void main() {
         float ssao = 1.0;
         vec3 reflectColor = vec3(1.0);
 
+        #ifdef IRIS_FEATURE_FADE_VARIABLE
+            if (skyLightFactor > 0.50001) skyLightFactor = eyeBrightnessM;
+            else skyLightFactor *= 1.9999;
+        #endif
+
         #include "/lib/materials/materialHandling/deferredMaterials.glsl"
 
         float fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
