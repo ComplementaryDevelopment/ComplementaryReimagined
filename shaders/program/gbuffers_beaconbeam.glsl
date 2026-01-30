@@ -52,6 +52,19 @@ void main() {
     #else
         vec3 viewPos = ScreenToView(screenPos);
     #endif
+
+    #ifdef DISTANT_HORIZONS
+        vec3 screenPosDH = vec3(screenPos.xy, texture2D(dhDepthTex, screenPos.xy).r);
+        #ifdef TAA
+            vec3 viewPosDH = ScreenToViewDH(vec3(TAAJitter(screenPosDH.xy, -0.5), screenPosDH.z));
+        #else
+            vec3 viewPosDH = ScreenToViewDH(screenPosDH);
+        #endif
+
+        if (viewPos.z < viewPosDH.z)
+            discard;
+    #endif
+
     float lViewPos = length(viewPos);
     vec3 nViewPos = normalize(viewPos);
     vec3 playerPos = ViewToPlayer(viewPos);
