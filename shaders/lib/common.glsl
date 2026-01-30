@@ -793,9 +793,10 @@
     241 to 255 - PBR Independant:
         OSIEBCA * 241.0 = Water
     
+        OSIEBCA * 251.0 = No SSAO, Reduce Reflection
         OSIEBCA * 252.0 = Versatile Selection Outline
         OSIEBCA * 253.0 = Reduced Edge TAA
-        OSIEBCA * 254.0 = No SSAO, No TAA
+        OSIEBCA * 254.0 = No SSAO, No TAA, Reduce Reflection
         OSIEBCA * 255.0 = *Unused as 1.0 is the clear color*
     */
 

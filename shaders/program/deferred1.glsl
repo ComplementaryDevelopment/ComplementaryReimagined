@@ -200,7 +200,7 @@ void main() {
         #endif
 
         vec3 texture6 = texelFetch(colortex6, texelCoord, 0).rgb;
-        bool entityOrHand = z0 < 0.56;
+        bool entityOrParticle = z0 < 0.56;
         int materialMaskInt = int(texture6.g * 255.1);
         float intenseFresnel = 0.0;
         float smoothnessD = texture6.r;
@@ -210,7 +210,7 @@ void main() {
 
         #ifdef WORLD_OUTLINE
             #ifndef WORLD_OUTLINE_ON_ENTITIES
-                if (!entityOrHand)
+                if (!entityOrParticle)
             #endif
             DoWorldOutline(color.rgb, linearZ0);
         #endif
@@ -243,7 +243,7 @@ void main() {
         #endif
 
         waterRefColor = color.rgb;
-        DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither);
+        DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
     } else { // Sky
         #ifdef DISTANT_HORIZONS
             float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
@@ -255,7 +255,7 @@ void main() {
                 playerPos = ViewToPlayer(viewPosDH.xyz);
                 waterRefColor = color.rgb;
                 
-                DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither);
+                DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
             } else { // Start of Actual Sky
         #endif
 

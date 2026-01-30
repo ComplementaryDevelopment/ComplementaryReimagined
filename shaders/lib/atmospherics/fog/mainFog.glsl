@@ -244,12 +244,15 @@ void DoDarknessFog(inout vec4 color, float lViewPos) {
     color *= exp(-fog);
 }
 
-void DoFog(inout vec4 color, inout float skyFade, float lViewPos, vec3 playerPos, float VdotU, float VdotS, float dither) {
+void DoFog(inout vec4 color, inout float skyFade, float lViewPos, vec3 playerPos, float VdotU, float VdotS, float dither, bool isReflection, float lBlockPos) {
     #ifdef CAVE_FOG
         DoCaveFog(color, lViewPos);
     #endif
     #ifdef ATMOSPHERIC_FOG
-        DoAtmosphericFog(color, playerPos, lViewPos, VdotS);
+        float lViewPosAtm = lViewPos;
+        // Reduce fog if the reflecting block is already behind fog, and fogging the reflection would result in too much fog
+        if (isReflection) lViewPosAtm *= 0.2 + 0.8 * sqrt1(max0(1.0 - lBlockPos / lViewPos));
+        DoAtmosphericFog(color, playerPos, lViewPosAtm, VdotS);
     #endif
     #ifdef BORDER_FOG
         DoBorderFog(color, skyFade, max(length(playerPos.xz), abs(playerPos.y)), VdotU, VdotS, dither);

@@ -93,7 +93,7 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 void main() {
     vec4 color = texture2D(tex, texCoord);
 
-    float smoothnessD = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
+    float smoothnessD = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA, Reduce Reflection
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, shadowMult = vec3(0.5); // Reduced shadowMult for held items to not get too bright
 

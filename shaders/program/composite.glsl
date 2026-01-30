@@ -79,7 +79,6 @@ void main() {
         #endif
     ) {
         vec3 texture6 = texelFetch(colortex6, texelCoord, 0).rgb;
-        vec3 texture8 = texelFetch(colortex8, texelCoord, 0).rgb;
         vec3 normalM = mat3(gbufferModelView) * texture4.rgb;
         vec4 screenPos = vec4(texCoord, z0, 1.0);
         vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
@@ -87,7 +86,7 @@ void main() {
         float lViewPos = length(viewPos);
         vec3 nViewPos = normalize(viewPos.xyz);
         vec3 playerPos = ViewToPlayer(viewPos.xyz);
-        bool entityOrHand = z0 < 0.56;
+        bool entityOrParticle = z0 < 0.56;
 
         float dither = texture2DLod(noisetex, gl_FragCoord.xy / 128.0, 0.0).b;
         #if defined TAA || defined PBR_REFLECTIONS
@@ -121,7 +120,7 @@ void main() {
                 bool opaqueSurface = z0 == z1;
                 float minBlendFactor = 0.035 + 0.09 * pow2(pow2(pow2(smoothnessD)));
 
-                if (entityOrHand) {
+                if (entityOrParticle) {
                     noiseMult *= 0.125;
                     minBlendFactor = 0.125;
                     if (!opaqueSurface) reflectColor = vec3(0.0);

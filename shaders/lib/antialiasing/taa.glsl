@@ -138,12 +138,12 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
 
     if (
         abs(materialMask - 149.5) < 50.0 // Entity Reflection Handling (see common.glsl for details)
-        || materialMask == 254 // No SSAO, No TAA
+        || materialMask == 254 // No SSAO, No TAA, Reduce Reflection
     ) { 
         return;
     }
 
-    /*if (materialMask == 254) { // No SSAO, No TAA
+    /*if (materialMask == 254) { // No SSAO, No TAA, Reduce Reflection
         #ifndef CUSTOM_PBR
             if (z1 <= 0.56) return; // The edge pixel trick doesn't look nice on hand
         #endif

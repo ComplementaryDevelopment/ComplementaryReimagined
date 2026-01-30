@@ -251,7 +251,7 @@ vec4 traceHighLOD(vec3 rayDir, vec3 stepDir, vec3 stepSizes, vec3 oldPlayerPos, 
             float skyFade = 0.0;
             float reflectionPrevAlpha = reflection.a;
 
-            DoFog(reflection, skyFade, length(intersection), intersection, RVdotU, RVdotS, dither);
+            DoFog(reflection, skyFade, length(intersection), intersection, RVdotU, RVdotS, dither, true, length(oldPlayerPos));
 
             reflection.a = reflectionPrevAlpha * (1.0 - skyFade);
 

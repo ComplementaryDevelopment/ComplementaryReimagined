@@ -9,7 +9,8 @@
             float firstHalf = mix(MOON_PHASE_DARK, MOON_PHASE_PARTIAL, smoothstep(0.0, 0.5, moonPhaseFactor));
             float secondHalf = mix(MOON_PHASE_PARTIAL, MOON_PHASE_FULL, smoothstep(0.5, 1.0, moonPhaseFactor));
 
-            float moonPhaseInfluence = mix(firstHalf, secondHalf, halfCheck);
+            float moonPhaseFactor2 = mix(firstHalf, secondHalf, halfCheck);
+            float moonPhaseInfluence = mix(1.0, moonPhaseFactor2, 1.0 - sunVisibility2);
         #else
             float moonPhaseInfluence = mix(
                 1.0,

@@ -81,7 +81,7 @@ void main() {
         if (pow2(cloudLinearDepth + OSIEBCA * dither) * renderDistance < min(lViewPos, renderDistance)) discard;
     #endif
 
-    float emission = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
+    float emission = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA, Reduce Reflection
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
@@ -96,7 +96,7 @@ void main() {
         vec2 tSize = textureSize(tex, 0);
         if (tSize.x < atlasCheck) {
             if (color.b > 1.15 * (color.r + color.g) && color.g > color.r * 1.25 && color.g < 0.425 && color.b > 0.75) { // Water Particle
-                materialMask = 0.0;
+                materialMask = OSIEBCA * 251.0; // No SSAO, Reduce Reflection
                 color.rgb = sqrt3(color.rgb);
                 color.rgb *= 0.7;
                 if (dither > 0.4) discard;
@@ -117,7 +117,7 @@ void main() {
                 }
             } else if (color.a < 0.99 && dot(color.rgb, color.rgb) < 1.0) { // Campfire Smoke
                 color.a *= 0.5;
-                materialMask = 0.0;
+                materialMask = OSIEBCA * 251.0; // No SSAO, Reduce Reflection
             } else if (max(abs(colorP.r - colorP.b), abs(colorP.b - colorP.g)) < 0.001) { // Grayscale Particles
                 float dotColor = dot(color.rgb, color.rgb);
                 if (dotColor > 0.25 && color.g < 0.5 && (color.b > color.r * 1.1 && color.r > 0.3 || color.r > (color.g + color.b) * 3.0)) {
@@ -162,7 +162,7 @@ void main() {
         float sky = 0.0;
 
         float prevAlpha = color.a;
-        DoFog(color, sky, lViewPos, playerPos, VdotU, VdotS, dither);
+        DoFog(color, sky, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
         color.a = prevAlpha;
     #endif
 

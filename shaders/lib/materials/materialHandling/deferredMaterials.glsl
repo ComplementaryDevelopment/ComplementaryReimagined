@@ -14,8 +14,10 @@ if (materialMaskInt <= 240) {
         reflectColor = mix(vec3(1.0), color.rgb / (max(color.r, max(color.g, color.b)) + 0.00001), metalness);
     #endif
 } else {
-    if (materialMaskInt == 254) { // No SSAO, No TAA
+    if (materialMaskInt == 251) { // No SSAO, Reduce Reflection
+        entityOrParticle = true;
+    } else if (materialMaskInt == 254) { // No SSAO, No TAA, Reduce Reflection
         ssao = 1.0;
-        entityOrHand = true;
+        entityOrParticle = true;
     }
 }

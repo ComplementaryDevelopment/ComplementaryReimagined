@@ -96,7 +96,7 @@ void main() {
     #endif
 
     float prevAlpha = color.a;
-    DoFog(color, sky, lViewPos, playerPos, VdotU, VdotS, dither);
+    DoFog(color, sky, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
     color.a = prevAlpha * (1.0 - sky);
     
     if (color.a < 0.2 * dither) discard;

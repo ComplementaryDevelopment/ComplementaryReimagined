@@ -284,7 +284,7 @@ void main() {
     float skyFade = 0.0;
     float prevAlpha = color.a;
     color.a = 1.0;
-    DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither);
+    DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
     float fogAlpha = color.a;
     color.a = prevAlpha * (1.0 - skyFade);
 

@@ -66,7 +66,7 @@ void main() {
         #endif
     ) { // Lightning Bolt
         #include "/lib/materials/specificMaterials/others/lightningBolt.glsl"
-        materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
+        materialMask = OSIEBCA * 254.0; // No SSAO, No TAA, Reduce Reflection
     } else { // Dragon Death Beams, and possibly modded effects
         #ifdef END
             if (dither < 0.8) discard;

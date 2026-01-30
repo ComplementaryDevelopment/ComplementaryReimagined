@@ -159,7 +159,7 @@ vec4 GetReflection(vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerPos, fl
 
                     #ifdef GBUFFERS_WATER
                         float reflectionPrevAlpha = reflection.a;
-                        DoFog(reflection, skyFade, lViewPosRT, ViewToPlayer(rfragpos.xyz), RVdotU, RVdotS, dither);
+                        DoFog(reflection, skyFade, lViewPosRT, ViewToPlayer(rfragpos.xyz), RVdotU, RVdotS, dither, true, lViewPos);
                         reflection.a = reflectionPrevAlpha;
                         //reflection.a *= 1.0 - skyFade;
                     #endif

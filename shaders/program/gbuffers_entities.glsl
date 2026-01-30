@@ -98,7 +98,7 @@ void main() {
     #endif
     color *= glColor;
 
-    float smoothnessD = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
+    float smoothnessD = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA, Reduce Reflection
     vec2 lmCoordM = lmCoord;
     vec3 normalM = normal, shadowMult = vec3(1.0);
 
