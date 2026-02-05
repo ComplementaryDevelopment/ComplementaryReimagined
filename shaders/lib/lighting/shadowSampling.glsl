@@ -78,6 +78,18 @@ vec3 SampleBasicFilteredShadow(vec3 shadowPos, float offset) {
     return vec3(shadow * 0.25);
 }
 
+vec3 SampleFilteredShadow(vec3 shadowPos, float offset, float colorMult, float colorPow) {
+    vec3 shadow = vec3(0.0);
+
+    for (int i = 0; i < 4; i++) {
+        shadow += SampleShadow(vec3(offset * shadowOffsets[i] + shadowPos.st, shadowPos.z), colorMult, colorPow);
+    }
+
+    shadow /= 8.0;
+
+    return shadow;
+}
+
 vec3 GetShadow(vec3 shadowPos, float lightmapY, float offset, int shadowSamples, bool leaves) {
     #if SHADOW_QUALITY > 0
         #if ENTITY_SHADOW <= 1 && defined GBUFFERS_BLOCK
@@ -104,7 +116,7 @@ vec3 GetShadow(vec3 shadowPos, float lightmapY, float offset, int shadowSamples,
         #ifndef DO_PIXELATION_EFFECTS
             vec3 shadow = SampleTAAFilteredShadow(shadowPos, offset, shadowSamples, leaves, colorMult, colorPow);
         #else
-            vec3 shadow = SampleBasicFilteredShadow(shadowPos, offset);
+            vec3 shadow = SampleFilteredShadow(shadowPos, offset, colorMult, colorPow);
         #endif
     #else
         vec3 shadow = SampleBasicFilteredShadow(shadowPos, offset);
