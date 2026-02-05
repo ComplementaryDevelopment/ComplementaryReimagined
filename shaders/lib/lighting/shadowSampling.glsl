@@ -101,7 +101,11 @@ vec3 GetShadow(vec3 shadowPos, float lightmapY, float offset, int shadowSamples,
     float colorPow = mix(1.5 + 0.5 * float(isEyeInWater == 0), 0.5, pow2(pow2(lightmapY)));
 
     #if SHADOW_QUALITY >= 1
-        vec3 shadow = SampleTAAFilteredShadow(shadowPos, offset, shadowSamples, leaves, colorMult, colorPow);
+        #ifndef DO_PIXELATION_EFFECTS
+            vec3 shadow = SampleTAAFilteredShadow(shadowPos, offset, shadowSamples, leaves, colorMult, colorPow);
+        #else
+            vec3 shadow = SampleBasicFilteredShadow(shadowPos, offset);
+        #endif
     #else
         vec3 shadow = SampleBasicFilteredShadow(shadowPos, offset);
     #endif
