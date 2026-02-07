@@ -85,9 +85,7 @@ vec3 SampleFilteredShadow(vec3 shadowPos, float offset, float colorMult, float c
         shadow += SampleShadow(vec3(offset * shadowOffsets[i] + shadowPos.st, shadowPos.z), colorMult, colorPow);
     }
 
-    shadow /= 8.0;
-
-    return shadow;
+    return shadow / 8.0;
 }
 
 vec3 GetShadow(vec3 shadowPos, float lightmapY, float offset, int shadowSamples, bool leaves) {
