@@ -144,6 +144,10 @@ float GetLinearDepth(float depth) {
     #include "/lib/misc/distantLightBokeh.glsl"
 #endif
 
+#ifdef SSGI_ENABLED
+    #include "/lib/lighting/screenSpaceGI.glsl"
+#endif
+
 //Program//
 void main() {
     vec4 color = vec4(texelFetch(colortex0, texelCoord, 0).rgb, 1.0);
@@ -191,6 +195,7 @@ void main() {
 
         #if SSAO_QUALI > 0 || defined WORLD_OUTLINE
             float linearZ0 = GetLinearDepth(z0);
+            #define SSGI_LINEAR_Z0_DEFINED
         #endif
 
         #if SSAO_QUALI > 0
@@ -220,6 +225,24 @@ void main() {
         #endif
 
         color.rgb *= ssao;
+
+        #ifdef SSGI_ENABLED
+            #ifndef SSGI_LINEAR_Z0_DEFINED
+                float linearZ0SSGI = GetLinearDepth(z0);
+            #else
+                float linearZ0SSGI = linearZ0;
+            #endif
+            vec3 ssgiNormal = texelFetch(colortex4, texelCoord, 0).rgb;
+            ssgiNormal = mat3(gbufferModelView) * ssgiNormal;
+            vec3 giColor;
+            float giHit = DoScreenSpaceGlobalIllumination(
+                viewPos.xyz, ssgiNormal, z0, linearZ0SSGI, dither, giColor
+            );
+            if (giHit > 0.0) {
+                float giStrength = RT_GI_STRENGTH * 0.01;
+                color.rgb += giColor * giStrength * 0.15;
+            }
+        #endif
 
         #ifdef PBR_REFLECTIONS
             vec3 texture4 = texelFetch(colortex4, texelCoord, 0).rgb;
