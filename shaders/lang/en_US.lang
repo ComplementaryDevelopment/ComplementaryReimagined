@@ -310,6 +310,22 @@ option.VANILLAAO_I=Edge Shadow Intensity (Vanilla)
 option.VANILLAAO_I.comment=Determines the strength of Minecraft's ambient occlusion which adds extra ambient shadowing to the edges of the scene.
 value.VANILLAAO_I.0=OFF
 
+screen.RT_LIGHTING_SETTINGS=Ray-Traced Lighting §c[-]§r
+screen.RT_LIGHTING_SETTINGS.comment=Settings for screen-space ray-traced indirect lighting (SSGI). Approximates path-traced global illumination by tracing rays in screen space to gather indirect light bounces from nearby surfaces. §c[-]§r These settings can significantly impact performance.
+
+option.RT_SUNLIGHT_TRACING=SSGI Quality
+option.RT_SUNLIGHT_TRACING.comment=Enables Screen-Space Global Illumination, a path tracing approximation that adds indirect diffuse lighting bounces using screen-space ray marching. Higher quality uses more rays and steps for smoother, more accurate results. §c[-]§r This effect can impact performance, especially at higher quality levels.
+value.RT_SUNLIGHT_TRACING.0=§aOFF
+value.RT_SUNLIGHT_TRACING.1=§eLow
+value.RT_SUNLIGHT_TRACING.2=§cMedium
+value.RT_SUNLIGHT_TRACING.3=§4§lHigh
+
+option.RT_GI_STRENGTH=SSGI Strength
+option.RT_GI_STRENGTH.comment=Adjusts the intensity of the screen-space global illumination effect. Higher values produce more visible indirect light bounces.
+
+option.RT_GI_RADIUS=SSGI Radius
+option.RT_GI_RADIUS.comment=Controls how far rays are traced for indirect lighting. Larger radii capture light bouncing from more distant surfaces but may introduce noise.
+
 option.BORDER_FOG=Border Fog
 option.BORDER_FOG.comment=Intense fog on the edges of the loaded world to hide chunk borders. §e[*]§r It's recommended to disable Border Fog when playing with less than 8 chunks of render distance.
 
