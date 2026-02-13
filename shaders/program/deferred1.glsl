@@ -232,15 +232,16 @@ void main() {
             #else
                 float linearZ0SSGI = linearZ0;
             #endif
-            vec3 ssgiNormal = texelFetch(colortex4, texelCoord, 0).rgb;
-            ssgiNormal = mat3(gbufferModelView) * ssgiNormal;
+            vec3 ssgiWorldNormal = texelFetch(colortex4, texelCoord, 0).rgb;
+            vec3 ssgiViewNormal = mat3(gbufferModelView) * ssgiWorldNormal;
             vec3 giColor;
             float giHit = DoScreenSpaceGlobalIllumination(
-                viewPos.xyz, ssgiNormal, z0, linearZ0SSGI, dither, giColor
+                viewPos.xyz, ssgiViewNormal, z0, linearZ0SSGI, dither, giColor
             );
             if (giHit > 0.0) {
+                #define SSGI_INTENSITY_SCALE 0.15
                 float giStrength = RT_GI_STRENGTH * 0.01;
-                color.rgb += giColor * giStrength * 0.15;
+                color.rgb += giColor * giStrength * SSGI_INTENSITY_SCALE;
             }
         #endif
 

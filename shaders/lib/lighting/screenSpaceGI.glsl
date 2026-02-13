@@ -28,7 +28,7 @@ float DoScreenSpaceGlobalIllumination(
 ) {
     giColor = vec3(0.0);
 
-    if (z0 < 0.56 || z0 > 0.9999) return 0.0;
+    if (z0 < 0.56 || z0 > 0.9999) return 0.0; // 0.56 = hand/entity depth cutoff used throughout the pack
 
     #if RT_SUNLIGHT_QUALITY == 1
         const int samples = 2;
