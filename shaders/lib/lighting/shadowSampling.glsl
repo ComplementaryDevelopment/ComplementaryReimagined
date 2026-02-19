@@ -1,6 +1,6 @@
 vec3 GetShadowPos(vec3 playerPos) {
     vec3 shadowPos = PlayerToShadow(playerPos);
-    float distb = sqrt(shadowPos.x * shadowPos.x + shadowPos.y * shadowPos.y);
+    float distb = length(shadowPos.xy);
     float distortFactor = distb * shadowMapBias + (1.0 - shadowMapBias);
     shadowPos.xy /= distortFactor;
     shadowPos.z *= 0.2;
