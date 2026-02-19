@@ -824,6 +824,9 @@ option.GENERATED_NORMALS.comment=Adds auto-generated bumpy details to surfaces. 
 option.COATED_TEXTURES=Coated Textures
 option.COATED_TEXTURES.comment=Adds auto-generated dusty details to textures. §e[*]§r RP Support option must be set to Integrated PBR+.
 
+option.COATED_TEXTURES_SNOW_ONLY=Snow Only Coating
+option.COATED_TEXTURES_SNOW_ONLY.comment=When enabled, coated textures only appear in snowy biomes or areas with snowfall. §e[*]§r Requires Coated Textures to be enabled.
+
 option.ENTITY_GN_AND_CT=Allow GN and CT on Entities
 option.ENTITY_GN_AND_CT.comment=Decides if Generated Normals and Coated Textures can appear on entities. §e[*]§r This won't enable GN or CT on entities if the main GN or CT options are disabled.
 

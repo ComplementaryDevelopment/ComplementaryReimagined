@@ -7,6 +7,11 @@ void CoatTextures(inout vec3 color, float noiseFactor, vec3 playerPos, bool doTi
         #endif
     #endif
 
+    #ifdef COATED_TEXTURES_SNOW_ONLY
+        if (inSnowy < 0.001) return;
+        noiseFactor *= inSnowy;
+    #endif
+
     #ifndef SAFER_GENERATED_NORMALS
         vec2 noiseCoord = floor(midCoordPos / 16.0 * packSizeNT * atlasSizeM) / packSizeNT / 3.0;
     #else
