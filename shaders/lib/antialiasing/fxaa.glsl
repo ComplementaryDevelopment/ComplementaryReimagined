@@ -1,4 +1,4 @@
-#ifdef FXAA_TAA_INTERACTION
+#if FXAA_TAA_INTERACTION > 0
     ivec2 neighbourhoodOffsets[8] = ivec2[8](
         ivec2( 1, 1),
         ivec2( 1,-1),
@@ -159,14 +159,15 @@ void FXAA311(inout vec3 color) {
             finalUv.x += finalOffset * stepLength;
         }
 
-        #if defined TAA && defined FXAA_TAA_INTERACTION && TAA_MODE == 1
+        vec3 newColor = texture2D(colortex3, finalUv).rgb;
+
+        #define FXAA_STRENGTH_SKIP 1.0 - FXAA_STRENGTH * 0.01
+
+        #if FXAA_TAA_INTERACTION > 0
             // Less FXAA when moving
-            vec3 newColor = texture2D(colortex3, finalUv).rgb;
-            float skipFactor = min1(
-                20.0 * length(cameraPosition - previousCameraPosition)
-                #ifdef TAA_MOVEMENT_IMPROVEMENT_FILTER
-                    + 0.25 // Catmull-Rom sampling gives us headroom to still do a bit of fxaa
-                #endif
+            float skipFXAA = min(
+                20.0 * length(cameraPosition - previousCameraPosition),
+                FXAA_TAA_INTERACTION * 0.1
             );
 
             float z0 = texelFetch(depthtex0, texelCoord, 0).r;
@@ -182,13 +183,18 @@ void FXAA311(inout vec3 color) {
                     break;
                 }
             }
-            if (edge) skipFactor = 0.0;
+            if (edge) skipFXAA = 0.0;
 
-            if (dot(texelFetch(colortex2, texelCoord, 0).rgb, vec3(1.0)) < 0.01) skipFactor = 0.0;
-            
-            color = mix(newColor, color, skipFactor);
+            if (dot(texelFetch(colortex2, texelCoord, 0).rgb, vec3(1.0)) < 0.01) skipFXAA = 0.0;
+
+            skipFXAA = mix(skipFXAA, 1.0, FXAA_STRENGTH_SKIP);
         #else
-            color = texture2D(colortex3, finalUv).rgb;
+            float skipFXAA = FXAA_STRENGTH_SKIP;
         #endif
+        
+        color = mix(newColor, color, skipFXAA);
+        
+        // debug
+        //if (skipFXAA > texCoord.y && texCoord.x < 0.02) color.rgb = vec3(1,0,1);
     }
 }

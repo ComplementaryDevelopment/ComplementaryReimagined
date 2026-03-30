@@ -33,7 +33,7 @@ void DoNaturalShadowCalculation(inout vec4 color1, inout vec4 color2) {
     color1.rgb *= glColor.rgb;
     color1.rgb = mix(vec3(1.0), color1.rgb, pow(color1.a, (1.0 - color1.a) * 0.5) * 1.05);
     color1.rgb *= 1.0 - pow(color1.a, 64.0);
-    color1.rgb *= 0.2; // Natural Strength
+    color1.rgb *= 0.1; // 423HDSS: Shadow color strength is stored 10 times lower to allow for water shadows going above 1.0
 
     color2.rgb = normalize(color1.rgb) * 0.5;
 }
@@ -46,6 +46,13 @@ void DoNaturalShadowCalculation(inout vec4 color1, inout vec4 color2) {
 //Program//
 void main() {
     vec4 color1 = texture2DLod(tex, texCoord, 0); // Shadow Color
+    #ifdef SHADOW_COLORWHEEL
+        vec2 lmCoord; // needed as otherwise undeclared in the function below
+        float ao;
+        vec4 overlayColor;
+
+        clrwl_computeFragment(color1, color1, lmCoord, ao, overlayColor);
+    #endif
 
     #if SHADOW_QUALITY >= 1
         vec4 color2 = color1; // Light Shaft Color
@@ -58,19 +65,14 @@ void main() {
 
         if (mat < 32008) {
             if (mat < 32000) {
-                #ifdef CONNECTED_GLASS_EFFECT
-                    if (mat == 30008) { // Tinted Glass
-                        DoSimpleConnectedGlass(color1);
+                #if defined CONNECTED_GLASS_EFFECT || defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
+                    if (mat == 30008 || mat >= 31000) { // Tinted Glass || Stained Glass, Stained Glass Pane
+                        #ifdef CONNECTED_GLASS_EFFECT
+                            DoSimpleConnectedGlass(color1);
+                        #endif
                         
                         #if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
                             positionYM = 0.0; // 86AHGA: For scene-aware light shafts to be less prone to get extreme under large glass planes
-                        #endif
-                    }
-                    if (mat >= 31000) { // Stained Glass, Stained Glass Pane
-                        DoSimpleConnectedGlass(color1);
-
-                        #if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
-                            positionYM = 0.0; // 86AHGA
                         #endif
                     }
                 #endif
@@ -95,9 +97,9 @@ void main() {
                         #endif
                     #else
                         #define WATER_SPEED_MULT_M WATER_SPEED_MULT * 0.035
-                        vec2 causticWind = vec2(frameTimeCounter * WATER_SPEED_MULT_M, 0.0);
-                        vec2 cPos1 = worldPos.xz * 0.10 - causticWind;
-                        vec2 cPos2 = worldPos.xz * 0.05 + causticWind;
+                        vec2 causticWind = vec2(0.0, frameTimeCounter * WATER_SPEED_MULT_M);
+                        vec2 cPos1 = worldPos.xz * 0.08 + causticWind;
+                        vec2 cPos2 = worldPos.xz * 0.06 - causticWind;
 
                         float cMult = 14.0;
                         float offset = 0.001;
@@ -122,6 +124,7 @@ void main() {
                         #endif
                     #endif
                     color1.rgb *= vec3(0.6, 0.8, 1.1);
+                    color1.rgb = pow(color1.rgb, vec3(0.75)) * 0.5;
                     ////
 
                     // Underwater Light Shafts
@@ -133,8 +136,8 @@ void main() {
                     #endif
 
                     vec2 waterWind = vec2(syncedTime * 0.01, 0.0);
-                    float waterNoise = texture2D(noisetex, worldPosM.xz * 0.012 - waterWind).g;
-                          waterNoise += texture2D(noisetex, worldPosM.xz * 0.05 + waterWind).g;
+                    float waterNoise = texture2DLod(noisetex, worldPosM.xz * 0.012 - waterWind, 0.0).g;
+                          waterNoise += texture2DLod(noisetex, worldPosM.xz * 0.05 + waterWind, 0.0).g;
 
                     float factor = max(2.5 - 0.025 * length(position.xz), 0.8333) * 1.3;
                     waterNoise = pow(waterNoise * 0.5, factor) * factor * 1.3;
@@ -156,7 +159,7 @@ void main() {
                     color1.rgb *= color1.rgb;
                     color1.rgb = mix(vec3(1.0), color1.rgb, pow(color1.a, (1.0 - color1.a) * 0.5) * 1.05);
                     color1.rgb *= 1.0 - pow(color1.a, 64.0);
-                    color1.rgb *= 0.28;
+                    color1.rgb *= 0.14; // 423HDSS
 
                     color2.rgb = normalize(pow(color1.rgb, vec3(0.25))) * 0.5;
                 }
@@ -172,7 +175,7 @@ void main() {
                     }
                 #endif
                 if (color1.a > 0.5) color1 = vec4(0.0, 0.0, 0.0, 1.0);
-                else color1 = vec4(vec3(0.2 * (1.0 - GLASS_OPACITY)), 1.0);
+                else color1 = vec4(vec3(0.1 * (1.0 - GLASS_OPACITY)), color1.a); // 423HDSS
                 color2.rgb = vec3(0.3);
 
                 #if defined LIGHTSHAFTS_ACTIVE && LIGHTSHAFT_BEHAVIOUR == 1 && defined OVERWORLD
@@ -184,6 +187,7 @@ void main() {
         }
     #endif
 
+    /* DRAWBUFFERS:0 */
     gl_FragData[0] = color1; // Shadow Color
 
     #if SHADOW_QUALITY >= 1
@@ -191,6 +195,7 @@ void main() {
             color2.a = 0.25 + max0(positionYM * 0.05); // consistencyMEJHRI7DG
         #endif
 
+        /* DRAWBUFFERS:01 */
         gl_FragData[1] = color2; // Light Shaft Color
     #endif
 }
@@ -221,10 +226,7 @@ flat out vec4 glColor;
 
 //Attributes//
 attribute vec4 mc_Entity;
-
-#if defined PERPENDICULAR_TWEAKS || defined WAVING_ANYTHING_TERRAIN || defined WAVING_WATER_VERTEX || defined CONNECTED_GLASS_EFFECT
-    attribute vec4 mc_midTexCoord;
-#endif
+attribute vec4 mc_midTexCoord;
 
 #if COLORED_LIGHTING_INTERNAL > 0
     attribute vec3 at_midBlock;
@@ -239,6 +241,10 @@ vec2 lmCoord;
     #ifdef PUDDLE_VOXELIZATION
         writeonly uniform uimage2D puddle_img;
     #endif
+
+    #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+        writeonly uniform uimage3D wsr_img;
+    #endif
 #endif
 
 //Common Functions//
@@ -251,10 +257,14 @@ vec2 lmCoord;
 #endif
 
 #if COLORED_LIGHTING_INTERNAL > 0
-    #include "/lib/misc/voxelization.glsl"
+    #include "/lib/voxelization/lightVoxelization.glsl"
 
     #ifdef PUDDLE_VOXELIZATION
-        #include "/lib/misc/puddleVoxelization.glsl"
+        #include "/lib/voxelization/puddleVoxelization.glsl"
+    #endif
+
+    #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+        #include "/lib/voxelization/reflectionVoxelization.glsl"
     #endif
 #endif
 
@@ -303,7 +313,15 @@ void main() {
             #ifdef PUDDLE_VOXELIZATION
                 UpdatePuddleVoxelMap(mat);
             #endif
+            #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+                vec3 normal = mat3(shadowModelViewInverse) * gl_NormalMatrix * gl_Normal;
+                UpdateSceneVoxelMap(mat, normal, position.xyz);
+            #endif
         }
+
+        #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && WORLD_SPACE_PLAYER_REF == 1
+            UpdatePlayerVertexList(position.xyz);
+        #endif
     #endif
 
     gl_Position = shadowProjection * shadowModelView * position;

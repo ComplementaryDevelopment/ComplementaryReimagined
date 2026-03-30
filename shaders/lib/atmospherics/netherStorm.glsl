@@ -1,14 +1,3 @@
-float Noise3D(vec3 p) {
-    p.z = fract(p.z) * 128.0;
-    float iz = floor(p.z);
-    float fz = fract(p.z);
-    vec2 a_off = vec2(23.0, 29.0) * (iz) / 128.0;
-    vec2 b_off = vec2(23.0, 29.0) * (iz + 1.0) / 128.0;
-    float a = texture2D(noisetex, p.xy + a_off).r;
-    float b = texture2D(noisetex, p.xy + b_off).r;
-    return mix(a, b, fz);
-}
-
 vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 nPlayerPos, vec3 playerPos, float lViewPos, float lViewPos1, float dither) {
     if (isEyeInWater != 0) return vec4(0.0);
     vec4 netherStorm = vec4(1.0, 1.0, 1.0, 0.0);

@@ -94,7 +94,7 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #endif
 
 #ifdef PORTAL_EDGE_EFFECT
-    #include "/lib/misc/voxelization.glsl"
+    #include "/lib/voxelization/lightVoxelization.glsl"
 #endif
 
 //Program//
@@ -113,16 +113,19 @@ void main() {
     #endif
     float lViewPos = length(viewPos);
     vec3 playerPos = ViewToPlayer(viewPos);
+    vec3 nViewPos = normalize(viewPos);
+    float VdotN = dot(nViewPos, normal);
 
     bool noSmoothLighting = false, noDirectionalShading = false;
-    float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = 0.0;
+    float smoothnessD = 0.0, materialMask = 0.0;
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0;
     vec2 lmCoordM = lmCoord;
-    vec3 normalM = normal, geoNormal = normal, shadowMult = vec3(1.0);
+    vec3 normalM = VdotN > 0.0 ? -normal : normal; // Inverted Normal Workaround
+    vec3 geoNormal = normalM, shadowMult = vec3(1.0);
     vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
 
     #ifdef IPBR
-        #include "/lib/materials/materialHandling/blockEntityMaterials.glsl"
+        #include "/lib/materials/materialHandling/blockEntityIPBR.glsl"
 
         #if IPBR_EMISSIVE_MODE != 1
             emission = GetCustomEmissionForIPBR(color, emission);
@@ -158,25 +161,25 @@ void main() {
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
                false, 0, smoothnessG, highlightMult, emission);
 
-    #ifdef PBR_REFLECTIONS
-        #ifdef OVERWORLD
-            skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
-        #else
-            skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
-        #endif
-    #endif
+    vec3 translucentMult = mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a);
+    float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, blockEntityId);
     #endif
 
-    /* DRAWBUFFERS:06 */
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        skyLightFactor *= 0.5;
+    #endif
+
+    /* DRAWBUFFERS:036 */
     gl_FragData[0] = color;
-    gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
+    gl_FragData[1] = vec4(1.0 - translucentMult, 1.0);
+    gl_FragData[2] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
     #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE != 0
-        /* DRAWBUFFERS:065 */
-        gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
+        /* DRAWBUFFERS:0364 */
+        gl_FragData[3] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
     #endif
 }
 

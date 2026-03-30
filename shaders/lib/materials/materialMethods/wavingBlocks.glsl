@@ -1,16 +1,16 @@
 #if COLORED_LIGHTING_INTERNAL > 0
-    #include "/lib/misc/voxelization.glsl"
+    #include "/lib/voxelization/lightVoxelization.glsl"
 #endif
 
 vec3 GetRawWave(in vec3 pos, float wind) {
-    float magnitude = sin(wind * 0.0027 + pos.z + pos.y) * 0.04 + 0.04;
+    float magnitude = sin(wind * 0.0027 + pos.x + pos.y) * 0.04 + 0.04;
     float d0 = sin(wind * 0.0127);
     float d1 = sin(wind * 0.0089);
     float d2 = sin(wind * 0.0114);
     vec3 wave;
-    wave.x = sin(wind*0.0063 + d0 + d1 - pos.x + pos.z + pos.y) * magnitude;
-    wave.z = sin(wind*0.0224 + d1 + d2 + pos.x - pos.z + pos.y) * magnitude;
-    wave.y = sin(wind*0.0015 + d2 + d0 + pos.z + pos.y - pos.y) * magnitude;
+    wave.x = magnitude * sin(wind*0.0224 + d1 + d2 + pos.x - pos.z + pos.y);
+    wave.y = magnitude * sin(wind*0.0015 + d2 + d0 + pos.x);
+    wave.z = magnitude * sin(wind*0.0063 + d0 + d1 - pos.x + pos.z + pos.y);
 
     return wave;
 }
@@ -27,12 +27,6 @@ vec3 GetWave(in vec3 pos, float waveSpeed) {
         wave = mix(wave, waveRain, rainFactor);
     #endif
 
-    #ifdef NO_WAVING_INDOORS
-        wave *= clamp(lmCoord.y - 0.87, 0.0, 0.1);
-    #else
-        wave *= 0.1;
-    #endif
-
     float wavingIntensity = WAVING_I * mix(1.0, WAVING_I_RAIN_MULT_M, rainFactor);
 
     return wave * wavingIntensity;
@@ -42,9 +36,15 @@ void DoWave_Foliage(inout vec3 playerPos, vec3 worldPos, float waveMult) {
     worldPos.y *= 0.5;
 
     vec3 wave = GetWave(worldPos, 170.0);
-    wave.x = wave.x * 8.0 + wave.y * 4.0;
+    wave.x = wave.x * 3.0;
     wave.y = 0.0;
-    wave.z = wave.z * 3.0;
+    wave.z = wave.z * 8.0 + wave.y * 4.0;
+
+    #ifdef NO_WAVING_INDOORS
+        wave *= clamp(lmCoord.y - 0.87, 0.0, 0.1);
+    #else
+        wave *= 0.1;
+    #endif
 
     playerPos.xyz += wave * waveMult;
 }
@@ -53,9 +53,15 @@ void DoWave_Leaves(inout vec3 playerPos, vec3 worldPos, float waveMult) {
     worldPos *= vec3(0.75, 0.375, 0.75);
 
     vec3 wave = GetWave(worldPos, 170.0);
-    wave *= vec3(8.0, 3.0, 4.0);
+    wave *= vec3(4.0, 3.0, 8.0);
 
     wave *= 1.0 - inSnowy; // Leaves with snow on top look wrong
+
+    #ifdef NO_WAVING_INDOORS
+        wave *= clamp(lmCoord.y - 0.87, 0.0, 0.1);
+    #else
+        wave *= 0.1;
+    #endif
 
     playerPos.xyz += wave * waveMult;
 }
@@ -64,8 +70,8 @@ void DoWave_Water(inout vec3 playerPos, vec3 worldPos) {
     float waterWaveTime = frameTimeCounter * 6.0 * WAVING_SPEED;
     worldPos.xz *= 14.0;
 
-    float wave  = sin(waterWaveTime * 0.7 + worldPos.x * 0.14 + worldPos.z * 0.07);
-          wave += sin(waterWaveTime * 0.5 + worldPos.x * 0.10 + worldPos.z * 0.05);
+    float wave  = sin(waterWaveTime * 0.7 - worldPos.z * 0.14 + worldPos.x * 0.07);
+          wave += sin(waterWaveTime * 0.5 - worldPos.z * 0.10 + worldPos.x * 0.05);
 
     #ifdef NO_WAVING_INDOORS
         wave *= clamp(lmCoord.y - 0.87, 0.0, 0.1);
@@ -85,8 +91,8 @@ void DoWave_Lava(inout vec3 playerPos, vec3 worldPos) {
         float lavaWaveTime = frameTimeCounter * 3.0 * WAVING_SPEED;
         worldPos.xz *= 14.0;
 
-        float wave  = sin(lavaWaveTime * 0.7 + worldPos.x * 0.14 + worldPos.z * 0.07);
-              wave += sin(lavaWaveTime * 0.5 + worldPos.x * 0.05 + worldPos.z * 0.10);
+        float wave  = sin(lavaWaveTime * 0.7 - worldPos.z * 0.14 + worldPos.x * 0.07);
+              wave += sin(lavaWaveTime * 0.5 - worldPos.z * 0.05 + worldPos.x * 0.10);
 
         playerPos.y += wave * 0.0125;
     }
@@ -97,20 +103,32 @@ void DoWave(inout vec3 playerPos, int mat) {
 
     #if defined GBUFFERS_TERRAIN || defined SHADOW
         #ifdef WAVING_FOLIAGE
-            if (mat == 10005
+            if (mat == 10005 // Grounded Foliage
                 #ifdef DO_MORE_FOLIAGE_WAVING
-                    || mat == 10769
-                    || mat == 10924
-                    || mat == 10972
+                    || mat == 10769 // Torchflower
+                    || mat == 10976 // Open Eyeblossom
                 #endif
-            ) { // Grounded Waving Foliage
+            ) {
                 if (gl_MultiTexCoord0.t < mc_midTexCoord.t || fract(worldPos.y + 0.21) > 0.26)
                 DoWave_Foliage(playerPos.xyz, worldPos, 1.0);
             }
             
-            else if (mat == 10021) { // Upper Layer Waving Foliage
+            else if (mat == 10021) { // Upper Layer Foliage
                 DoWave_Foliage(playerPos.xyz, worldPos, 1.0);
             }
+
+            #ifdef DO_MORE_FOLIAGE_WAVING
+                else if (mat == 10972) { // Firefly Bush
+                    if (gl_MultiTexCoord0.t < mc_midTexCoord.t || fract(worldPos.y + 0.21) > 0.26) {
+                        vec3 wave = GetWave(worldPos, 170.0);
+                        wave.x = wave.x * 8.0 + wave.y * 4.0;
+                        wave.y = 0.0;
+                        wave.z = wave.z * 3.0;
+
+                        playerPos.xyz += wave * 0.1 * eyeBrightnessM; // lmCoord.y is unreliable for firefly bushes
+                    }
+                }
+            #endif
 
             #if defined WAVING_LEAVES || defined WAVING_LAVA || defined WAVING_LILY_PAD
                 else
@@ -134,8 +152,8 @@ void DoWave(inout vec3 playerPos, int mat) {
                         vec3 voxelPosN = SceneToVoxel(playerPosN);
 
                         if (CheckInsideVoxelVolume(voxelPosP)) {
-                            int voxelP = int(texelFetch(voxel_sampler, ivec3(voxelPosP), 0).r);
-                            int voxelN = int(texelFetch(voxel_sampler, ivec3(voxelPosN), 0).r);
+                            int voxelP = int(GetVoxelVolume(ivec3(voxelPosP)));
+                            int voxelN = int(GetVoxelVolume(ivec3(voxelPosN)));
                             if (voxelP != 0 && voxelP != 65 || voxelN != 0 && voxelN != 65) // not air, not weeping vines
                                 waveMult = 0.0;
                         }

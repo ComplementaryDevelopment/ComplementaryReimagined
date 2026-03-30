@@ -15,7 +15,6 @@ vec3 GetStars(vec2 starCoord, float VdotU, float VdotS) {
     #if NIGHT_STAR_AMOUNT == 0
         return vec3(0.0, 0.0, 0.0);
     #endif
-
     if (VdotU < 0.0) return vec3(0.0);
 
     starCoord *= 0.2;
@@ -29,21 +28,16 @@ vec3 GetStars(vec2 starCoord, float VdotU, float VdotS) {
 
     #if NIGHT_STAR_AMOUNT == 1
         star -= 0.82;
-        star *= 0.85;
+        star *= 2.0;
     #elif NIGHT_STAR_AMOUNT == 2
         star -= 0.7;
-        star *= 0.7;
     #elif NIGHT_STAR_AMOUNT == 3
-        star -= 0.65;
-        star *= 0.65;
+        star -= 0.62;
+        star *= 0.75;
     #elif NIGHT_STAR_AMOUNT == 4
-        star -= 0.6;
-        star *= 0.65;
-    #elif NIGHT_STAR_AMOUNT == 5
-        star -= 0.55;
-        star *= 0.6;
+        star -= 0.52;
+        star *= 0.55;
     #endif
-
     star = max0(star);
     star *= star;
 

@@ -1,4 +1,4 @@
-if (color.r > 0.65) {
+if (color.r > 0.65 && abs(color.g - color.b) < 0.1) {
     emission = (3.5 - 2.25 * color.g) * 0.97;
     color.rgb *= color.rgb;
 

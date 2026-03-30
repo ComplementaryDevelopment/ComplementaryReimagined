@@ -18,17 +18,6 @@ vec4 DistortShadow(vec4 shadowpos, float distortFactor) {
     return shadowpos;
 }
 
-float Noise3D(vec3 p) {
-    p.z = fract(p.z) * 128.0;
-    float iz = floor(p.z);
-    float fz = fract(p.z);
-    vec2 a_off = vec2(23.0, 29.0) * (iz) / 128.0;
-    vec2 b_off = vec2(23.0, 29.0) * (iz + 1.0) / 128.0;
-    float a = texture2D(noisetex, p.xy + a_off).r;
-    float b = texture2D(noisetex, p.xy + b_off).r;
-    return mix(a, b, fz);
-}
-
 vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucentMult, float lViewPos0, float lViewPos1, vec3 nViewPos, float VdotL, float VdotU, vec2 texCoord, float z0, float z1, float dither) {
     vec4 volumetricLight = vec4(0.0);
     float vlMult = 1.0 - maxBlindnessDarkness;
@@ -38,6 +27,13 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
         vec2 shadowMapResolutionM = textureSize(shadowtex0, 0);
     #endif
 
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        vec3 texture6 = texelFetch(colortex6, texelCoord, 0).rgb;
+        float chunkFade = texture6.b > 0.50001 ? (1.0 - texture6.b) * 2.0 : 1.0;
+        float chunkFadeM = mix(1.0, chunkFade, pow2(clamp01(lViewPos0 * 0.015))); // don't do fade very close to the player
+        lViewPos1 = mix(far, lViewPos1, chunkFadeM);
+    #endif
+
     #ifdef OVERWORLD
         vec3 vlColor = lightColor;
         vec3 vlColorReducer = vec3(1.0);
@@ -45,18 +41,19 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
 
         #ifdef SPECIAL_BIOME_WEATHER
             vlSceneIntensity = mix(vlSceneIntensity, 1.0, inDry * rainFactor);
+            vlColor *= 1.0 + 0.6 * inDry * rainFactor;
         #endif
 
         if (sunVisibility < 0.5) {
             vlSceneIntensity = 0.0;
             
-            float vlMultNightModifier = 0.6 + 0.4 * max0(far - lViewPos1) / far;
+            float vlMultNightModifier = (0.3 + 0.4 * rainFactor2 + 0.5 * max0(far - lViewPos1) / far);
             #ifdef SPECIAL_PALE_GARDEN_LIGHTSHAFTS
                 vlMultNightModifier = mix(vlMultNightModifier, 1.0, inPaleGarden);
             #endif
             vlMult *= vlMultNightModifier;
 
-            vlColor = normalize(pow(vlColor, vec3(1.0 - max0(1.0 - 1.5 * nightFactor))));
+            vlColor = normalize(pow(vlColor, vec3(1.0 - max0(1.0 - 1.5 * nightFactor) + rainFactor)));
             vlColor *= 0.0766 + 0.0766 * vsBrightness;
         } else {
             vlColorReducer = 1.0 / sqrt(vlColor);
@@ -84,6 +81,10 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
             int sampleCount = vlSceneIntensity < 0.5 ? 10 : 20;
         #elif LIGHTSHAFT_QUALI == 1
             int sampleCount = vlSceneIntensity < 0.5 ? 6 : 12;
+        #endif
+
+        #ifndef TAA
+            sampleCount *= 2;
         #endif
 
         #ifdef LIGHTSHAFT_SMOKE
@@ -127,6 +128,10 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
     maxDist *= viewFactor;
     distMult *= viewFactor;
 
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        depth1 = mix(depth1, far, pow2(pow2(1.0 - chunkFadeM)));
+    #endif
+
     #ifdef OVERWORLD
         float maxCurrentDist = min(depth1, maxDist);
     #else
@@ -143,10 +148,8 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
         vec4 wpos = gbufferModelViewInverse * viewPos;
         vec3 playerPos = wpos.xyz / wpos.w;
         #ifdef END
-            #ifdef DISTANT_HORIZONS
-                playerPos *= sqrt(renderDistance / far);
-            #endif
-            vec4 enderBeamSample = vec4(DrawEnderBeams(VdotU, playerPos), 1.0);
+            playerPos *= 512.0 / far;
+            vec4 enderBeamSample = vec4(DrawEnderBeams(VdotU, playerPos, nViewPos), 1.0);
             enderBeamSample /= sampleCount;
         #endif
 
@@ -213,7 +216,7 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
         #ifdef OVERWORLD
             #ifdef LIGHTSHAFT_SMOKE
                 vec3 smokePos = 0.0015 * (playerPos + cameraPosition);
-                vec3 smokeWind = frameTimeCounter * vec3(0.002, 0.001, 0.0);
+                vec3 smokeWind = frameTimeCounter * vec3(0.0, 0.001, -0.002);
                 float smoke = 0.65 * Noise3D(smokePos + smokeWind)
                             + 0.25 * Noise3D((smokePos - smokeWind) * 3.0)
                             + 0.10 * Noise3D((smokePos + smokeWind) * 9.0);
@@ -288,8 +291,8 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
     #endif
 
     #ifdef OVERWORLD
-        vlColor = pow(vlColor, vec3(0.5 + 0.5 * invNoonFactor * invRainFactor + 0.3 * rainFactor));
-        vlColor *= 1.0 - (0.3 + 0.3 * noonFactor) * rainFactor - 0.5 * rainyNight;
+        vlColor = pow(vlColor, vec3(0.5 + (0.5 + LIGHTSHAFT_SUNSET_SATURATION * sunVisibility) * invNoonFactor * invRainFactor + 0.3 * rainFactor));
+        vlColor *= 1.0 - (0.3 + 0.3 * noonFactor) * rainFactor - 0.5 * rainyNight + sunVisibility * pow2(invNoonFactor) * invRainFactor;
 
         #if LIGHTSHAFT_DAY_I != 100 || LIGHTSHAFT_NIGHT_I != 100 || LIGHTSHAFT_RAIN_I != 100
             #define LIGHTSHAFT_DAY_IM LIGHTSHAFT_DAY_I * 0.01
@@ -312,26 +315,30 @@ vec4 GetVolumetricLight(inout vec3 color, inout float vlFactor, vec3 translucent
     volumetricLight.rgb *= vlMult;
     volumetricLight = max(volumetricLight, vec4(0.0));
 
-    #ifdef DISTANT_HORIZONS
+    #if defined DISTANT_HORIZONS && defined OVERWORLD
         if (isEyeInWater == 0) {
-            #ifdef OVERWORLD
-                float lViewPosM = lViewPos0;
-                if (z0 >= 1.0) {
-                    float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
-                    vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
-                    vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
-                    viewPosDH /= viewPosDH.w;
-                    lViewPosM = length(viewPosDH.xyz);
-                }
-                lViewPosM = min(lViewPosM, renderDistance * 0.6);
+            float lViewPosM = lViewPos0;
+            if (z0 >= 1.0) {
+                float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
+                vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
+                vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
+                viewPosDH /= viewPosDH.w;
+                lViewPosM = length(viewPosDH.xyz);
+            }
+            lViewPosM = min(lViewPosM, renderDistance * 0.6);
 
-                float dhVlStillIntense = max(max(vlSceneIntensity, rainFactor), nightFactor * 0.5);
+            float dhVlStillIntense = max(max(vlSceneIntensity, rainFactor), nightFactor * 0.5);
 
-                volumetricLight *= mix(0.0003 * lViewPosM, 1.0, dhVlStillIntense);
-            #else
-                volumetricLight *= min1(lViewPos1 * 3.0 / renderDistance);
-            #endif
+            volumetricLight *= mix(0.0003 * lViewPosM, 1.0, dhVlStillIntense);
         }
+    #endif
+
+    #ifdef END
+        #ifndef DISTANT_HORIZONS
+            volumetricLight *= sqrt1(min1(lViewPos1 * 2.0 / 512.0));
+        #else
+            volumetricLight *= min1(lViewPos1 * 3.0 / renderDistance);
+        #endif
     #endif
 
     return volumetricLight;

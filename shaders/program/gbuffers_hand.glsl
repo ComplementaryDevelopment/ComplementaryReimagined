@@ -93,8 +93,9 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 void main() {
     vec4 color = texture2D(tex, texCoord);
 
-    float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
-    vec3 normalM = normal;
+    float smoothnessD = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA, Reduce Reflection
+    vec2 lmCoordM = lmCoord;
+    vec3 normalM = normal, shadowMult = vec3(0.5); // Reduced shadowMult for held items to not get too bright
 
     float alphaCheck = color.a;
     #ifdef DO_PIXELATION_EFFECTS
@@ -116,14 +117,12 @@ void main() {
 
         bool noSmoothLighting = true, noGeneratedNormals = false, noDirectionalShading = false, noVanillaAO = false;
         float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 0.6;
-        vec2 lmCoordM = lmCoord;
         vec3 geoNormal = normalM;
         vec3 worldGeoNormal = normalize(ViewToPlayer(geoNormal * 10000.0));
-        vec3 shadowMult = vec3(0.4);
+        vec3 maRecolor = vec3(0.0);
         #ifdef IPBR
-            #ifdef IS_IRIS
-                vec3 maRecolor = vec3(0.0);
-                #include "/lib/materials/materialHandling/irisMaterials.glsl"
+            #if defined IS_IRIS || defined IS_ANGELICA && ANGELICA_VERSION >= 20000008
+                #include "/lib/materials/materialHandling/irisIPBR.glsl"
 
                 if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
             #endif
@@ -149,21 +148,19 @@ void main() {
                    worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                    false, 0, smoothnessG, highlightMult, emission);
 
-        #if defined IPBR && defined IS_IRIS
+        #ifdef IPBR
             color.rgb += maRecolor;
-        #endif
-
-        #if (defined CUSTOM_PBR || defined IPBR && defined IS_IRIS) && defined PBR_REFLECTIONS
-            #ifdef OVERWORLD
-                skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
-            #else
-                skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
-            #endif
         #endif
     }
 
+    float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
+
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);
+    #endif
+
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        skyLightFactor *= 0.5;
     #endif
 
     /* DRAWBUFFERS:06 */
@@ -171,7 +168,7 @@ void main() {
     gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
     #if BLOCK_REFLECT_QUALITY >= 2 && (RP_MODE >= 2 || defined IS_IRIS)
-        /* DRAWBUFFERS:065 */
+        /* DRAWBUFFERS:064 */
         gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
     #endif
 }

@@ -135,15 +135,11 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
 
         #if RP_MODE == 2 // seuspbr
             materialMask = specularMap.g * OSIEBCA * 240.0;
-
-            color.rgb *= 1.0 - 0.25 * specularMap.g;
         #elif RP_MODE == 3 // labPBR
             if (specularMap.g < OSIEBCA * 229.1) {
                 materialMask = specularMap.g * OSIEBCA * 214.0;
             } else {
                 materialMask = specularMap.g - OSIEBCA * 15.0;
-
-                color.rgb *= 0.75;
             }
         #endif
     #endif

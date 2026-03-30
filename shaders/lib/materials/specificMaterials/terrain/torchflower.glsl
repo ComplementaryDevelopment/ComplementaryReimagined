@@ -8,7 +8,7 @@ subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
     #endif
 #endif
 
-#if defined GBUFFERS_TERRAIN && !defined IPBR_COMPATIBILITY_MODE
+#if defined GBUFFERS_TERRAIN && !defined IPBR_COMPAT_MODE
     emission = (1.0 - abs(signMidCoordPos.x)) * max0(0.7 - abs(signMidCoordPos.y + 0.7));
     emission = pow1_5(emission) * 2.5;
 #else

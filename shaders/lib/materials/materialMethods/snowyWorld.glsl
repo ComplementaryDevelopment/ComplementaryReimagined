@@ -8,7 +8,7 @@ void DoSnowyWorld(inout vec4 color, inout float smoothnessG, inout float highlig
     vec3 worldPos = playerPos + cameraPosition;
     vec2 noiseCoord = floor(packSizeSW * worldPos.xz + 0.001) / packSizeSW;
          noiseCoord += floor(packSizeSW * worldPos.y + 0.001) / packSizeSW;
-    float noiseTexture = dot(vec2(0.25, 0.75), texture2D(noisetex, noiseCoord * 0.45).rg);
+    float noiseTexture = dot(vec2(0.25, 0.75), texture2DLod(noisetex, noiseCoord * 0.45, 0.0).rg);
     vec3 snowColor = mix(vec3(0.65, 0.8, 0.85), vec3(1.0, 1.0, 1.0), noiseTexture * 0.75 + 0.125);
 
     color.rgb = mix(color.rgb, snowColor + color.rgb * emission * 0.2, snowFactorM);

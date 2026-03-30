@@ -74,7 +74,7 @@ void main() {
             #endif
         #endif
 
-        #if defined BORDER_FOG && !defined DREAM_TWEAKED_BORDERFOG
+        #ifdef BORDER_FOG
             vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
             #ifdef TAA
                 vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
@@ -82,9 +82,14 @@ void main() {
                 vec3 viewPos = ScreenToView(screenPos);
             #endif
             vec3 playerPos = ViewToPlayer(viewPos);
-
             float xzMaxDistance = max(abs(playerPos.x), abs(playerPos.z));
-            float cloudDistance = 375.0;
+
+            #if MC_VERSION < 12106
+                float cloudDistance = 375.0;
+            #else
+                float cloudDistance = 2000.0;
+            #endif
+
             cloudDistance = clamp((cloudDistance - xzMaxDistance) / cloudDistance, 0.0, 1.0);
             color.a *= clamp01(cloudDistance * 3.0);
         #endif

@@ -11,7 +11,11 @@
 flat in int mat;
 
 in vec2 texCoord;
-in vec2 lmCoord;
+#ifdef GBUFFERS_COLORWHEEL
+    vec2 lmCoord;
+#else
+    in vec2 lmCoord;
+#endif
 in vec2 signMidCoordPos;
 flat in vec2 absMidCoordPos;
 flat in vec2 midCoord;
@@ -36,13 +40,22 @@ in vec4 glColorRaw;
     in vec4 spriteBounds;
 #endif
 
+#ifdef IRIS_FEATURE_FADE_VARIABLE
+    flat in float chunkFade;
+#endif
+
 //Pipeline Constants//
 #if COLORED_LIGHTING_INTERNAL > 0
-    const float voxelDistance = 32.0;
+    #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1
+        const float voxelDistance = 32.0;
+    #else
+        const float voxelDistance = 64.0;
+    #endif
 #endif
 
 //Common Variables//
 float NdotU = dot(normal, upVec);
+float geoNdotU = NdotU;
 float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
 float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
@@ -70,25 +83,21 @@ vec4 glColor = glColorRaw;
 
 //Common Functions//
 void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, inout float snowMinNdotU, vec3 viewPos, vec3 nViewPos, float lViewPos, float dither) {
-    #ifdef DREAM_TWEAKED_LIGHTING
-        return;
-    #endif
     float factor = max(80.0 - lViewPos, 0.0);
     shadowMult *= 1.0 + 0.004 * noonFactor * factor;
 
-    #if defined IPBR && !defined IPBR_COMPATIBILITY_MODE
-        if (signMidCoordPos.x < 0.0) color.rgb *= 1.08;
-        else color.rgb *= 0.93;
+    #if defined IPBR && !defined IPBR_COMPAT_MODE
+        color.rgb *= 0.97 - 0.2 * signMidCoordPos.x;
     #endif
+
+    //#define FOLIAGE_ALT_SUBSURFACE
 
     #ifdef FOLIAGE_ALT_SUBSURFACE
         float edgeSize = 0.12;
         float edgeEffectFactor = 0.75;
 
-        edgeEffectFactor *= (sqrt1(abs(dot(nViewPos, normal))) - 0.1) * 1.111;
-
         vec2 texCoordM = texCoord;
-             texCoordM.y -= edgeSize * pow2(dither) * absMidCoordPos.y;
+             texCoordM.y -= edgeSize * dither * absMidCoordPos.y;
              texCoordM.y = max(texCoordM.y, midCoord.y - absMidCoordPos.y);
         vec4 colorSample = texture2DLod(tex, texCoordM, 0);
 
@@ -97,7 +106,7 @@ void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, inout float s
             shadowMult *= 1.0 + edgeEffectFactor * (1.0 + edgeFactor);
         }
 
-        shadowMult *= 1.0 + 0.2333 * edgeEffectFactor * (dot(normal, lightVec) - 1.0);
+        shadowMult *= 1.03 + 0.2333 * edgeEffectFactor * (dot(normal, lightVec) - 1.0);
     #endif
 
     #ifdef SNOWY_WORLD
@@ -114,7 +123,7 @@ void DoFoliageColorTweaks(inout vec3 color, inout vec3 shadowMult, inout float s
 }
 
 void DoBrightBlockTweaks(vec3 color, float minLight, inout vec3 shadowMult, inout float highlightMult) {
-    float factor = mix(minLight, 1.0, pow2(pow2(color.r)));
+    float factor = mix(minLight * 0.5 + 0.5, 1.0, pow2(pow2(color.r)));
     shadowMult = vec3(factor);
     highlightMult /= factor;
 }
@@ -161,7 +170,7 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
 #endif
 
 #ifdef PUDDLE_VOXELIZATION
-    #include "/lib/misc/puddleVoxelization.glsl"
+    #include "/lib/voxelization/puddleVoxelization.glsl"
 #endif
 
 #ifdef SNOWY_WORLD
@@ -180,14 +189,24 @@ void main() {
         vec4 color = textureAF(tex, texCoord);
     #endif
 
-    float smoothnessD = 0.0, materialMask = 0.0, skyLightFactor = 0.0;
+    float smoothnessD = 0.0, materialMask = 0.0;
 
     #if !defined POM || !defined POM_ALLOW_CUTOUT
         if (color.a <= 0.00001) discard; // 6WIR4HT23
     #endif
 
     vec3 colorP = color.rgb;
-    color.rgb *= glColor.rgb;
+
+    #ifdef GBUFFERS_COLORWHEEL
+        float ao;
+        vec4 overlayColor;
+        
+        clrwl_computeFragment(color, color, lmCoord, ao, overlayColor);
+        color.rgb = mix(color.rgb, overlayColor.rgb, overlayColor.a);
+        lmCoord = clamp((lmCoord - 1.0 / 32.0) * 32.0 / 30.0, 0.0, 1.0);
+    #else
+        color.rgb *= glColor.rgb;
+    #endif
 
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     #ifdef TAA
@@ -213,7 +232,7 @@ void main() {
 
     #ifdef IPBR
         vec3 maRecolor = vec3(0.0);
-        #include "/lib/materials/materialHandling/terrainMaterials.glsl"
+        #include "/lib/materials/materialHandling/terrainIPBR.glsl"
 
         #ifdef GENERATED_NORMALS
             if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
@@ -295,8 +314,8 @@ void main() {
             puddlePosNormal *= 0.1;
             vec2 pNormalCoord1 = puddlePosNormal + vec2(puddleWind.x, puddleWind.y);
             vec2 pNormalCoord2 = puddlePosNormal + vec2(puddleWind.x * -1.5, puddleWind.y * -1.0);
-            vec3 pNormalNoise1 = texture2D(noisetex, pNormalCoord1).rgb;
-            vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
+            vec3 pNormalNoise1 = texture2DLod(noisetex, pNormalCoord1, 0.0).rgb;
+            vec3 pNormalNoise2 = texture2DLod(noisetex, pNormalCoord2, 0.0).rgb;
             float pNormalMult = 0.03;
 
             vec3 puddleNormal = vec3((pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult, 1.0);
@@ -304,9 +323,9 @@ void main() {
 
             #if RAIN_PUDDLES == 1 || RAIN_PUDDLES == 3
                 vec2 puddlePosForm = puddlePosNormal * 0.05;
-                float pFormNoise  = texture2D(noisetex, puddlePosForm).b        * 3.0;
-                      pFormNoise += texture2D(noisetex, puddlePosForm * 0.5).b  * 5.0;
-                      pFormNoise += texture2D(noisetex, puddlePosForm * 0.25).b * 8.0;
+                float pFormNoise  = texture2DLod(noisetex, puddlePosForm, 0.0).b        * 3.0;
+                      pFormNoise += texture2DLod(noisetex, puddlePosForm * 0.5, 0.0).b  * 5.0;
+                      pFormNoise += texture2DLod(noisetex, puddlePosForm * 0.25, 0.0).b * 8.0;
                       pFormNoise *= sqrt1(wetnessM) * 0.5625 + 0.4375;
                       pFormNoise  = clamp(pFormNoise - 7.0, 0.0, 1.0);
             #else
@@ -335,16 +354,15 @@ void main() {
         color.rgb += maRecolor;
     #endif
 
-    #ifdef PBR_REFLECTIONS
-        #ifdef OVERWORLD
-            skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
-        #else
-            skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
-        #endif
-    #endif
+    float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, mat);
+    #endif
+
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        skyLightFactor *= 0.5;
+        if (chunkFade < 1.0) skyLightFactor = 1.0 - chunkFade * 0.5;
     #endif
 
     /* DRAWBUFFERS:06 */
@@ -352,7 +370,7 @@ void main() {
     gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
     #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE != 0
-        /* DRAWBUFFERS:065 */
+        /* DRAWBUFFERS:064 */
         gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
     #endif
 }
@@ -365,7 +383,11 @@ void main() {
 flat out int mat;
 
 out vec2 texCoord;
-out vec2 lmCoord;
+#ifdef GBUFFERS_COLORWHEEL
+    vec2 lmCoord;
+#else
+    out vec2 lmCoord;
+#endif
 out vec2 signMidCoordPos;
 flat out vec2 absMidCoordPos;
 flat out vec2 midCoord;
@@ -388,6 +410,10 @@ out vec4 glColorRaw;
 
 #if ANISOTROPIC_FILTER > 0
     out vec4 spriteBounds;
+#endif
+
+#ifdef IRIS_FEATURE_FADE_VARIABLE
+    flat out float chunkFade;
 #endif
 
 //Attributes//
@@ -447,7 +473,6 @@ void main() {
 
     gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
 
-
     #ifdef FLICKERING_FIX
         if (mat == 10257) gl_Position.z -= 0.00001; // Iron Bars
     #endif
@@ -479,6 +504,10 @@ void main() {
         vec2 bottomLeft = mc_midTexCoord.xy - spriteRadius;
         vec2 topRight = mc_midTexCoord.xy + spriteRadius;
         spriteBounds = vec4(bottomLeft, topRight);
+    #endif
+
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        chunkFade = mc_chunkFade;
     #endif
 }
 

@@ -61,6 +61,42 @@ float GetMaxColorDif(vec3 color) {
     return max(dif.r, max(dif.g, dif.b));
 }
 
+float Noise3D(vec3 p) {
+    p.z = fract(p.z) * 128.0;
+    float iz = floor(p.z);
+    float fz = fract(p.z);
+    vec2 a_off = vec2(23.0, 29.0) * (iz) / 128.0;
+    vec2 b_off = vec2(23.0, 29.0) * (iz + 1.0) / 128.0;
+    float a = texture2DLod(noisetex, p.xy + a_off, 0.0).r;
+    float b = texture2DLod(noisetex, p.xy + b_off, 0.0).r;
+    return mix(a, b, fz);
+}
+
+float GetSkyLightFactor(vec2 lmCoordM, vec3 shadowMult) {
+    #ifdef OVERWORLD
+        #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1
+            float skyLightFactor = max(lmCoordM.y - 0.7, 0.0) * 3.33333;
+                  skyLightFactor *= skyLightFactor;
+        #else
+            float skyLightFactor = lmCoordM.y;
+        #endif
+
+        #if defined GBUFFERS_WATER || defined DH_WATER
+            #if SHADOW_QUALITY > -1 && WATER_REFLECT_QUALITY >= 2 && WATER_MAT_QUALITY >= 2
+                skyLightFactor = max(skyLightFactor, dot(shadowMult, shadowMult) * 0.333333);
+            #endif
+        #endif
+    #else
+        #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1 || MC_VERSION < 12109
+            float skyLightFactor = dot(shadowMult, shadowMult) * 0.333333;
+        #else
+            float skyLightFactor = lmCoordM.y;
+        #endif
+    #endif
+
+    return skyLightFactor;
+}
+
 int min1(int x) {
     return min(x, 1);
 }
@@ -239,6 +275,10 @@ vec3 smoothstep1(vec3 x) {
 }
 vec4 smoothstep1(vec4 x) {
     return x * x * (3.0 - 2.0 * x);
+}
+
+float dot3(vec3 x) {
+    return dot(x, x);
 }
 
 vec3 rgb2hsv(vec3 c)

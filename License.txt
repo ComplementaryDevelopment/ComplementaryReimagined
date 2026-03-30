@@ -1,4 +1,4 @@
-Complementary License Agreement 1.5
+Complementary License Agreement 1.6
 ===================================
 
 0. Terminology
@@ -40,13 +40,20 @@ Complementary License Agreement 1.5
          a. Using The Pack for gameplay
          b. Using The Pack for content creation
 
-  1.2. This Pack is allowed to be redistributed inside a Modpack as long as
-       the following conditions are met:
+  1.2. This Pack is allowed to be added to a Modpack as long as the following
+       conditions are met:
          a. This Pack must be visibly credited in the Modpack's description
-            page(s).
+            page(s) if This Pack is enabled by default for new users of the
+            Modpack.
          b. The author of the Modpack must acknowledge that any problems that
             may arise from using This Pack in their Modpack is entirely under
             the responsibility of the author of the Modpack.
+         c. The contents of This Pack must not be modified in any way,
+            including simple variable changes or block property additions.
+         d. This Pack must be added to the Modpack by using Modrinth or
+            CurseForge's existing systems, similar to how Modpack developers
+            add any other mods to their Modpacks. It is not allowed to
+            redistribute This Pack using a direct file upload.
 
   1.3. This Pack is allowed to be redistributed as a Modified Pack as long as
        the following conditions are met:
@@ -67,6 +74,9 @@ Complementary License Agreement 1.5
             Original Pack in multiple common gameplay scenarios that must
             include daytime overworld visuals, regardless of the setting or
             variable changes in the Modified Pack and/or the Original Pack.
+         e. The Modified Pack must not have any other license agreements
+            or terms other than this agreement, regardless of how much new
+            code has been added to the Modified Pack.
 
 2. Denied Cases
 ---------------
@@ -87,6 +97,7 @@ Complementary License Agreement 1.5
        or not.
 
   3.2. Complementary Development reserves its rights to not take action
-       against cases that it deems harmless. For this reason, cases that
-       Complementary Development did not take action against in the past
-       cannot be used as an excuse to ignore this agreement.
+       against cases that it deems harmless or not harmful enough to matter.
+       For this reason, cases that Complementary Development did not take
+       action against in the past cannot be used as an excuse to ignore this
+       agreement.

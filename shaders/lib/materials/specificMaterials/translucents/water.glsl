@@ -60,7 +60,7 @@
     #if WATER_MAT_QUALITY >= 2 || WATER_STYLE >= 2
         #define WATER_SPEED_MULT_M WATER_SPEED_MULT * 0.018
         float rawWind = frameTimeCounter * WATER_SPEED_MULT_M;
-        vec2 wind = vec2(rawWind, 0.0);
+        vec2 wind = vec2(0.0, -rawWind);
         vec3 worldPos = playerPos + cameraPosition;
         vec2 waterPos = worldPos.xz;
         #if WATER_STYLE < 3 && defined GBUFFERS_WATER
@@ -112,10 +112,11 @@
                 vec2 puddleWind = vec2(frameTimeCounter) * 0.015;
                 vec2 pNormalCoord1 = puddlePos + vec2(puddleWind.x, puddleWind.y);
                 vec2 pNormalCoord2 = puddlePos + vec2(puddleWind.x * -1.5, puddleWind.y * -1.0);
-                vec3 pNormalNoise1 = texture2D(noisetex, pNormalCoord1).rgb;
-                vec3 pNormalNoise2 = texture2D(noisetex, pNormalCoord2).rgb;
+                vec3 pNormalNoise1 = texture2DLod(noisetex, pNormalCoord1, 0.0).rgb;
+                vec3 pNormalNoise2 = texture2DLod(noisetex, pNormalCoord2, 0.0).rgb;
 
-                normalMap.xy = (pNormalNoise1.xy + pNormalNoise2.xy - vec2(1.0)) * pNormalMult;
+                normalMap.xy = (pNormalNoise1.xy + pNormalNoise2.yx - vec2(1.0)) * pNormalMult;
+                normalMap.xy *= 2.0 - 1.8 * fresnel2;
         #endif
 
             normalMap.z = sqrt(1.0 - (pow2(normalMap.x) + pow2(normalMap.y)));
@@ -140,7 +141,7 @@
     #if WATER_MAT_QUALITY >= 2
         if (isEyeInWater != 1) {
             // Noise Coloring //
-            float noise = texture2D(noisetex, (waterPos + wind) * 0.25).g;
+            float noise = texture2DLod(noisetex, (waterPos + wind) * 0.25, 0.0).g;
                   noise = noise - 0.5;
                   noise *= 0.25;
             color.rgb = pow(color.rgb, vec3(1.0 + noise));
@@ -204,7 +205,7 @@
                         float dotColorPM = dot(colorPM, colorPM);
                         float foamThreshold = min(pow2(dotColorPM) * 1.6, 1.2);
                     #else
-                        float foamThreshold = pow2(texture2D(noisetex, waterPos * 4.0 + wind * 0.5).g) * 1.6;
+                        float foamThreshold = pow2(texture2DLod(noisetex, waterPos * 4.0 + wind * 0.5, 0.0).g) * 1.6;
                     #endif
                     float foam = pow2(clamp((foamThreshold + yPosDif) / foamThreshold, 0.0, 1.0));
                     #ifndef END
@@ -243,6 +244,11 @@
                 #else
                     translucentMult.rgb *= 1.0 - 0.9 * max(0.5 * sqrt(fresnel4), fresnel4);
                 #endif
+            #endif
+
+            #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+                reflectMult = 1.0 / color.a;
+                fresnelM = 1.0;
             #endif
         }
     #else

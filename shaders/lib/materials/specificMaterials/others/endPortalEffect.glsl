@@ -80,7 +80,7 @@ noDirectionalShading = true;
 
         float edge = 0.0;
         for (int i = 0; i < 4; i++) {
-            int voxel = int(texelFetch(voxel_sampler, ivec3(voxelPos + portalOffsets[i]), 0).r);
+            int voxel = int(GetVoxelVolume(ivec3(voxelPos + portalOffsets[i])));
             if (voxel == 58 || voxel == 255) { // End Portal Frame or Bedrock
                 edge = 1.0; break;
             }

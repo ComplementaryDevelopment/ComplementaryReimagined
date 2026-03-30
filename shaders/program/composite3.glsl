@@ -147,7 +147,7 @@ void main() {
         DoWorldBlur(color, z1, lViewPos);
 
         #ifdef BLOOM_FOG_COMPOSITE3
-            color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog can move between composite1-2-3
+            color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog can move between composite1-3
         #endif
     #endif
 

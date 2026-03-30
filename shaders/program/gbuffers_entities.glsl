@@ -98,13 +98,14 @@ void main() {
     #endif
     color *= glColor;
 
-    float smoothnessD = 0.0, skyLightFactor = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA
-    vec3 normalM = normal;
+    float smoothnessD = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA, Reduce Reflection
+    vec2 lmCoordM = lmCoord;
+    vec3 normalM = normal, shadowMult = vec3(1.0);
 
     float alphaCheck = color.a;
     #ifdef DO_PIXELATION_EFFECTS
         // Fixes artifacts on fragment edges with non-nvidia gpus
-        alphaCheck = max(fwidth(color.a), alphaCheck);
+        if (entityId != 50112) alphaCheck = max(fwidth(color.a), alphaCheck); // Except for nametags as that causes issues
     #endif
 
     if (alphaCheck > 0.001) {
@@ -117,14 +118,16 @@ void main() {
         bool noSmoothLighting = atlasSize.x < 600.0; // To fix fire looking too dim
         bool noGeneratedNormals = false, noDirectionalShading = false, noVanillaAO = false;
         float smoothnessG = 0.0, highlightMult = 0.0, emission = 0.0, noiseFactor = 0.75;
-        vec2 lmCoordM = lmCoord;
-        vec3 shadowMult = vec3(1.0);
+        vec3 maRecolor = vec3(0.0);
         #ifdef IPBR
-            #include "/lib/materials/materialHandling/entityMaterials.glsl"
-
-            #ifdef IS_IRIS
-                vec3 maRecolor = vec3(0.0);
-                #include "/lib/materials/materialHandling/irisMaterials.glsl"
+            #if defined IS_IRIS || defined IS_ANGELICA && ANGELICA_VERSION >= 20000008
+                if (currentRenderedItemId == 0) {
+                    #include "/lib/materials/materialHandling/entityIPBR.glsl"
+                } else {
+                    #include "/lib/materials/materialHandling/irisIPBR.glsl"
+                }
+            #else
+                #include "/lib/materials/materialHandling/entityIPBR.glsl"
             #endif
 
             if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
@@ -146,7 +149,7 @@ void main() {
             #endif
 
             if (entityId == 50004) { // Lightning Bolt
-                #include "/lib/materials/specificMaterials/entities/lightningBolt.glsl"
+                #include "/lib/materials/specificMaterials/others/lightningBolt.glsl"
             } else if (entityId == 50008) { // Item Frame, Glow Item Frame
                 noSmoothLighting = true;
             } else if (entityId == 50076) { // Boats
@@ -164,30 +167,30 @@ void main() {
                    worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                    true, 0, smoothnessG, highlightMult, emission);
 
-        #if defined IPBR && defined IS_IRIS
+        #ifdef IPBR
             color.rgb += maRecolor;
         #endif
-
-        #ifdef PBR_REFLECTIONS
-            #ifdef OVERWORLD
-                skyLightFactor = pow2(max(lmCoord.y - 0.7, 0.0) * 3.33333);
-            #else
-                skyLightFactor = dot(shadowMult, shadowMult) / 3.0;
-            #endif
-        #endif
     }
+
+    vec3 translucentMult = mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a);
+    float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);
     #endif
 
-    /* DRAWBUFFERS:06 */
+    #ifdef IRIS_FEATURE_FADE_VARIABLE
+        skyLightFactor *= 0.5;
+    #endif
+
+    /* DRAWBUFFERS:036 */
     gl_FragData[0] = color;
-    gl_FragData[1] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
+    gl_FragData[1] = vec4(1.0 - translucentMult, 1.0);
+    gl_FragData[2] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
     #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 1
-        /* DRAWBUFFERS:065 */
-        gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
+        /* DRAWBUFFERS:0364 */
+        gl_FragData[3] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
     #endif
 }
 

@@ -13,6 +13,8 @@
 
 ---------------------------------------------------------------------------------------------*/
 
+uniform bool heavyFog = false;
+
 uniform int blockEntityId;
 uniform int currentRenderedItemId;
 uniform int entityId;
@@ -44,6 +46,7 @@ uniform float viewWidth;
 uniform float wetness;
 uniform float sunAngle;
 uniform float playerMood;
+uniform float cloudHeight = 192.0;
 
 uniform ivec2 atlasSize;
 uniform ivec2 eyeBrightness;
@@ -75,11 +78,8 @@ uniform sampler2D colortex5;
 uniform sampler2D colortex6;
 uniform sampler2D colortex7;
 uniform sampler2D colortex8;
-uniform sampler2D colortex9;
 uniform sampler2D depthtex0;
 uniform sampler2D depthtex1;
-uniform sampler2D depthtex2;
-uniform sampler2D gaux1;
 uniform sampler2D gaux2;
 uniform sampler2D gaux4;
 uniform sampler2D normals;
@@ -93,7 +93,14 @@ uniform vec3 cameraPositionFract;
 uniform vec3 previousCameraPositionFract;
 
 #ifdef IS_IRIS
+    uniform bool is_invisible;
+
     uniform int renderStage;
+
+    #if MC_VERSION >= 12109
+        uniform float endFlashIntensity;
+        uniform vec3 endFlashPosition;
+    #endif
 #endif
 
 #if SHADOW_QUALITY > -1 || defined LIGHTSHAFTS_ACTIVE || defined FF_BLOCKLIGHT
@@ -102,7 +109,7 @@ uniform vec3 previousCameraPositionFract;
 
     uniform sampler2DShadow shadowtex1;
 
-    #ifdef COMPOSITE
+    #ifdef COMPOSITE1
         uniform sampler2D shadowtex0;
     #else
         uniform sampler2DShadow shadowtex0;
@@ -134,6 +141,20 @@ uniform vec3 previousCameraPositionFract;
     uniform usampler2D puddle_sampler;
 #endif
 
+#if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+    uniform sampler2D textureAtlas;
+
+    uniform usampler3D wsr_sampler;
+
+    #if WORLD_SPACE_PLAYER_REF == 1
+        uniform sampler2D playerAtlas_sampler;
+    #endif
+
+    #ifdef CLOUD_SHADOWS
+        uniform sampler2D cloudWaterTex;
+    #endif
+#endif
+
 /*-----------------------------------------------------------------------------
   ___ _   _ ___ _____ ___  __  __   _   _ _  _ ___ ___ ___  ___ __  __ ___
  / __| | | / __|_   _/ _ \|  \/  | | | | | \| |_ _| __/ _ \| _ \  \/  / __|
@@ -142,7 +163,10 @@ uniform vec3 previousCameraPositionFract;
 
 -----------------------------------------------------------------------------*/
 
+uniform float framemod2;
+uniform float framemod4;
 uniform float framemod8;
+uniform float framemod600;
 uniform float isEyeInCave;
 uniform float inDry;
 uniform float inRainy;
