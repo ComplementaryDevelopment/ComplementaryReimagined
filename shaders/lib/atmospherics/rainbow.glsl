@@ -54,7 +54,7 @@ vec3 GetRainbow(vec3 translucentMult, vec3 nViewPos, float z0, float z1, float l
             if (z1 > z0 && lViewPos < rainbowLength)
             rainbow *= mix(translucentMult, vec3(1.0), lViewPos / rainbowLength);
 
-            if (isEyeInWater != 0) rainbow *= sqrt1(VdotU);
+            if (isEyeInWater != 0) rainbow *= sqrt1(max0(VdotU));
 
             rainbow *= rainbowFactor;
         }

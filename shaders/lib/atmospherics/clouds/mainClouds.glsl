@@ -15,7 +15,7 @@ float InterleavedGradientNoiseForClouds() {
     #endif
 }
 
-#if SHADOW_QUALITY > -1
+#if SHADOW_QUALITY > -1 && !defined VOXY_PATCH
     vec3 GetShadowOnCloudPosition(vec3 tracePos, vec3 cameraPos) {
         vec3 wpos = PlayerToShadow(tracePos - cameraPos);
         float distb = sqrt(wpos.x * wpos.x + wpos.y * wpos.y);

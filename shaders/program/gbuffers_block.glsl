@@ -270,8 +270,10 @@ void main() {
     #endif
 
     #if defined GENERATED_NORMALS || defined CUSTOM_PBR
-        binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
-        tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
+        vec3 rawBinormal = gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w;
+        binormal = rawBinormal * inversesqrt(max(dot(rawBinormal, rawBinormal), 1e-8));
+        vec3 rawTangent = gl_NormalMatrix * at_tangent.xyz;
+        tangent = rawTangent * inversesqrt(max(dot(rawTangent, rawTangent), 1e-8));
     #endif
 
     #ifdef POM

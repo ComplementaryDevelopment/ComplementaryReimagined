@@ -10,6 +10,17 @@ vec3 ScreenToView(vec3 pos) {
     return viewPos.xyz / viewPos.w;
 }
 
+#ifdef VOXY
+    vec3 ScreenToViewVoxy(vec3 pos) {
+        vec4 iProjDiag = vec4(vxProjInv[0].x,
+                              vxProjInv[1].y,
+                              vxProjInv[2].zw);
+        vec3 p3 = pos * 2.0 - 1.0;
+        vec4 viewPos = iProjDiag * p3.xyzz + vxProjInv[3];
+        return viewPos.xyz / viewPos.w;
+    }
+#endif
+
 vec3 ViewToPlayer(vec3 pos) {
     return mat3(gbufferModelViewInverse) * pos + gbufferModelViewInverse[3].xyz;
 }

@@ -33,8 +33,8 @@ vec3 GetHeldLighting(vec3 playerPos, vec3 color, float emission) {
     heldLight = pow2(pow2(heldLight * 0.47 / lViewPosL));
     heldLight2 = pow2(pow2(heldLight2 * 0.47 / lViewPosL));
 
-    vec3 heldLighting = pow2(heldLight * DoLuminanceCorrection(heldLightCol + 0.001))
-                        + pow2(heldLight2 * DoLuminanceCorrection(heldLightCol2 + 0.001));
+    vec3 heldLighting = pow2(heldLight * DoLuminanceCorrection(heldLightCol))
+                        + pow2(heldLight2 * DoLuminanceCorrection(heldLightCol2));
 
     #if COLORED_LIGHTING_INTERNAL > 0
         AddSpecialLightDetail(heldLighting, color.rgb, emission);

@@ -57,7 +57,7 @@ option.info9.comment=Best way to support the development of Complementary is to 
 
 option.info10=Credits
 value.info10.0=
-option.info10.comment=EminGT: The main developer of Complementary. Capt Tatsu: Developer of BSL Shaders, his generosity is what made Complementary possible in the first place. Special Thanks: IMS212, sp614x, Chocapic13, Robobo1221, SixthSurge, null511, fayer3, catlikecoding, Builderb0y, Jessie, SpacEagle17, isuewo, flytrap, gri573, FoZy-STYLE
+option.info10.comment=EminGT: The main developer of Complementary. Capt Tatsu: Developer of BSL Shaders, his generosity is what made Complementary possible in the first place. Special Thanks: IMS212, sp614x, Chocapic13, Robobo1221, SixthSurge, null511, fayer3, catlikecoding, Builderb0y, Jessie, SpacEagle17, isuewo, flytrap, gri573, FoZy-STYLE, plazmal
 
 #Style
 option.SHADER_STYLE=Visual Style
@@ -99,6 +99,9 @@ screen.SUN_MOON_SETTINGS.comment=Settings that relate to the sun and moon.
 
 screen.NETHER_SETTINGS=The Nether Dimension
 screen.NETHER_SETTINGS.comment=Settings that relate to the Nether dimension.
+
+screen.END_SETTINGS=The End Dimension
+screen.END_SETTINGS.comment=Settings that relate to the End dimension.
 
 screen.WEATHER_SETTINGS=Rain / Weather
 screen.WEATHER_SETTINGS.comment=Settings that relate to weather conditions
@@ -205,17 +208,17 @@ value.BLOCK_REFLECT_QUALITY.1=§eLow
 value.BLOCK_REFLECT_QUALITY.3=§cHigh
 
 option.SHADOW_QUALITY=Real-Time Shadows
-option.SHADOW_QUALITY.comment=Adjusts the quality of shadows. Every tier further reduces the shadow noise artifacts, options lower than §eHigh§r enable optimised shadows on leaves, §eVery Low§r significantly downgrades shadows in multiple ways, §aOFF§r completely disables shadows and light shafts.
+option.SHADOW_QUALITY.comment=Adjusts the quality of shadows. Every tier further reduces the shadow noise artifacts, §eLow§r and §eVery Low§r use simpler shadow filtering, §eVery Low§r also disables colored shadows, §aOFF§r completely disables shadows and light shafts. §e[*]§r This setting is internally limited at "Low" if you disable the Temporal Filter or enable the Pixelated Shadows setting.
 value.SHADOW_QUALITY.-1=§aOFF
 value.SHADOW_QUALITY.0=§eVery Low
 value.SHADOW_QUALITY.1=§eLow
 value.SHADOW_QUALITY.2=§eMedium
-value.SHADOW_QUALITY.3=§eHigh
+value.SHADOW_QUALITY.3=§cHigh
 value.SHADOW_QUALITY.4=§cVery High
 value.SHADOW_QUALITY.5=§4§lUltra
 
 option.LIGHTSHAFT_QUALI_DEFINE=Light Shaft Quality §e[*]§r
-option.LIGHTSHAFT_QUALI_DEFINE.comment=Adjusts the quality of light shafts. Every tier further reduces the light shaft noise artifacts. §e[*]§r "Real-Time Shadows" setting must be set to anything but OFF for light shafts to work.
+option.LIGHTSHAFT_QUALI_DEFINE.comment=Adjusts the quality of light shafts. Every tier further reduces the noise artifacts. §e[*]§r "Real-Time Shadows" setting must be set to anything but OFF for light shafts to work. §e[*]§r This setting also controls the quality of End Beams, with the exception that the "OFF" option is treated as "Low".
 value.LIGHTSHAFT_QUALI_DEFINE.0=§aOFF
 value.LIGHTSHAFT_QUALI_DEFINE.1=§eLow
 value.LIGHTSHAFT_QUALI_DEFINE.2=§eMedium
@@ -246,7 +249,7 @@ value.ENTITY_SHADOW.1=§cRegular Entities
 value.ENTITY_SHADOW.2=§4§k-§r§4§l§n§oFull§r§4§k- §r§c[-]
 
 option.DETAIL_QUALITY=Detail Quality
-option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: Water material, TAA, lighting tweaks, Night Nebula, Nether Storm, Ender Beams, sky effect reflections, rain puddle accuracy, waving effect, motion blur
+option.DETAIL_QUALITY.comment=Adjusts several small things that affect performance. Adjust the quality of: Water material, TAA, lighting tweaks, Night Nebula, Nether Storm, sky effect reflections, rain puddle accuracy, waving effect, motion blur
 value.DETAIL_QUALITY.0=§aPotato
 value.DETAIL_QUALITY.2=§eMedium
 value.DETAIL_QUALITY.3=§cHigh
@@ -363,8 +366,8 @@ option.CLOUD_SHADOWS.comment=Enables shadows that are cast from the clouds. §e[
 option.CLOUD_CLOSED_AREA_CHECK=Prevent Clouds in Interiors
 option.CLOUD_CLOSED_AREA_CHECK.comment=Does additional checks to remove clouds in closed areas. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles. §e[*]§r This setting will be disabled if "Real-Time Shadows" is OFF.
 
-option.CLOUD_ALT1=Cloud Altitude
-option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
+option.CLOUD_ALT1=Cloud Altitude §e[*]§r
+option.CLOUD_ALT1.comment=Determines the world height which the clouds will appear at. §e[*]§r This setting can be internally increased or decreased depending on your dimension settings and mods. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
 
 option.CLOUD_SPEED_MULT=Cloud Speed
 option.CLOUD_SPEED_MULT.comment=Determines how fast the clouds are going to move. "Synced to World Time" setting uses Minecraft world time to advance the cloud positions; this allows for clouds to appear the same between players in the same server. §e[*]§r This setting only works with the "Reimagined" or "Unbound" Cloud Styles.
@@ -423,6 +426,21 @@ option.NETHER_COLOR_MODE.comment=Determines how the ambience colors will be hand
 value.NETHER_COLOR_MODE.3=Biome Based (Modified)
 value.NETHER_COLOR_MODE.2=Biome Based
 value.NETHER_COLOR_MODE.0=Constant
+
+option.END_BEAM_INTENSITY=End Beams Intensity
+option.END_BEAM_INTENSITY.comment=Adjusts the brightness of the beams seen in the End dimension.
+
+option.END_STAR_INTENSITY=End Stars Intensity
+option.END_STAR_INTENSITY.comment=Adjusts the brightness of the stars seen in the End dimension.
+
+option.END_FLASHES=End Flashes
+option.END_FLASHES.comment=Enables support for the "End flash" environmental feature that was added in Minecraft 1.21.9. The intensity of the flashes in the sky are directly tied to the intensity of End Beams.
+
+option.END_BEAM_CENTER_ALT=End Beams Center Altitude
+option.END_BEAM_CENTER_ALT.comment=Adjusts the altitude the End Beams will be centered at the y-level of the world.
+
+option.END_BEAM_HEIGHT=End Beams Height
+option.END_BEAM_HEIGHT.comment=Adjusts the physical tallness of the End Beams.
 
 option.TM_EXPOSURE=General Brightness
 option.TM_EXPOSURE.comment=Also known as "Tonemap Exposure". Adjusts the overall brightness of the whole image.
@@ -535,6 +553,11 @@ option.SUN_MOON_HORIZON.comment=Prevents the sun/moon from appearing below the h
 
 option.SUN_MOON_DURING_RAIN=Sun/Moon During Rain. §e[*]§r
 option.SUN_MOON_DURING_RAIN.comment=Determines if the sun and moon will be visible during rain or not. §e[*]§r This setting also changes the balance of lighting during rain.
+
+option.IMPROVED_RAIN_DEFINE=Improved Weather Textures
+option.IMPROVED_RAIN_DEFINE.comment=Enables improved weather texture handling that allows for better colors and also fixes the Minecraft bug where rain/snow isn't visible behind colored or modified glass.
+value.IMPROVED_RAIN_DEFINE.0=OFF
+value.IMPROVED_RAIN_DEFINE.1=ON
 
 option.NIGHT_STAR_AMOUNT=Night Star Amount
 option.NIGHT_STAR_AMOUNT.comment=Determines the amount of stars in the night sky.
@@ -778,6 +801,15 @@ option.GREEN_SCREEN_LIME.comment=Turns "Lime Concrete", "Lime Wool", and "Lime C
 option.MIRROR_TINTED_GLASS=Mirror-like Tinted Glass
 option.MIRROR_TINTED_GLASS.comment=Increases the reflectiveness and opacity of Tinted Glass blocks. Enable World-Space Reflections for best results.
 
+option.MORE_REFLECTIVE_DISTANT_GLASS=More Reflective Distant Glass
+option.MORE_REFLECTIVE_DISTANT_GLASS.comment=Increases the reflectiveness and opacity of distant glass to make buildings with glass windows look nicer.
+
+option.HIDE_ARMOR=Hide Armor §e[*]§r
+option.HIDE_ARMOR.comment=Hides the armor and elytra worn by the player or all entities. Elytra is only shown while flying. §e[*]§r This setting only works on Iris. §e[*]§r The "On Main Player" option can look messy if other entities wearing armor get very close to the main player.
+value.HIDE_ARMOR.0=OFF
+value.HIDE_ARMOR.1=On Main Player §e[*]§r
+value.HIDE_ARMOR.2=On All Entities
+
 option.HAND_SWAYING=Hand Sway
 option.HAND_SWAYING.comment=Adds slow movement to the player hand to simulate a breathing animation.
 value.HAND_SWAYING.0=OFF
@@ -819,16 +851,19 @@ value.PLAYER_SHADOW.-1=OFF
 value.PLAYER_SHADOW.1=ON
 
 option.GENERATED_NORMALS=Generated Normals
-option.GENERATED_NORMALS.comment=Adds auto-generated bumpy details to surfaces. §e[*]§r RP Support option must be set to Integrated PBR+.
+option.GENERATED_NORMALS.comment=Adds auto-generated bumpy details to surfaces. §e[*]§r RP Support option must be set to Integrated PBR+. §e[*]§r Can look wonky with some resource packs or mods that feature non-standard resolution textures.
 
 option.COATED_TEXTURES=Coated Textures
-option.COATED_TEXTURES.comment=Adds auto-generated dusty details to textures. §e[*]§r RP Support option must be set to Integrated PBR+.
+option.COATED_TEXTURES.comment=Adds auto-generated dusty details to textures. §e[*]§r RP Support option must be set to Integrated PBR+. §e[*]§r Can look wonky with some resource packs or mods that feature non-standard resolution textures.
 
-option.ENTITY_GN_AND_CT=Allow GN and CT on Entities
+option.ENTITY_GN_AND_CT=Allow GN & CT on Entities
 option.ENTITY_GN_AND_CT.comment=Decides if Generated Normals and Coated Textures can appear on entities. §e[*]§r This won't enable GN or CT on entities if the main GN or CT options are disabled.
 
 option.GENERATED_NORMAL_MULT=Generated Normal Strength
 option.GENERATED_NORMAL_MULT.comment=Adjusts the strength of auto-generated bumpy details on surfaces.
+
+option.GENERATED_NORMAL_RES=Generated Normal Resolution
+option.GENERATED_NORMAL_RES.comment=Adjusts the resolution/size of auto-generated bumpy details on surfaces. §e[*]§r Note that the GN resolution also depends on each texture's own resolution, which means that resource packs or mods can mess up the resolution of GN on different blocks.
 
 option.COATED_TEXTURE_MULT=Coated Texture Strength
 option.COATED_TEXTURE_MULT.comment=Adjusts the strength of auto-generated dusty details on textures.
@@ -959,8 +994,8 @@ option.WAVING_LEAVES.comment=Adds movement to leaves to simulate wind.
 option.WAVING_LAVA=Waving Lava Texture
 option.WAVING_LAVA.comment=Adds constant movement to lava. §e[*]§r Lava waving in particular is not affected by the "No Waving in Closed Areas" setting.
 
-option.WAVING_LILY_PAD=Waving Lily Pad
-option.WAVING_LILY_PAD.comment=Adds movement to lily pads and frogspawn to simulate impact from water waves.
+option.WAVING_LILY_PAD=Waving Lily Pad §c[-]§r
+option.WAVING_LILY_PAD.comment=Adds movement to lily pads and frogspawn to simulate impact from water waves. §c[-]§r This causes lily pads on waterlogged blocks to become invisible
 
 option.WAVING_WATER_VERTEX=Waving Water Height
 option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind. §e[*]§r This option is not related to the "Water Wave Strength" setting.
@@ -988,6 +1023,9 @@ option.WORLD_OUTLINE_I.comment=Determines how intense the World Outline effect w
 option.WORLD_OUTLINE_ON_ENTITIES=World Outline on Entities
 option.WORLD_OUTLINE_ON_ENTITIES.comment=Determines if the World Outline effect will apply to entities or not. §c[-]§r This setting may not work perfectly with some custom PBR resource packs.
 
+option.WORLD_OUTLINE_SCALED=Distance Scaled World Outline
+option.WORLD_OUTLINE_SCALED.comment=Makes the size of world outline scale according to distance.
+
 option.DARK_OUTLINE=§eDark Outline§r
 option.DARK_OUTLINE.comment=Adds dark outlines around blocks. §c[-]§r This effect can impact performance.
 
@@ -1014,7 +1052,7 @@ value.SELECT_OUTLINE.3=Select Color
 value.SELECT_OUTLINE.4=Versatile
 
 option.SELECT_OUTLINE_AUTO_HIDE=Auto Hide Selection Outline
-option.SELECT_OUTLINE_AUTO_HIDE.comment=Hides the block selection outline if the player isn't holding anything in any of their hands, or only holding a light source in the off-hand.
+option.SELECT_OUTLINE_AUTO_HIDE.comment=Hides the block selection outline if the player isn't holding anything in their main hand.
 
 option.SELECT_OUTLINE_I=SO Brightness
 option.SELECT_OUTLINE_R=SO Red

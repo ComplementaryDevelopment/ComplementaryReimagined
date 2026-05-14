@@ -14,8 +14,8 @@ if (entityId < 50128) { // 50000 to 50128
                         #include "/lib/materials/specificMaterials/others/lightningBolt.glsl"
                     }
                 } else { // 50008 to 50016
-                    if (entityId == 50008) { // Item Frame, Glow Item Frame
-                        noSmoothLighting = true;
+                    if (entityId == 50008) { //
+                    
                     } else /*if (entityId == 50012)*/ { // Iron Golem
                         #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
 
@@ -229,16 +229,13 @@ if (entityId < 50128) { // 50000 to 50128
         if (entityId < 50160) { // 50128 to 50160
             if (entityId < 50144) { // 50128 to 50144
                 if (entityId < 50136) { // 50128 to 50136
-                    if (entityId < 50132) { // 50128 to 50132
-                        // 50128
-                        // 50129
-                        // 50130
-                        // 50131
-                    } else { // 50132 to 50136
-                        // 50132
-                        // 50133
-                        // 50134
-                        // 50135
+                    if (entityId < 50132) { // Item Frame
+                        noSmoothLighting = true;
+                        noDirectionalShading = true;
+                    } else { // Glow Item Frame
+                        noSmoothLighting = true;
+                        noDirectionalShading = true;
+                        lmCoordM.y = eyeBrightnessM;
                     }
                 } else { // 50136 to 50144
                     if (entityId < 50140) { // 50136 to 50140

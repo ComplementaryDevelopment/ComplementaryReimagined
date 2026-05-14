@@ -29,7 +29,7 @@
 
     #define COLORED_LIGHTING 0 //[128 192 256 384 512 768 1024]
     #define WORLD_SPACE_REFLECTIONS -1 //[-1 1]
-    #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && !defined MC_OS_MAC && !(defined DH_TERRAIN || defined DH_WATER)
+    #if defined IRIS_FEATURE_CUSTOM_IMAGES && SHADOW_QUALITY > -1 && !defined MC_OS_MAC && !(defined DH_TERRAIN || defined DH_WATER || defined VOXY_PATCH)
         #define COLORED_LIGHTING_INTERNAL COLORED_LIGHTING
         #if COLORED_LIGHTING_INTERNAL > 0
             #define COLORED_LIGHT_SATURATION 100 //[50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125]
@@ -121,6 +121,12 @@
     #define NETHER_STORM_HEIGHT 200 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300 325 350 375 400 425 450 475 500 550 600 650 700 750 800 850 900]
     #define NETHER_STORM_I 0.40 //[0.05 0.06 0.07 0.08 0.09 0.10 0.12 0.14 0.16 0.18 0.22 0.26 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50]
 
+    #define END_BEAM_INTENSITY 1.00 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.80 2.00 2.20 2.40 2.60 2.80 3.00]
+    #define END_STAR_INTENSITY 1.00 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.80 2.00 2.20 2.40 2.60 2.80 3.00]
+    #define END_BEAM_CENTER_ALT 68 //[-240 -236 -232 -228 -224 -220 -216 -212 -208 -204 -200 -196 -192 -188 -184 -180 -176 -172 -168 -164 -160 -156 -152 -148 -144 -140 -136 -132 -128 -124 -120 -116 -112 -108 -104 -100 -96 -92 -88 -84 -80 -76 -72 -68 -64 -60 -56 -52 -48 -44 -40 -36 -32 -28 -24 -20 -16 -12 -8 -4 0 4 8 12 16 20 22 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120 124 128 132 136 140 144 148 152 156 160 164 168 172 176 180 184 188 192 196 200 204 208 212 216 220 224 228 232 236 240 244 248 252 256 260 264 268 272 276 280 284 288 292 296 300]
+    #define END_BEAM_HEIGHT 1.00 //[0.10 0.15 0.20 0.25 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.80 2.00]
+    #define END_FLASHES
+
     #define BORDER_FOG
     #define ATM_FOG_MULT 0.95 //[0.50 0.65 0.80 0.95]
     #define ATM_FOG_DISTANCE 100 //[10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300]
@@ -166,9 +172,10 @@
     #define WB_DB_NETHER_I 64.0 //[1.0 1.5 2.0 3.0 4.5 6.0 9.0 12.0 18.0 24.0 32.0 48.0 64.0 96.0 128.0 192.0 256.0 384.0 512.0 768.0 1024.0 1536.0 2048.0 3072.0 4096.0]
     #define WB_DB_END_I 64.0 //[1.0 1.5 2.0 3.0 4.5 6.0 9.0 12.0 18.0 24.0 32.0 48.0 64.0 96.0 128.0 192.0 256.0 384.0 512.0 768.0 1024.0 1536.0 2048.0 3072.0 4096.0]
 
-    #define ENTITY_GN_AND_CT
     #define GENERATED_NORMAL_MULT 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 250 300 400]
     #define COATED_TEXTURE_MULT 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
+    #define GENERATED_NORMAL_RES 128 //[16 32 64 80 96 112 128 144 160 176 192 208 224 240 256 320 384 448 512]
+    #define ENTITY_GN_AND_CT
 
     #define GLOWING_ORE_MASTER 1 //[0 1 2]
     #define GLOWING_ORE_MULT 1.00 //[0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
@@ -221,7 +228,7 @@
     #define WAVING_FOLIAGE
     #define WAVING_LEAVES
     #define WAVING_LAVA
-    #define WAVING_LILY_PAD
+    //#define WAVING_LILY_PAD
     #define WAVING_WATER_VERTEX
     #define WAVING_RAIN
 
@@ -238,6 +245,7 @@
     #define SELECT_OUTLINE_B 1.75 //[0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
 
     //#define WORLD_OUTLINE
+    //#define WORLD_OUTLINE_SCALED
     #define WORLD_OUTLINE_THICKNESS 1 //[1 2 3 4]
     #define WORLD_OUTLINE_I 1.50 //[0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00 2.20 2.40 2.60 2.80 3.00 3.25 3.50 3.75 4.00]
     #define WORLD_OUTLINE_ON_ENTITIES
@@ -341,6 +349,8 @@
     #define XLIGHT_I 1.00 //[0.01 0.03 0.05 0.07 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00]
     #define XLIGHT_CURVE 1.00 //[0.20 0.25 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.80 2.00 2.20 2.40 2.60 2.80 3.00]
 
+    #define IMPROVED_RAIN_DEFINE 1 //[0 1]
+
 //Internal Settings//
     #define SIDE_SHADOWING
     #define SHADOW_FILTERING
@@ -377,11 +387,13 @@
     #if RP_MODE == 1
         #define IPBR
         #define IPBR_PARTICLE_FEATURES
+        #define MORE_REFLECTIVE_DISTANT_GLASS
         //#define GENERATED_NORMALS
         //#define COATED_TEXTURES
         //#define FANCY_GLASS
         //#define GREEN_SCREEN_LIME
         //#define MIRROR_TINTED_GLASS
+        #define HIDE_ARMOR 0 //[0 1 2]
     #endif
     #if RP_MODE >= 2
         #define CUSTOM_PBR
@@ -470,14 +482,18 @@
         #endif
     #endif
 
-    #if SHADOW_QUALITY >= 1
-        #if SHADOW_QUALITY > 4 || SHADOW_SMOOTHING < 3
+    #if SHADOW_QUALITY >= 2
+        #if SHADOW_QUALITY >= 5 || SHADOW_SMOOTHING < 3
             const int shadowMapResolution = 4096;
         #else
             const int shadowMapResolution = 2048;
         #endif
     #else
-        const int shadowMapResolution = 1024;
+        #if SHADOW_SMOOTHING < 3
+            const int shadowMapResolution = 2048;
+        #else
+            const int shadowMapResolution = 1024;
+        #endif
     #endif
 
     #if SSAO_I > 0
@@ -499,9 +515,9 @@
     #endif
 
     #if DETAIL_QUALITY == 0 // Potato
+        #define LEAF_SHADOW_OPTIMISATION
         #undef PERPENDICULAR_TWEAKS
         #define LOW_QUALITY_NETHER_STORM
-        #define LOW_QUALITY_ENDER_NEBULA
         #define LOW_QUALITY_MOTION_BLUR
         #define WATER_MAT_QUALITY 1
     #endif
@@ -571,7 +587,7 @@
     #endif
 
     #if defined PIXELATED_SHADOWS || defined PIXELATED_BLOCKLIGHT || defined PIXELATED_AO
-        #if !defined GBUFFERS_BASIC && !defined DH_TERRAIN && !defined DH_WATER
+        #if !defined GBUFFERS_BASIC && !defined DH_TERRAIN && !defined DH_WATER && !defined VOXY_PATCH
             #define DO_PIXELATION_EFFECTS
         #endif
     #endif
@@ -597,7 +613,7 @@
         #undef DIRECTIONAL_SHADING
         #undef SIDE_SHADOWING
     #endif
-    #ifdef GBUFFERS_WATER
+    #if defined GBUFFERS_WATER || defined DH_WATER || defined VOXY_TRANSLUCENT
         #undef LIGHT_HIGHLIGHT
     #endif
 
@@ -641,6 +657,17 @@
         #endif
     #endif
 
+    #if !defined IS_IRIS || MC_VERSION < 12109
+        #undef END_FLASHES
+    #endif
+
+    #if defined DISTANT_HORIZONS && defined TAA
+        #define DH_BLENDING
+    #endif
+
+    #if IMPROVED_RAIN_DEFINE == 1 && !defined MC_OS_MAC && !defined COLOR_CODED_PROGRAMS && MC_VERSION >= 11605
+        #define IMPROVED_RAIN
+    #endif
 
 //Activate Settings//
     #ifdef POM_ALLOW_CUTOUT
@@ -653,9 +680,15 @@
     #endif
     #ifdef PIXELATED_AO
     #endif
+    #ifdef DOUBLE_REIM_CLOUDS
+    #endif
+    #ifdef GLOWING_ORE_MODDED
+    #endif
 
 //Very Common Stuff//
-    #include "/lib/uniforms.glsl"
+    #ifndef VOXY_PATCH
+        #include "/lib/uniforms.glsl"
+    #endif
 
     #if SHADOW_QUALITY == -1
       float timeAngle = worldTime / 24000.0;
@@ -671,10 +704,12 @@
 
     #include "/lib/util/commonFunctions.glsl"
 
-    #ifndef DISTANT_HORIZONS
-        float renderDistance = far;
-    #else
+    #ifdef DISTANT_HORIZONS
         float renderDistance = float(dhRenderDistance);
+    #elif defined VOXY
+        float renderDistance = vxRenderDistance * 16.0 - 256.0; // -256 due to vxRenderDistance being a little unreliable
+    #else
+        float renderDistance = far;
     #endif
 
     const float shadowMapBias = 1.0 - 25.6 / shadowDistance;
@@ -766,7 +801,11 @@
     #endif
 
     float cloudHeightM = isnan(cloudHeight) ? 192.0 : cloudHeight; // iris returns "nan" if there are no clouds
-    float cloudHeightOffset = cloudHeightM - 192.0;
+    float cloudHeightOffset = cloudHeightM - 192.0
+        #if defined DISTANT_HORIZONS || defined VOXY
+            //+ 64.0
+        #endif
+    ;
     int cloudAlt1i = int(CLOUD_ALT1 + cloudHeightOffset); // Old setting files can send float values
     int cloudAlt2i = int(CLOUD_ALT2 + cloudHeightOffset);
 
@@ -795,7 +834,7 @@
     
         OSIEBCA * 251.0 = No SSAO, Reduce Reflection
         OSIEBCA * 252.0 = Versatile Selection Outline
-        OSIEBCA * 253.0 = Reduced Edge TAA
+        OSIEBCA * 253.0 = Reduced Edge TAA (Leaves)
         OSIEBCA * 254.0 = No SSAO, No TAA, Reduce Reflection
         OSIEBCA * 255.0 = *Unused as 1.0 is the clear color*
     */

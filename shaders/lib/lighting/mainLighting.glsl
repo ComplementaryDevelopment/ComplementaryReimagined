@@ -3,7 +3,7 @@
 #include "/lib/lighting/ggx.glsl"
 #include "/lib/lighting/minimumLighting.glsl"
 
-#if SHADOW_QUALITY > -1 && (defined OVERWORLD || defined END)
+#if SHADOW_QUALITY > -1 && (defined OVERWORLD || defined END) && !defined DH_TERRAIN && !defined DH_WATER && !defined VOXY_PATCH
     #include "/lib/lighting/shadowSampling.glsl"
 #endif
 
@@ -103,7 +103,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
 
             NdotL *= 1.0 - 0.7 * (1.0 - pow2(pow2(NdotUmax0))) * NPdotU;
         #endif
-        #if SHADOW_QUALITY == -1 && defined GBUFFERS_TERRAIN
+        #if SHADOW_QUALITY == -1 && (defined GBUFFERS_TERRAIN || defined DH_TERRAIN || defined DH_WATER || defined VOXY_PATCH)
             if (subsurfaceMode == 1) {
                 NdotU = 1.0;
                 NdotUmax0 = 1.0;
@@ -147,15 +147,10 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         #endif
 
         if (shadowMult.r > 0.00001) {
-            #if SHADOW_QUALITY > -1
+            #if SHADOW_QUALITY > -1 && !defined DH_TERRAIN && !defined DH_WATER && !defined VOXY_PATCH
                 if (NdotLM > 0.0001) {
                     vec3 shadowMultBeforeLighting = shadowMult;
-
-                    #if !defined DH_TERRAIN && !defined DH_WATER
-                        float shadowLength = shadowDistance * 0.9166667 - lViewPos; //consistent08JJ622
-                    #else
-                        float shadowLength = 0.0;
-                    #endif
+                    float shadowLength = shadowDistance * 0.9166667 - lViewPos; //consistent08JJ622
 
                     if (shadowLength > 0.000001) {
                         #if SHADOW_SMOOTHING == 4 || SHADOW_QUALITY == 0
@@ -185,7 +180,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             } else {
                                 float centerFactor = max(glColor.a, lightmapYM);
 
-                                #if defined PERPENDICULAR_TWEAKS && SHADOW_QUALITY >= 2 && !defined DH_TERRAIN
+                                #if defined PERPENDICULAR_TWEAKS && SHADOW_QUALITY >= 2
                                     // Fake Variable Penumbra Shadows
                                     // Making centerFactor also work in daylight if AO gradient is facing towards sun
                                     if (geoNdotU > 0.99) {
@@ -221,7 +216,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                                 distanceBias = 0.12 + 0.0008 * distanceBias;
                                 vec3 bias = worldGeoNormal * distanceBias * (2.0 - 0.95 * NdotLmax0); // 0.95 fixes pink petals noon shadows
 
-                                #if defined GBUFFERS_TERRAIN && !defined DH_TERRAIN
+                                #ifdef GBUFFERS_TERRAIN
                                     if (subsurfaceMode == 2) {
                                         bias *= vec3(0.0, 0.0, -0.5);
                                         bias.z += 0.25 * signMidCoordPos.x * NdotE;
@@ -265,19 +260,19 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                         #endif
                         
                         int shadowSampleBooster = int(subsurfaceMode > 0 && lViewPos < 10.0);
-                        #if SHADOW_QUALITY == 0
-                            int shadowSamples = 0; // We don't use SampleTAAFilteredShadow on Shadow Quality 0
-                        #elif SHADOW_QUALITY == 1
-                            int shadowSamples = 1 + shadowSampleBooster;
-                        #elif SHADOW_QUALITY == 2 || SHADOW_QUALITY == 3
+                        #if SHADOW_QUALITY == 2 // Medium
                             int shadowSamples = 2 + 2 * shadowSampleBooster;
-                        #elif SHADOW_QUALITY == 4
+                        #elif SHADOW_QUALITY == 3 // High
                             int shadowSamples = 4 + 4 * shadowSampleBooster;
-                        #elif SHADOW_QUALITY == 5
+                        #elif SHADOW_QUALITY == 4 // Very High
                             int shadowSamples = 8 + 8 * shadowSampleBooster;
+                        #elif SHADOW_QUALITY == 5 // Ultra
+                            int shadowSamples = 16 + 16 * shadowSampleBooster;
+                        #else
+                            int shadowSamples = 0;
                         #endif
 
-                        shadowMult *= GetShadow(shadowPos, lightmap.y, offset, shadowSamples, leaves);
+                        shadowMult *= GetShadow(shadowPos, lightmap.y, offset, shadowSamples, leaves, playerPos);
                     }
 
                     float shadowSmooth = 16.0;
@@ -299,7 +294,42 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                     }
                 }
             #else
-                shadowMult *= skyLightShadowMult;
+                #if SHADOW_QUALITY == -1 || !defined VOXY_PATCH
+                    shadowMult *= skyLightShadowMult;
+                #else
+                    // Screenspace shadows rendered in deferred1 of previous frame for Voxy
+                    // Previous frame reprojection from Chocapic13
+                    vec3 screenSpaceShadowPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+                    vec4 viewPosPrev = vxProjInv * vec4(screenSpaceShadowPos * 2.0 - 1.0, 1.0);
+                    viewPosPrev /= viewPosPrev.w;
+                    
+                    viewPosPrev = vxModelViewInv * viewPosPrev;
+
+                    vec4 previousPosition = viewPosPrev + vec4(cameraPosition - previousCameraPosition, 0.0);
+                    previousPosition = vxModelViewPrev * previousPosition;
+                    previousPosition = vxProjPrev * previousPosition;
+                    screenSpaceShadowPos.xy = previousPosition.xy / previousPosition.w * 0.5 + 0.5;
+
+                    float screenSpaceShadowSample = texture2D(colortex18, screenSpaceShadowPos.xy).r;
+                    if (screenSpaceShadowSample >= OSIEBCA) {
+                        if (subsurfaceMode == 1) {
+                            shadowMult *= 0.82 * (0.2 + 0.8 * sqrt2(max(SdotU, nightFactor)));
+                        } else if (subsurfaceMode == 2) {
+                            float baseLeafShadowMult = 1.0; 
+
+                            #ifdef LEAF_SHADOW_OPTIMISATION
+                                float extraLeafShadeMix = 0.25 + 0.125 * pow2(noonFactor);
+                            #else
+                                float extraLeafShadeMix = 0.125 + 0.125 * pow2(noonFactor);
+                            #endif
+
+                            shadowMult *= mix(baseLeafShadowMult, NdotU, extraLeafShadeMix);
+                        }
+                        shadowMult *= screenSpaceShadowSample * skyLightShadowMult;
+                    } else {
+                        shadowMult *= skyLightShadowMult;
+                    }
+                #endif
             #endif
 
             #ifdef CLOUD_SHADOWS
@@ -427,7 +457,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                             (0.5 + 0.2 * sunFactor + 0.8 * noonFactor) * (1.0 - rainFactor * 0.5);
             #else
                 #define AMBIENT_MULT_M (AMBIENT_MULT - 100) * 0.002
-                shadowLightMult = mix(shadowLightMult, vec3(1.0), AMBIENT_MULT_M);
+                shadowLightMult = mix(shadowLightMult, vec3(1.0), AMBIENT_MULT_M * ambientMult);
                 lightColorM = mix(lightColorM, GetLuminance(lightColorM) * DoLuminanceCorrection(ambientColorM), (1.0 - shadowMultFloat) * AMBIENT_MULT_M);
             #endif
         #endif
@@ -446,13 +476,17 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
         }
     #endif
     #ifdef END
-        #if defined IS_IRIS && MC_VERSION >= 12109
+        #ifdef END_FLASHES
             vec3 worldEndFlashPosition = mat3(gbufferModelViewInverse) * endFlashPosition;
-            worldEndFlashPosition = normalize(vec3(worldEndFlashPosition.x, 0.0, worldEndFlashPosition.z));
+            worldEndFlashPosition = normalize(vec3(
+                worldEndFlashPosition.x,
+                0.15 * (END_BEAM_CENTER_ALT - playerPos.y),
+                worldEndFlashPosition.z
+            ));
             float endFlashDirectionFactor = max0(1.0 + dot(worldGeoNormal, normalize(worldEndFlashPosition))) * 0.5;
                   endFlashDirectionFactor = pow2(pow2(endFlashDirectionFactor));
 
-            vec3 endFlashColor = (endOrangeCol + 0.5 * endLightColor) * endFlashIntensity * pow2(lightmapYM);
+            vec3 endFlashColor = (endOrangeCol + endLightColor) * endFlashIntensityM * pow2(lightmapYM);
             ambientColorM += endFlashColor * (0.2 * endFlashDirectionFactor);
         #endif
     #endif

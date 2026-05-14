@@ -15,12 +15,12 @@ vec3 playerToPreviousSceneVoxel(vec3 previousPlayerPos) {
 }
 
 bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
-    #ifndef SHADOW
-        voxelPos -= 0.5 * sceneVoxelVolumeSize;
-        voxelPos += sign(voxelPos) * 0.95;
-        voxelPos += 0.5 * sceneVoxelVolumeSize;
-    #endif
     voxelPos /= vec3(sceneVoxelVolumeSize);
+    return clamp01(voxelPos) == voxelPos;
+}
+
+bool CheckInsideLodVoxelVolume(vec3 voxelPos) {
+    voxelPos /= vec3(sceneVoxelVolumeSize / 4);
     return clamp01(voxelPos) == voxelPos;
 }
 
@@ -173,10 +173,8 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
             }
 
             imageStore(wsr_img, ivec3(voxelPos), uvec4(matM, 0u, 0u, 0u));
+            imageStore(wsr_lod_img, ivec3(voxelPos) / 4, uvec4(1u, 0u, 0u, 0u));
             storeFaceData(ivec3(voxelPos), round(normal), origin, textureRad.x, storeToAllFaces, storeToAllFacesExceptTop, scenePos);
-
-            updateWsrBitmask(ivec3(voxelPos));
-            updateWsrLodBitmask(ivec3(voxelPos / 4.0));
         }
     }
 
@@ -203,6 +201,8 @@ bool CheckInsideSceneVoxelVolume(vec3 voxelPos) {
                         imageStore(playerAtlas_img, coord, texelFetch(tex, coord, 0));
                     }
                 }
+
+                position.xz -= 0.2 * playerLookVector.xz;
 
                 ivec3 aabbPos = ivec3(position * 1000.0);
 

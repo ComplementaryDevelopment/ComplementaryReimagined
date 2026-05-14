@@ -54,6 +54,10 @@ void main() {
         clrwl_computeFragment(color1, color1, lmCoord, ao, overlayColor);
     #endif
 
+    #if HIDE_ARMOR > 0
+        if (currentRenderedItemId == 45124 && !isElytraFlying) discard;
+    #endif
+
     #if SHADOW_QUALITY >= 1
         vec4 color2 = color1; // Light Shaft Color
 
@@ -244,6 +248,7 @@ vec2 lmCoord;
 
     #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
         writeonly uniform uimage3D wsr_img;
+        writeonly uniform uimage3D wsr_lod_img;
     #endif
 #endif
 

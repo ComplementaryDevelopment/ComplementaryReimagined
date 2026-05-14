@@ -62,7 +62,7 @@ void main() {
     if (entityId == 50004
         #if MC_VERSION >= 12105 && defined IS_IRIS
             // Iris broken lightning bolt detection after 1.21.5
-            || dot(color.rgb, color.rgb) > 0.01 && color.r < 0.45 && color.g < 0.45 && color.b < 0.5 && glColor.a == 0.0
+            || dot(color.rgb, color.rgb) > 0.01 && color.r < 0.45 && color.g < 0.45 && color.b < 0.5
         #endif
     ) { // Lightning Bolt
         #include "/lib/materials/specificMaterials/others/lightningBolt.glsl"

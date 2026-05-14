@@ -79,7 +79,16 @@ void DoWave_Water(inout vec3 playerPos, vec3 worldPos) {
         wave *= 0.1;
     #endif
 
-    playerPos.y += wave * 0.125 - 0.05;
+    wave = wave * 0.125 - 0.05;
+
+    #ifdef VOXY
+        // Fixes water alignment between normal water and voxy water
+        float renderDisEdge = min1(max0(length(playerPos) * 2.0 - far) / far);
+        wave *= 1.0 - renderDisEdge;
+        wave += 0.02 * renderDisEdge;
+    #endif
+
+    playerPos.y += wave;
 
     #if defined GBUFFERS_WATER && WATER_STYLE == 1
         normal = mix(normal, tangent, wave * 0.01);

@@ -136,12 +136,18 @@ void main() {
         viewPos /= viewPos.w;
         float lViewPos = length(viewPos.xyz);
 
-        #if defined DISTANT_HORIZONS && defined NETHER
-            float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
-            vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
-            vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
-            viewPosDH /= viewPosDH.w;
-            lViewPos = min(lViewPos, length(viewPosDH.xyz));
+        #if defined DISTANT_HORIZONS || defined VOXY
+            #ifdef DISTANT_HORIZONS
+                float z0lod = texelFetch(dhDepthTex, texelCoord, 0).r;
+                vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+                vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
+            #elif defined VOXY
+                float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
+                vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+                vec4 viewPosLod = vxProjInv * (screenPosLod * 2.0 - 1.0);
+            #endif
+            viewPosLod /= viewPosLod.w;
+            lViewPos = min(lViewPos, length(viewPosLod.xyz));
         #endif
 
         DoWorldBlur(color, z1, lViewPos);

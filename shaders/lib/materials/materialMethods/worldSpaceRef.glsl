@@ -46,28 +46,25 @@ vec2 getLocalTexCoord(vec3 local, vec3 normal) {
     return 1.0 - local.zy * absNormal.x - local.xz * absNormal.y - local.xy * absNormal.z;
 }
 
-float getVoxelSpaceAO(vec3 playerPos, ivec3 normal, vec2 localTexCoord) {
-    ivec3 voxelPos = ivec3(playerToSceneVoxel(playerPos + normal * 0.5));
-    ivec3 absNormal = ivec3(abs(normal));
-    ivec3 right = ivec3(0, 0, 1) * absNormal.x + ivec3(1, 0, 0) * absNormal.y + ivec3(1, 0, 0) * absNormal.z;
-    ivec3 up = ivec3(0, 1, 0) * absNormal.x + ivec3(0, 0, 1) * absNormal.y + ivec3(0, 1, 0) * absNormal.z;
+float getVoxelSpaceAO(ivec3 voxelPos, ivec3 normal, vec2 localTexCoord) {
+    ivec3 absNormal = abs(normal);
+    ivec3 hrz = ivec3(0, 0, 1) * absNormal.x + ivec3(1, 0, 0) * absNormal.y + ivec3(1, 0, 0) * absNormal.z;
+    ivec3 vrt = ivec3(0, 1, 0) * absNormal.x + ivec3(0, 0, 1) * absNormal.y + ivec3(0, 1, 0) * absNormal.z;
 
-    vec2 centerFactorPos = sqrt1(2.0 * clamp01(0.5 - localTexCoord));
-    vec2 centerFactorNeg = sqrt1(2.0 * clamp01(localTexCoord - 0.5));
-    ivec3 voxel0 = voxelPos + right;
-    ivec3 voxel1 = voxelPos - right;
-    ivec3 voxel2 = voxelPos + up;
-    ivec3 voxel3 = voxelPos - up;
+    vec2 dir = 1.0 - 2.0 * localTexCoord;
 
-    float occlusion0 = mix(0.0, float(checkVoxelAt(voxel0)), centerFactorPos.x);
-    float occlusion1 = mix(0.0, float(checkVoxelAt(voxel1)), centerFactorNeg.x);
-    float occlusion2 = mix(0.0, float(checkVoxelAt(voxel2)), centerFactorPos.y);
-    float occlusion3 = mix(0.0, float(checkVoxelAt(voxel3)), centerFactorNeg.y);
+    ivec2 signDir = ivec2(sign(dir));
+    ivec3 voxelHrz = voxelPos + normal + signDir.x * hrz;
+    ivec3 voxelVrt = voxelPos + normal + signDir.y * vrt; 
 
-    return 1.0 - (occlusion0 + occlusion1 + occlusion2 + occlusion3) * 0.25;
+    vec2 factor = pow2(dir);
+    float occHrz = mix(1.0, float(texelFetch(wsr_sampler, voxelHrz, 0).r == 0u), factor.x);
+    float occVrt = mix(1.0, float(texelFetch(wsr_sampler, voxelVrt, 0).r == 0u), factor.y);
+
+    return 0.3 * (occHrz + occVrt) + 0.4;
 }
 
-vec4 getShadedReflection(ivec3 voxelPos, vec3 oldPlayerPos, vec3 playerPos, vec3 rayDir, vec3 normal, float dither) {
+vec4 getShadedReflection(ivec3 voxelPos, vec3 oldPlayerPos, vec3 playerPos, vec3 rayDir, vec3 normal, uint mat, float dither) {
     faceData faceData = getFaceData(voxelPos, normal);
     if (faceData.textureBounds.z < 1e-6) return vec4(-1.0);
      
@@ -101,8 +98,6 @@ vec4 getShadedReflection(ivec3 voxelPos, vec3 oldPlayerPos, vec3 playerPos, vec3
     #endif
 
     if (color.a < 0.0041) return vec4(-1.0); // Note that the cutout parts of leaves have a color.a of about 0.004
-
-    int mat = int(texelFetch(wsr_sampler, voxelPos, 0).r);
 
     bool noSmoothLighting = false, noDirectionalShading = false;
     int subsurfaceMode = 0;
@@ -152,15 +147,9 @@ vec4 getShadedReflection(ivec3 voxelPos, vec3 oldPlayerPos, vec3 playerPos, vec3
             if (shadowLength > 0.000001) {
                 float distanceBias = 0.12 + 0.0008 * pow(dot(playerPos, playerPos), 0.75);
                 vec3 bias = normal * distanceBias * (2.0 - 0.95 * max0(NdotL));  
-
-                #if SHADOW_QUALITY == 0
-                    int shadowSamples = 0; // We don't use SampleTAAFilteredShadow on Shadow Quality 0
-                #elif SHADOW_QUALITY == 1
-                    int shadowSamples = 1;
-                #else
-                    int shadowSamples = 2;
-                #endif
-                shadow = GetShadow(GetShadowPos(playerPos + bias), faceData.lightmap.y, offset, shadowSamples, false);
+                int shadowSamples = 2;
+                
+                shadow = GetShadow(GetShadowPos(playerPos + bias), faceData.lightmap.y, offset, shadowSamples, false, playerPos);
             }
         }
         shadow *= dot(shadow, vec3(0.33333));
@@ -173,7 +162,7 @@ vec4 getShadedReflection(ivec3 voxelPos, vec3 oldPlayerPos, vec3 playerPos, vec3
     #endif
 
     faceData.lightmap = pow2(pow2(faceData.lightmap));
-    float AO = max(0.8, getVoxelSpaceAO(playerPos, ivec3(normal), localTexCoord));
+    float AO = getVoxelSpaceAO(voxelPos, ivec3(normal), localTexCoord);
     float directionalShading = noDirectionalShading ? 1.0 : (NdotU + 1.0) * 0.25 + 0.5;
 
     vec3 centerPlayerPos = floor(playerPos + cameraPosition + normal * 0.01) - cameraPosition + 0.5;
@@ -215,110 +204,90 @@ vec4 getShadedReflection(ivec3 voxelPos, vec3 oldPlayerPos, vec3 playerPos, vec3
     lighting = lighting * AO * directionalShading + emission * 0.8;
 
     vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(playerPos));
-    fadeout = sqrt3(fadeout) * 0.9 + 0.1;
-    float alphaFade = min(fadeout.x, min(fadeout.y, fadeout.z));
+    float alphaFade = sqrt3(minOf(fadeout)) * 0.9 + 0.1;
     
     return vec4(color.rgb * lighting + maRecolor, alphaFade);
 }
 
-vec3 wsrHitPos = vec3(-100000);
+vec4 voxelRayTrace(vec3 playerPos, vec3 voxelPos, vec3 rayDir, float RVdotU, float RVdotS, float dither, out float traceLength) {
+    vec3 stepAxis = vec3(0.0);
+    vec3 stepDir = sign(rayDir);
+    vec3 stepSizes = 1.0 / abs(rayDir);
 
-vec4 traceHighLOD(vec3 rayDir, vec3 stepDir, vec3 stepSizes, vec3 oldPlayerPos, vec3 newPlayerPos, vec3 voxelPos, float RVdotU, float RVdotS, float dither) {
-    vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(voxelPos)) / rayDir;
-    float closestDist = 0.0;
+    float dist1 = 0.0;
+    vec3 voxelPosRT1 = voxelPos * 0.25;
+    vec3 nextDist1 = (stepDir * 0.5 + 0.5 - fract(voxelPosRT1)) / rayDir;
+    
+    while (CheckInsideLodVoxelVolume(voxelPosRT1)) {
+        if (texelFetch(wsr_lod_sampler, ivec3(voxelPosRT1), 0).r > 0u) {
+            float dist0 = 0.0;
+            vec3 voxelPosRT0 = playerToSceneVoxel(playerPos + 4.0 * dist1 * rayDir);
+            vec3 nextDist0 = (stepDir * 0.5 + 0.5 - fract(voxelPosRT0)) / rayDir;
 
-    const float maxSteps = 14;
-    for (int i = 0; i < maxSteps; i++) {
-        closestDist = min(nextDist.x, min(nextDist.y, nextDist.z));
-        vec3 stepAxis = vec3(lessThanEqual(nextDist, vec3(closestDist)));
-        voxelPos += stepAxis * stepDir;
-        nextDist += stepAxis * stepSizes;
+            vec3 lodVoxelMin = floor(voxelPosRT1) * 4.0;
+            vec3 lodVoxelMax = lodVoxelMin + 4.0;
 
-        if (!CheckInsideSceneVoxelVolume(voxelPos)) return vec4(0.0);
+            float maxDist0 = minOf((mix(lodVoxelMin, lodVoxelMax, stepDir * 0.5 + 0.5) - voxelPosRT0) / rayDir);
 
-        if (checkVoxelAt(ivec3(voxelPos))) {
-            vec3 normal = -stepAxis * stepDir;
-            vec3 intersection = newPlayerPos + rayDir * closestDist;
-            vec4 reflection = getShadedReflection(ivec3(voxelPos), oldPlayerPos, intersection, rayDir, normal, dither);
-            if (reflection.a < -0.5) continue;
+            while (dist0 < maxDist0 && CheckInsideSceneVoxelVolume(voxelPosRT0)) {
+                uint mat = texelFetch(wsr_sampler, ivec3(voxelPosRT0), 0).r;
+                if (mat > 0u) {
+                    traceLength = 4.0 * dist1 + dist0;
 
-            wsrHitPos = intersection;
+                    vec3 normal = -stepAxis * stepDir;
+                    vec3 intersection = playerPos + traceLength * rayDir;
 
-            vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(oldPlayerPos));
-            fadeout = sqrt3(fadeout) * 0.9 + 0.1;
-            reflection *= min(fadeout.x, min(fadeout.y, fadeout.z));
+                    vec4 reflection = getShadedReflection(ivec3(voxelPosRT0), playerPos, intersection, rayDir, normal, mat, dither);
+                    if (reflection.a > -0.5) {
+                        vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(playerPos));
+                        reflection *= sqrt3(minOf(fadeout)) * 0.9 + 0.1;
 
-            float skyFade = 0.0;
-            float reflectionPrevAlpha = reflection.a;
+                        float skyFade = 0.0;
+                        float reflectionPrevAlpha = reflection.a;
 
-            DoFog(reflection, skyFade, length(intersection), intersection, RVdotU, RVdotS, dither, true, length(oldPlayerPos));
+                        DoFog(reflection, skyFade, length(intersection), intersection, RVdotU, RVdotS, dither, true, length(playerPos));
 
-            reflection.a = reflectionPrevAlpha * (1.0 - skyFade);
+                        reflection.a = reflectionPrevAlpha * (1.0 - skyFade);
 
-            return reflection;
-        }
-    }
+                        return reflection;
+                    }
+                }
 
-    return vec4(-1.0);
-}
+                dist0 = minOf(nextDist0);
+                stepAxis = vec3(equal(nextDist0, vec3(dist0)));
 
-vec4 traceLowLOD(vec3 rayDir ,vec3 stepDir, vec3 stepSizes, vec3 playerPos, vec3 voxelPos, vec3 normalOffset, float RVdotU, float RVdotS, float dither) {
-    float lodScale = 4.0;
-    vec3 lodVoxelPos = voxelPos / lodScale;
-
-    vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(lodVoxelPos)) / rayDir;
-    float closestDistPrevious = 0.0;
-    float closestDist = 0.0;
-
-    float maxSteps = length(vec3(sceneVoxelVolumeSize)) / lodScale;
-    for (int i = 0; i < maxSteps; i++) {
-        if (any(greaterThan(lodVoxelPos, vec3(sceneVoxelVolumeSize) / lodScale)) || any(lessThan(lodVoxelPos, vec3(0.0))))
-            return vec4(0.0);
-
-        if (checkLodVoxelAt(ivec3(lodVoxelPos))) {
-            vec3 newPlayerPos = playerPos + rayDir * closestDistPrevious * lodScale;
-
-            // Fixes surfaces reflecting themselves at a distance with lower resolutions, but it can cause some rare artifacts
-            if (i <= 2) newPlayerPos += normalOffset * 0.06;
-
-            vec3 newVoxelPos = playerToSceneVoxel(newPlayerPos);
-            vec4 try = traceHighLOD(rayDir, stepDir, stepSizes, playerPos, newPlayerPos, newVoxelPos, RVdotU, RVdotS, dither);
-            if (try.a > -0.5) return try;
+                nextDist0 += stepAxis * stepSizes;
+                voxelPosRT0 += stepAxis * stepDir;
+            }      
         }
 
-        closestDistPrevious = closestDist;
-        closestDist = min(nextDist.x, min(nextDist.y, nextDist.z));
-        vec3 stepAxis = vec3(lessThanEqual(nextDist, vec3(closestDist)));
-        lodVoxelPos += stepAxis * stepDir;
-        nextDist += stepAxis * stepSizes;
+        dist1 = minOf(nextDist1);
+        stepAxis = vec3(equal(nextDist1, vec3(dist1)));
+
+        nextDist1 += stepAxis * stepSizes;
+        voxelPosRT1 += stepAxis * stepDir;
     }
 
+    traceLength = 999999.0;
     return vec4(0.0);
 }
 
-vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float RVdotS, float z0, float dither) {
+vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float RVdotS, float z0, float dither, out float wsrTraceLength) {
     vec3 normalOffset = normalize(mat3(gbufferModelViewInverse) * normalMR);
+
+    // Fix self-reflection and also align non-full blocks' trace start position to the grid
+    float normalOffsetDist = 1.0 - fract(dot(playerPos + cameraPositionBestFract - normalOffset * 0.1, normalOffset));
+    normalOffsetDist += 0.04; // Fixes remaining artifacts. 0.03 is enough but use slightly higher to make sure
+    playerPos += normalOffsetDist * normalOffset;
+
     vec3 voxelPos = playerToSceneVoxel(playerPos);
-
-    // Fixes slabs, stairs, dirt paths, and farmlands reflecting themselves
-    if (z0 == z1 && z0 > 0.56) {
-        vec3 playerPosFractAdded = playerPos + cameraPositionBestFract + 256.0;
-        vec3 normalOffsetM = normalOffset * (0.04 - 0.01 * dither);
-        ivec3 voxelPosCheck1 = ivec3(playerPosFractAdded - normalOffsetM);
-        ivec3 voxelPosCheck2 = ivec3(playerPosFractAdded + normalOffsetM);
-        if (voxelPosCheck1 == voxelPosCheck2) playerPos += normalOffset * 0.5;
-    }
-
     vec3 rayDir = mat3(gbufferModelViewInverse) * nViewPosR;
 
     if (CheckInsideSceneVoxelVolume(voxelPos)) {
-        vec3 stepDir = sign(rayDir);
-        vec3 stepSizes = 1.0 / abs(rayDir);
-        vec4 wsrResult = traceLowLOD(rayDir, stepDir, stepSizes, playerPos, voxelPos, normalOffset, RVdotU, RVdotS, dither);
+        vec4 wsrResult = voxelRayTrace(playerPos, voxelPos, rayDir, RVdotU, RVdotS, dither, wsrTraceLength);
 
         #if WORLD_SPACE_PLAYER_REF == 1
             if (!is_invisible && z0 > 0.56) {
-                float wsrTraceLength = length(wsrHitPos - playerPos);
                 vec3 albedo;
                 vec3 normal;
 
@@ -358,8 +327,7 @@ vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float R
                     vec3 lighting = sceneLighting + specialLighting * (1.0 - lmCoord.y * sunFactor) * XLIGHT_I + minLighting;
 
                     vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(playerPos));
-                    fadeout = sqrt3(fadeout) * 0.9 + 0.1;
-                    float alphaFade = min(fadeout.x, min(fadeout.y, fadeout.z));
+                    float alphaFade = sqrt3(minOf(fadeout)) * 0.9 + 0.1;
                     
                     return vec4(albedo * lighting, alphaFade);
                 }

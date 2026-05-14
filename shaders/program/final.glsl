@@ -16,10 +16,6 @@ noperspective in vec2 texCoord;
 //Common Variables//
 vec2 view = vec2(viewWidth, viewHeight);
 
-#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0 || WORLD_SPACE_REFLECTIONS > 0 && COLORED_LIGHTING == 0
-    #define ANY_ERROR_MESSAGE
-#endif
-
 #ifdef MC_ANISOTROPIC_FILTERING
     #define OPTIFINE_AF_ERROR
 #endif
@@ -41,7 +37,15 @@ vec2 view = vec2(viewWidth, viewHeight);
     #define WSR_MISSING_ACT_ERROR
 #endif
 
-#if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+#if defined VOXY && defined DISTANT_HORIZONS
+    #define MULTIPLE_LOD_MODS_ERROR
+#endif
+
+#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0 || defined WSR_MISSING_ACT_ERROR || defined MULTIPLE_LOD_MODS_ERROR
+    #define ANY_ERROR_MESSAGE
+#endif
+
+#if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && WORLD_SPACE_PLAYER_REF == 1
     #include "/lib/voxelization/SSBOs/clearSSBOs.glsl"
 #endif
 
@@ -118,7 +122,9 @@ void main() {
         color = max(color, texelFetch(colortex3, texelCoord + boxOffsets[i], 0).rgb);
     }*/
 
-    #ifdef OPTIFINE_AF_ERROR
+    #ifdef MULTIPLE_LOD_MODS_ERROR
+        #include "/lib/textRendering/error_multiple_lod_mods.glsl"
+    #elif defined OPTIFINE_AF_ERROR
         #include "/lib/textRendering/error_optifine_af.glsl"
     #elif defined APPLE_ACT_ERROR
         #include "/lib/textRendering/error_apple_act.glsl"
@@ -140,7 +146,7 @@ void main() {
         #endif
     #endif
 
-    #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
+    #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && WORLD_SPACE_PLAYER_REF == 1
         clearSSBOs();
     #endif
 

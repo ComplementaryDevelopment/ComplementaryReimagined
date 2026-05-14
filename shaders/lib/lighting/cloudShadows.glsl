@@ -46,7 +46,12 @@
                     cloudOffset2.z += distToCloudLayer2 / NVdotLM;
                 #endif
                 vec2 cloudPos2 = GetRoundedCloudCoord(ModifyTracePos(worldPos + cloudOffset2, cloudAlt2i).xz, 0.35);
-                float cloudSample2 = texture2D(gaux4, cloudPos2).b;
+                
+                #ifndef COMPOSITE
+                    float cloudSample2 = texture2D(gaux4, cloudPos2).b;
+                #else
+                    float cloudSample2 = texture2D(cloudWaterTex, cloudPos2).b;
+                #endif
                 cloudSample2 *= clamp(distToCloudLayer2 * 0.1, 0.0, 1.0);
 
                 cloudSample = 1.0 - (1.0 - cloudSample) * (1.0 - cloudSample2);
@@ -56,7 +61,15 @@
             cloudShadow = 1.0 - 0.85 * cloudSample;
         #else
             vec2 csPos = worldPos.xz + worldPos.y * 0.25;
-            csPos.x += syncedTime;
+            float wind = 4.0;
+            #if CLOUD_SPEED_MULT == 100
+                #define CLOUD_SPEED_MULT_M CLOUD_SPEED_MULT * 0.01
+                wind *= syncedTime;
+            #else
+                #define CLOUD_SPEED_MULT_M CLOUD_SPEED_MULT * 0.01
+                wind *= frameTimeCounter * CLOUD_SPEED_MULT_M;
+            #endif
+            csPos.y -= wind;
             csPos *= 0.000002 * CLOUD_UNBOUND_SIZE_MULT;
 
             vec2 shadowoffsets[8] = vec2[8](

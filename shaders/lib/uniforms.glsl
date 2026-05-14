@@ -14,6 +14,7 @@
 ---------------------------------------------------------------------------------------------*/
 
 uniform bool heavyFog = false;
+uniform bool isElytraFlying = false;
 
 uniform int blockEntityId;
 uniform int currentRenderedItemId;
@@ -55,7 +56,9 @@ uniform vec3 cameraPosition;
 uniform vec3 fogColor;
 uniform vec3 previousCameraPosition;
 uniform vec3 skyColor;
+uniform vec3 eyePosition;
 uniform vec3 relativeEyePosition;
+uniform vec3 playerLookVector;
 
 uniform vec4 entityColor;
 uniform vec4 lightningBoltPosition;
@@ -78,6 +81,7 @@ uniform sampler2D colortex5;
 uniform sampler2D colortex6;
 uniform sampler2D colortex7;
 uniform sampler2D colortex8;
+uniform sampler2D colortex12;
 uniform sampler2D depthtex0;
 uniform sampler2D depthtex1;
 uniform sampler2D gaux2;
@@ -98,8 +102,9 @@ uniform vec3 previousCameraPositionFract;
     uniform int renderStage;
 
     #if MC_VERSION >= 12109
-        uniform float endFlashIntensity;
+        uniform float endFlashIntensityM;
         uniform vec3 endFlashPosition;
+        // vec3 endFlashPosition = vec3(0.0, 0.0, -100.0);
     #endif
 #endif
 
@@ -126,9 +131,24 @@ uniform vec3 previousCameraPositionFract;
 
     uniform mat4 dhProjection;
     uniform mat4 dhProjectionInverse;
+    uniform mat4 dhPreviousProjection;
     
     uniform sampler2D dhDepthTex;
     uniform sampler2D dhDepthTex1;
+#endif
+
+#ifdef VOXY
+    uniform int vxRenderDistance;
+
+    uniform mat4 vxProj;
+    uniform mat4 vxProjInv;
+    uniform mat4 vxProjPrev;
+    uniform mat4 vxModelView;
+    uniform mat4 vxModelViewInv;
+    uniform mat4 vxModelViewPrev;
+
+    uniform sampler2D vxDepthTexTrans;
+    uniform sampler2D vxDepthTexOpaque;
 #endif
 
 #if COLORED_LIGHTING_INTERNAL > 0
@@ -145,6 +165,7 @@ uniform vec3 previousCameraPositionFract;
     uniform sampler2D textureAtlas;
 
     uniform usampler3D wsr_sampler;
+    uniform usampler3D wsr_lod_sampler;
 
     #if WORLD_SPACE_PLAYER_REF == 1
         uniform sampler2D playerAtlas_sampler;

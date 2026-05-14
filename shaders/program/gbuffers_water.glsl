@@ -70,21 +70,12 @@ float GetLinearDepth(float depth) {
     return (2.0 * near) / (far + near - depth * (far - near));
 }
 
-void DoTranslucentTweaks(vec4 color, inout float fresnelM, inout float reflectMult, float lViewPos) {
-    float tweakDistance = 128.0;
-    float tweakIntensity = 0.5;
-
-    float factor = tweakIntensity * smoothstep(0.0, tweakDistance, lViewPos);
-
-    fresnelM = mix(fresnelM, 1.0, factor);
-    reflectMult = mix(reflectMult, reflectMult / color.a, factor);
-}
-
 //Includes//
 #include "/lib/util/dither.glsl"
 #include "/lib/util/spaceConversion.glsl"
 #include "/lib/lighting/mainLighting.glsl"
 #include "/lib/atmospherics/fog/mainFog.glsl"
+#include "/lib/materials/materialMethods/translucentTweaks.glsl"
 
 #ifdef OVERWORLD
     #include "/lib/atmospherics/sky.glsl"
@@ -102,7 +93,7 @@ void DoTranslucentTweaks(vec4 color, inout float fresnelM, inout float reflectMu
             #include "/lib/atmospherics/stars.glsl"
         #endif
 
-        #ifdef VL_CLOUDS_ACTIVE 
+        #ifdef VL_CLOUDS_ACTIVE
             #include "/lib/atmospherics/clouds/mainClouds.glsl"
         #endif
     #endif
@@ -156,7 +147,7 @@ void main() {
     #ifdef GBUFFERS_COLORWHEEL_TRANSLUCENT
         float ao;
         vec4 overlayColor;
-        
+
         clrwl_computeFragment(colorP, colorP, lmCoord, ao, overlayColor);
         vec4 color = mix(colorP, overlayColor, overlayColor.a);
         lmCoord = clamp((lmCoord - 1.0 / 32.0) * 32.0 / 30.0, 0.0, 1.0);
@@ -210,31 +201,8 @@ void main() {
     vec3 shadowMult = vec3(1.0);
     float fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
     float fresnelM = pow3(fresnel);
-    #ifdef IPBR
-        #include "/lib/materials/materialHandling/translucentIPBR.glsl"
 
-        #ifdef GENERATED_NORMALS
-            if (!noGeneratedNormals) GenerateNormals(normalM, colorP.rgb * colorP.a * 1.5);
-        #endif
-
-        #if IPBR_EMISSIVE_MODE != 1
-            emission = GetCustomEmissionForIPBR(color, emission);
-        #endif
-    #else
-        #ifdef CUSTOM_PBR
-            float smoothnessD, materialMaskPh;
-            GetCustomMaterials(color, normalM, lmCoordM, NdotU, shadowMult, smoothnessG, smoothnessD, highlightMult, emission, materialMaskPh, viewPos, lViewPos);
-            reflectMult = smoothnessD;
-        #endif
-
-        if (mat == 32000) { // Water
-            #include "/lib/materials/specificMaterials/translucents/water.glsl"
-        } else if (mat == 30020) { // Nether Portal
-            #ifdef SPECIAL_PORTAL_EFFECTS
-                #include "/lib/materials/specificMaterials/translucents/netherPortal.glsl"
-            #endif
-        }
-    #endif
+    #include "/lib/materials/materialHandling/translucentMaterials.glsl"
 
     #if WATER_MAT_QUALITY >= 3 && SELECT_OUTLINE == 4
         int materialMaskInt = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);
@@ -290,6 +258,13 @@ void main() {
 
     #ifdef IRIS_FEATURE_FADE_VARIABLE
         skyLightFactor *= 0.5;
+    #endif
+
+    #ifdef DH_BLENDING
+        float fog = max(length(playerPos.xz), abs(playerPos.y)) / far;
+        fog = pow2(pow2(pow2(pow2(fog))));
+        fog = exp(-3.0 * fog);
+        color.a *= fog;
     #endif
 
     /* DRAWBUFFERS:03 */
@@ -385,8 +360,10 @@ void main() {
     northVec = normalize(gbufferModelView[2].xyz);
     sunVec = GetSunVector();
 
-    binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
-    tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
+    vec3 rawBinormal = gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w;
+    binormal = rawBinormal * inversesqrt(max(dot(rawBinormal, rawBinormal), 1e-8));
+    vec3 rawTangent = gl_NormalMatrix * at_tangent.xyz;
+    tangent = rawTangent * inversesqrt(max(dot(rawTangent, rawTangent), 1e-8));
 
     mat3 tbnMatrix = mat3(
         tangent.x, binormal.x, normal.x,
@@ -421,6 +398,10 @@ void main() {
 
     #ifdef IRIS_FEATURE_FADE_VARIABLE
         chunkFade = mc_chunkFade;
+    #endif
+
+    #if MC_VERSION >= 260100
+        if (mat == 10049) mat = 32001; // Cauldron Water
     #endif
 }
 

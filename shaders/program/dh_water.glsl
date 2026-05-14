@@ -142,7 +142,7 @@ void main() {
     float fresnelM = (pow3(fresnel) * 0.85 + 0.15) * reflectMult;
 
     float lengthCylinder = max(length(playerPos.xz), abs(playerPos.y) * 2.0);
-    color.a *= smoothstep(far * 0.5, far * 0.7, lengthCylinder);
+    color.a *= smoothstep(far * 0.4, far * 0.6, lengthCylinder);
 
     DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
@@ -160,12 +160,12 @@ void main() {
         float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
 
         vec4 reflection = GetReflection(normalM, viewPos.xyz, nViewPos, playerPos, lViewPos, -1.0,
-                                        depthtex1, dither, skyLightFactor, fresnel,
+                                        dhDepthTex, dither, skyLightFactor, fresnel,
                                         smoothnessG, geoNormal, color.rgb, shadowMult, highlightMult);
 
         color.rgb = mix(color.rgb, reflection.rgb, fresnelM);
     #endif
-    ////
+    //
 
     float sky = 0.0;
 
@@ -176,12 +176,6 @@ void main() {
 
     /* DRAWBUFFERS:0 */
     gl_FragData[0] = color;
-
-    #if WORLD_SPACE_REFLECTIONS > 0
-        /* DRAWBUFFERS:048 */
-        gl_FragData[1] = vec4(mat3(gbufferModelViewInverse) * normalM, sqrt(fresnelM * color.a * fogAlpha));
-        gl_FragData[2] = vec4(reflection.rgb * fresnelM * color.a * fogAlpha, reflection.a);
-    #endif
 }
 
 #endif
@@ -214,7 +208,9 @@ attribute vec4 at_tangent;
 
 //Program//
 void main() {
-    gl_Position = ftransform();
+    vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
+
+    gl_Position = dhProjection * gbufferModelView * position;
     #ifdef TAA
         gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
     #endif
@@ -229,7 +225,7 @@ void main() {
     northVec = normalize(gbufferModelView[2].xyz);
     sunVec = GetSunVector();
 
-    playerPos = (gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex).xyz;
+    playerPos = position.xyz;
 
     mat3 tbnMatrix = mat3(
         eastVec.x, northVec.x, normal.x,

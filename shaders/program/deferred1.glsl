@@ -51,13 +51,17 @@ float GetLinearDepth(float depth) {
     return (2.0 * near) / (far + near - depth * farMinusNear);
 }
 
+float GetLinearDepth(float depth, float far, float near) {
+    return (2.0 * near) / (far + near - depth * (far - near));
+}
+
 #if SSAO_QUALI > 0
     vec2 OffsetDist(float x, int s) {
         float n = fract(x * 1.414) * 3.1415;
         return pow2(vec2(cos(n), sin(n)) * x / s);
     }
 
-    float DoAmbientOcclusion(float z0, float linearZ0, float dither) {
+    float GetAmbientOcclusion(sampler2D depthtex, float z0, float linearZ0, float dither, float farM, float nearM, float aoWorldRange) {
         if (z0 < 0.56) return 1.0;
         float ao = 0.0;
 
@@ -73,7 +77,7 @@ float GetLinearDepth(float depth) {
 
         float sampleDepth = 0.0, angle = 0.0, dist = 0.0;
         float fovScale = gbufferProjection[1][1];
-        float distScale = max(farMinusNear * linearZ0 + near, 3.0);
+        float distScale = max((farM - nearM) * linearZ0 + near, 3.0);
         vec2 scale = vec2(scm / aspectRatio, scm) * fovScale / distScale;
 
         for (int i = 1; i <= samples; i++) {
@@ -83,13 +87,13 @@ float GetLinearDepth(float depth) {
             vec2 coord1 = texCoord + offset;
             vec2 coord2 = texCoord - offset;
 
-            sampleDepth = GetLinearDepth(texture2D(depthtex0, coord1).r);
-            float aosample = farMinusNear * (linearZ0 - sampleDepth) * 2.0;
+            sampleDepth = GetLinearDepth(texture2D(depthtex, coord1).r, farM, nearM);
+            float aosample = aoWorldRange * (linearZ0 - sampleDepth) * 2.0;
             angle = clamp(0.5 - aosample, 0.0, 1.0);
             dist = clamp(0.5 * aosample - 1.0, 0.0, 1.0);
 
-            sampleDepth = GetLinearDepth(texture2D(depthtex0, coord2).r);
-            aosample = farMinusNear * (linearZ0 - sampleDepth) * 2.0;
+            sampleDepth = GetLinearDepth(texture2D(depthtex, coord2).r, farM, nearM);
+            aosample = aoWorldRange * (linearZ0 - sampleDepth) * 2.0;
             angle += clamp(0.5 - aosample, 0.0, 1.0);
             dist += clamp(0.5 * aosample - 1.0, 0.0, 1.0);
 
@@ -99,6 +103,65 @@ float GetLinearDepth(float depth) {
 
         #define SSAO_IM SSAO_I * SSAO_I_FACTOR
         return pow(ao, SSAO_IM);
+    }
+#endif
+
+#if defined DISTANT_HORIZONS || defined VOXY
+    float GetLinearDepth(float depth, mat4 invProjMatrix) {
+        depth = depth * 2.0 - 1.0;
+        vec2 zw = depth * invProjMatrix[2].zw + invProjMatrix[3].zw;
+        return -zw.x / zw.y;
+    }
+
+    float GetLODShadows(vec3 viewPos, vec3 nViewPos, sampler2D depthtex, mat4 projection, mat4 projectionInverse, float dither) {
+        #if defined OVERWORLD || defined END
+            float shadow = 1.0;
+            vec3 tracePos = viewPos.xyz;
+            vec3 traceStep = normalize(lightVec) * 2.5;
+            
+            #ifdef TAA
+                tracePos += traceStep * (fract(dither + frameCounter * 0.618) + 0.2);
+            #else
+                tracePos += traceStep * (dither + 0.2);
+            #endif
+
+            float traceZ = 0.0;
+            float zDelta = 0.0;
+
+            #ifdef VOXY
+                vec3 texture6 = texelFetch(colortex6, texelCoord, 0).rgb;
+                int materialMaskInt = int(texture6.g * 255.1);
+
+                if (materialMaskInt != 253) // Reduced Edge TAA (Leaves)
+                    tracePos -= nViewPos * 1.5; // Tweak to imitate shadow bias
+            #endif
+
+            for (int i = 0; i < 32; i++) {
+                vec4 pos = projection * vec4(tracePos.xyz, 1.0);
+                pos = pos / pos.w * 0.5 + 0.5;
+
+                if (pos.x < 0.0 || pos.x > 1.0 || pos.y < 0.0 || pos.y > 1.0) break;
+
+                #ifdef VOXY
+                    traceZ = texture2D(depthtex0, pos.xy).r;
+                    
+                    if (traceZ < 1.0) {
+                        zDelta = -tracePos.z - GetLinearDepth(traceZ, gbufferProjectionInverse);
+                    } else
+                #endif
+                {
+                    traceZ = texture2D(depthtex, pos.xy).r;
+                    zDelta = -tracePos.z - GetLinearDepth(traceZ, projectionInverse);
+                }
+
+                shadow *= 1.0 - smoothstep(0.0, 0.01, zDelta) * smoothstep(5.0, 4.0, zDelta);
+                tracePos += traceStep;
+            }
+
+            return shadow;
+        #else
+            return 1.0;
+        #endif
     }
 #endif
 
@@ -166,6 +229,10 @@ void main() {
         sqrtAtmColorMult = sqrt(atmColorMult);
     #endif
 
+    #if defined VOXY && SHADOW_QUALITY > -1
+        float lodShadow = 0.0;
+    #endif
+
     float VdotU = dot(nViewPos, upVec);
     float VdotS = dot(nViewPos, sunVec);
     float skyFade = 0.0;
@@ -194,7 +261,7 @@ void main() {
         #endif
 
         #if SSAO_QUALI > 0
-            float ssao = DoAmbientOcclusion(z0, linearZ0, dither);
+            float ssao = GetAmbientOcclusion(depthtex0, z0, linearZ0, dither, far, near, far - near);
         #else
             float ssao = 1.0;
         #endif
@@ -208,11 +275,19 @@ void main() {
 
         #include "/lib/materials/materialHandling/deferredMaterials.glsl"
 
+        #ifdef PBR_REFLECTIONS
+            vec3 texture4 = texelFetch(colortex4, texelCoord, 0).rgb;
+            normalM = mat3(gbufferModelView) * texture4;
+            float fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
+        #else
+            float fresnel = 0.0;
+        #endif
+
         #ifdef WORLD_OUTLINE
             #ifndef WORLD_OUTLINE_ON_ENTITIES
                 if (!entityOrParticle)
             #endif
-            DoWorldOutline(color.rgb, linearZ0);
+            DoWorldOutline(color.rgb, linearZ0, playerPos, fresnel, dither);
         #endif
 
         #ifdef DARK_OUTLINE
@@ -222,11 +297,7 @@ void main() {
         color.rgb *= ssao;
 
         #ifdef PBR_REFLECTIONS
-            vec3 texture4 = texelFetch(colortex4, texelCoord, 0).rgb;
-            normalM = mat3(gbufferModelView) * texture4;
-            float fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
-
-            #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1
+            #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1 && !defined END
                 // Way steeper fresnel falloff on SSR-only mode to hide SSR limitation and gain performance
                 float fresnelFactor = (1.0 - smoothnessD) * 0.7;
                 fresnelM = max(fresnel - fresnelFactor, 0.0) / (1.0 - fresnelFactor);
@@ -244,53 +315,76 @@ void main() {
 
         waterRefColor = color.rgb;
         DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
-    } else { // Sky
-        #ifdef DISTANT_HORIZONS
-            float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
-            if (z0DH < 1.0) { // Distant Horizons Chunks
-                vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
-                vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
-                viewPosDH /= viewPosDH.w;
-                lViewPos = length(viewPosDH.xyz);
-                playerPos = ViewToPlayer(viewPosDH.xyz);
+    } else {
+        #if defined DISTANT_HORIZONS || defined VOXY
+            #ifdef DISTANT_HORIZONS
+                float z0lod = texelFetch(dhDepthTex, texelCoord, 0).r;
+            #elif defined VOXY
+                float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
+            #endif
+            if (z0lod < 1.0) { // Lod Chunks
+                vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+                #ifdef DISTANT_HORIZONS
+                    vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
+                    viewPosLod /= viewPosLod.w;
+
+                    #if SHADOW_QUALITY > -1
+                        color.rgb *= 0.5 + 0.5 * GetLODShadows(viewPosLod.xyz, nViewPos, dhDepthTex, dhProjection, dhProjectionInverse, dither);
+                    #endif
+                #elif defined VOXY
+                    vec4 viewPosLod = vxProjInv * (screenPosLod * 2.0 - 1.0);
+                    viewPosLod /= viewPosLod.w;
+
+                    #if SHADOW_QUALITY > -1
+                        lodShadow = GetLODShadows(viewPosLod.xyz, nViewPos, vxDepthTexTrans, vxProj, vxProjInv, dither);
+                        lodShadow += OSIEBCA; // For being able to check if a calculation has been done;
+                    #endif
+
+                    #if SSAO_QUALI > 0
+                        float farLod = 16*20, nearLod = 16;
+                        float aoWorldRange = (farLod - nearLod);
+                        float ssao = GetAmbientOcclusion(vxDepthTexTrans, z0lod, GetLinearDepth(z0lod, farLod, nearLod), dither, farLod, nearLod, aoWorldRange);
+                        color.rgb *= pow2(pow2(ssao));
+                    #endif
+                #endif
+
+                lViewPos = length(viewPosLod.xyz);
+                playerPos = ViewToPlayer(viewPosLod.xyz);
                 waterRefColor = color.rgb;
                 
                 DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
-            } else { // Start of Actual Sky
+            } else
         #endif
+        { // Sky
+            skyFade = 1.0;
 
-        skyFade = 1.0;
-
-        #ifdef OVERWORLD
-            #if AURORA_STYLE > 0
-                auroraBorealis = GetAuroraBorealis(viewPos.xyz, VdotU, dither);
-                color.rgb += auroraBorealis;
+            #ifdef OVERWORLD
+                #if AURORA_STYLE > 0
+                    auroraBorealis = GetAuroraBorealis(viewPos.xyz, VdotU, dither);
+                    color.rgb += auroraBorealis;
+                #endif
+                #if NIGHT_NEBULAE == 1
+                    nightNebula += GetNightNebula(viewPos.xyz, VdotU, VdotS);
+                    color.rgb += nightNebula;
+                #endif
             #endif
-            #if NIGHT_NEBULAE == 1
-                nightNebula += GetNightNebula(viewPos.xyz, VdotU, VdotS);
-                color.rgb += nightNebula;
-            #endif
-        #endif
-        #ifdef NETHER
-            color.rgb = netherColor * (1.0 - maxBlindnessDarkness);
+            #ifdef NETHER
+                color.rgb = netherColor * (1.0 - maxBlindnessDarkness);
 
-            #ifdef ATM_COLOR_MULTS
-                color.rgb *= atmColorMult;
+                #ifdef ATM_COLOR_MULTS
+                    color.rgb *= atmColorMult;
+                #endif
             #endif
-        #endif
-        #ifdef END
-            color.rgb = endSkyColor;
-            color.rgb += GetEnderStars(viewPos.xyz, VdotU);
-            color.rgb *= 1.0 - maxBlindnessDarkness;
+            #ifdef END
+                color.rgb = endSkyColor;
+                color.rgb += GetEnderStars(viewPos.xyz, VdotU);
+                color.rgb *= 1.0 - maxBlindnessDarkness;
 
-            #ifdef ATM_COLOR_MULTS
-                color.rgb *= atmColorMult;
+                #ifdef ATM_COLOR_MULTS
+                    color.rgb *= atmColorMult;
+                #endif
             #endif
-        #endif
-
-        #ifdef DISTANT_HORIZONS
-        } // End of Actual Sky
-        #endif
+        }
     }
 
     float cloudLinearDepth = 1.0;
@@ -321,6 +415,9 @@ void main() {
         if (isEyeInWater == 0) {
             float altitudeFactorRaw = GetAtmFogAltitudeFactor(playerPos.y + cameraPosition.y);
             vec3 atmFogColor = GetAtmFogColor(altitudeFactorRaw, VdotS);
+            #ifdef ATM_COLOR_MULTS
+                atmFogColor *= atmColorMult;
+            #endif
 
             #if RAIN_STYLE == 2
                 float factor = 1.0;
@@ -340,6 +437,24 @@ void main() {
     #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 1
         /*DRAWBUFFERS:054*/
         gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, sqrt(fresnelM * color.a));
+
+        #ifdef VOXY
+            /* RENDERTARGETS: 0,5,4,19 */
+            gl_FragData[3] = vec4(waterRefColor, cloudLinearDepth);
+
+            #if SHADOW_QUALITY > -1
+                /* RENDERTARGETS: 0,5,4,19,18 */
+                gl_FragData[4] = vec4(lodShadow, 1.0, 1.0, 1.0);
+            #endif
+        #endif
+    #elif defined VOXY
+        /* RENDERTARGETS: 0,5,19 */
+        gl_FragData[2] = vec4(waterRefColor, cloudLinearDepth);
+
+        #if SHADOW_QUALITY > -1
+            /* RENDERTARGETS: 0,5,19,18 */
+            gl_FragData[3] = vec4(lodShadow, 1.0, 1.0, 1.0);
+        #endif
     #endif
 }
 

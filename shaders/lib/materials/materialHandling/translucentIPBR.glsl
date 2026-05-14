@@ -67,7 +67,7 @@ if (mat < 32008) {
                 }
             }
         } else {
-            if (mat == 32000) { // Water
+            if (mat < 32004) { // Water
                 #include "/lib/materials/specificMaterials/translucents/water.glsl"
             } else /*if (mat == 32004)*/ { // Ice
                 smoothnessG = pow2(color.g) * color.g;

@@ -206,8 +206,12 @@ void main() {
     sunVec = GetSunVector();
 
     #ifdef OVERWORLD
-        //Vanilla Star Dedection by Builderb0y
-        vanillaStars = float(glColor.r == glColor.g && glColor.g == glColor.b && glColor.r > 0.0 && glColor.r < 0.51);
+        #if MC_VERSION >= 11605 && (defined IS_ANGELICA || defined IS_IRIS)
+            vanillaStars = float(renderStage == MC_RENDER_STAGE_STARS);
+        #else
+            //Vanilla Star Dedection by Builderb0y
+            vanillaStars = float(glColor.r == glColor.g && glColor.g == glColor.b && glColor.r > 0.0 && glColor.r < 0.51);
+        #endif
     #endif
 }
 

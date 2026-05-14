@@ -19,8 +19,6 @@ struct faceData {
 #endif
 
 #include "/lib/voxelization/SSBOs/blockDataBuffer.glsl"
-#include "/lib/voxelization/SSBOs/wsrLodBuffer.glsl"
-#include "/lib/voxelization/SSBOs/wsrBuffer.glsl"
 
 // Face index with no duplicates!
 // Number of unique indecies 3abc + ab + bc + ca compared to 6abc, 
@@ -53,22 +51,6 @@ faceData getFaceData(ivec3 voxelPos, vec3 normal) {
 					vec3(data.x >> 16u, data.x & 65535u, data.y) / 65536.0);
 }
 
-bool checkLodVoxelAt(ivec3 lodVoxelPos) {
-	uint voxelIndex = uint(lodVoxelPos.x + lodVoxelPos.y * sceneVoxelLodVolumeSize.x +
-						   				   lodVoxelPos.z * sceneVoxelLodVolumeSize.x * sceneVoxelLodVolumeSize.y); 
-	
-	uint mask = 1u << (voxelIndex & 31u);
-	return (wsrLodSSBO.bitmasks[voxelIndex >> 5] & mask) != 0;
-}
-
-bool checkVoxelAt(ivec3 voxelPos) {
-	uint voxelIndex = uint(voxelPos.x + voxelPos.y * sceneVoxelVolumeSize.x +
-						   				voxelPos.z * sceneVoxelVolumeSize.x * sceneVoxelVolumeSize.y); 
-	
-	uint mask = 1u << (voxelIndex & 31u);
-	return (wsrSSBO.bitmasks[voxelIndex >> 5] & mask) != 0;
-}
-
 #if defined SHADOW && defined VERTEX_SHADER
 void storeFaceData(ivec3 voxelPos, vec3 normal, vec2 origin, float textureRad, bool storeToAllFaces, bool storeToAllFacesExceptTop, vec3 playerPos) {
 	vec2 lmCoordM = lmCoord;
@@ -94,25 +76,11 @@ void storeFaceData(ivec3 voxelPos, vec3 normal, vec2 origin, float textureRad, b
 
 		int start = 0 + int(storeToAllFacesExceptTop);
 		for(int i = start; i < 6; i++) {
-			if (!checkVoxelAt(ivec3(voxelPos + faceOffsets[i])))
+			if (texelFetch(wsr_sampler, ivec3(voxelPos + faceOffsets[i]), 0).r == 0u)
 				blockDataSSBO.data[getFaceIndex(voxelPos, faceOffsets[i])] = newData;
 		}
 	} else {
 		blockDataSSBO.data[getFaceIndex(voxelPos, normal)] = newData;
 	}
-}
-
-void updateWsrLodBitmask(ivec3 lodVoxelPos) {
-	uint voxelIndex = uint(lodVoxelPos.x + lodVoxelPos.y * sceneVoxelLodVolumeSize.x +
-						   				   lodVoxelPos.z * sceneVoxelLodVolumeSize.x * sceneVoxelLodVolumeSize.y); 
-										   
-	atomicOr(wsrLodSSBO.bitmasks[voxelIndex >> 5], 1u << (voxelIndex & 31u));
-}
-
-void updateWsrBitmask(ivec3 voxelPos) {
-	uint voxelIndex = uint(voxelPos.x + voxelPos.y * sceneVoxelVolumeSize.x +
-						   				voxelPos.z * sceneVoxelVolumeSize.x * sceneVoxelVolumeSize.y); 
-										   
-	atomicOr(wsrSSBO.bitmasks[voxelIndex >> 5], 1u << (voxelIndex & 31u));
 }
 #endif
