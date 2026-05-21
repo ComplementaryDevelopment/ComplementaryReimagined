@@ -58,6 +58,12 @@ void main() {
         if (currentRenderedItemId == 45124 && !isElytraFlying) discard;
     #endif
 
+    #if PLAYER_SHADOW == -1
+        if (entityId == 50016 || entityId == 50017) { // Player
+            discard;
+        }
+    #endif
+
     #if SHADOW_QUALITY >= 1
         vec4 color2 = color1; // Light Shaft Color
 

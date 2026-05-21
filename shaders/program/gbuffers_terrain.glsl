@@ -181,7 +181,7 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
     #include "/lib/misc/distantLightBokeh.glsl"
 #endif
 
-#if RAIN_PUDDLES >= 1 && BLOCK_REFLECT_QUALITY == 1
+#if RAIN_PUDDLES >= 1 && BLOCK_REFLECT_QUALITY == 1 && defined OVERWORLD
     #ifdef ATM_COLOR_MULTS
         #include "/lib/colors/colorMultipliers.glsl"
     #endif
@@ -301,7 +301,7 @@ void main() {
             smoothnessG = mix(smoothnessG, puddleSmoothnessG, puddleMixer);
             highlightMult = mix(highlightMult, puddleHighlight, puddleMixer);
             smoothnessD = mix(smoothnessD, 1.0, sqrt1(puddleMixer));
-            normalM = mix(normalM, puddleNormal, sqrt1(puddleMixer) * 0.98);
+            normalM = normalize(mix(normalM, puddleNormal, sqrt1(puddleMixer) * 0.98));
         } else puddleMixer = 0.0;
     #endif
 

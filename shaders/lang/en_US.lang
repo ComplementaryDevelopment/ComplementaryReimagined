@@ -846,7 +846,7 @@ option.AMBIENT_MULT=Shadow Light Multiplier
 option.AMBIENT_MULT.comment=Determines the amount of ambient lighting seen in shadows. §c[-]§r Drastically changing this setting can break the lighting balance.
 
 option.PLAYER_SHADOW=Player Shadow §e[*]§r
-option.PLAYER_SHADOW.comment=Determines if the player will cast a shadow or not. §e[*]§r This setting only works on Iris. §e[*]§r This setting will be disabled if "Real-Time Shadows" is OFF.
+option.PLAYER_SHADOW.comment=Determines if the player will cast a shadow or not. §e[*]§r This setting only fully works on Iris. §e[*]§r This setting will be disabled if "Real-Time Shadows" is OFF.
 value.PLAYER_SHADOW.-1=OFF
 value.PLAYER_SHADOW.1=ON
 

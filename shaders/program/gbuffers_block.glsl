@@ -97,6 +97,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/voxelization/lightVoxelization.glsl"
 #endif
 
+#ifdef GBUFFERS_BLOCK_TRANSLUCENT
+    #include "/lib/atmospherics/fog/mainFog.glsl"
+#endif
+
 //Program//
 void main() {
     vec4 color = texture2D(tex, texCoord);
@@ -116,7 +120,7 @@ void main() {
     vec3 nViewPos = normalize(viewPos);
     float VdotN = dot(nViewPos, normal);
 
-    bool noSmoothLighting = false, noDirectionalShading = false;
+    bool noSmoothLighting = false, noDirectionalShading = false, noGeneratedNormals = false;
     float smoothnessD = 0.0, materialMask = 0.0;
     float smoothnessG = 0.0, highlightMult = 1.0, emission = 0.0, noiseFactor = 1.0;
     vec2 lmCoordM = lmCoord;
@@ -150,7 +154,7 @@ void main() {
     #endif
 
     #ifdef GENERATED_NORMALS
-        GenerateNormals(normalM, colorP);
+        if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
     #endif
 
     #ifdef COATED_TEXTURES
@@ -166,6 +170,23 @@ void main() {
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, blockEntityId);
+    #endif
+
+    #ifdef GBUFFERS_BLOCK_TRANSLUCENT
+        float VdotU = dot(nViewPos, upVec);
+        float VdotS = dot(nViewPos, sunVec);
+
+        float dither = Bayer64(gl_FragCoord.xy);
+        #ifdef TAA
+            dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
+        #endif
+
+        float skyFade = 0.0;
+        float prevAlpha = color.a;
+        color.a = 1.0;
+        DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
+        float fogAlpha = color.a;
+        color.a = prevAlpha * (1.0 - skyFade);
     #endif
 
     #ifdef IRIS_FEATURE_FADE_VARIABLE
