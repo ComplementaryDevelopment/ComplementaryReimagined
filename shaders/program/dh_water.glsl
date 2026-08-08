@@ -100,7 +100,7 @@ void main() {
     vec4 color = glColor;
 
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
-    if (texture2D(depthtex1, screenPos.xy).r < 1.0) discard;
+    if (texture2D(depthtex0, screenPos.xy).r < 1.0) discard;
     float lViewPos = length(playerPos);
 
     float dither = Bayer64(gl_FragCoord.xy);
