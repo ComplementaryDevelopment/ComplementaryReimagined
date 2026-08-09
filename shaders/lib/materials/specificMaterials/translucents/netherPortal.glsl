@@ -1,29 +1,34 @@
 lmCoordM = vec2(0.0);
-color = vec4(0.0);
 
-int sampleCount = 8;
+#ifndef VOXY_PATCH
+    color = vec4(0.0);
 
-float multiplier = 0.4 / (-viewVector.z * sampleCount);
-vec2 interval = viewVector.xy * multiplier;
-vec2 coord = signMidCoordPos * 0.5 + 0.5;
-vec2 absMidCoordPos2 = absMidCoordPos * 2.0;
-vec2 midCoord = texCoord - absMidCoordPos * signMidCoordPos;
-vec2 minimumMidCoordPos = midCoord - absMidCoordPos;
+    int sampleCount = 8;
 
-for (int i = 0; i < sampleCount; i++) {
-    float portalStep = (i + dither) / sampleCount;
-    coord += interval * portalStep;
-    vec2 sampleCoord = fract(coord) * absMidCoordPos2 + minimumMidCoordPos;
-    vec4 psample = texture2DLod(tex, sampleCoord, 0);
+    float multiplier = 0.4 / (-viewVector.z * sampleCount);
+    vec2 interval = viewVector.xy * multiplier;
+    vec2 coord = signMidCoordPos * 0.5 + 0.5;
+    vec2 absMidCoordPos2 = absMidCoordPos * 2.0;
+    vec2 midCoord = texCoord - absMidCoordPos * signMidCoordPos;
+    vec2 minimumMidCoordPos = midCoord - absMidCoordPos;
 
-    float factor = 1.0 - portalStep;
-    psample *= pow(factor, 0.1);
+    for (int i = 0; i < sampleCount; i++) {
+        float portalStep = (i + dither) / sampleCount;
+        coord += interval * portalStep;
+        vec2 sampleCoord = fract(coord) * absMidCoordPos2 + minimumMidCoordPos;
+        vec4 psample = texture2DLod(tex, sampleCoord, 0);
 
-    emission = max(emission, psample.r);
+        float factor = 1.0 - portalStep;
+        psample *= pow(factor, 0.1);
 
-    color += psample;
-}
-color /= sampleCount;
+        emission = max(emission, psample.r);
+
+        color += psample;
+    }
+    color /= sampleCount;
+#else
+    emission = color.r;
+#endif
 
 color.rgb *= color.rgb * vec3(1.25, 1.0, 0.65);
 color.a = sqrt1(color.a) * 0.8;

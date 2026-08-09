@@ -13,7 +13,7 @@ if (mat < 11024) {
                                 else /*if (mat < 10008)*/ { // Grounded Waving Foliage
                                     subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
-                                    #ifdef GBUFFERS_TERRAIN
+                                    #if defined GBUFFERS_TERRAIN || defined VOXY_PATCH
                                         DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, viewPos, nViewPos, lViewPos, dither);
 
                                         #ifdef COATED_TEXTURES
@@ -21,7 +21,7 @@ if (mat < 11024) {
                                         #endif
                                     #endif
 
-                                    #if SHADOW_QUALITY == -1
+                                    #if SHADOW_QUALITY == -1 && !defined VOXY_PATCH
                                         shadowMult *= 1.0 - 0.3 * (signMidCoordPos.y + 1.0) * (1.0 - abs(signMidCoordPos.x))
                                         + 0.5 * (1.0 - signMidCoordPos.y) * invNoonFactor; // consistency357381
                                     #endif
@@ -57,7 +57,7 @@ if (mat < 11024) {
                                 else /*if (mat < 10024)*/ { // Upper Waving Foliage
                                     subsurfaceMode = 1, noSmoothLighting = true, noDirectionalShading = true;
 
-                                    #ifdef GBUFFERS_TERRAIN
+                                    #if defined GBUFFERS_TERRAIN || defined VOXY_PATCH
                                         DoFoliageColorTweaks(color.rgb, shadowMult, snowMinNdotU, viewPos, nViewPos, lViewPos, dither);
 
                                         #ifdef COATED_TEXTURES
@@ -65,13 +65,13 @@ if (mat < 11024) {
                                         #endif
                                     #endif
 
-                                    #if SHADOW_QUALITY == -1
+                                    #if SHADOW_QUALITY == -1 && !defined VOXY_PATCH
                                         shadowMult *= 1.0 + invNoonFactor; // consistency357381
                                     #endif
                                 }
                             } else {
                                 if (mat < 10028) { // Modded Ores
-                                    #ifdef GLOWING_ORE_MODDED
+                                    #if defined GLOWING_ORE_MODDED && !defined VOXY_PATCH
                                         float epsilon = 0.00001;
                                         vec2 absMidCoordPosM = absMidCoordPos - epsilon;
                                         vec3 avgBorderColor = vec3(0.0);
@@ -115,9 +115,7 @@ if (mat < 11024) {
                                 }
                             } else {
                                 if (mat < 10044) { // Rails
-                                    #if ANISOTROPIC_FILTER == 0
-                                        color = texture2DLod(tex, texCoord, 0);
-                                    #endif
+                                    color = texture2DLod(tex, texCoord, 0);
 
                                     noSmoothLighting = true;
                                     if (color.r > 0.1 && color.g + color.b < 0.1) { // Redstone Parts
@@ -1068,6 +1066,11 @@ if (mat < 11024) {
                                 }
                                 else /*if (mat < 10408)*/ { // Sea Pickle:Waterlogged
                                     noSmoothLighting = true;
+
+                                    #if ANISOTROPIC_FILTER == 0 && !defined IPBR_COMPAT_MODE
+                                        color = texture2DLod(tex, texCoord, 0);
+                                    #endif
+                                    
                                     if (color.b > 0.5) { // Sea Pickle:Emissive Part
                                         #ifdef GBUFFERS_TERRAIN
                                             color.g *= 1.1;
@@ -1226,7 +1229,7 @@ if (mat < 11024) {
                                 }
                             } else {
                                 if (mat < 10460) { // Command Block+
-                                    #ifndef DURING_WORLDSPACE_REF
+                                    #ifndef IPBR_COMPAT_MODE
                                         color = texture2DLod(tex, texCoord, 0);
                                     #endif
 
@@ -1877,7 +1880,7 @@ if (mat < 11024) {
                                 else /*if (mat < 10648)*/ { // Repeater, Comparator
                                     noSmoothLighting = true;
                                     
-                                    #if ANISOTROPIC_FILTER > 0 && !defined DURING_WORLDSPACE_REF
+                                    #if ANISOTROPIC_FILTER > 0 && !defined IPBR_COMPAT_MODE
                                         color = texture2D(tex, texCoord); // Fixes artifacts
                                         color.rgb *= glColor.rgb;
                                     #endif

@@ -28,7 +28,7 @@ float GetBloomFog(float lViewPos) {
         }
     #elif defined NETHER
         float farM = min(renderDistance, NETHER_VIEW_LIMIT); // consistency9023HFUE85JG
-        float bloomFog = lViewPos / clamp(farM, 96.0, 256.0);
+        float bloomFog = lViewPos / clamp(farM, 96.0, 512.0);
         bloomFog *= bloomFog * bloomFog;
         bloomFog = 1.0 - exp(-8.0 * bloomFog);
         bloomFog *= float(isEyeInWater == 0);

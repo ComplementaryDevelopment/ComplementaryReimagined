@@ -22,7 +22,7 @@ float cosM(float x) {
 }
 
 float rand(vec2 inCoord){
-    return fract(sinM(dot(inCoord, vec2(23.53, 44.0))) * 42350.45);
+    return fract(sinM(dot(inCoord, vec2(23.5, 44.0))) * 42350.45);
 }
 
 float perlin(vec2 inCoord){
@@ -72,12 +72,9 @@ vec3 GetNightNebula(vec3 viewPos, float VdotU, float VdotS) {
     float TIME = syncedTime * 0.003 + 15.0;
 
     float timescaled = TIME * timescale;
-    vec2 zoomUV2
-    = vec2(zoomScale * UV.x + 0.03  * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.03  * timescaled * cosM(0.06 * timescaled));
-    vec2 zoomUV3
-    = vec2(zoomScale * UV.x + 0.027 * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.025 * timescaled * cosM(0.06 * timescaled));
-    vec2 zoomUV4
-    = vec2(zoomScale * UV.x + 0.021 * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.021 * timescaled * cosM(0.07 * timescaled));
+    vec2 zoomUV2 = vec2(zoomScale * UV.x + 0.03  * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.03  * timescaled * cosM(0.06 * timescaled));
+    vec2 zoomUV3 = vec2(zoomScale * UV.x + 0.027 * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.025 * timescaled * cosM(0.06 * timescaled));
+    vec2 zoomUV4 = vec2(zoomScale * UV.x + 0.021 * timescaled * sinM(0.07 * timescaled), zoomScale * UV.y + 0.021 * timescaled * cosM(0.07 * timescaled));
     float tide = 0.05 * sinM(TIME);
     float tide2 = 0.06 * cosM(0.3 * TIME);
 

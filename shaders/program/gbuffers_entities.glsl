@@ -60,6 +60,38 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #endif
 
 //Common Functions//
+#ifdef IS_IRIS
+    bool ProbablyMainPlayer(vec3 playerPos) {
+        vec3 boxOffsets = vec3(2.0);
+
+        return all(lessThan(abs(playerPos + relativeEyePosition), boxOffsets));
+    }
+
+    void HideArmor(inout vec4 color, vec3 playerPos) {
+        if (atlasSize.x > 1000.0) return; // Skip Dropped Items
+        #if HIDE_ARMOR == 1
+            if (ProbablyMainPlayer(playerPos))
+        #endif
+        color.a = 0.0;
+    }
+
+    void HideArmorDontSkip(inout vec4 color, vec3 playerPos) {
+        #if HIDE_ARMOR == 1
+            if (ProbablyMainPlayer(playerPos))
+        #endif
+        color.a = 0.0;
+    }
+
+    void HideElytra(inout vec4 color, vec3 playerPos) {
+        if (atlasSize.x > 1000.0) return; // Skip Dropped Items
+        if (!isElytraFlying) {
+            #if HIDE_ARMOR == 1
+                if (ProbablyMainPlayer(playerPos))
+            #endif
+            color.a = 0.0;
+        }
+    }
+#endif
 
 //Includes//
 #include "/lib/util/dither.glsl"
@@ -90,6 +122,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
+#ifdef GBUFFERS_ENTITIES_TRANSLUCENT
+    #include "/lib/atmospherics/fog/mainFog.glsl"
+#endif
+
 //Program//
 void main() {
     vec4 color = texture2D(tex, texCoord);
@@ -97,6 +133,12 @@ void main() {
         vec3 colorP = color.rgb;
     #endif
     color *= glColor;
+
+    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 viewPos = ScreenToView(screenPos);
+    vec3 nViewPos = normalize(viewPos);
+    vec3 playerPos = ViewToPlayer(viewPos);
+    float lViewPos = length(viewPos);
 
     float smoothnessD = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA, Reduce Reflection
     vec2 lmCoordM = lmCoord;
@@ -109,12 +151,6 @@ void main() {
     #endif
 
     if (alphaCheck > 0.001) {
-        vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
-        vec3 viewPos = ScreenToView(screenPos);
-        vec3 nViewPos = normalize(viewPos);
-        vec3 playerPos = ViewToPlayer(viewPos);
-        float lViewPos = length(viewPos);
-
         bool noSmoothLighting = atlasSize.x < 600.0; // To fix fire looking too dim
         bool noGeneratedNormals = false, noDirectionalShading = false, noVanillaAO = false;
         float smoothnessG = 0.0, highlightMult = 0.0, emission = 0.0, noiseFactor = 0.75;
@@ -156,7 +192,7 @@ void main() {
                 playerPos.y += 0.38; // consistentBOAT2176
             }
         #endif
-    
+
         color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
 
         normalM = gl_FrontFacing ? normalM : -normalM; // Inverted Normal Workaround
@@ -177,6 +213,23 @@ void main() {
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);
+    #endif
+
+    #ifdef GBUFFERS_ENTITIES_TRANSLUCENT
+        float VdotU = dot(nViewPos, upVec);
+        float VdotS = dot(nViewPos, sunVec);
+
+        float dither = Bayer64(gl_FragCoord.xy);
+        #ifdef TAA
+            dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
+        #endif
+
+        float skyFade = 0.0;
+        float prevAlpha = color.a;
+        color.a = 1.0;
+        DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
+        float fogAlpha = color.a;
+        color.a = prevAlpha * (1.0 - skyFade);
     #endif
 
     #ifdef IRIS_FEATURE_FADE_VARIABLE
@@ -265,8 +318,10 @@ void main() {
     #endif
 
     #if defined GENERATED_NORMALS || defined CUSTOM_PBR
-        binormal = normalize(gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w);
-        tangent  = normalize(gl_NormalMatrix * at_tangent.xyz);
+        vec3 rawBinormal = gl_NormalMatrix * cross(at_tangent.xyz, gl_Normal.xyz) * at_tangent.w;
+        binormal = rawBinormal * inversesqrt(max(dot(rawBinormal, rawBinormal), 1e-8));
+        vec3 rawTangent = gl_NormalMatrix * at_tangent.xyz;
+        tangent = rawTangent * inversesqrt(max(dot(rawTangent, rawTangent), 1e-8));
     #endif
 
     #ifdef POM

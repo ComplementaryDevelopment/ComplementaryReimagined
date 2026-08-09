@@ -103,6 +103,20 @@ void main() {
             viewPos /= viewPos.w;
             float lViewPos = length(viewPos.xyz);
 
+            #if defined DISTANT_HORIZONS || defined VOXY
+                #ifdef DISTANT_HORIZONS
+                    float z1lod = texelFetch(dhDepthTex1, texelCoord, 0).r;
+                    vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+                    vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
+                #elif defined VOXY
+                    float z1lod = texelFetch(vxDepthTexOpaque, texelCoord, 0).r;
+                    vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+                    vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
+                #endif
+                viewPos1Lod /= viewPos1Lod.w;
+                lViewPos = min(lViewPos, length(viewPos1Lod.xyz));
+            #endif
+
             vec3 cameraOffset = cameraPosition - previousCameraPosition;
 
             vec4 previousPosition = viewPos + vec4(cameraOffset, 0.0);
@@ -132,6 +146,21 @@ void main() {
                     vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
                     viewPos /= viewPos.w;
                     float lViewPos = length(viewPos.xyz);
+
+                    #if defined DISTANT_HORIZONS || defined VOXY
+                        #ifdef DISTANT_HORIZONS
+                            float z1lod = texture2D(dhDepthTex1, coordb).r;
+                            vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+                            vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
+                        #elif defined VOXY
+                            float z1lod = texture2D(vxDepthTexOpaque, coordb).r;
+                            vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+                            vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
+                        #endif
+                        viewPos1Lod /= viewPos1Lod.w;
+                        lViewPos = min(lViewPos, length(viewPos1Lod.xyz));
+                    #endif
+
                     // Remove bloom fog from mb samples or else we get edge artifacts
                     sampleb /= GetBloomFog(lViewPos);
                 #endif

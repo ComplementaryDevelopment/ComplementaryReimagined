@@ -15,6 +15,10 @@ flat in vec3 upVec, sunVec;
 
 flat in vec4 glColor;
 
+#ifdef IMPROVED_RAIN
+    in float lPos;
+#endif
+
 //Pipeline Constants//
 
 //Common Variables//
@@ -35,24 +39,48 @@ float sunVisibility2 = sunVisibility * sunVisibility;
 //Program//
 void main() {
     vec4 color = texture2D(tex, texCoord);
-    color *= glColor;
 
+    #ifdef IMPROVED_RAIN
+        vec4 sampleRain = texture2D(tex, texCoord * vec2(2.0, 1.0));
+        if (sampleRain.r + sampleRain.g < 1.5 && (sampleRain.a > 0.0 || color.r + color.g < 1.5)) color = sampleRain;
+    #endif
+
+    color *= glColor;
     if (color.a < 0.1 || isEyeInWater == 3) discard;
 
     if (color.r + color.g < 1.5) color.a *= rainTexOpacity;
     else color.a *= snowTexOpacity;
 
-    color.rgb = sqrt3(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + (ambientColor + 0.2 * lightColor) * lmCoord.y * (0.6 + 0.3 * sunFactor));
+    #ifndef IMPROVED_RAIN
+        color.rgb = sqrt3(color.rgb) * (blocklightCol * 2.0 * lmCoord.x + (ambientColor + 0.2 * lightColor) * lmCoord.y * (0.6 + 0.3 * sunFactor));
 
-    #ifdef COLOR_CODED_PROGRAMS
-        ColorCodeProgram(color, -1);
-    #endif
+        #ifdef COLOR_CODED_PROGRAMS
+            ColorCodeProgram(color, -1);
+        #endif
 
-    /* DRAWBUFFERS:0 */
-    gl_FragData[0] = color;
-    #ifdef PBR_REFLECTIONS
-        /* DRAWBUFFERS:04 */
-        gl_FragData[1] = vec4(0);
+        /* DRAWBUFFERS:0 */
+        gl_FragData[0] = color;
+        #ifdef PBR_REFLECTIONS
+            /* DRAWBUFFERS:04 */
+            gl_FragData[1] = vec4(0.0);
+        #endif
+    #else
+        vec4 data;
+
+        // Distance to camera (max 100 blocks)
+        data.r = lPos / 100.0;
+
+        // Is rain (not snow)
+        data.g = float(color.r + color.g < 1.5);
+
+        // Blocklight
+        data.b = lmCoord.x;
+
+        // Opacity
+        data.a = color.a;
+
+        /* RENDERTARGETS: 12 */
+        gl_FragData[0] = data;
     #endif
 }
 
@@ -67,6 +95,10 @@ out vec2 texCoord;
 flat out vec3 upVec, sunVec;
 
 flat out vec4 glColor;
+
+#ifdef IMPROVED_RAIN
+    out float lPos;
+#endif
 
 //Attributes//
 
@@ -88,6 +120,11 @@ void main() {
     #endif
 
     gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+
+    #ifdef IMPROVED_RAIN
+        lPos = length(position.xyz);
+        gl_Position.z = 0.0;
+    #endif
 
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
     lmCoord  = GetLightMapCoordinates();

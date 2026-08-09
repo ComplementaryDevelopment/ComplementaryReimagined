@@ -16,7 +16,16 @@ flat in vec3 upVec, sunVec;
     flat in float vlFactor;
 #endif
 
-//Pipeline Constants//
+//Pipeline Stuff//
+#define ALLOW_REFRACTION
+#define SMOOTHNESS_AFFECTED_REF_BLUR
+
+#if defined MC_OS_MAC && (defined DISTANT_HORIZONS || defined VOXY)
+    // Remove the uses of colortex6 to stay below the 8 sampler limit of macos
+    #undef IRIS_FEATURE_FADE_VARIABLE
+    #undef ALLOW_REFRACTION
+    #undef SMOOTHNESS_AFFECTED_REF_BLUR
+#endif
 
 //Common Variables//
 float SdotU = dot(sunVec, upVec);
@@ -36,7 +45,6 @@ vec2 view = vec2(viewWidth, viewHeight);
     float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
     float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
     float shadowTime = shadowTimeVar2 * shadowTimeVar2;
-    float vlTime = min(abs(SdotU) - 0.05, 0.15) / 0.15;
 #endif
 
 //Common Functions//
@@ -47,6 +55,8 @@ float GetLinearDepth(float depth) {
 //Includes//
 #include "/lib/atmospherics/fog/waterFog.glsl"
 #include "/lib/atmospherics/fog/caveFactor.glsl"
+#include "/lib/util/spaceConversion.glsl"
+#include "/lib/colors/lightAndAmbientColors.glsl"
 
 #if defined PBR_REFLECTIONS || WATER_REFLECT_QUALITY > 0 && WORLD_SPACE_REFLECTIONS_INTERNAL > 0
     #include "/lib/materials/materialMethods/reflectionBlurFilter.glsl"
@@ -57,14 +67,11 @@ float GetLinearDepth(float depth) {
 #endif
 
 #ifdef LIGHTSHAFTS_ACTIVE
+    #include "/lib/lighting/shadowSampling.glsl"
     #ifdef END
-        #include "/lib/atmospherics/enderBeams.glsl"
+        #include "/lib/atmospherics/volumetricLight/enderBeams.glsl"
     #endif
-    #include "/lib/atmospherics/volumetricLight.glsl"
-#endif
-
-#if WATER_MAT_QUALITY >= 3 || defined NETHER_STORM || defined COLORED_LIGHT_FOG
-    #include "/lib/util/spaceConversion.glsl"
+    #include "/lib/atmospherics/volumetricLight/volumetricLight.glsl"
 #endif
 
 #if WATER_MAT_QUALITY >= 3
@@ -102,12 +109,18 @@ void main() {
     viewPos /= viewPos.w;
     float lViewPos = length(viewPos.xyz);
 
-    #if defined DISTANT_HORIZONS && !defined OVERWORLD
-        float z0DH = texelFetch(dhDepthTex, texelCoord, 0).r;
-        vec4 screenPosDH = vec4(texCoord, z0DH, 1.0);
-        vec4 viewPosDH = dhProjectionInverse * (screenPosDH * 2.0 - 1.0);
-        viewPosDH /= viewPosDH.w;
-        lViewPos = min(lViewPos, length(viewPosDH.xyz));
+    #if defined DISTANT_HORIZONS || defined VOXY
+        #ifdef DISTANT_HORIZONS
+            float z0lod = texelFetch(dhDepthTex, texelCoord, 0).r;
+            vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+            vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
+        #elif defined VOXY
+            float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
+            vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+            vec4 viewPosLod = vxProjInv * (screenPosLod * 2.0 - 1.0);
+        #endif
+        viewPosLod /= viewPosLod.w;
+        lViewPos = min(lViewPos, length(viewPosLod.xyz));
     #endif
 
     float dither = texture2DLod(noisetex, texCoord * view / 128.0, 0.0).b;
@@ -121,7 +134,7 @@ void main() {
     vec4 volumetricEffect = vec4(0.0);
 
     vec2 texCoordM = texCoord;
-    #if WATER_MAT_QUALITY >= 3
+    #if WATER_MAT_QUALITY >= 3 && defined ALLOW_REFRACTION
         texCoordM = DoRefraction(color, z0, z1, viewPos.xyz, lViewPos);
     #endif
 
@@ -184,12 +197,19 @@ void main() {
     viewPos1 /= viewPos1.w;
     float lViewPos1 = length(viewPos1.xyz);
 
-    #if defined DISTANT_HORIZONS && !defined OVERWORLD
-        float z1DH = texelFetch(dhDepthTex1, texelCoord, 0).r;
-        vec4 screenPos1DH = vec4(texCoord, z1DH, 1.0);
-        vec4 viewPos1DH = dhProjectionInverse * (screenPos1DH * 2.0 - 1.0);
-        viewPos1DH /= viewPos1DH.w;
-        lViewPos1 = min(lViewPos1, length(viewPos1DH.xyz));
+    float z1lod = 1.0;
+    #if defined DISTANT_HORIZONS || defined VOXY
+        #ifdef DISTANT_HORIZONS
+            z1lod = texelFetch(dhDepthTex1, texelCoord, 0).r;
+            vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+            vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
+        #elif defined VOXY
+            z1lod = texelFetch(vxDepthTexOpaque, texelCoord, 0).r;
+            vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+            vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
+        #endif
+        viewPos1Lod /= viewPos1Lod.w;
+        lViewPos1 = min(lViewPos1, length(viewPos1Lod.xyz));
     #endif
 
     #if defined LIGHTSHAFTS_ACTIVE || RAINBOWS > 0 && defined OVERWORLD
@@ -210,7 +230,7 @@ void main() {
     #ifdef LIGHTSHAFTS_ACTIVE
         float vlFactorM = vlFactor;
 
-        volumetricEffect = GetVolumetricLight(color, vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPos, VdotL, VdotU, texCoord, z0, z1, dither);
+        volumetricEffect = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPos, VdotL, VdotU, z0, z1, z1lod, dither);
     #endif
 
     #ifdef NETHER_STORM
@@ -231,11 +251,12 @@ void main() {
     #ifdef COLORED_LIGHT_FOG
         vec3 lightFog = GetColoredLightFog(nPlayerPos, translucentMult, lViewPos, lViewPos1, dither);
         float lightFogMult = COLORED_LIGHT_FOG_I;
-        //if (heldItemId == 40000 && heldItemId2 != 40000) lightFogMult = 0.0; // Hold spider eye to disable light fog
 
         #ifdef OVERWORLD
             lightFogMult *= 0.2 + 0.6 * mix(1.0, 1.0 - sunFactor * invRainFactor, eyeBrightnessM);
         #endif
+    #else
+        vec3 lightFog = vec3(0.0);
     #endif
 
     if (isEyeInWater == 1) {
@@ -243,7 +264,7 @@ void main() {
 
         vec3 underwaterMult = vec3(0.80, 0.87, 0.97);
         color.rgb *= underwaterMult * 0.85;
-        volumetricEffect.rgb *= pow2(underwaterMult * 0.71);
+        volumetricEffect.rgb *= pow2(underwaterMult * 0.55);
 
         #ifdef COLORED_LIGHT_FOG
             lightFog *= underwaterMult;
@@ -252,6 +273,7 @@ void main() {
         if (z1 == 1.0) color.rgb = fogColor * 5.0;
 
         volumetricEffect.rgb *= 0.0;
+
         #ifdef COLORED_LIGHT_FOG
             lightFog *= 0.0;
         #endif
@@ -261,20 +283,40 @@ void main() {
         color /= 1.0 + pow2(GetLuminance(lightFog)) * lightFogMult * 2.0;
 
         lightFog = lightFog * lightFogMult * 0.5;
-        #ifdef TAA
-            // TAA neighbourhood clamping causes light fog to go too bandy. Extra dither fixes it.
+        #ifdef TAA // Fix banding
             lightFog = max(vec3(0.0), lightFog + (dither - 0.5) * 0.02);
         #endif
         color += lightFog;
     #endif
 
+    #ifdef IMPROVED_RAIN
+        vec4 rainData = texelFetch(colortex12, texelCoord, 0);
+        if (rainData.r > 0.0) {
+            float rainDistance = rainData.r * 100.0;
+            if (rainDistance < lViewPos1) {
+                bool isSnow = rainData.g == 0.0;
+                float blocklight = rainData.b;
+
+                vec3 rainColor = isSnow ? vec3(1.0, 1.0, 1.0) : vec3(0.925, 0.96, 1.0);
+                rainColor *= blocklightCol * 2.0 * blocklight + (ambientColor + 0.2 * lightColor) * (0.6 + 0.3 * sunFactor);
+
+                vec3 rainMix = vec3(rainData.a);
+                if (rainDistance > lViewPos) rainMix *= pow2(DoReducedLuminanceCorrection(translucentMult, 0.25));
+
+                rainColor += lightFog * (1.0 + 4.0 * rainData.g) + color.rgb * rainData.g * 0.25;
+
+                color = mix(color, rainColor, rainMix);
+            }
+        }
+    #endif
+
     color = pow(color, vec3(2.2));
 
     #ifdef LIGHTSHAFTS_ACTIVE
-        #ifdef END
-            volumetricEffect.rgb *= volumetricEffect.rgb;
+        #if defined END && defined TAA // Fix banding
+            volumetricEffect.rgb = max(vec3(0.0), volumetricEffect.rgb + (dither - 0.5) * 0.02);
         #endif
-
+        // We add volumetric effect AFTER the "pow color by 2.2" line to get nicer blending
         color += volumetricEffect.rgb;
     #endif
 

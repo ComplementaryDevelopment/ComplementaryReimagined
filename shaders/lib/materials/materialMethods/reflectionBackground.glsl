@@ -1,3 +1,8 @@
+#if defined END && defined COMPOSITE
+    #include "/lib/atmospherics/volumetricLight/enderBeams.glsl"
+    #include "/lib/atmospherics/volumetricLight/volumetricLight.glsl"
+#endif
+
 void AddBackgroundReflection(inout vec4 reflection, vec3 color, vec3 playerPos, vec3 normalM, vec3 normalMR, vec3 nViewPos, vec3 nViewPosR,
                              vec3 shadowMult, float RVdotU, float RVdotS, float z0, float dither, float skyLightFactor, float smoothness, float highlightMult) {
     #ifdef OVERWORLD
@@ -59,7 +64,15 @@ void AddBackgroundReflection(inout vec4 reflection, vec3 color, vec3 playerPos, 
         #endif
     #elif defined END
         #ifdef COMPOSITE
-            vec3 skyReflection = (endSkyColor + 0.4 * DrawEnderBeams(RVdotU, playerPos, nViewPosR)) * skyLightFactor;
+            float vlFactorM = 0.0;
+            vec3 translucentMult = vec3(1.0);
+            float lViewPos = 100000.0;
+            float lViewPos1 = 100000.0;
+            
+            vec4 volumetricEffect = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPosR, RVdotS, RVdotU, z0, z0, z0, dither);
+
+            volumetricEffect.rgb = pow(volumetricEffect.rgb, vec3(1.0 / 2.2));
+            vec3 skyReflection = volumetricEffect.rgb * 1.25 * skyLightFactor;
         #else
             vec3 skyReflection = endSkyColor * shadowMult;
         #endif
@@ -72,9 +85,11 @@ void AddBackgroundReflection(inout vec4 reflection, vec3 color, vec3 playerPos, 
     #endif
 
     #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && defined COMPOSITE && (BLOCK_REFLECT_QUALITY >= 2 || WATER_REFLECT_QUALITY >= 2)
-        vec4 wsrReflection = getWSR(playerPos, normalMR, nViewPosR, RVdotU, RVdotS, z0, dither);
+        float traceLength = far;
+        vec4 wsrReflection = getWSR(playerPos, normalMR, nViewPosR, RVdotU, RVdotS, z0, dither, traceLength);
+        refDist = min(refDist, traceLength);
+
         reflection = mix(wsrReflection, vec4(reflection.rgb, 1.0), reflection.a);
-        refDist = min(refDist, length(wsrHitPos - playerPos));
     #endif
 
     reflection.rgb = mix(skyReflection, reflection.rgb, reflection.a);

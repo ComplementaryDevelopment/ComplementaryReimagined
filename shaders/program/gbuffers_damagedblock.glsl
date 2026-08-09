@@ -26,7 +26,17 @@ flat in vec4 glColor;
 //Program//
 void main() {
     vec4 color = texture2D(tex, texCoord);
-    color.rgb *= glColor.rgb;
+
+    #ifdef GBUFFERS_COLORWHEEL
+        vec2 lmcoord;
+        float ao;
+        vec4 overlayColor;
+
+        clrwl_computeFragment(color, color, lmcoord, ao, overlayColor);
+        color.rgb = mix(color.rgb, overlayColor.rgb, overlayColor.a);
+    #else
+        color.rgb *= glColor.rgb;
+    #endif
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);

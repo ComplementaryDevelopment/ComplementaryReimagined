@@ -110,7 +110,7 @@ void main() {
     vec3 playerPosAlt = ViewToPlayer(viewPos); // AMD has problems with vertex playerPos and DH
     float lengthCylinder = max(length(playerPosAlt.xz), abs(playerPosAlt.y));
     highlightMult *= 0.5 + 0.5 * pow2(1.0 - smoothstep(far, far * 1.5, lengthCylinder));
-    color.a *= smoothstep(far * 0.5, far * 0.7, lengthCylinder);
+    color.a *= smoothstep(far * 0.4, far * 0.6, lengthCylinder);
     if (color.a < min(dither, 1.0)) discard;
 
     vec3 noisePos = floor((playerPos + cameraPosition) * 4.0 + 0.001) / 32.0;
@@ -121,6 +121,7 @@ void main() {
     DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                centerShadowBias, subsurfaceMode, smoothnessG, highlightMult, emission);
+               
     /* DRAWBUFFERS:0 */
     gl_FragData[0] = color;
 }
@@ -153,7 +154,9 @@ out vec4 glColor;
 
 //Program//
 void main() {
-    gl_Position = ftransform();
+    vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
+
+    gl_Position = dhProjection * gbufferModelView * position;
     #ifdef TAA
         gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
     #endif
@@ -168,7 +171,7 @@ void main() {
     northVec = normalize(gbufferModelView[2].xyz);
     sunVec = GetSunVector();
 
-    playerPos = (gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex).xyz;
+    playerPos = position.xyz;
 
     glColor = gl_Color;
 }

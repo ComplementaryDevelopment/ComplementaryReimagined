@@ -20,10 +20,14 @@ vec3 GetEnderStars(vec3 viewPos, float VdotU) {
 
     vec3 enderStars = star * endSkyColor * 3000.0;
 
-    float VdotUM1 = abs(VdotU);
-    float VdotUM2 = pow2(1.0 - VdotUM1);
-    enderStars *= VdotUM1 * VdotUM1 * (VdotUM2 + 0.015) + 0.015;
-    //if (gl_FragCoord.x > 960.0) enderStars = vec3(VdotUM1); else enderStars = vec3(VdotUM2);
+    float absVdotU = abs(VdotU);
+    float VdotUM2 = pow2(1.0 - absVdotU);
+    enderStars *= min(VdotUM2 + 0.015, 0.05) + 0.015;
 
-    return enderStars;
+    float VdotUM3 = smoothstep(0.0, 0.25, absVdotU);
+    float endBeamHeight = END_BEAM_HEIGHT * 200.0;
+    float beamFactor = END_BEAM_INTENSITY * max0(endBeamHeight - abs(END_BEAM_CENTER_ALT - cameraPosition.y)) / endBeamHeight;
+    enderStars *= pow(VdotUM3, min1(beamFactor + 0.001) * min1(END_BEAM_HEIGHT));
+
+    return enderStars * END_STAR_INTENSITY;
 }

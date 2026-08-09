@@ -64,6 +64,18 @@ vec2 Reprojection(vec4 viewPos1) {
     previousPosition = gbufferPreviousProjection * previousPosition;
     return previousPosition.xy / previousPosition.w * 0.5 + 0.5;
 }
+vec2 Reprojection(vec3 pos, mat4 projectionInverse, mat4 previousProjection) {
+	pos = pos * 2.0 - 1.0;
+
+	vec4 viewPosPrev = projectionInverse * vec4(pos, 1.0);
+	viewPosPrev /= viewPosPrev.w;
+	viewPosPrev = gbufferModelViewInverse * viewPosPrev;
+
+	vec4 previousPosition = viewPosPrev + vec4(cameraPosition - previousCameraPosition, 0.0);
+	previousPosition = gbufferPreviousModelView * previousPosition;
+	previousPosition = previousProjection * previousPosition;
+	return previousPosition.xy / previousPosition.w * 0.5 + 0.5;
+}
 
 vec3 ClipAABB(vec3 q, vec3 aabb_min, vec3 aabb_max){
     vec3 p_clip = 0.5 * (aabb_max + aabb_min);
@@ -108,7 +120,7 @@ void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float z0, float z1,
 
             float approxClosestDist = min(z0CheckLinear, z0Linear) * far;
             if (approxClosestDist < farEdgeDist)
-                if (int(texelFetch(colortex6, texelCoordM2, 0).g * 255.1) == 253) // Reduced Edge TAA
+                if (int(texelFetch(colortex6, texelCoordM2, 0).g * 255.1) == 253) // Reduced Edge TAA (Leaves)
                     edge *= extraEdgeMult;
         }
 
@@ -128,7 +140,7 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     float lViewPos1 = length(viewPos1);
 
     #ifdef ENTITY_TAA_NOISY_CLOUD_FIX
-        float cloudLinearDepth =  texture2D(colortex5, texCoord).a;
+        float cloudLinearDepth = texture2D(colortex5, texCoord).a;
 
         if (pow2(cloudLinearDepth) * renderDistance < min(lViewPos1, renderDistance)) {
             // Material in question is obstructed by the cloud volume
@@ -160,6 +172,27 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
 
     vec2 prvCoord = texCoord;
     if (z1 > 0.56) prvCoord = Reprojection(viewPos1);
+    
+	#if defined DISTANT_HORIZONS || defined VOXY
+        bool lodChunk = false;
+    	if (z1 == 1.0) {
+            #ifdef VOXY
+                float vxDepth = texture2D(vxDepthTexOpaque, texCoord).r;
+                if (vxDepth < 1.0) {
+                    vec3 vxCoord = vec3(texCoord, vxDepth);
+                    prvCoord = Reprojection(vxCoord, vxProjInv, vxProjPrev);
+                    lodChunk = true;
+                }
+            #elif defined DISTANT_HORIZONS
+                float dhDepth = texture2D(dhDepthTex1, texCoord).r;
+                if (dhDepth < 1.0) {
+                    vec3 dhCoord = vec3(texCoord, dhDepth);
+                    prvCoord = Reprojection(dhCoord, dhProjectionInverse, dhPreviousProjection);
+                    lodChunk = true;
+                }
+            #endif
+        }
+	#endif
 
     #if TAA_MOVEMENT_IMPROVEMENT_FILTER == 1
         vec3 tempColor = textureCatmullRom(colortex2, prvCoord, view);
@@ -175,15 +208,15 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     float edge = 0.0;
     NeighbourhoodClamping(color, tempColor, z0, z1, edge);
 
-    if (materialMask == 253) // Reduced Edge TAA
+    if (materialMask == 253) // Reduced Edge TAA (Leaves)
         edge *= extraEdgeMult;
 
-    #ifdef DISTANT_HORIZONS
-        if (z0 == 1.0) {
+    #if defined DISTANT_HORIZONS || defined VOXY
+        if (lodChunk) {
             blendMinimum = 0.75;
             blendVariable = 0.05;
-            blendConstant = 0.9;
-            edge = 1.0;
+            blendConstant = 0.85;
+            edge = 0.0;
         }
     #endif
 

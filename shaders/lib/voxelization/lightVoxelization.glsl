@@ -38,60 +38,53 @@
     vec4 GetComplexLightVolume(vec3 pos, sampler3D ff_sampler) {
         vec4 lightVolume;
 
-        #if defined COMPOSITE1 || defined DEFERRED1
+        #if defined COMPOSITE || defined COMPOSITE1 || defined DEFERRED1
             #undef ACT_CORNER_LEAK_FIX
         #endif
 
         #ifndef ACT_CORNER_LEAK_FIX
             lightVolume = texture(ff_sampler, pos);
         #else
-            // Manual light filtering
+            // Manual light filtering - Optimized by Gemini - I don't like AI either but my version was so much slower :(
             ivec3 posTX = ivec3(pos * voxelVolumeSize);
             vec3 texPos = pos * vec3(voxelVolumeSize) - 0.5;
-            ivec3 base = ivec3(floor(texPos));
-            vec3 frac = fract(texPos);
+            ivec3 base  = ivec3(floor(texPos));
+            vec3 frac   = fract(texPos);
+
+            vec3 w[2] = vec3[2](1.0 - frac, frac);
             float lightDivide = 0.0;
 
-            for (int x = 0; x <= 1; x++)
-            for (int y = 0; y <= 1; y++)
+            // Cache the three axial neighbors relative to posTX that lead toward the 'base+1' side
+            bool airX = int(GetVoxelVolume(posTX + ivec3(base.x + 1 == posTX.x ? -1 : 1, 0, 0))) == 0;
+            bool airY = int(GetVoxelVolume(posTX + ivec3(0, base.y + 1 == posTX.y ? -1 : 1, 0))) == 0;
+            bool airZ = int(GetVoxelVolume(posTX + ivec3(0, 0, base.z + 1 == posTX.z ? -1 : 1))) == 0;
+
             for (int z = 0; z <= 1; z++) {
-                ivec3 offset = ivec3(x, y, z);
-                ivec3 newPos = clamp(base + offset, ivec3(0), voxelVolumeSize - 1);
+                for (int y = 0; y <= 1; y++) {
+                    for (int x = 0; x <= 1; x++) {
+                        ivec3 p = clamp(base + ivec3(x, y, z), ivec3(0), voxelVolumeSize - 1);
+                        ivec3 d = abs(p - posTX);
+                        int dist = d.x + d.y + d.z;
 
-                // Light Leak Fix
-                ivec3 realOffset = newPos - posTX;
-                ivec3 absRealOffset = abs(realOffset);
-                int totalRealOffset = absRealOffset.x + absRealOffset.y + absRealOffset.z;
-                if (totalRealOffset == 2) {
-                    bool isReachable = false;
-                    ivec3 checkPos;
+                        // Light Leak Logic
+                        if (dist == 3) continue; // Skip corners
+                        if (dist == 2) {
+                            // Check if the two axial paths to this edge are blocked
+                            bool reachable = false;
+                            if (d.x > 0 && d.y > 0) reachable = (airX || airY);
+                            else if (d.y > 0 && d.z > 0) reachable = (airY || airZ);
+                            else if (d.x > 0 && d.z > 0) reachable = (airX || airZ);
+                            if (!reachable) continue;
+                        }
 
-                    if (realOffset.x != 0) {
-                        checkPos = posTX + ivec3(realOffset.x, 0, 0);
-                        if (int(GetVoxelVolume(checkPos)) == 0) isReachable = true;
+                        // Skip Solids
+                        if (int(GetVoxelVolume(p)) == 1) continue;
+
+                        float weight = w[x].x * w[y].y * w[z].z;
+                        lightVolume += weight * texelFetch(ff_sampler, p, 0);
+                        lightDivide += weight;
                     }
-                    if (realOffset.y != 0) {
-                        checkPos = posTX + ivec3(0, realOffset.y, 0);
-                        if (int(GetVoxelVolume(checkPos)) == 0) isReachable = true;
-                    }
-                    if (realOffset.z != 0) {
-                        checkPos = posTX + ivec3(0, 0, realOffset.z);
-                        if (int(GetVoxelVolume(checkPos)) == 0) isReachable = true;
-                    }
-
-                    if (!isReachable) continue;
-                } else if (totalRealOffset == 3) continue;
-
-                // Skip solids
-                if (int(GetVoxelVolume(newPos)) == 1)
-                    continue;
-
-                // Interpolation weight
-                vec3 w3 = mix(vec3(1.0) - frac, frac, vec3(offset));
-                float weight = w3.x * w3.y * w3.z;
-
-                lightVolume += weight * texelFetch(ff_sampler, newPos, 0);
-                lightDivide += weight;
+                }
             }
 
             if (lightDivide > 0.0) lightVolume /= lightDivide;

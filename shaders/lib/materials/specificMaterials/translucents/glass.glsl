@@ -1,4 +1,10 @@
-if (min(color.a, texture2DLod(tex, texCoord, 0).a) > 0.001) {
+#ifndef IPBR_COMPAT_MODE
+    float minAlpha = min(color.a, texture2DLod(tex, texCoord, 0).a);
+#else
+    float minAlpha = color.a;
+#endif
+
+if (minAlpha > 0.001) {
     smoothnessG = 1.0;
     highlightMult = 3.5;
     reflectMult = 0.5;
@@ -7,8 +13,8 @@ if (min(color.a, texture2DLod(tex, texCoord, 0).a) > 0.001) {
     translucentMult = vec4(0.0, 0.0, 0.0, 1.0);
 } 
 
-#ifdef FANCY_GLASS
-    else {
+else {
+    #ifdef FANCY_GLASS
         smoothnessG = 0.5;
         highlightMult = 2.5;
         reflectMult = 1.0;
@@ -20,5 +26,7 @@ if (min(color.a, texture2DLod(tex, texCoord, 0).a) > 0.001) {
         color.a = max(color.a, GLASS_OPACITY);
 
         DoTranslucentTweaks(color, fresnelM, reflectMult, lViewPos);
-    }
-#endif
+    #else
+        discard;
+    #endif
+}

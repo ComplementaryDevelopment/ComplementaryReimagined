@@ -3,10 +3,17 @@ float GetDistantLightBokehMix(float lViewPos) {
     return clamp01(0.005 * (lViewPos - 60.0));
 }
 
-#ifdef GBUFFERS_TERRAIN
+#if defined GBUFFERS_TERRAIN || defined VOXY_PATCH
     float GetDistantLightBokehMixMipmapped(float lViewPos) {
         float dlbMix = GetDistantLightBokehMix(lViewPos);
-        return dlbMix * min1(miplevel * 0.4);
+        #ifndef VOXY
+            dlbMix *= min1(miplevel * 0.4);
+        #else
+            float fovScale = gbufferProjection[1][1];
+            float scaleFactor = min1(fovScale * 20.0 / lViewPos);
+            dlbMix *= 1.0 - scaleFactor;
+        #endif
+        return dlbMix;
     }
 
     void DoDistantLightBokehMaterial(inout vec4 color, vec4 distantColor, inout float emission, float distantEmission, float lViewPos) {

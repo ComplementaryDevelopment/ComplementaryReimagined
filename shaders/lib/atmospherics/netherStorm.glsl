@@ -8,6 +8,8 @@ vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 nPlayerPos, vec3 play
         float maxDist = renderDistance;
     #endif
 
+    maxDist = min(maxDist, 512.0); // Going higher than 32 chunks causes way too much performance loss
+
     #ifndef LOW_QUALITY_NETHER_STORM
         int sampleCount = int(maxDist / 8.0 + 0.001);
 

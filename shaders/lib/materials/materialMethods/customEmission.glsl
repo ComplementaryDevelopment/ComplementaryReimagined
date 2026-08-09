@@ -21,12 +21,12 @@ float GetCustomEmission(vec4 specularMap, vec2 texCoordM) {
 
 #ifdef IPBR
     float GetCustomEmissionForIPBR(inout vec4 color, float emission) {
-        vec4 specularMapCheck = texture2DLod(specular, texCoord, 1000.0);
-        if (specularMapCheck.a == 0.0) return emission;
+        vec4 specularMap = texture2D(specular, texCoord);
+
+        if (specularMap.a == 0.0) return emission;
 
         color = texture2D(tex, texCoord);
 
-        vec4 specularMap = texture2D(specular, texCoord);
         float customEmission = GetCustomEmission(specularMap, texCoord);
         return customEmission;
     }

@@ -3,6 +3,8 @@
         vec2 lmCoord = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
         return clamp((lmCoord - 0.03125) * 1.06667, 0.0, 1.0);
     }
+#endif
+#if defined VERTEX_SHADER || defined VOXY_PATCH
     vec3 GetSunVector() {
         const vec2 sunRotationData = vec2(cos(sunPathRotation * 0.01745329251994), -sin(sunPathRotation * 0.01745329251994));
         #ifdef OVERWORLD
@@ -23,7 +25,11 @@ float GetLuminance(vec3 color) {
 }
 
 vec3 DoLuminanceCorrection(vec3 color) {
-    return color / GetLuminance(color);
+    return color / (GetLuminance(color) + 0.0001);
+}
+
+vec3 DoReducedLuminanceCorrection(vec3 color, float reduceAmount) {
+    return color / mix(GetLuminance(color), 1.0, reduceAmount);
 }
 
 float GetBiasFactor(float NdotLM) {
@@ -73,7 +79,7 @@ float Noise3D(vec3 p) {
 }
 
 float GetSkyLightFactor(vec2 lmCoordM, vec3 shadowMult) {
-    #ifdef OVERWORLD
+    #if defined OVERWORLD || defined END && MC_VERSION >= 12109
         #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1
             float skyLightFactor = max(lmCoordM.y - 0.7, 0.0) * 3.33333;
                   skyLightFactor *= skyLightFactor;
@@ -86,15 +92,26 @@ float GetSkyLightFactor(vec2 lmCoordM, vec3 shadowMult) {
                 skyLightFactor = max(skyLightFactor, dot(shadowMult, shadowMult) * 0.333333);
             #endif
         #endif
+    #elif defined END && MC_VERSION < 12109
+        float skyLightFactor = min(1.0, dot(shadowMult, shadowMult) * 0.333333);
     #else
-        #if WORLD_SPACE_REFLECTIONS_INTERNAL == -1 || MC_VERSION < 12109
-            float skyLightFactor = dot(shadowMult, shadowMult) * 0.333333;
-        #else
-            float skyLightFactor = lmCoordM.y;
-        #endif
+        float skyLightFactor = 0.0;
+    #endif
+
+    #ifdef VOXY_TRANSLUCENT
+        // A bug seems to make glass in voxy chunks have low skylight
+        skyLightFactor = pow(skyLightFactor, 0.25);
     #endif
 
     return skyLightFactor;
+}
+
+float minOf(vec3 x) {
+    return min(x.x, min(x.y, x.z));
+}
+
+int minOf(ivec3 x) {
+    return min(x.x, min(x.y, x.z));
 }
 
 int min1(int x) {
