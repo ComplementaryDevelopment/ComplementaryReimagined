@@ -117,5 +117,9 @@ void DoLensFlare(inout vec3 color, vec3 viewPos, float dither) {
 
     flare *= flareFactor;
 
-    color = mix(color, vec3(1.0), flare);
+    #ifndef HDR_ENABLED
+        color = mix(color, vec3(1.0), flare);
+    #else 
+        color += flare; // flare stands out better in HDR by simple addition
+    #endif
 }

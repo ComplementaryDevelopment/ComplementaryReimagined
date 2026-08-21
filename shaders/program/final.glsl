@@ -152,12 +152,21 @@ void main() {
 
     #ifdef VIGNETTE_R
         vec2 texCoordMin = texCoordM.xy - 0.5;
-        float vignette = 1.0 - dot(texCoordMin, texCoordMin) * (1.0 - GetLuminance(color));
+        float vignette = 1.0 - dot(texCoordMin, texCoordMin) * (1.0 - min(GetLuminance(color), 1));
         color *= vignette;
     #endif
 
-    float dither = texture2DLod(noisetex, texCoord * view / 128.0, 0.0).b;
-    color += vec3((dither - 0.25) / 128.0);
+    #ifndef HDR_ENABLED
+        float dither = texture2DLod(noisetex, texCoord * view / 128.0, 0.0).b;
+        color += vec3((dither - 0.25) / 128.0);
+    #endif
+
+    #ifdef HDR_ENABLED
+        RGBToLinear(color); // Decode
+        color = min(color, vec3(HdrGamePeakBrightness / HdrGamePaperWhiteBrightness)); // Clamp Peak
+        color *= HdrGamePaperWhiteBrightness / HdrUIBrightness; // UI Scaling
+        LinearToRGB(color); // Encode
+    #endif
 
     /* DRAWBUFFERS:0 */
     gl_FragData[0] = vec4(color, 1.0);

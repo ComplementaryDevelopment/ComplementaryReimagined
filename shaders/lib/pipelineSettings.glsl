@@ -15,6 +15,14 @@ const int colortex18Format = R8;            //shadow for voxy chunks (needs repr
 const int colortex19Format = RGBA8;         //scene image for voxy reflections (needs reprojection)
 */
 
+#ifdef HDR_ENABLED
+// Iris will override declarations above with these
+/*
+  const int colortex0Format = RGB16F;       //HDR: upgraded, else visible sky banding 
+  const int colortex3Format = RGBA16F;      //HDR: upgraded to store HDR values to final 
+*/
+#endif
+
 const bool colortex0Clear = true;
 const bool colortex1Clear = false;
 const bool colortex2Clear = false;

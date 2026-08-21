@@ -326,7 +326,10 @@ void main() {
 
     /* DRAWBUFFERS:0 */
     gl_FragData[0] = vec4(color, 1.0);
-
+    #ifdef HDR_ENABLED
+        gl_FragData[0] = max(gl_FragData[0], vec4(0.0));
+    #endif
+    
     // supposed to be #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
     #if LIGHTSHAFT_QUALI_DEFINE > 0 && LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 && defined OVERWORLD || defined END
         #if LENSFLARE_MODE > 0 || defined ENTITY_TAA_NOISY_CLOUD_FIX

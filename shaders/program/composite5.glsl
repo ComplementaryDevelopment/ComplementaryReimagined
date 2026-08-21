@@ -28,11 +28,6 @@ vec2 view = vec2(viewWidth, viewHeight);
 #endif
 
 //Common Functions//
-void LinearToRGB(inout vec3 color) {
-    const vec3 k = vec3(0.055);
-    color = mix((vec3(1.0) + k) * pow(color, vec3(1.0 / 2.4)) - k, 12.92 * color, lessThan(color, vec3(0.0031308)));
-}
-
 void DoCompTonemap(inout vec3 color) {
     // Lottes tonemap modified for Complementary Shaders
     // Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
@@ -86,12 +81,120 @@ void DoCompTonemap(inout vec3 color) {
     color = clamp01(colorOut);
 }
 
+#ifdef HDR_ENABLED
+// Reinhard Extended Piecewise https://github.com/clshortfuse/renodx/blob/main/src/shaders/tonemap/reinhard.hlsl
+vec3 DoCompTonemapHDR_Reinhard(vec3 x, float peak) { return x / (x / peak + 1.0); }
+vec3 DoCompTonemapHDR_ReinhardExt(vec3 x, float white_max, float peak) {
+    return DoCompTonemapHDR_Reinhard(x, peak) * (1.0 + (peak * x) / (white_max * white_max));
+}
+float DoCompTonemapHDR_ReinhardScale(float w, float p, float m, float x, float y) {
+    return p * (w * w * y - (p * x * x)) / (w * w * x * (p - y));
+}
+vec3 DoCompTonemapHDR_ReinhardPiece(vec3 x, float white_max, float x_max, float shoulder) {
+    const float x_min = 0.0f;
+    float exposure = DoCompTonemapHDR_ReinhardScale(white_max, x_max, x_min, shoulder, shoulder);
+    vec3 extended = DoCompTonemapHDR_ReinhardExt(x * exposure, white_max * exposure, x_max);
+    extended = min(extended, x_max);
+    return mix(x, extended, step(shoulder, x));
+}
+void DoCompTonemapHDR(inout vec3 color) {
+    // HDR Lottes by stealing toe and midgray change from SDR & replacing shoulder with Reinhard Extended.
+    color = TM_EXPOSURE * color;
+
+    // Setup
+    vec3 colorOut = color;
+
+    // TM_CONTRAsT
+    colorOut /= 0.25; //midgray
+    colorOut = pow(colorOut, vec3(sqrt(TM_CONTRAST / 1.05)));
+    colorOut *= 0.25;
+
+    // Setup for the rest
+    float initialLuminance = GetLuminance(colorOut);
+    float peak = HdrGamePeakBrightness / HdrGamePaperWhiteBrightness;
+
+    // Tonemap to Peak
+    {
+        // Extension: Lottes piecewise steal toe and midgray change, but ignore shoulder
+        // https://www.desmos.com/calculator/bdi1hggcqy
+        vec3 lower = colorOut;
+        //TODO: Find derivative and solve for TM_CONTRAST
+        //TODO: Move to a common function?
+        { 
+            vec3 a      = vec3(1.05); // General Contrast
+            vec3 d      = vec3(1.0); // Roll-off control
+            vec3 hdrMax = vec3(8.0); // Maximum input brightness
+            vec3 midIn  = vec3(0.25); // Input middle gray
+            vec3 midOut = vec3(0.25); // Output middle gray
+
+            vec3 a_d = a * d;
+            vec3 hdrMaxA = pow(hdrMax, a);
+            vec3 hdrMaxAD = pow(hdrMax, a_d);
+            vec3 midInA = pow(midIn, a);
+            vec3 midInAD = pow(midIn, a_d);
+            vec3 HM1 = hdrMaxA * midOut;
+            vec3 HM2 = hdrMaxAD - midInAD;
+
+            vec3 b = (-midInA + HM1) / (HM2 * midOut);
+            vec3 c = (hdrMaxAD * midInA - HM1 * midInAD) / (HM2 * midOut);
+
+            lower = pow(color, a) / (pow(color, a_d) * b + c);
+        }
+        vec3 higher = colorOut + 0.01058414;
+        bvec3 thres = greaterThan(colorOut, vec3(0.11641));
+        colorOut = mix(lower, higher, thres);
+
+        // Shoulder
+        colorOut = DoCompTonemapHDR_ReinhardPiece(colorOut, 100, peak, 0.11641);
+    }
+
+    // sRGB Gamma Encode
+    LinearToRGB(colorOut);
+
+    // Path to White (From SDR, but reduced and to new HDR peak)
+    float white = peak;
+    LinearToRGB(white);
+    const float wpInputCurveStart = 0.0;
+    const float wpInputCurveMax = 200.0; // Increase this value to reduce the effect of white path
+    float modifiedLuminance = pow(initialLuminance / wpInputCurveMax, 2.0 - TM_WHITE_PATH) * wpInputCurveMax;
+    float whitePath = smoothstep(wpInputCurveStart, wpInputCurveMax, modifiedLuminance);
+    colorOut = mix(colorOut, vec3(white), whitePath);
+
+    // Remove tonemapping from darker colors for better readability (From SDR)
+    const float darkLiftStart = 0.1;
+    const float darkLiftMix = 0.75;
+    float darkLift = smoothstep(darkLiftStart, 0.0, initialLuminance);
+    vec3 smoothColor = pow(color, vec3(1.0 / 2.2));
+    colorOut = mix(colorOut, smoothColor, darkLift * darkLiftMix * max0(0.55 - abs(1.05 - TM_CONTRAST)) / 0.55);
+
+    // Desaturate dark colors (From SDR)
+    const float dpInputCurveStart = 0.1;
+    const float dpInputCurveMax = 0.0;
+    float desaturatePath = smoothstep(dpInputCurveStart, dpInputCurveMax, initialLuminance);
+    colorOut = mix(colorOut, vec3(GetLuminance(colorOut)), desaturatePath * TM_DARK_DESATURATION);
+
+    // Clamp against negatives and NaNs
+    color = max(vec3(0.0), colorOut);
+}
+#endif
+
 void DoBSLColorSaturation(inout vec3 color) {
+    #ifdef HDR_ENABLED
+        // Cram
+        float p = HdrGamePeakBrightness / HdrGamePaperWhiteBrightness;
+        color /= p;
+    #endif
+
     float saturationFactor = T_SATURATION + 0.07;
 
     float grayVibrance = (color.r + color.g + color.b) / 3.0;
     float graySaturation = grayVibrance;
     if (saturationFactor < 1.00) graySaturation = dot(color, vec3(0.299, 0.587, 0.114));
+
+    #ifdef HDR_ENABLED
+        grayVibrance /= p;
+        graySaturation /= p;
+    #endif
 
     float mn = min(color.r, min(color.g, color.b));
     float mx = max(color.r, max(color.g, color.b));
@@ -101,6 +204,10 @@ void DoBSLColorSaturation(inout vec3 color) {
     color = mix(color, mix(color, lightness, 1.0 - T_VIBRANCE), sat);
     color = mix(color, lightness, (1.0 - lightness) * (2.0 - T_VIBRANCE) / 2.0 * abs(T_VIBRANCE - 1.0));
     color = color * saturationFactor - graySaturation * (saturationFactor - 1.0);
+
+    #ifdef HDR_ENABLED
+        color *= p;
+    #endif
 }
 
 #if BLOOM_ENABLED == 1
@@ -206,7 +313,13 @@ void main() {
         color *= 0.01;
     #endif
 
-    DoCompTonemap(color);
+    ////////// SDR/HDR output splits here! ////////////
+
+    #ifndef HDR_ENABLED
+        DoCompTonemap(color);
+    #else
+        DoCompTonemapHDR(color);
+    #endif
 
     #if defined GREEN_SCREEN_LIME || SELECT_OUTLINE == 4
         int materialMaskInt = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);

@@ -151,6 +151,19 @@ uniform vec3 previousCameraPositionFract;
     uniform sampler2D vxDepthTexOpaque;
 #endif
 
+#if defined HDR_ENABLED
+//   #undef HDR_ENABLED
+  uniform float HdrGamePeakBrightness;
+  uniform float HdrGamePaperWhiteBrightness;
+  uniform float HdrGameMinimumBrightness; 
+  uniform float HdrUIBrightness;
+#endif
+
+// #define HDR_ENABLED // HDRMod forced enable for testing
+// const float HdrGamePeakBrightness = 1000.f;
+// const float HdrGamePaperWhiteBrightness = 203.f;
+// const float HdrUIBrightness = 203.f;
+
 #if COLORED_LIGHTING_INTERNAL > 0
     uniform usampler3D voxel_sampler;
     uniform sampler3D floodfill_sampler;

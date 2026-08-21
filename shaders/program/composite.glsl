@@ -201,6 +201,9 @@ void main() {
 
     /* DRAWBUFFERS:7 */
     gl_FragData[0] = reflectOutput;
+    #ifdef HDR_ENABLED
+        gl_FragData[0] = max(gl_FragData[0], vec4(0.0)); //Prob unneeded, but just in case
+    #endif
 
     // same check as #ifdef PBR_REFLECTIONS but for Optifine to understand:
     #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 1

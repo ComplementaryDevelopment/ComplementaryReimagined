@@ -609,7 +609,13 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     #endif
 
     // Mix Colors
-    vec3 finalDiffuse = pow2(directionShade * vanillaAO) * (blockLighting + pow2(sceneLighting) + minLighting) + pow2(emission);
+    #if !defined HDR_ENABLED || !defined(IPBR)
+        vec3 finalDiffuse = pow2(directionShade * vanillaAO) * (blockLighting + pow2(sceneLighting) + minLighting) + pow2(emission);
+    #else
+        // For IPBR in HDR, remove pow2 deep fried feeling, and makeup by boost
+        //TODO: Better spot to put this to only affect IPBR results without this ugly branching?
+        vec3 finalDiffuse = pow2(directionShade * vanillaAO) * (blockLighting + pow2(sceneLighting) + minLighting) + (emission * 4);
+    #endif
     finalDiffuse = sqrt(max(finalDiffuse, vec3(0.0))); // sqrt() for a bit more realistic light mix, max() to prevent NaNs
 
     // Apply Lighting

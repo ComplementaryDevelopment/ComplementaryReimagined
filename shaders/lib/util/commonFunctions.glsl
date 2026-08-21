@@ -314,3 +314,23 @@ vec3 hsv2rgb(vec3 c)
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
+
+void LinearToRGB(inout vec3 color) { // sRGB gamma encode vec3
+    const vec3 k = vec3(0.055);
+    color = mix((vec3(1.0) + k) * pow(color, vec3(1.0 / 2.4)) - k, 12.92 * color, lessThan(color, vec3(0.0031308)));
+}
+
+void LinearToRGB(inout float color) { // sRGB gamma encode float
+    const float k = (0.055);
+    color = (color < (0.0031308)) ? (12.92 * color) : ((1.0 + k) * pow(color, (1.0 / 2.4)) - k);
+}
+
+void RGBToLinear(inout vec3 color) { // sRGB gamma decode vec3
+    const vec3 k = vec3(0.055);
+    color = mix(pow((color + k) / (vec3(1.0) + k), vec3(2.4)), color / 12.92, lessThan(color, vec3(0.04045)));
+}
+
+void RGBToLinear(inout float color) { // sRGB gamma decode float
+    const float k = (0.055);
+    color = (color < (0.04045)) ? (color / 12.92) : pow((color + k) / (1.0 + k), 2.4);
+}
