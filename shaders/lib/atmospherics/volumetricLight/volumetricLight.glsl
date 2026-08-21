@@ -94,9 +94,11 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 
         float maxDistance = far * 0.98; // The distance where the fog is 1.0 and we stop tracing
         float qualityThreshold = min(far, shadowDistance) * 0.98; // Only use farSamples from this point on to hit our maxDistance. Set higher than maxDistance to disable far samples
-        
+
         #if defined VOXY || defined DISTANT_HORIZONS
-            maxDistance = renderDistance * 0.5; // Covers lod chunks
+            // loddedMaxDistance is only used for sky pixels — non-sky pixels keep maxDistance = far
+            // so weight normalization isn't diluted by a large LOD render distance
+            float loddedMaxDistance = max(renderDistance * 0.5, maxDistance);
 
             fogCurve = 0.7;
             fogCurveIntense *= 1.0 - 0.5 * rainFactor;
@@ -142,7 +144,11 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 
     vec3 nViewPosInSceneSpace = normalize(mat3(gbufferModelViewInverse) * nViewPos);
     vec3 rayDirection = nViewPosInSceneSpace;
-    float rayEnd = !sky ? min(lViewPos1, maxDistance) : maxDistance; 
+    float rayEnd = !sky ? min(lViewPos1, maxDistance) : maxDistance;
+    #if defined VOXY || defined DISTANT_HORIZONS
+        // Sky pixels trace into LOD chunks; update maxDistance so weights normalize correctly
+        if (sky) { rayEnd = loddedMaxDistance; maxDistance = loddedMaxDistance; }
+    #endif
     float lastDistance = 0.0;
 
     #if defined END && !defined VOXY && !defined DISTANT_HORIZONS
