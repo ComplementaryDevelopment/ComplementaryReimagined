@@ -59,19 +59,19 @@ bool CheckInsideLodVoxelVolume(vec3 voxelPos) {
             if (mat == 10129 // Farmland:Dry
                 || mat == 10137 // Farmland:Wet
                 || mat == 10493 // Dirt Path
-            ) { 
+            ) {
                 doSolidBlockCheck = false;
                 textureRad *= 0.5;
                 origin.y += 2.0 / atlasSize.y;
-            } 
+            }
 
             if (mat == 10068 // Lava
-            ) { 
+            ) {
                 if (abs(dot(textureRad, vec2(atlasSize.x, -atlasSize.y))) < 6.5)
                     storeToAllFaces = true;
                 else return;
             }
-            
+
             // Half blocks that we want to display as full blocks in reflections
             if (mat == 10035 // Stone Bricks, Mossy Stone Bricks
                 || abs(mat - 10095) <= 12 && mat % 4 == 3 // Stone, Smooth Stone, Granite, Diorite, Andesite, Bricks, Mud Bricks
@@ -207,17 +207,17 @@ bool CheckInsideLodVoxelVolume(vec3 voxelPos) {
                 ivec3 aabbPos = ivec3(position * 1000.0);
 
                 if (gl_VertexID < 48) { // Head
-                    updateAABB(playerVerticesSSBO.bounds.headMin, playerVerticesSSBO.bounds.headMax, aabbPos);
+                    updateAABB(playerVerticesSSBO.headMin, playerVerticesSSBO.headMax, aabbPos);
                 } else if (gl_VertexID < 96) { // Right Hand
-                    updateAABB(playerVerticesSSBO.bounds.rightHandMin, playerVerticesSSBO.bounds.rightHandMax, aabbPos);
+                    updateAABB(playerVerticesSSBO.rightHandMin, playerVerticesSSBO.rightHandMax, aabbPos);
                 } else if (gl_VertexID < 144) { // Left Leg
-                    updateAABB(playerVerticesSSBO.bounds.leftLegMin, playerVerticesSSBO.bounds.leftLegMax, aabbPos);
+                    updateAABB(playerVerticesSSBO.leftLegMin, playerVerticesSSBO.leftLegMax, aabbPos);
                 } else if (gl_VertexID < 192) { // Left Hand
-                    updateAABB(playerVerticesSSBO.bounds.leftHandMin, playerVerticesSSBO.bounds.leftHandMax, aabbPos);
+                    updateAABB(playerVerticesSSBO.leftHandMin, playerVerticesSSBO.leftHandMax, aabbPos);
                 } else if (gl_VertexID < 240) { // Right leg
-                    updateAABB(playerVerticesSSBO.bounds.rightLegMin, playerVerticesSSBO.bounds.rightLegMax, aabbPos);
+                    updateAABB(playerVerticesSSBO.rightLegMin, playerVerticesSSBO.rightLegMax, aabbPos);
                 } else { // Torso
-                    updateAABB(playerVerticesSSBO.bounds.torsoMin, playerVerticesSSBO.bounds.torsoMax, aabbPos);
+                    updateAABB(playerVerticesSSBO.torsoMin, playerVerticesSSBO.torsoMax, aabbPos);
                 }
 
                 if (gl_VertexID % 4 != 3) {
