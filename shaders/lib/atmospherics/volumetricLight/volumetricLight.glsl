@@ -56,6 +56,11 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
         vec3 vlColorReducer = vec3(1.0);
     #endif
 
+    #if DETAIL_QUALITY > 0
+        float entityLinearDepth = texture2D(colortex13, texCoord).r;
+              entityLinearDepth = entityLinearDepth == 0.0 ? 1000000.0 : pow2(entityLinearDepth) * far;
+    #endif
+
     if (vlMult < 0.0001) return vec4(0.0);
 // ============================== End of Step 1 ============================== //
 
@@ -264,7 +269,12 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
         vec4 stepResult = vec4(localDensity * sliceWeight, sliceWeight);
 
         // Result Coloring
-        if (nextDistance > lViewPos0) stepResult.rgb *= translucentMult;
+        if (nextDistance > lViewPos0) {
+            #if DETAIL_QUALITY > 0
+                if (nextDistance > entityLinearDepth) break; // fixes entities looking transparent behind glass
+            #endif
+            stepResult.rgb *= translucentMult;
+        }
         #ifdef END
             vec3 beamPos = scenePos;
             stepResult.rgb *= DrawEnderBeams(vlFactor, beamPos, nViewPos, beamScale);

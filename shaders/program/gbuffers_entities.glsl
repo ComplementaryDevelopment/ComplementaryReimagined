@@ -208,9 +208,13 @@ void main() {
         #endif
     }
 
-    vec3 translucentMult = mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a);
-    translucentMult.rgb = mix(translucentMult.rgb, vec3(1.0), min1(lViewPos / 50.0));
     float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
+
+    #if !defined IRIS_FEATURE_ENTITY_TRANSLUCENT || defined GBUFFERS_ENTITIES_TRANSLUCENT
+        vec3 translucentMult = mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a);
+    #else
+        vec3 translucentMult = vec3(1.0);
+    #endif
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, -1);
@@ -236,6 +240,10 @@ void main() {
         DoFog(color, skyFade, lViewPos, playerPos, VdotU, VdotS, dither, false, 0.0);
         float fogAlpha = color.a;
         color.a = prevAlpha * (1.0 - skyFade);
+
+        #if DETAIL_QUALITY > 0
+            float entityLinearDepth = sqrt(lViewPos / far);
+        #endif
     #endif
 
     #ifdef IRIS_FEATURE_FADE_VARIABLE
@@ -247,9 +255,20 @@ void main() {
     gl_FragData[1] = vec4(1.0 - translucentMult, 1.0);
     gl_FragData[2] = vec4(smoothnessD, materialMask, skyLightFactor, 1.0);
 
-    #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 1 || defined WORLD_SPACE_REFLECTIONS > 0
-        /* DRAWBUFFERS:0364 */
-        gl_FragData[3] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
+    #if defined GBUFFERS_ENTITIES_TRANSLUCENT && DETAIL_QUALITY > 0
+        #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 1 || WORLD_SPACE_REFLECTIONS > 0
+            /* RENDERTARGETS: 0,3,6,4,13 */
+            gl_FragData[3] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
+            gl_FragData[4] = vec4(entityLinearDepth, 1.0, 1.0, 1.0);
+        #else
+            /* RENDERTARGETS: 0,3,6,13 */
+            gl_FragData[3] = vec4(entityLinearDepth, 1.0, 1.0, 1.0);
+        #endif
+    #else
+        #if BLOCK_REFLECT_QUALITY >= 2 && RP_MODE >= 1 || WORLD_SPACE_REFLECTIONS > 0
+            /* DRAWBUFFERS:0364 */
+            gl_FragData[3] = vec4(mat3(gbufferModelViewInverse) * normalM, 1.0);
+        #endif
     #endif
 }
 

@@ -165,9 +165,13 @@ void main() {
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, false,
                false, 0, smoothnessG, highlightMult, emission);
 
-    vec3 translucentMult = mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a);
-    translucentMult.rgb = mix(translucentMult.rgb, vec3(1.0), min1(lViewPos / 50.0));
     float skyLightFactor = GetSkyLightFactor(lmCoordM, shadowMult);
+
+    #if !defined IRIS_FEATURE_ENTITY_TRANSLUCENT || defined GBUFFERS_BLOCK_TRANSLUCENT
+        vec3 translucentMult = mix(vec3(0.666), color.rgb * (1.0 - pow2(pow2(color.a))), color.a);
+    #else
+        vec3 translucentMult = vec3(1.0);
+    #endif
 
     #ifdef COLOR_CODED_PROGRAMS
         ColorCodeProgram(color, blockEntityId);

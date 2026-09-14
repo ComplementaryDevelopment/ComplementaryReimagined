@@ -542,6 +542,7 @@
         #define LOW_QUALITY_NETHER_STORM
         #define LOW_QUALITY_MOTION_BLUR
         #define LOW_QUALITY_WATER_MATERIAL
+        // disable all usages of "entityLinearDepth"
     #endif
     #if DETAIL_QUALITY >= 2 // Medium
         #if TAA_DEFINE == -1

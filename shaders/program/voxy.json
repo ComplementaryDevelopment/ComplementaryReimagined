@@ -109,6 +109,7 @@
         "tex": "sampler2D",
         "gaux2": "sampler2D",
         "gaux4": "sampler2D",
+        "colortex13": "sampler2D",
         "colortex18": "sampler2D",
         "colortex19": "sampler2D",
         "depthtex1": "sampler2D",

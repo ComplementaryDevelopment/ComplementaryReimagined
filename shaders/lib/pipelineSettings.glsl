@@ -10,6 +10,7 @@ const int colortex7Format = RGBA16F;        //(cloud/water map on gbuffer) | ref
 const int colortex8Format = RGBA16F;        //SSR results for WSR, topmost translucent opacity
 
 const int colortex12Format = RGBA8;         //Improved Rain
+const int colortex13Format = R8;            //Entity linear depth for vl blending
 
 const int colortex18Format = R8;            //shadow for voxy chunks
 const int colortex19Format = RGBA8;         //scene image for voxy reflections
@@ -25,6 +26,7 @@ const bool colortex6Clear = true;
 const bool colortex7Clear = false;
 
 const bool colortex12Clear = true;
+const bool colortex13Clear = true;
 
 const bool colortex18Clear = false;
 const bool colortex19Clear = false;
