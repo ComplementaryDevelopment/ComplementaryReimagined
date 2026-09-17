@@ -1,0 +1,1156 @@
+#shaders/lang/tr_tr.lang
+
+#Profiles
+profile.POTATO=§aPatates
+profile.VERYLOW=§aÇok Düşük
+profile.LOW=§aDüşük
+profile.MEDIUM=§aOrta
+profile.HIGH=§eVarsayılan (Yüksek)
+profile.VERYHIGH=§cÇok Yüksek
+profile.ULTRA=§4§lUltra
+profile.COMPLEMENTARY=§4§l§n§oComplementary
+profile.comment=Shader profilleri, en optimize görsel kalite/performans oranına göre performans ayarlarını değiştirir. §e[*]§r Ne yaptığınızı tam olarak bilmiyorsanız bu profillerden birini kullanmanız önerilir. §e[*]§r Etkilenen tüm ayarlar "Performans Ayarları" menüsünde bulunabilir.
+
+#Information
+screen.INFORMATION=Bilgilendirme
+screen.INFORMATION.comment=Bu bölüm yalnızca bilgilendirme amaçlı düğmeler içerir.
+
+option.info0=§bFarenizi bir düğmenin üzerine getirin
+value.info0.0=
+option.info0.comment=Bu bölüm yalnızca bilgilendirme amaçlı düğmeler içerir.
+
+option.info1=Daha fazla performans nasıl alınır?
+value.info1.0=
+option.info1.comment=Minecraft'ta performans birçok faktörden etkilendiği için karmaşık bir konudur, ancak şunları deneyebilirsiniz: Görüş mesafenizi (Render Distance) azaltın; neredeyse her cihaz için 6 ile 16 arasında olması idealdir. "Profil" ayarını düşürün; bu profiller en iyi görsel/performans oranı için özenle test edilmiştir.
+
+option.info2=En iyi ayarlar hangileridir?
+value.info2.0=
+option.info2.comment=En iyi ayarlar kişiden kişiye değişir, ancak çoğu kişi için varsayılan ayarlar en idealidir. Varsayılan ayarlar, görsel/performans oranına dikkat edilerek yılların topluluk geri bildirimleriyle şekillendirilmiştir. Yine de ayarları kurcalamaktan ve denemekten çekinmeyin!
+
+option.info3=Profil ve Görsel Stil nedir?
+value.info3.0=
+option.info3.comment="Profil" ayarı, tercihe dayalı ayarları etkilemeden yalnızca "Performans Ayarları" menüsündeki ayarları değiştirir. "Görsel Stil" ise tercihe dayalı birçok ayarda bulunan "Stile Göre Belirle" değerlerini değiştirir, performansı önemli ölçüde etkilemez.
+
+option.info4=RP Desteği nedir?
+value.info4.0=
+option.info4.comment=RP Desteği, shader paketinin Minecraft bloklarını nasıl işleyeceğini belirler. Örneğin §bIntegratedPBR+§r altın bloklarını yansıtıcı olarak işlerken, §elabPBR§r veya §eseuspbr§r bunu shadere bildirmek için bir kaynak paketi kurmanızı gerektirir. RP Desteğini §aTemel§r yapmak, su gibi birkaç istisna dışında hiçbir bloğu "özel" yapmaz.
+
+option.info5=Sarı renkli ayarlar nedir?
+value.info5.0=
+option.info5.comment=Sarı isimli bir ayar, "Performans Ayarları" kategorisinde olmamasına rağmen performansı ölçülebilir derecede etkilediği anlamına gelir. Bir ayarı açtığınızda metin kırmızıya dönüyorsa performans maliyeti çok yüksektir.
+
+option.info6=
+value.info6.0=
+option.info6.comment=
+
+option.info7=
+value.info7.0=
+option.info7.comment=
+
+option.info8=Topluluğa nasıl katılınır?
+value.info8.0=
+option.info8.comment=Samimi topluluğumuza katılmak, geliştiriciler veya deneyimli üyelerle iletişime geçebilmek için Complementary Discord sunucusuna katılabilirsiniz: www.complementary.dev/discord
+
+option.info9=Complementary nasıl desteklenir?
+value.info9.0=
+option.info9.comment=Complementary gelişimini desteklemenin en iyi yolu onu arkadaşlarınızla veya sosyal medyada paylaşmaktır. Ayrıca geliştiriciyi doğrudan Patreon üzerinden de destekleyebilirsiniz: www.patreon.com/emingt
+
+option.info10=Emeği Geçenler
+value.info10.0=
+option.info10.comment=EminGT: Complementary baş geliştiricisi. Capt Tatsu: BSL Shaders geliştiricisi (cömertliği Complementary'i mümkün kıldı). Özel Teşekkürler: IMS212, sp614x, Chocapic13, Robobo1221, SixthSurge, null511, fayer3, catlikecoding, Builderb0y, Jessie, SpacEagle17, isuewo, flytrap, gri573, FoZy-STYLE, plazmal
+
+#Style
+option.SHADER_STYLE=Görsel Stil
+option.SHADER_STYLE.comment=Shader paketinin varsayılan görsel stilini belirler. §bReimagined§r: Minecraft'ın benzersiz görsel öğelerini koruyarak onu tamamlar. §dUnbound§r: Minecraft görsellerini yarı gerçekçi bir fantezi stiliyle yeniden şekillendirir. §e[*]§r Etkilenen ayarlar: Su Stili, Bulut Stili, Güneş/Ay Stili, Güneş/Ay Açısı, Kutup Işıkları Stili, Parlayan Cevherler.
+value.SHADER_STYLE.1=§bReimagined
+value.SHADER_STYLE.4=§dUnbound
+
+#Screens
+screen.PERFORMANCE_SETTINGS=§ePerformans Ayarları§r
+screen.PERFORMANCE_SETTINGS.comment=Doğrudan performansla ilgili olan ve farklı shader profilleri tarafından değiştirilen ayarlar.
+
+screen.ATMOSPHERE_SETTINGS=Atmosfer
+screen.ATMOSPHERE_SETTINGS.comment=Atmosferle ilgili ayarlar.
+
+screen.ATM_COLOR_SETTINGS=Atmosfer Renk Çarpanları
+screen.ATM_COLOR_SETTINGS.comment=Çoğunlukla gökyüzü ve siste görülen atmosfer renklerinin özelleştirilmesini sağlar.
+
+screen.MORNING_ATM_MULTS=Gündoğumu / Günbatımı Zamanı
+screen.NOON_ATM_MULTS=Öğle Zamanı
+screen.NIGHT_ATM_MULTS=Gece Zamanı
+screen.RAIN_ATM_MULTS=Yağmurlu Hava
+screen.NETHER_ATM_MULTS=Nether Boyutu
+screen.END_ATM_MULTS=End Boyutu
+
+screen.CLOUD_SETTINGS=Bulutlar
+screen.CLOUD_SETTINGS.comment=Bulutlarla ilgili ayarlar.
+
+screen.CLOUD_COLOR_SETTINGS=Bulut Rengi
+screen.CLOUD_COLOR_SETTINGS.comment=Bulutların rengini değiştiren ayarlar.
+
+screen.CLOUD_UNBOUND_SETTINGS=Unbound Bulut Ayarları
+screen.CLOUD_REIMAGINED_SETTINGS=Reimagined Bulut Ayarları
+
+screen.FOG_SETTINGS=Sis
+screen.FOG_SETTINGS.comment=Çeşitli sis türleriyle ilgili ayarlar.
+
+screen.SUN_MOON_SETTINGS=Güneş / Ay
+screen.SUN_MOON_SETTINGS.comment=Güneş ve ay ile ilgili ayarlar.
+
+screen.NETHER_SETTINGS=Nether Boyutu
+screen.NETHER_SETTINGS.comment=Nether boyutu ile ilgili ayarlar.
+
+screen.END_SETTINGS=End Boyutu
+screen.END_SETTINGS.comment=End boyutu ile ilgili ayarlar.
+
+screen.WEATHER_SETTINGS=Yağmur / Hava Durumu
+screen.WEATHER_SETTINGS.comment=Hava koşullarıyla ilgili ayarlar.
+
+screen.CAMERA_SETTINGS=Kamera
+screen.CAMERA_SETTINGS.comment=Görünüm ve kamera ile ilgili ayarlar.
+
+screen.TONEMAP_SETTINGS=Renk Dengesi
+screen.TONEMAP_SETTINGS.comment=Görsellerin renk dengesini belirleyen ayarlar.
+
+screen.COLORGRADING_SETTINGS=Renk Derecelendirme (Color Grading)
+screen.COLORGRADING_SETTINGS.comment=Son renk kanallarını harmanlayan ayarlar.
+
+screen.WORLD_BLUR_SETTINGS=Dünya Bulanıklığı
+screen.WORLD_BLUR_SETTINGS.comment=Gelişmiş alan derinliği ve bulanıklık efektleriyle ilgili ayarlar.
+
+screen.TAA_SETTINGS=Zamansal Filtre (TAA) Ayarları
+screen.TAA_SETTINGS.comment=Zamansal kenar yumuşatmanın (TAA) davranışını belirleyen ayarlar.
+
+screen.MATERIAL_SETTINGS=Materyaller
+screen.MATERIAL_SETTINGS.comment=Minecraft materyalleri ve blok dokularıyla ilgili ayarlar.
+
+screen.IPBR_SETTINGS=IntegratedPBR+ Materyalleri
+screen.IPBR_SETTINGS.comment=IntegratedPBR+ özellikleriyle ilgili ayarlar.
+
+screen.GLOWING_ORE_SETTINGS=Parlayan Cevherler
+screen.GLOWING_ORE_SETTINGS.comment=Cevher bloklarının ışık yayma ayarları.
+
+screen.GLOWING_STUFF_SETTINGS=Parlayan Nesneler
+screen.GLOWING_STUFF_SETTINGS.comment=Çeşitli blokların ışık yayma ayarları.
+
+screen.OTHER_IPBR_SETTINGS=Diğer IPBR+ Özellikleri
+screen.OTHER_IPBR_SETTINGS.comment=Çeşitli IntegratedPBR+ ayarları.
+
+screen.CUSTOM_PBR_SETTINGS=labPBR / seuspbr Materyalleri
+screen.CUSTOM_PBR_SETTINGS.comment=labPBR/seuspbr özellikleri ile ilgili ayarlar.
+
+screen.LIGHTING_SETTINGS=Aydınlatma
+screen.LIGHTING_SETTINGS.comment=Işıklandırma ile ilgili ayarlar.
+
+screen.LIGHT_COLOR_SETTINGS=Aydınlatma Renk Çarpanları
+screen.LIGHT_COLOR_SETTINGS.comment=Tüm yüzeylerde görünen aydınlatma renklerinin özelleştirilmesini sağlar.
+
+screen.MORNING_LIGHT_MULTS=Gündoğumu / Günbatımı Zamanı
+screen.NOON_LIGHT_MULTS=Öğle Zamanı
+screen.NIGHT_LIGHT_MULTS=Gece Zamanı
+screen.RAIN_LIGHT_MULTS=Yağmurlu Hava
+screen.NETHER_LIGHT_MULTS=Nether Boyutu
+screen.END_LIGHT_MULTS=End Boyutu
+
+screen.BLOCKLIGHT_SETTINGS=Blok Işığı §e[*]§r
+screen.BLOCKLIGHT_SETTINGS.comment=Işık kaynağı bloklarından yayılan ışığı ayarlar. §e[*]§r Gelişmiş Renk Takibi (ACT) açıksa kırmızı/yeşil/mavi ayarları çoğu ışığı etkilemez.
+
+screen.MOON_PHASE_INF_SETTINGS=Ay Evresi Etkisi
+screen.MOON_PHASE_INF_SETTINGS.comment=Farklı ay evrelerinin gece aydınlatmasını nasıl etkileyeceğini belirler.
+
+screen.ACT_FEATURES_SETTINGS=ACT Özel Özellikleri §e[*]§r
+screen.ACT_FEATURES_SETTINGS.comment=Gelişmiş Renk Takibi'ne (ACT) özel özelliklerle ilgili ayarlar. §e[*]§r Bu özellikler yalnızca Performans Ayarları'nda ACT açıksa ve sisteminiz destekliyorsa çalışır.
+
+screen.PIXELATED_LIGHTING_SETTINGS=Pikselli Aydınlatma
+screen.PIXELATED_LIGHTING_SETTINGS.comment=Belirli ışık efektlerinin pikselli görünmesini sağlayan ayarlar.
+
+screen.WATER_SETTINGS=Su
+screen.WATER_SETTINGS.comment=Su efektleriyle ilgili ayarlar.
+
+screen.WATER_COLOR_SETTINGS=Su Yüzeyi Rengi
+
+screen.UNDERWATER_COLOR_SETTINGS=Su Altı Rengi
+
+screen.WATER_WAVE_SETTINGS=Dalgalanan Su Normalleri §e[*]§r
+screen.WATER_WAVE_SETTINGS.comment=Su yüzeyinde görünen dalga yönlerini ve detaylarını özelleştirir. §e[*]§r Bu ayarlar yalnızca Su Stili "Reimagined + Waves" veya "Unbound" olduğunda çalışır.
+
+screen.WAVING_SETTINGS=Sallanan Dokular
+screen.WAVING_SETTINGS.comment=Rüzgarda sallanan bitki ve doku efektleri ile ilgili ayarlar.
+
+screen.OTHER_SETTINGS=Diğer
+screen.OTHER_SETTINGS.comment=Başka hiçbir kategoriye girmeyen genel ayarlar.
+
+screen.SELECT_OUTLINE_SETTINGS=Blok Seçim Çizgisi
+screen.SELECT_OUTLINE_SETTINGS.comment=Hedeflenen bloğun etrafındaki seçim çerçevesini değiştiren ayarlar.
+
+screen.WORLD_OUTLINE_SETTINGS=Dünya Çizgisi (Outline)
+screen.WORLD_OUTLINE_SETTINGS.comment=İsteğe bağlı stilistik dış hat efektleriyle ilgili ayarlar.
+
+#Settings
+option.RP_MODE=RP Desteği
+option.RP_MODE.comment=Farklı blok ve materyallerin nasıl işleneceğini belirler. §bIntegrated PBR+§r: Otomatik hesaplanan PBR ve ekstra efektler, çoğu durum için şiddetle önerilir. §aTemel§r: PBR veya ekstra efekt yok. §elabPBR/seuspbr§r: Uyumlu PBR kaynak paketi gerektiren materyaller.
+value.RP_MODE.0=§aTemel
+value.RP_MODE.1=§bIntegrated PBR+
+value.RP_MODE.2=§eseuspbr (Kaynak Paketi Gerekir)
+value.RP_MODE.3=§elabPBR (Kaynak Paketi Gerekir)
+
+option.WATER_REFLECT_QUALITY=Su Yansıma Kalitesi
+option.WATER_REFLECT_QUALITY.comment=Yarı saydam yüzeylerdeki yansımaların kalitesini ayarlar. §cOrta§r: Su ve yarı saydamlarda ekran uzayı ışın izlemeli yansımalar (SSR). §ePatates§r: Yansımaları daha hızlı bir yöntemle değiştirir, bazı durumlarda hatalı görünebilir. §aKAPALI§r: Yansıma yok.
+value.WATER_REFLECT_QUALITY.-1=§aKAPALI
+value.WATER_REFLECT_QUALITY.0=§aSadece Gökyüzü
+value.WATER_REFLECT_QUALITY.1=§ePatates
+value.WATER_REFLECT_QUALITY.2=§cOrta
+
+option.BLOCK_REFLECT_QUALITY=Blok Yansıma Kalitesi §e[*]§r
+option.BLOCK_REFLECT_QUALITY.comment=Katı materyallerde görünen yansıma kalitesini ayarlar. §cYüksek§r: Güneş/ay parlamaları + gelişmiş yansımalar. §eDüşük§r: Yalnızca güneş/ay parlamaları. §e[*]§r Yansımaların görünmesi için RP Desteği 'Temel' dışında bir değere ayarlanmalıdır.
+value.BLOCK_REFLECT_QUALITY.0=§aKAPALI
+value.BLOCK_REFLECT_QUALITY.1=§eDüşük
+value.BLOCK_REFLECT_QUALITY.3=§cYüksek
+
+option.SHADOW_QUALITY=Gerçek Zamanlı Gölgeler
+option.SHADOW_QUALITY.comment=Gölgelerin kalitesini ayarlar. Her seviye gölge parazitini daha da azaltır. §eDüşük§r ve §eÇok Düşük§r daha basit filtreleme kullanır; §eÇok Düşük§r ayrıca renkli gölgeleri kapatır; §aKAPALI§r gölgeleri ve ışık huzmelerini tamamen devre dışı bırakır.
+value.SHADOW_QUALITY.-1=§aKAPALI
+value.SHADOW_QUALITY.0=§eÇok Düşük
+value.SHADOW_QUALITY.1=§eDüşük
+value.SHADOW_QUALITY.2=§eOrta
+value.SHADOW_QUALITY.3=§cYüksek
+value.SHADOW_QUALITY.4=§cÇok Yüksek
+value.SHADOW_QUALITY.5=§4§lUltra
+
+option.LIGHTSHAFT_QUALI_DEFINE=Işık Huzmesi Kalitesi §e[*]§r
+option.LIGHTSHAFT_QUALI_DEFINE.comment=Işık huzmelerinin (güneş ışınları) kalitesini ayarlar. Her kademe paraziti daha da azaltır. §e[*]§r Işık huzmelerinin çalışması için "Gerçek Zamanlı Gölgeler" açık olmalıdır. §e[*]§r Bu ayar End Işınlarının kalitesini de kontrol eder.
+value.LIGHTSHAFT_QUALI_DEFINE.0=§aKAPALI
+value.LIGHTSHAFT_QUALI_DEFINE.1=§eDüşük
+value.LIGHTSHAFT_QUALI_DEFINE.2=§eOrta
+value.LIGHTSHAFT_QUALI_DEFINE.3=§cYüksek
+value.LIGHTSHAFT_QUALI_DEFINE.4=§4§lÇok Yüksek
+
+option.shadowDistance=Gölge Mesafesi
+option.shadowDistance.comment=Gerçek zamanlı gölgelerin oyuncudan ne kadar uzaklığa kadar işleneceğini belirler. §c[-]§r Düşük değerler ışık huzmelerinde sızıntıya neden olabilir.
+value.shadowDistance.64.0=§a4 Chunk §c[-]
+value.shadowDistance.80.0=§a5 Chunk §c[-]
+value.shadowDistance.96.0=§a6 Chunk §c[-]
+value.shadowDistance.112.0=§a7 Chunk §c[-]
+value.shadowDistance.128.0=§a8 Chunk
+value.shadowDistance.160.0=§e10 Chunk
+value.shadowDistance.192.0=§e12 Chunk
+value.shadowDistance.224.0=§e14 Chunk
+value.shadowDistance.256.0=§c16 Chunk
+value.shadowDistance.320.0=§c20 Chunk
+value.shadowDistance.384.0=§4§l24 Chunk
+value.shadowDistance.512.0=§4§l32 Chunk
+value.shadowDistance.768.0=§4§l§n§o48 Chunk
+value.shadowDistance.1024.0=§4§k-§r§4§l§n§o64 Chunk§r§4§k-
+
+option.ENTITY_SHADOW=Varlık Gölgeleri
+option.ENTITY_SHADOW.comment=Varlıkların ve blok varlıklarının gölge düşürmesini sağlar. "Normal Varlıklar" hayvanlar ve canavarları içerir; "Tümü" seçeneği sandıklar gibi blok varlıklarını da dahil eder. §c[-]§r Varlık Gölgeleri performansı beklenenden çok daha fazla etkileyebilir.
+value.ENTITY_SHADOW.-1=§aKAPALI
+value.ENTITY_SHADOW.1=§cNormal Varlıklar
+value.ENTITY_SHADOW.2=§4§k-§r§4§l§n§oTümü§r§4§k- §r§c[-]
+
+option.DETAIL_QUALITY=Detay Kalitesi
+option.DETAIL_QUALITY.comment=Performansı etkileyen küçük görsel ayrıntıları ayarlar: Su materyali, TAA, aydınlatma ince ayarları, Gece Nebulası, Nether Fırtınası, gökyüzü yansımaları, yağmur su birikintisi doğruluğu, sallanma efektleri, hareket bulanıklığı.
+value.DETAIL_QUALITY.0=§aPatates
+value.DETAIL_QUALITY.2=§eOrta
+value.DETAIL_QUALITY.3=§cYüksek
+
+option.CLOUD_QUALITY=Bulut Kalitesi
+option.CLOUD_QUALITY.comment=Reimagined/Unbound bulut stillerinin aydınlatma, detay ve örnekleme kalitesini ayarlar. §e[*]§r Bu ayar yalnızca "Reimagined" veya "Unbound" Bulut Stilleri ile çalışır.
+value.CLOUD_QUALITY.0=§aKAPALI
+value.CLOUD_QUALITY.1=§aDüşük
+value.CLOUD_QUALITY.2=§eOrta
+value.CLOUD_QUALITY.3=§cYüksek
+
+option.FXAA_DEFINE=Kenar Yumuşatma (FXAA)
+option.FXAA_DEFINE.comment=Hızlı Yaklaşık Kenar Yumuşatma (FXAA) açarak daha pürüzsüz kenarlar elde edilmesini sağlar.
+value.FXAA_DEFINE.-1=§aKAPALI
+value.FXAA_DEFINE.1=§eAÇIK
+
+option.SSAO_QUALI_DEFINE=Köşe Gölgelendirme (SSAO) Kalitesi
+option.SSAO_QUALI_DEFINE.comment=Sahnenin köşe ve birleşim noktalarına ortam gölgelemesi ekleyen SSAO kalitesini ayarlar. Her kademe parazitlenmeyi azaltır.
+value.SSAO_QUALI_DEFINE.0=§aKAPALI
+value.SSAO_QUALI_DEFINE.2=§eOrta
+value.SSAO_QUALI_DEFINE.3=§cYüksek
+
+option.ANISOTROPIC_FILTER=Doku Filtreleme (Anisotropic)
+option.ANISOTROPIC_FILTER.comment=Eşyönsüz filtreleme kullanarak uzaktaki dokuların netliğini artırır. §e[*]§r Video Ayarları'nda "Mipmap Seviyeleri"nin Maksimum (4) olduğundan emin olun.
+value.ANISOTROPIC_FILTER.0=§aKAPALI
+value.ANISOTROPIC_FILTER.4=§e4x
+value.ANISOTROPIC_FILTER.8=§e8x
+value.ANISOTROPIC_FILTER.16=§4§l16x
+
+option.COLORED_LIGHTING=Gelişmiş Renk Takibi (ACT) §e[*]§r
+option.COLORED_LIGHTING.comment=Vokselleştirme kullanarak blok ışıklarına renk katar. §e[*]§r Yalnızca Iris ve desteklenen platformlarda çalışır. §e[*]§r "Gerçek Zamanlı Gölgeler" KAPALI ise devre dışı kalır. §c[-]§r Yüksek chunk değerleri performansı çok ciddi şekilde düşürebilir.
+value.COLORED_LIGHTING.0=§aKAPALI
+value.COLORED_LIGHTING.128=§c4 Chunk
+value.COLORED_LIGHTING.192=§c6 Chunk
+value.COLORED_LIGHTING.256=§4§l8 Chunk
+value.COLORED_LIGHTING.384=§4§l12 Chunk
+value.COLORED_LIGHTING.512=§4§l§n§o16 Chunk
+value.COLORED_LIGHTING.768=§4§l§n§o24 Chunk §r§c[-]
+value.COLORED_LIGHTING.1024=§4§k-§r§4§l§n§o32 Chunk§r§4§k- §r§c[-]
+
+option.WORLD_SPACE_REFLECTIONS=Dünya Uzayı Yansımaları (WSR) §e[*]§r
+option.WORLD_SPACE_REFLECTIONS.comment=Yansımaları ekran uzayı yerine dünya uzayında hesaplar. Ekranda görünmeyen nesnelerin de yansımasını sağlar. §e[*]§r Performans Ayarları'nda Gelişmiş Renk Takibi açık olmalıdır. §c[-]§r Performansı ciddi şekilde etkileyebilir.
+value.WORLD_SPACE_REFLECTIONS.-1=§aKAPALI
+value.WORLD_SPACE_REFLECTIONS.1=§4§l§n§oAÇIK
+
+option.WORLD_SPACE_REF_MODE=WSR Modu §e[*]§r
+option.WORLD_SPACE_REF_MODE.comment=Dünya uzayı yansımalarının çalışma modunu belirler. "Yalnızca WSR" ekran uzayı bozulmalarını yok eder; "WSR + SSR" ise çok daha fazla detay sunar.
+value.WORLD_SPACE_REF_MODE.1=Yalnızca WSR
+value.WORLD_SPACE_REF_MODE.2=WSR + SSR
+
+option.WORLD_SPACE_PLAYER_REF=WSR Oyuncu Yansıması
+option.WORLD_SPACE_PLAYER_REF.comment=Oyuncunun kendi modelinin dünya uzayı yansımalarında görünmesini sağlar.
+value.WORLD_SPACE_PLAYER_REF.-1=KAPALI
+value.WORLD_SPACE_PLAYER_REF.1=AÇIK
+
+option.SSAO_I=Köşe Gölgesi Yoğunluğu (SSAO)
+option.SSAO_I.comment=Ekran Uzayı Ortam Kapatma (SSAO) gücünü belirler. §e[*]§r Performans Ayarları'nda SSAO kapalıysa çalışmaz.
+value.SSAO_I.0=KAPALI
+
+option.VANILLAAO_I=Köşe Gölgesi Yoğunluğu (Vanilla)
+option.VANILLAAO_I.comment=Minecraft'ın varsayılan ortam kapatma yoğunluğunu belirler.
+value.VANILLAAO_I.0=KAPALI
+
+option.BORDER_FOG=Sınır Sisi
+option.BORDER_FOG.comment=Yüklenen dünyanın kenarlarındaki chunk sınırlarını gizlemek için yoğun sis ekler. §e[*]§r 8 chunk'tan düşük görüş mesafesinde oynarken kapatılması önerilir.
+
+option.ATM_FOG_MULT=Atmosferik Sis
+option.ATM_FOG_MULT.comment=Yüksekliğe bağlı sisin yoğunluğunu ayarlar.
+value.ATM_FOG_MULT.0.50=Çok Hafif
+value.ATM_FOG_MULT.0.65=Hafif
+value.ATM_FOG_MULT.0.80=Normal
+value.ATM_FOG_MULT.0.95=Yoğun
+
+option.ATM_FOG_DISTANCE=Atmosferik Sis Mesafesi
+option.ATM_FOG_DISTANCE.comment=Atmosferik sisin kameradan ne kadar uzakta başlayacağını ayarlar.
+
+option.ATM_FOG_ALTITUDE=Atmosferik Sis Yüksekliği
+option.ATM_FOG_ALTITUDE.comment=Atmosferik sisin en belirgin görüneceği dünya yüksekliğini (Y seviyesi) belirler.
+
+option.CAVE_FOG=Mağara Sisi
+option.CAVE_FOG.comment=Derin yeraltı alanlarında ekstra sis ekler.
+
+option.LIGHTSHAFT_BEHAVIOUR=Işık Huzmesi Modu
+option.LIGHTSHAFT_BEHAVIOUR.comment=Güneş ışınlarının davranışını belirler. §a[+]§r Sahneye Duyarlı modu en iyi sonucu vermek için otomatik geçiş yapar. §c[-]§r Aşırı (Extreme) mod genel oynanış için önerilmez ve performansı düşürür.
+value.LIGHTSHAFT_BEHAVIOUR.0=KAPALI
+value.LIGHTSHAFT_BEHAVIOUR.1=Sahneye Duyarlı §a[+]
+value.LIGHTSHAFT_BEHAVIOUR.2=Normal
+value.LIGHTSHAFT_BEHAVIOUR.3=Aşırı §c[-]
+
+option.LIGHTSHAFT_SMOKE=§eIşık Huzmesi Dumanı§r
+option.LIGHTSHAFT_SMOKE.comment=Işık huzmelerine hacimsel duman efekti ekler. §c[-]§r Bu efekt performansı önemli ölçüde etkileyebilir.
+
+option.SPECIAL_PALE_GARDEN_LIGHTSHAFTS=Özel Pale Garden Huzmeleri
+option.SPECIAL_PALE_GARDEN_LIGHTSHAFTS.comment="Pale Garden" biyomunda ışık huzmelerine özel bir atmosfer katar.
+
+option.LIGHTSHAFT_DAY_I=Gündüz Işık Huzmesi Çarpanı
+option.LIGHTSHAFT_NIGHT_I=Gece Işık Huzmesi Çarpanı
+option.LIGHTSHAFT_RAIN_I=Yağmur Işık Huzmesi Çarpanı
+
+option.LIGHTSHAFT_SUNSET_SATURATION=Günbatımı Işık Huzmesi Rengi
+option.LIGHTSHAFT_SUNSET_SATURATION.comment=Gündoğumu ve günbatımında ışık huzmelerinin renk doygunluğunu ayarlar. Yüksek değerler kırmızımsı turuncu, düşük değerler sarıya çalar.
+
+option.CLOUD_STYLE_DEFINE=Bulut Stili
+option.CLOUD_STYLE_DEFINE.comment=Bulutların stilini belirler. §e[*]§r "Stile Göre Belirle", ana menüdeki Görsel Stil ayarını takip eder. §e[*]§r "Vanilla" stili için Video Ayarları'nda bulutların açık olması gerekir.
+value.CLOUD_STYLE_DEFINE.-1=Stile Göre Belirle
+value.CLOUD_STYLE_DEFINE.0=KAPALI
+value.CLOUD_STYLE_DEFINE.1=Reimagined
+value.CLOUD_STYLE_DEFINE.3=Unbound
+value.CLOUD_STYLE_DEFINE.50=Vanilla §e[*]
+
+option.CLOUD_SHADOWS=Bulut Gölgeleri
+option.CLOUD_SHADOWS.comment=Bulutların yere gölge düşürmesini sağlar. §e[*]§r Yalnızca "Reimagined" veya "Unbound" bulut stillerinde çalışır.
+
+option.CLOUD_CLOSED_AREA_CHECK=Kapalı Alanlarda Bulutu Engelle
+option.CLOUD_CLOSED_AREA_CHECK.comment=Binaların ve kapalı alanların içine bulut girmesini önler.
+
+option.CLOUD_ALT1=Bulut Yüksekliği §e[*]§r
+option.CLOUD_ALT1.comment=Bulutların görüneceği dünya yüksekliğini belirler.
+
+option.CLOUD_SPEED_MULT=Bulut Hızı
+option.CLOUD_SPEED_MULT.comment=Bulutların hareket hızını belirler. "Dünya Zamanına Senkronize" ayarı, sunucudaki tüm oyuncuların bulutları aynı konumda görmesini sağlar.
+value.CLOUD_SPEED_MULT.100=Dünya Zamanına Senkronize
+
+option.CLOUD_R=Bulut Kırmızı Çarpanı
+option.CLOUD_G=Bulut Yeşil Çarpanı
+option.CLOUD_B=Bulut Mavi Çarpanı
+
+option.CLOUD_UNBOUND_AMOUNT=Bulut Miktarı
+option.CLOUD_UNBOUND_AMOUNT.comment=Unbound bulutlarının yoğunluğunu ayarlar.
+
+option.CLOUD_UNBOUND_SIZE_MULT=Bulut Küçüklüğü §c[-]§r
+option.CLOUD_UNBOUND_SIZE_MULT.comment=Unbound bulutlarının boyutunu ayarlar. Yüksek değerler daha küçük bulutlar üretir.
+
+option.CLOUD_UNBOUND_RAIN_ADD=Yağmur Bulutu İlavesi
+option.CLOUD_UNBOUND_RAIN_ADD.comment=Yağmur ve kar sırasında eklenen bulut miktarını ayarlar.
+prefix.CLOUD_UNBOUND_RAIN_ADD=+
+
+option.DOUBLE_REIM_CLOUDS=Çift Katmanlı Reimagined Bulutlar
+option.DOUBLE_REIM_CLOUDS.comment=İkinci bir Reimagined bulut katmanı ekler.
+
+option.CLOUD_ALT2=2. Katman Bulut Yüksekliği
+option.CLOUD_ALT2.comment=İkinci bulut katmanının bulunacağı yüksekliği belirler.
+
+option.NETHER_STORM=§eNether Fırtınası§r
+option.NETHER_STORM.comment=Nether boyutuna duman benzeri hacimsel bir fırtına efekti ekler. §c[-]§r Performansı etkileyebilir.
+
+option.NETHER_STORM_I=Nether Fırtınası Opaklığı
+option.NETHER_STORM_I.comment=Nether fırtınasının görünürlük/opaklık derecesini ayarlar.
+
+option.NETHER_STORM_LOWER_ALT=Nether Fırtınası Alt Yüksekliği
+option.NETHER_STORM_LOWER_ALT.comment=Nether fırtınasının başlayacağı taban yüksekliği belirler.
+
+option.NETHER_STORM_HEIGHT=Nether Fırtınası Yüksekliği
+option.NETHER_STORM_HEIGHT.comment=Nether fırtınasının ne kadar dikey kalınlıkta oluşacağını belirler.
+
+option.NETHER_VIEW_LIMIT=§eNether Görüş Limiti§r
+option.NETHER_VIEW_LIMIT.comment=Nether'da sisin izin verdiği maksimum görüş mesafesini belirler.
+value.NETHER_VIEW_LIMIT.96.0=6 Chunk
+value.NETHER_VIEW_LIMIT.112.0=7 Chunk
+value.NETHER_VIEW_LIMIT.128.0=8 Chunk
+value.NETHER_VIEW_LIMIT.160.0=10 Chunk
+value.NETHER_VIEW_LIMIT.192.0=12 Chunk
+value.NETHER_VIEW_LIMIT.224.0=14 Chunk
+value.NETHER_VIEW_LIMIT.256.0=16 Chunk
+value.NETHER_VIEW_LIMIT.320.0=20 Chunk
+value.NETHER_VIEW_LIMIT.384.0=24 Chunk
+value.NETHER_VIEW_LIMIT.512.0=32 Chunk §c[-]
+value.NETHER_VIEW_LIMIT.768.0=48 Chunk §c[-]
+value.NETHER_VIEW_LIMIT.1024.0=64 Chunk §c[-]
+value.NETHER_VIEW_LIMIT.99999.0=Sınırsız §c[-]
+
+option.NETHER_COLOR_MODE=Renk Modu
+option.NETHER_COLOR_MODE.comment=Nether ortam renklerinin nasıl işleneceğini belirler. Sabit: Renkler biyomlara göre değişmez. Biyoma Dayalı: Biyoma göre değişir. Biyoma Dayalı (Düzenlenmiş): Biyom bazlıdır ancak Complementary stiline göre dengelenmiştir.
+value.NETHER_COLOR_MODE.3=Biyoma Dayalı (Düzenlenmiş)
+value.NETHER_COLOR_MODE.2=Biyoma Dayalı
+value.NETHER_COLOR_MODE.0=Sabit
+
+option.END_BEAM_INTENSITY=End Işınları Yoğunluğu
+option.END_BEAM_INTENSITY.comment=End boyutundaki dikey ışık huzmelerinin parlaklığını ayarlar.
+
+option.END_STAR_INTENSITY=End Yıldızları Yoğunluğu
+option.END_STAR_INTENSITY.comment=End boyutundaki yıldızların parlaklığını ayarlar.
+
+option.END_FLASHES=End Parıltıları
+option.END_FLASHES.comment=Minecraft 1.21.9 ile eklenen End parıltısı çevre özelliğini etkinleştirir.
+
+option.END_BEAM_CENTER_ALT=End Işınları Merkez Yüksekliği
+option.END_BEAM_CENTER_ALT.comment=End ışınlarının merkezleneceği Y seviyesini ayarlar.
+
+option.END_BEAM_HEIGHT=End Işınları Boyu
+option.END_BEAM_HEIGHT.comment=End ışınlarının dikey uzunluğunu ayarlar.
+
+option.TM_EXPOSURE=Genel Parlaklık (Pozlama)
+option.TM_EXPOSURE.comment=Tüm görüntünün genel parlaklık seviyesini (Tonemap Exposure) ayarlar.
+
+option.TM_CONTRAST=Genel Kontrast
+option.TM_CONTRAST.comment=Koyu ve açık renkler arasındaki zıtlığı ayarlar.
+
+option.T_SATURATION=Doygunluk
+option.T_SATURATION.comment=Görüntünün genel renk canlılığını ayarlar.
+
+option.T_VIBRANCE=Soluk Renklerin Doygunluğu (Vibrance)
+option.T_VIBRANCE.comment=Görüntünün canlılığını artırır, ancak zaten canlı olan pikselleri aşırı patlatmaz.
+
+option.TM_DARK_DESATURATION=Karanlıkta Doygunluk Azaltma
+option.TM_DARK_DESATURATION.comment=Karanlık alanlara uygulanan renk soldurma miktarını ayarlar.
+
+option.TM_WHITE_PATH=Beyaz Doygunluk Eşiği
+option.TM_WHITE_PATH.comment=Parlak renklerin ne kadar kolay saf beyaza ulaşacağını belirler.
+
+option.COLORGRADING=§eRenk Derecelendirme
+option.COLORGRADING.comment=Renk kanallarını serbestçe karıştırmak için ayarları etkinleştirir.
+option.GR_RR=Kırmızıdan Kırmızıya
+option.GR_RG=Kırmızıdan Yeşile
+option.GR_RB=Kırmızıdan Maviye
+option.GR_RC=Kırmızı Eğrisi
+option.GR_GR=Yeşilden Kırmızıya
+option.GR_GG=Yeşilden Yeşile
+option.GR_GB=Yeşilden Maviye
+option.GR_GC=Yeşil Eğrisi
+option.GR_BR=Maviden Kırmızıya
+option.GR_BG=Maviden Yeşile
+option.GR_BB=Maviden Maviye
+option.GR_BC=Mavi Eğrisi
+
+option.WATER_STYLE_DEFINE=Su Stili
+option.WATER_STYLE_DEFINE.comment=Suyun görsel stilini belirler.
+value.WATER_STYLE_DEFINE.-1=Stile Göre Belirle
+value.WATER_STYLE_DEFINE.1=Reimagined
+value.WATER_STYLE_DEFINE.2=Reimagined + Dalgalar
+value.WATER_STYLE_DEFINE.3=Unbound
+
+option.WATER_CAUSTIC_STYLE_DEFINE=Su Kostik Stili
+option.WATER_CAUSTIC_STYLE_DEFINE.comment=Su altına düşen ışık kırılma desenlerinin (kostik) stilini belirler.
+value.WATER_CAUSTIC_STYLE_DEFINE.-1=Su İle Aynı
+value.WATER_CAUSTIC_STYLE_DEFINE.1=Reimagined
+value.WATER_CAUSTIC_STYLE_DEFINE.3=Unbound
+
+option.WATER_REFRACTION_INTENSITY=Su Kırılma Yoğunluğu §e[*]§r
+option.WATER_REFRACTION_INTENSITY.comment=Su yüzeyindeki ışık kırılması ve su altı bükülme efektinin gücünü ayarlar.
+
+option.WATER_FOAM_I=Su Köpüğü Yoğunluğu
+option.WATER_FOAM_I.comment=Kıyı kenarlarında ve dalgalarda oluşan su köpüğünün opaklığını belirler.
+
+option.WATER_ALPHA_MULT=Su Opaklık Faktörü
+option.WATER_ALPHA_MULT.comment=Suyun ne kadar şeffaf veya opak görüneceğini ayarlar.
+
+option.WATER_FOG_MULT=Su Sisi Faktörü
+option.WATER_FOG_MULT.comment=Su altı sisinin ne kadar yakından başlayacağını ayarlar.
+
+option.WATERCOLOR_R=Su Yüzeyi Kırmızı Çarpanı
+option.WATERCOLOR_G=Su Yüzeyi Yeşil Çarpanı
+option.WATERCOLOR_B=Su Yüzeyi Mavi Çarpanı
+
+option.WATERCOLOR_MODE=Renk Modu
+option.WATERCOLOR_MODE.comment=Su renginin nasıl belirleneceğini seçer.
+value.WATERCOLOR_MODE.3=Biyoma Dayalı (Sınırlandırılmış)
+value.WATERCOLOR_MODE.2=Biyoma Dayalı
+value.WATERCOLOR_MODE.0=Sabit
+
+option.BRIGHT_CAVE_WATER=Daha Parlak Mağara/Sığ Su
+option.BRIGHT_CAVE_WATER.comment=Mağaralarda görüşü kolaylaştırmak için sığ suları daha aydınlık yapar.
+
+option.UNDERWATERCOLOR_R=Su Altı Kırmızı Çarpanı
+option.UNDERWATERCOLOR_G=Su Altı Yeşil Çarpanı
+option.UNDERWATERCOLOR_B=Su Altı Mavi Çarpanı
+
+option.WATER_BUMPINESS=Dalga Gücü
+option.WATER_BUMPINESS.comment=Su yüzeyinde görünen dalga kabartmalarının genel yoğunluğunu ayarlar.
+
+option.WATER_BUMP_SMALL=Küçük Dalga Gücü
+option.WATER_BUMP_SMALL.comment=Küçük boyutlu su dalgalarının yoğunluğunu ayarlar.
+
+option.WATER_BUMP_MED=Orta Dalga Gücü
+option.WATER_BUMP_MED.comment=Orta boyutlu su dalgalarının yoğunluğunu ayarlar.
+
+option.WATER_BUMP_BIG=Büyük Dalga Gücü
+option.WATER_BUMP_BIG.comment=Büyük boyutlu su dalgalarının yoğunluğunu ayarlar.
+
+option.WATER_SPEED_MULT=Dalga Hızı
+option.WATER_SPEED_MULT.comment=Su dalgalarının hareket hızını ayarlar.
+
+option.WATER_SIZE_MULT=Dalga Boyutu
+option.WATER_SIZE_MULT.comment=Su yüzeyindeki dalgaların ebatlarını ayarlar.
+
+option.SUN_ANGLE=Güneş / Ay Açısı
+option.SUN_ANGLE.comment=Öğle vaktinde güneş ve ayın dünyaya göre duruş açısını ayarlar.
+value.SUN_ANGLE.-1=Stile Göre Belirle
+value.SUN_ANGLE.0=0 §r(§bReimagined§r)
+value.SUN_ANGLE.-40=-40 §r(§dUnbound§r)
+
+option.SUN_MOON_STYLE_DEFINE=Güneş / Ay Stili
+option.SUN_MOON_STYLE_DEFINE.comment=Güneş ve ayın şekil stilini belirler.
+value.SUN_MOON_STYLE_DEFINE.-1=Stile Göre Belirle
+value.SUN_MOON_STYLE_DEFINE.1=Reimagined
+value.SUN_MOON_STYLE_DEFINE.2=Unbound
+value.SUN_MOON_STYLE_DEFINE.3=Unbound - Daha Küçük
+
+option.SUN_MOON_HORIZON=Güneş / Ay Ufuk Çizgisi
+option.SUN_MOON_HORIZON.comment=Güneş ve ayın ufuk çizgisinin altına inmesini engeller.
+
+option.SUN_MOON_DURING_RAIN=Yağmurda Güneş / Ay §e[*]§r
+option.SUN_MOON_DURING_RAIN.comment=Yağmur yağarken güneş ve ayın görünür olup olmayacağını belirler.
+
+option.IMPROVED_RAIN_DEFINE=Gelişmiş Hava Durumu Dokuları
+option.IMPROVED_RAIN_DEFINE.comment=Yağmur ve kar dokularını iyileştirir; renkli camların arkasında yağmurun görünmeme hatasını düzeltir.
+value.IMPROVED_RAIN_DEFINE.0=KAPALI
+value.IMPROVED_RAIN_DEFINE.1=AÇIK
+
+option.NIGHT_STAR_AMOUNT=Gece Yıldız Miktarı
+option.NIGHT_STAR_AMOUNT.comment=Gece gökyüzündeki yıldız yoğunluğunu belirler.
+value.NIGHT_STAR_AMOUNT.0=Kapalı
+value.NIGHT_STAR_AMOUNT.1=Düşük
+value.NIGHT_STAR_AMOUNT.2=Orta
+value.NIGHT_STAR_AMOUNT.3=Yüksek
+value.NIGHT_STAR_AMOUNT.4=Çok Yüksek
+
+option.RAINBOWS=Gökkuşağı
+option.RAINBOWS.comment=Sabah ve akşam vakitlerinde güneşin aksi yönünde gökkuşağı oluşmasını sağlar.
+value.RAINBOWS.0=KAPALI
+value.RAINBOWS.1=Yağmur Sonrası
+value.RAINBOWS.3=Her Zaman
+
+option.RAINBOW_STYLE_DEFINE=Gökkuşağı Stili
+option.RAINBOW_STYLE_DEFINE.comment=Gökkuşağının görsel stilini belirler.
+value.RAINBOW_STYLE_DEFINE.-1=Stile Göre Belirle
+value.RAINBOW_STYLE_DEFINE.1=Reimagined
+value.RAINBOW_STYLE_DEFINE.4=Unbound
+
+option.AURORA_STYLE_DEFINE=Kutup Işıkları (Aurora) Stili
+option.AURORA_STYLE_DEFINE.comment=Gece gökyüzünde beliren kuzey ışıklarının stilini belirler.
+value.AURORA_STYLE_DEFINE.-1=Stile Göre Belirle
+value.AURORA_STYLE_DEFINE.0=KAPALI
+value.AURORA_STYLE_DEFINE.1=Reimagined
+value.AURORA_STYLE_DEFINE.2=Unbound
+
+option.AURORA_CONDITION=Kutup Işıkları Koşulu
+option.AURORA_CONDITION.comment=Kuzey ışıklarının hangi durumlarda görüneceğini belirler.
+value.AURORA_CONDITION.0=Her Gece
+value.AURORA_CONDITION.1=Dolunayda
+value.AURORA_CONDITION.2=Karlı Biyomda
+value.AURORA_CONDITION.3=Karlı Biyomda Dolunayda
+value.AURORA_CONDITION.4=Dolunayda veya Karlı Biyomda
+
+option.NIGHT_NEBULAE=§eGece Nebulaları§r
+option.NIGHT_NEBULAE.comment=Gece gökyüzüne prosedürel galaksi bulutsuları ekler. Her gece farklı görünürler. §c[-]§r Performansı etkileyebilir.
+value.NIGHT_NEBULAE.-1=KAPALI
+value.NIGHT_NEBULAE.1=§eAÇIK
+
+option.NIGHT_NEBULA_I=Gece Nebulası Parlaklığı
+option.NIGHT_NEBULA_I.comment=Gece bulutsularının parlaklığını ayarlar.
+
+option.RAIN_STYLE=Yağmurlu Hava Stili
+option.RAIN_STYLE.comment=Yağmurlu havanın atmosfer tonunu belirler.
+value.RAIN_STYLE.1=Hafif ve Sıcak
+value.RAIN_STYLE.2=Şiddetli ve Soğuk
+
+option.SPECIAL_BIOME_WEATHER=Özel Soğuk/Kuru Hava
+option.SPECIAL_BIOME_WEATHER.comment=Soğuk ve kurak biyomlarda kar fırtınası veya kum fırtınası hissi vermek için atmosferi değiştirir.
+
+option.WEATHER_TEX_OPACITY=Hava Durumu Doku Opaklığı
+option.WEATHER_TEX_OPACITY.comment=Yağan yağmur ve kar tanelerinin görünürlüğünü ayarlar.
+
+option.SHADOW_SMOOTHING=§eGölge Yumuşatma§r
+option.SHADOW_SMOOTHING.comment=Gölgelerin kenar keskinliğini ayarlar.
+value.SHADOW_SMOOTHING.4=§aÇok Yumuşak
+value.SHADOW_SMOOTHING.3=§aYumuşak
+value.SHADOW_SMOOTHING.2=§cKeskin [-]
+value.SHADOW_SMOOTHING.1=§cÇok Keskin [-]
+
+option.PIXELATED_SHADOWS=Pikselli Gölgeler
+option.PIXELATED_SHADOWS.comment=Güneş ve aydan düşen gölgelerin retro pikselli görünmesini sağlar.
+
+option.PIXELATED_BLOCKLIGHT=Pikselli Blok Işığı
+option.PIXELATED_BLOCKLIGHT.comment=Işık kaynaklarından yayılan ışığın pikselli görünmesini sağlar.
+
+option.PIXELATED_AO=Pikselli Köşe Gölgeleri
+option.PIXELATED_AO.comment=Minecraft'ın varsayılan köşe gölgelerini pikselli yapar.
+
+option.PIXEL_SCALE=Pikselleşme Ölçeği
+option.PIXEL_SCALE.comment=Doku çözünürlüğü üzerindeki piksel ölçekleme oranı.
+value.PIXEL_SCALE.-2=0.25x
+value.PIXEL_SCALE.-1=0.5x
+value.PIXEL_SCALE.1=1x
+value.PIXEL_SCALE.2=2x
+value.PIXEL_SCALE.3=4x
+value.PIXEL_SCALE.4=8x
+value.PIXEL_SCALE.5=16x
+
+option.BLOOM_ENABLED=§eIşık Parıltısı (Bloom)§r
+option.BLOOM_ENABLED.comment=Parlak nesnelerden ve nemli havadan yayılan ışık parıltısını etkinleştirir.
+value.BLOOM_ENABLED.-1=KAPALI
+value.BLOOM_ENABLED.1=§eAÇIK
+
+option.BLOOM_STRENGTH=Bloom Gücü
+option.BLOOM_STRENGTH.comment=Parlak nesnelerin ve nemin oluşturduğu ışık yayılma yoğunluğunu ayarlar.
+value.BLOOM_STRENGTH.0.027=15%
+value.BLOOM_STRENGTH.0.036=20%
+value.BLOOM_STRENGTH.0.045=25%
+value.BLOOM_STRENGTH.0.054=30%
+value.BLOOM_STRENGTH.0.063=35%
+value.BLOOM_STRENGTH.0.072=40%
+value.BLOOM_STRENGTH.0.081=45%
+value.BLOOM_STRENGTH.0.09=50%
+value.BLOOM_STRENGTH.0.10=55%
+value.BLOOM_STRENGTH.0.11=60%
+value.BLOOM_STRENGTH.0.12=65%
+value.BLOOM_STRENGTH.0.13=70%
+value.BLOOM_STRENGTH.0.14=75%
+value.BLOOM_STRENGTH.0.15=80% §c[-]
+value.BLOOM_STRENGTH.0.16=85% §c[-]
+value.BLOOM_STRENGTH.0.17=90% §c[-]
+value.BLOOM_STRENGTH.0.18=95% §c[-]
+value.BLOOM_STRENGTH.0.19=100% §c[-]
+value.BLOOM_STRENGTH.0.21=110% §c[-]
+value.BLOOM_STRENGTH.0.23=120% §c[-]
+value.BLOOM_STRENGTH.0.25=130% §c[-]
+value.BLOOM_STRENGTH.0.28=150% §c[-]
+value.BLOOM_STRENGTH.0.32=180% §c[-]
+value.BLOOM_STRENGTH.10.00=§cÇılgın
+
+option.IMAGE_SHARPENING=Görüntü Keskinleştirme
+option.IMAGE_SHARPENING.comment=Özel filtreyle görüntüyü daha net ve keskin yapar.
+value.IMAGE_SHARPENING.0=KAPALI
+value.IMAGE_SHARPENING.1=1x
+value.IMAGE_SHARPENING.2=2x
+value.IMAGE_SHARPENING.3=3x
+value.IMAGE_SHARPENING.4=4x
+value.IMAGE_SHARPENING.5=5x
+value.IMAGE_SHARPENING.6=6x §c[-]
+value.IMAGE_SHARPENING.7=7x §c[-]
+value.IMAGE_SHARPENING.8=8x §c[-]
+value.IMAGE_SHARPENING.9=9x §c[-]
+value.IMAGE_SHARPENING.10=10x §c[-]
+
+option.LENSFLARE_MODE=§eMercek Parlaması (Lens Flare)§r
+option.LENSFLARE_MODE.comment=Güneşe veya aya bakıldığında kamera lensinde parlama efekti oluşturur.
+value.LENSFLARE_MODE.0=KAPALI
+value.LENSFLARE_MODE.1=§cSadece Güneş
+value.LENSFLARE_MODE.2=§cGüneş ve Ay
+
+option.LENSFLARE_I=Mercek Parlaması Gücü
+option.LENSFLARE_I.comment=Lens Flare efektinin parlaklığını ayarlar.
+
+option.TAA_MODE=§eZamansal Filtreleme (TAA)§r
+option.TAA_MODE.comment=Kumlanmayı azaltan ve görsel pürüzsüzlük sağlayan TAA kenar yumuşatmayı açar. §c[-]§r Kapatmak performansı ve görüntü kalitesini düşürür.
+value.TAA_MODE.0=§cKAPALI [-]
+value.TAA_MODE.1=AÇIK §a[+]
+
+option.TAA_SMOOTHING=Zamansal Yumuşatma
+option.TAA_SMOOTHING.comment=TAA filtresinin uygulayacağı yumuşatma miktarını ayarlar. Titremeyi ve kumlanmayı azaltır.
+value.TAA_SMOOTHING.2=Düşük
+value.TAA_SMOOTHING.3=Orta
+value.TAA_SMOOTHING.4=Yüksek
+
+option.TAA_JITTER=Zamansal Titreme (Jitter) §e[*]§r
+option.TAA_JITTER.comment=TAA'nın kenarları daha iyi yumuşatmasına yardımcı olur.
+value.TAA_JITTER.0=KAPALI §c[-]
+value.TAA_JITTER.1=Düşük
+value.TAA_JITTER.2=Orta
+value.TAA_JITTER.3=Tam §e[*]
+
+option.TAA_MOVEMENT_IMPROVEMENT_FILTER=Catmull-Rom Örneklemesi
+option.TAA_MOVEMENT_IMPROVEMENT_FILTER.comment=Gelişmiş örnekleme yöntemiyle TAA'nın hareket anındaki bulanıklığını azaltır.
+value.TAA_MOVEMENT_IMPROVEMENT_FILTER.0=KAPALI §c[-]
+value.TAA_MOVEMENT_IMPROVEMENT_FILTER.1=AÇIK
+
+option.FXAA_STRENGTH=FXAA Gücü
+option.FXAA_STRENGTH.comment=FXAA kenar yumuşatma yoğunluğunu ayarlar.
+value.FXAA_STRENGTH.-1=KAPALI
+
+option.FXAA_TAA_INTERACTION=Hareket Ederken FXAA'yı Azalt
+option.FXAA_TAA_INTERACTION.comment=Kamera hareket ederken FXAA gücünü azaltarak görüntüyü daha net tutar.
+value.FXAA_TAA_INTERACTION.0=KAPALI
+value.FXAA_TAA_INTERACTION.2=20
+value.FXAA_TAA_INTERACTION.4=40
+value.FXAA_TAA_INTERACTION.6=60
+value.FXAA_TAA_INTERACTION.8=80
+value.FXAA_TAA_INTERACTION.10=100
+
+option.DISTANT_LIGHT_BOKEH=Uzak Işık Bokeh Efekti
+option.DISTANT_LIGHT_BOKEH.comment=Uzaktaki ışık kaynaklarına estetik tek piksellik bir dağılma (bokeh) uygular.
+
+option.MOTION_BLUR_EFFECT=§eHareket Bulanıklığı (Motion Blur)§r
+option.MOTION_BLUR_EFFECT.comment=Kamerayı çevirirken sinematik hareket bulanıklığı ekler.
+value.MOTION_BLUR_EFFECT.-1=KAPALI
+value.MOTION_BLUR_EFFECT.1=§eAÇIK
+
+option.MOTION_BLURRING_STRENGTH=Hareket Bulanıklığı Gücü
+option.MOTION_BLURRING_STRENGTH.comment=Hareket bulanıklığının yoğunluğunu ayarlar.
+
+option.WORLD_BLUR=§eDünya Bulanıklığı§r
+option.WORLD_BLUR.comment=Mesafe bulanıklığı veya Alan Derinliği (DOF) efektini etkinleştirir.
+value.WORLD_BLUR.0=§aKAPALI
+value.WORLD_BLUR.1=§cMesafe Bulanıklığı
+value.WORLD_BLUR.2=§cAlan Derinliği (DOF)
+
+option.WB_FOV_SCALED=FOV Ölçekli Bulanıklık
+option.WB_FOV_SCALED.comment=Dünya bulanıklığını kamera görüş açısına (FOV) göre ölçekler; yakınlaştırma yapıldığında bulanıklık artar.
+
+option.WB_CHROMATIC=Kromatik Bulanıklık
+option.WB_CHROMATIC.comment=Bulanık alanlara renk ayrışması (kromatizm) ekler.
+
+option.WB_ANAMORPHIC=Anamorfik Bulanıklık
+option.WB_ANAMORPHIC.comment=Bulanıklığı tek bir yönde uzatarak sinematik lens görünümü kazandırır.
+
+option.WB_DOF_I=Alan Derinliği Gücü
+option.WB_DOF_FOCUS=Alan Derinliği Odağı
+option.WB_DOF_FOCUS.comment=Kameranın odak mesafesini belirler. Otomatik: Ekranın ortasına odaklanır. Parlaklık: Video ayarlarındaki parlaklık çubuğuna göre odaklanır.
+value.WB_DOF_FOCUS.-1=Parlaklık §e[*]
+value.WB_DOF_FOCUS.0=Otomatik
+
+option.WB_DB_DAY_I=Mesafe Bulanıklığı - Gündüz
+option.WB_DB_NIGHT_I=Mesafe Bulanıklığı - Gece & İç Mekan
+option.WB_DB_RAIN_I=Mesafe Bulanıklığı - Yağmur & Kar
+option.WB_DB_WATER_I=Mesafe Bulanıklığı - Su Altı
+option.WB_DB_NETHER_I=Mesafe Bulanıklığı - Nether
+option.WB_DB_END_I=Mesafe Bulanıklığı - End
+
+option.VIGNETTE_R=Kenar Karartma (Vignette)
+option.VIGNETTE_R.comment=Ekranın kenarlarına sinematik karartma uygular.
+
+option.CHROMA_ABERRATION=Renk Sapması (Chromatic Aberration)
+option.CHROMA_ABERRATION.comment=Ekranın kenarlarına doğru renk kanallarını birbirinden ayırır.
+value.CHROMA_ABERRATION.4=4 §c[-]
+value.CHROMA_ABERRATION.5=5 §c[-]
+value.CHROMA_ABERRATION.6=6 §c[-]
+value.CHROMA_ABERRATION.7=7 §c[-]
+value.CHROMA_ABERRATION.8=8 §c[-]
+
+option.IPBR_EMISSIVE_MODE=IPBR+ Işık Yayma Modu
+option.IPBR_EMISSIVE_MODE.comment=IntegratedPBR+ içindeki ışık yayma önceliğini ayarlar. labPBR veya seuspbr seçildiğinde, kaynak paketleri IPBR+'ın üzerine yazabilir.
+value.IPBR_EMISSIVE_MODE.1=Yalnızca IPBR+
+value.IPBR_EMISSIVE_MODE.3=labPBR > IPBR+
+value.IPBR_EMISSIVE_MODE.2=seuspbr > IPBR+
+
+option.IPBR_COMPAT_MODE_DEFINE=IPBR+ Uyumluluk Modu
+option.IPBR_COMPAT_MODE_DEFINE.comment=Kaynak paketleri ve modlarla çakışmaları önlemek için bazı IPBR+ hesaplamalarını daha uyumlu hale getirir.
+
+option.IPBR_PARTICLE_FEATURES=IPBR+ Parçacık Özellikleri
+option.IPBR_PARTICLE_FEATURES.comment=Parlayan lav kıvılcımları ve daha iyi renkli su damlaları gibi parçacık efektlerini açar.
+
+option.FANCY_GLASS=Gelişmiş Cam
+option.FANCY_GLASS.comment=Standart cama yarı saydam bir yansıma katmanı ekleyerek görünümünü güzelleştirir.
+
+option.GREEN_SCREEN_LIME=Yeşil Ekran Açık Yeşil Bloklar
+option.GREEN_SCREEN_LIME.comment=Açık yeşil beton, yün ve halıyı video düzenleme için yeşil ekrana (chroma key) dönüştürür.
+
+option.MIRROR_TINTED_GLASS=Ayna Benzeri Renkli Cam
+option.MIRROR_TINTED_GLASS.comment=Karartılmış cam bloklarının yansıtıcılığını ve opaklığını artırır.
+
+option.MORE_REFLECTIVE_DISTANT_GLASS=Yansıtıcı Uzak Camlar
+option.MORE_REFLECTIVE_DISTANT_GLASS.comment=Camlı binaların uzaktan daha güzel görünmesi için uzaktaki camların yansıtıcılığını artırır.
+
+option.HIDE_ARMOR=Zırhı Gizle §e[*]§r
+option.HIDE_ARMOR.comment=Karakterin veya tüm varlıkların giydiği zırhı gizler. Elitra yalnızca uçarken görünür.
+value.HIDE_ARMOR.0=KAPALI
+value.HIDE_ARMOR.1=Yalnızca Ana Oyuncuda §e[*]§r
+value.HIDE_ARMOR.2=Tüm Varlıklarda
+
+option.HAND_SWAYING=El Sallanması
+option.HAND_SWAYING.comment=Nefes alma hissi vermek için oyuncunun eline yavaş bir hareket animasyonu ekler.
+value.HAND_SWAYING.0=KAPALI
+value.HAND_SWAYING.1=Hafif
+value.HAND_SWAYING.2=Normal
+value.HAND_SWAYING.3=Yoğun
+
+option.LESS_LAVA_FOG=Lav ve Karda Azaltılmış Sis
+option.LESS_LAVA_FOG.comment=Lavın veya toz karın içindeyken görüşü artırmak için sisi azaltır.
+
+option.REDUCE_CLOSE_PARTICLES=Yakın Parçacıkları Azalt
+option.REDUCE_CLOSE_PARTICLES.comment=Görüşü kapatmaması için kameraya çok yakın parçacıkların opaklığını azaltır.
+
+option.SNOWY_WORLD=Karlı Dünya
+option.SNOWY_WORLD.comment=Tüm dünyayı karla kaplı hale getirir.
+
+option.SHOW_LIGHT_LEVEL=Işık Seviyelerini Göster
+option.SHOW_LIGHT_LEVEL.comment=Yaratıkların doğabileceği alanları renkle işaretler: Sarı = Gece doğabilir, Kırmızı = Her an doğabilir.
+value.SHOW_LIGHT_LEVEL.0=KAPALI
+value.SHOW_LIGHT_LEVEL.1=Örümcek Gözü Tutarken
+value.SHOW_LIGHT_LEVEL.2=Işık Kaynağı Tutarken
+value.SHOW_LIGHT_LEVEL.3=Her Zaman AÇIK
+
+option.COLOR_CODED_PROGRAMS=Renk Kodlu Programlar §c[-]§r
+option.COLOR_CODED_PROGRAMS.comment=Geometrileri çizmek için hangi shader programlarının kullanıldığını gösterir. Yalnızca geliştiriciler içindir.
+
+option.GLOWING_COLORED_PARTICLES=Renkli Parçacıkları Parlat §c[-]§r
+option.GLOWING_COLORED_PARTICLES.comment=Tüm renkli parçacıkların ışık yaymasını sağlar.
+
+option.CAVE_LIGHTING=Mağara Aydınlatma Çarpanı
+option.CAVE_LIGHTING.comment=Gök ışığı almayan alanlara ekstra aydınlatma ekler.
+
+option.AMBIENT_MULT=Gölge Işık Çarpanı
+option.AMBIENT_MULT.comment=Gölgelerin içindeki ortam ışığı miktarını belirler.
+
+option.PLAYER_SHADOW=Oyuncu Gölgesi §e[*]§r
+option.PLAYER_SHADOW.comment=Oyuncunun kendi gölgesini oluşturup oluşturmayacağını belirler.
+value.PLAYER_SHADOW.-1=KAPALI
+value.PLAYER_SHADOW.1=AÇIK
+
+option.GENERATED_NORMALS=Otomatik Yüzey Kabartmaları (GN)
+option.GENERATED_NORMALS.comment=Yüzeylere otomatik olarak kabartmalı doku detayları ekler.
+
+option.COATED_TEXTURES=Tozlu/Ayrıntılı Dokular (CT)
+option.COATED_TEXTURES.comment=Dokulara otomatik olarak hafif tozlu ve pürüzlü detaylar ekler.
+
+option.ENTITY_GN_AND_CT=Varlıklarda GN ve CT'ye İzin Ver
+option.ENTITY_GN_AND_CT.comment=Otomatik kabartma ve doku detaylarının yaratıklarda da görünmesini sağlar.
+
+option.GENERATED_NORMAL_MULT=Kabartma Gücü
+option.GENERATED_NORMAL_MULT.comment=Yüzeylerdeki otomatik kabartma detaylarının belirginliğini ayarlar.
+
+option.GENERATED_NORMAL_RES=Kabartma Çözünürlüğü
+option.GENERATED_NORMAL_RES.comment=Otomatik kabartmaların çözünürlüğünü ayarlar.
+
+option.COATED_TEXTURE_MULT=Doku Ayrıntı Gücü
+option.COATED_TEXTURE_MULT.comment=Dokulardaki ekstra pürüzlülük detaylarının gücünü ayarlar.
+
+option.GLOWING_ORE_MASTER=§eParlayan Cevherleri Etkinleştir
+option.GLOWING_ORE_MASTER.comment=Maden cevherlerinin karanlıkta ışık yaymasını sağlar.
+value.GLOWING_ORE_MASTER.0=KAPALI
+value.GLOWING_ORE_MASTER.1=Stile Göre Belirle
+value.GLOWING_ORE_MASTER.2=§aAÇIK
+
+option.GLOWING_ORE_MULT=Cevher Parlama Gücü
+option.GLOWING_ORE_MULT.comment=Parlayan madenlerin ışık yayma şiddetini ayarlar.
+
+option.GLOWING_ORE_IRON=Parlayan Demir Cevheri
+option.GLOWING_ORE_GOLD=Parlayan Altın Cevheri
+option.GLOWING_ORE_COPPER=Parlayan Bakır Cevheri
+option.GLOWING_ORE_REDSTONE=Parlayan Kızıltaş Cevheri §e[*]§r
+option.GLOWING_ORE_REDSTONE.comment=§e[*]§r Kızıltaş cevherleri aktifleştirildiklerinde bu ayardan bağımsız olarak parlamaya devam eder.
+option.GLOWING_ORE_LAPIS=Parlayan Lapis Lazuli Cevheri
+option.GLOWING_ORE_EMERALD=Parlayan Zümrüt Cevheri
+option.GLOWING_ORE_DIAMOND=Parlayan Elmas Cevheri
+option.GLOWING_ORE_NETHERQUARTZ=Parlayan Nether Kuvars Cevheri
+option.GLOWING_ORE_NETHERGOLD=Parlayan Nether Altın Cevheri
+option.GLOWING_ORE_GILDEDBLACKSTONE=Parlayan Yaldızlı Karataş
+option.GLOWING_ORE_ANCIENTDEBRIS=Parlayan Antik Kalıntı
+option.GLOWING_ORE_MODDED=Parlayan Modlu Cevherler §e[*]§r
+option.GLOWING_ORE_MODDED.comment=§e[*]§r Modlu madenlerin parlaması için ID'lerini block.properties dosyasına ekleyebilirsiniz.
+
+option.GLOWING_AMETHYST=Parlayan Ametist
+value.GLOWING_AMETHYST.0=KAPALI
+value.GLOWING_AMETHYST.1=Sadece Kristal
+value.GLOWING_AMETHYST.2=Kristal ve Blok
+
+option.GLOWING_LICHEN=Parlayan Parlak Liken
+value.GLOWING_LICHEN.0=KAPALI
+value.GLOWING_LICHEN.1=Kapalı Alanlarda
+value.GLOWING_LICHEN.2=Her Zaman
+
+option.EMISSIVE_REDSTONE_BLOCK=Parlayan Kızıltaş Bloğu
+
+option.EMISSIVE_LAPIS_BLOCK=Parlayan Lapis Lazuli Bloğu
+
+option.GLOWING_ARMOR_TRIM=Parlayan Zırh Süslemeleri §e[*]§r
+option.GLOWING_ARMOR_TRIM.comment=Zırh süslemelerinin karanlıkta parlamasını sağlar. Yalnızca Iris'te çalışır.
+
+option.NORMAL_MAP_STRENGTH=Normal Harita Gücü
+option.NORMAL_MAP_STRENGTH.comment=Yüzey kabartma detaylarının yoğunluğunu ayarlar. labPBR/seuspbr kaynak paketi gerektirir.
+
+option.CUSTOM_EMISSION_INTENSITY=Özel Parlama Yoğunluğu
+option.CUSTOM_EMISSION_INTENSITY.comment=PBR kaynak paketlerindeki ışık yayma yoğunluğunu ayarlar.
+
+option.POM=§eParalaks Haritalama (POM)§r
+option.POM.comment=Yüzeylere derinlik ve 3D taş/tuğla hissi katar. Uyumlu PBR kaynak paketi gerektirir. §c[-]§r Performansı ciddi şekilde etkileyebilir.
+value.POM.false=KAPALI
+value.POM.true=AÇIK §c[-]
+
+option.POM_DEPTH=POM Derinliği
+option.POM_DEPTH.comment=3D paralaks etkisinin derinliğini ayarlar.
+
+option.POM_QUALITY=§ePOM Kalitesi§r
+option.POM_QUALITY.comment=3D paralaks yüzeylerin keskinliğini ve örnekleme kalitesini ayarlar.
+value.POM_QUALITY.16=16 §e[*]
+value.POM_QUALITY.32=32 §e[*]
+value.POM_QUALITY.64=64 §e[*]
+value.POM_QUALITY.256=256 §c[-]
+value.POM_QUALITY.512=512 §c[-]
+
+option.POM_DISTANCE=§ePOM Mesafesi§r
+option.POM_DISTANCE.comment=Paralaks efektinin kameradan ne kadar mesafeye kadar işleneceğini belirler.
+value.POM_DISTANCE.64=64 §e[*]
+value.POM_DISTANCE.128=128 §e[*]
+value.POM_DISTANCE.256=256 §e[*]
+value.POM_DISTANCE.512=512 §e[*]
+value.POM_DISTANCE.1024=1024 §e[*]
+
+option.POM_LIGHTING_MODE=POM Aydınlatma Modu
+option.POM_LIGHTING_MODE.comment=POM yüzeylerindeki ışıklandırma stilini belirler.
+value.POM_LIGHTING_MODE.1=Pürüzsüz
+value.POM_LIGHTING_MODE.2=Keskin
+
+option.POM_ALLOW_CUTOUT=§eBoşluklu Yüzeylerde POM §c[-]§r
+option.POM_ALLOW_CUTOUT.comment=Yaprak araları gibi boşluklu bloklarda da POM efektinin çalışmasını sağlar.
+
+option.DIRECTIONAL_BLOCKLIGHT=§eYönlü Blok Işığı§r
+option.DIRECTIONAL_BLOCKLIGHT.comment=Yüzey açısına bağlı olarak blok ışığına derinlik ve gölge katar.
+value.DIRECTIONAL_BLOCKLIGHT.0=KAPALI
+value.DIRECTIONAL_BLOCKLIGHT.3=Hafif §c[-]
+value.DIRECTIONAL_BLOCKLIGHT.7=Normal §c[-]
+value.DIRECTIONAL_BLOCKLIGHT.11=Yoğun §c[-]
+
+option.HELD_LIGHTING_MODE=Dinamik Elde Tutulan Işık
+option.HELD_LIGHTING_MODE.comment=Elde tutulan meşale gibi eşyaların çevreye ışık yaymasını sağlar.
+value.HELD_LIGHTING_MODE.0=KAPALI
+value.HELD_LIGHTING_MODE.1=Hafif
+value.HELD_LIGHTING_MODE.2=Normal
+
+option.BLOCKLIGHT_FLICKERING=Blok Işığı Titremesi
+option.BLOCKLIGHT_FLICKERING.comment=Bloklardan yayılan ışığa gerçekçi titreme efekti ekler.
+value.BLOCKLIGHT_FLICKERING.0=KAPALI
+
+option.WAVING_SPEED=Sallanma Hızı
+option.WAVING_SPEED.comment=Rüzgarda sallanan bitkilerin sallanma hızını ayarlar.
+
+option.WAVING_I=Sallanma Yoğunluğu
+option.WAVING_I.comment=Bitkilerin ve yaprakların ne kadar büküleceğini ayarlar.
+value.WAVING_I.1.25=1.25 §c[-]
+value.WAVING_I.1.50=1.50 §c[-]
+value.WAVING_I.1.75=1.75 §c[-]
+value.WAVING_I.2.00=2.00 §c[-]
+value.WAVING_I.50.0=§cÇılgın
+
+option.NO_WAVING_INDOORS=Kapalı Alanlarda Sallanmayı Durdur
+option.NO_WAVING_INDOORS.comment=Gök ışığı almayan ev ve binaların içindeki bitkilerin sallanmasını engeller.
+
+option.WAVING_I_RAIN_MULT=§eYağmurda Sallanma Çarpanı§r
+option.WAVING_I_RAIN_MULT.comment=Yağmur yağarken fırtına hissi için sallanma şiddetini artırır.
+value.WAVING_I.125=125 §c[-]
+value.WAVING_I.150=150 §c[-]
+value.WAVING_I.175=175 §c[-]
+value.WAVING_I.200=200 §c[-]
+
+option.WAVING_FOLIAGE=Sallanan Çimenler
+option.WAVING_FOLIAGE.comment=Çimenler, çiçekler ve çalıların rüzgarda dalgalanmasını sağlar.
+
+option.WAVING_LEAVES=Sallanan Ağaç Yaprakları
+option.WAVING_LEAVES.comment=Ağaç yapraklarının rüzgarda sallanmasını sağlar.
+
+option.WAVING_LAVA=Dalgalanan Lav Dokusu
+option.WAVING_LAVA.comment=Lav yüzeyine akışkan hareket animasyonu ekler.
+
+option.WAVING_LILY_PAD=Sallanan Nilüferler §c[-]§r
+option.WAVING_LILY_PAD.comment=Nilüferlerin su dalgalarıyla birlikte hafifçe oynamasını sağlar.
+
+option.WAVING_WATER_VERTEX=Dalgalanan Su Yüksekliği
+option.WAVING_WATER_VERTEX.comment=Su yüzeyinin fiziksel olarak yukarı-aşağı yükselip alçalmasını sağlar.
+
+option.WAVING_RAIN=Dalgalanan Yağmur/Kar Dokusu
+option.WAVING_RAIN.comment=Düşen yağmur ve kar dokularına dinamik rüzgar hareketi katar.
+
+option.SPECIAL_PORTAL_EFFECTS=Özel Portal Efektleri
+option.SPECIAL_PORTAL_EFFECTS.comment=Nether, End ve Geçit portallarına özel animasyonlar ve parlama katar.
+
+option.REFLECTION_RES=§eYansıma Çözünürlüğü§r
+option.REFLECTION_RES.comment=Bloklardaki PBR ve dünya uzayı yansımalarının çözünürlüğünü değiştirerek performans kazandırır.
+value.REFLECTION_RES.1.0=§4§l§n§oTam (Full)
+value.REFLECTION_RES.0.5=§aYarım (Half)
+
+option.WORLD_OUTLINE=§eDünya Çerçeve Çizgisi§r
+option.WORLD_OUTLINE.comment=Blok kenarlarına parlak dış hat çizgileri ekler.
+option.WORLD_OUTLINE_THICKNESS=§eÇerçeve Çizgisi Kalınlığı§r
+option.WORLD_OUTLINE_THICKNESS.comment=Dünya çerçeve çizgilerinin kalınlığını belirler.
+option.WORLD_OUTLINE_I=Çerçeve Çizgisi Parlaklığı
+option.WORLD_OUTLINE_I.comment=Dış hat çizgisinin parlaklık derecesini ayarlar.
+option.WORLD_OUTLINE_ON_ENTITIES=Varlıklarda Çerçeve Çizgisi
+option.WORLD_OUTLINE_ON_ENTITIES.comment=Çerçeve çizgisinin yaratıklara ve oyunculara da uygulanıp uygulanmayacağını belirler.
+option.WORLD_OUTLINE_SCALED=Mesafeye Göre Ölçeklenen Çizgi
+option.WORLD_OUTLINE_SCALED.comment=Dış hat kalınlığının mesafeye göre orantılı küçülmesini sağlar.
+
+option.DARK_OUTLINE=§eKoyu Dış Hat§r
+option.DARK_OUTLINE.comment=Blok kenarlarına çizgi roman tarzı koyu kontur çizgileri ekler.
+option.DARK_OUTLINE_THICKNESS=§eKoyu Hat Kalınlığı§r
+option.DARK_OUTLINE_THICKNESS.comment=Koyu dış hatların kalınlığını belirler.
+
+option.RAIN_PUDDLES=§eYağmur Su Birikintileri§r
+option.RAIN_PUDDLES.comment=Yağmur yağarken zeminde gerçekçi su birikintileri oluşturur.
+value.RAIN_PUDDLES.0=§aKAPALI
+value.RAIN_PUDDLES.1=§cYağmurda Birikintiler
+value.RAIN_PUDDLES.2=§cYağmurda Tam Kaplama
+value.RAIN_PUDDLES.3=§cHer Zaman Birikintiler
+value.RAIN_PUDDLES.4=§cHer Zaman Tam Kaplama
+
+option.UNDERWATER_DISTORTION=Su Altı Bükülmesi
+option.UNDERWATER_DISTORTION.comment=Kamera suyun içindeyken ekranda hafif su dalgalanması efekti oluşturur.
+
+option.SELECT_OUTLINE=Seçim Çerçevesi
+option.SELECT_OUTLINE.comment=Baktığınız bloğun etrafındaki seçim çerçevesinin stilini ve rengini belirler.
+value.SELECT_OUTLINE.0=KAPALI
+value.SELECT_OUTLINE.1=Varsayılan
+value.SELECT_OUTLINE.2=Gökkuşağı
+value.SELECT_OUTLINE.3=Özel Renk
+value.SELECT_OUTLINE.4=Çok Yönlü
+
+option.SELECT_OUTLINE_AUTO_HIDE=Seçim Çizgisini Otomatik Gizle
+option.SELECT_OUTLINE_AUTO_HIDE.comment=Elinizde hiçbir eşya yokken blok seçim çerçevesini gizler.
+
+option.SELECT_OUTLINE_I=SÇ Parlaklığı
+option.SELECT_OUTLINE_R=SÇ Kırmızı
+option.SELECT_OUTLINE_G=SÇ Yeşil
+option.SELECT_OUTLINE_B=SÇ Mavi
+
+option.MOON_PHASE_INF_LIGHT=Ay Evreli Gece Aydınlatması
+option.MOON_PHASE_INF_LIGHT.comment=Ayın evrelerine göre gece aydınlık seviyesinin değişmesini sağlar.
+
+option.MOON_PHASE_INF_ATMOSPHERE=Ay Evreli Gece Atmosferi
+option.MOON_PHASE_INF_ATMOSPHERE.comment=Ayın evrelerine göre gece atmosfer ve gökyüzü parlaklığının değişmesini sağlar.
+
+option.MOON_PHASE_INF_REFLECTION=Ay Evreli Ay Yansıması
+option.MOON_PHASE_INF_REFLECTION.comment=Ayın evrelerine göre sudaki ay yansımasının parlaklığını değiştirir.
+
+option.MOON_PHASE_FULL=Dolunay Yoğunluğu
+option.MOON_PHASE_FULL.comment=Dolunay evresindeki (en parlak evre) aydınlatma gücünü ayarlar.
+
+option.MOON_PHASE_PARTIAL=Ara Ay Evreleri Yoğunluğu
+option.MOON_PHASE_PARTIAL.comment=Dolunay ile Yeniay arasındaki tüm ara evrelerin aydınlatma gücünü ayarlar.
+
+option.MOON_PHASE_DARK=Yeniay Yoğunluğu
+option.MOON_PHASE_DARK.comment=Yeniay (en karanlık evre) sırasındaki aydınlatma gücünü ayarlar.
+
+option.CONNECTED_GLASS_EFFECT=Bitişik Cam Efekti
+option.CONNECTED_GLASS_EFFECT.comment=Tüm cam türlerinin çerçevesiz şekilde birbirine bağlanmasını sağlar.
+
+option.PORTAL_EDGE_EFFECT=Parlayan Portal Kenarları
+option.PORTAL_EDGE_EFFECT.comment=Nether ve End portallarının çerçevelerine parlama efekti ekler.
+
+option.PUDDLE_VOXELIZATION=Cam Altında Birikintiyi Düzelt
+option.PUDDLE_VOXELIZATION.comment=Cam tavanlı kapalı mekanlarda yağmur birikintisi oluşmasını engeller.
+
+option.COLORED_CANDLE_LIGHT=Renkli Mum Işığı
+option.COLORED_CANDLE_LIGHT.comment=Mumların yaydığı ışığı kendi mum rengine göre boyar.
+
+option.COLORED_LIGHT_SATURATION=Renkli Aydınlatma Doygunluğu
+option.COLORED_LIGHT_SATURATION.comment=Gelişmiş Renk Takibi (ACT) ile oluşan ışık renklerinin doygunluğunu ayarlar.
+
+option.COLORED_LIGHT_FOG=§eRenkli Işık Sisi§r
+option.COLORED_LIGHT_FOG.comment=Renkli ışık kaynaklarının etrafına hacimsel ışık sisi ekler.
+option.COLORED_LIGHT_FOG_I=Işık Sisi Yoğunluğu
+option.COLORED_LIGHT_FOG_I.comment=Renkli ışık sisinin parlaklığını belirler.
+
+option.LIGHT_COLOR_MULTS=§eAydınlatma Renk Çarpanları
+option.LIGHT_COLOR_MULTS.comment=Tüm yüzeylerde görünen aydınlatma renklerinin manuel ayarlanmasını açar.
+
+option.ATM_COLOR_MULTS=§eAtmosfer Renk Çarpanları
+option.ATM_COLOR_MULTS.comment=Gökyüzü ve siste görünen atmosfer renklerinin manuel ayarlanmasını açar.
+
+option.LIGHT_MORNING_R=Aydınlatma Kırmızı Çarpanı
+option.LIGHT_MORNING_G=Aydınlatma Yeşil Çarpanı
+option.LIGHT_MORNING_B=Aydınlatma Mavi Çarpanı
+option.LIGHT_MORNING_I=Aydınlatma Yoğunluk Çarpanı
+option.ATM_MORNING_R=Atmosfer Kırmızı Çarpanı
+option.ATM_MORNING_G=Atmosfer Yeşil Çarpanı
+option.ATM_MORNING_B=Atmosfer Mavi Çarpanı
+option.ATM_MORNING_I=Atmosfer Yoğunluk Çarpanı
+option.LIGHT_NOON_R=Aydınlatma Kırmızı Çarpanı
+option.LIGHT_NOON_G=Aydınlatma Yeşil Çarpanı
+option.LIGHT_NOON_B=Aydınlatma Mavi Çarpanı
+option.LIGHT_NOON_I=Aydınlatma Yoğunluk Çarpanı
+option.ATM_NOON_R=Atmosfer Kırmızı Çarpanı
+option.ATM_NOON_G=Atmosfer Yeşil Çarpanı
+option.ATM_NOON_B=Atmosfer Mavi Çarpanı
+option.ATM_NOON_I=Atmosfer Yoğunluk Çarpanı
+option.LIGHT_NIGHT_R=Aydınlatma Kırmızı Çarpanı
+option.LIGHT_NIGHT_G=Aydınlatma Yeşil Çarpanı
+option.LIGHT_NIGHT_B=Aydınlatma Mavi Çarpanı
+option.LIGHT_NIGHT_I=Aydınlatma Yoğunluk Çarpanı
+option.ATM_NIGHT_R=Atmosfer Kırmızı Çarpanı
+option.ATM_NIGHT_G=Atmosfer Yeşil Çarpanı
+option.ATM_NIGHT_B=Atmosfer Mavi Çarpanı
+option.ATM_NIGHT_I=Atmosfer Yoğunluk Çarpanı
+option.LIGHT_RAIN_R=Aydınlatma Kırmızı Çarpanı
+option.LIGHT_RAIN_G=Aydınlatma Yeşil Çarpanı
+option.LIGHT_RAIN_B=Aydınlatma Mavi Çarpanı
+option.LIGHT_RAIN_I=Aydınlatma Yoğunluk Çarpanı
+option.ATM_RAIN_R=Atmosfer Kırmızı Çarpanı
+option.ATM_RAIN_G=Atmosfer Yeşil Çarpanı
+option.ATM_RAIN_B=Atmosfer Mavi Çarpanı
+option.ATM_RAIN_I=Atmosfer Yoğunluk Çarpanı
+option.LIGHT_NETHER_R=Aydınlatma Kırmızı Çarpanı
+option.LIGHT_NETHER_G=Aydınlatma Yeşil Çarpanı
+option.LIGHT_NETHER_B=Aydınlatma Mavi Çarpanı
+option.LIGHT_NETHER_I=Aydınlatma Yoğunluk Çarpanı
+option.ATM_NETHER_R=Atmosfer Kırmızı Çarpanı
+option.ATM_NETHER_G=Atmosfer Yeşil Çarpanı
+option.ATM_NETHER_B=Atmosfer Mavi Çarpanı
+option.ATM_NETHER_I=Atmosfer Yoğunluk Çarpanı
+option.LIGHT_END_R=Aydınlatma Kırmızı Çarpanı
+option.LIGHT_END_G=Aydınlatma Yeşil Çarpanı
+option.LIGHT_END_B=Aydınlatma Mavi Çarpanı
+option.LIGHT_END_I=Aydınlatma Yoğunluk Çarpanı
+option.ATM_END_R=Atmosfer Kırmızı Çarpanı
+option.ATM_END_G=Atmosfer Yeşil Çarpanı
+option.ATM_END_B=Atmosfer Mavi Çarpanı
+option.ATM_END_I=Atmosfer Yoğunluk Çarpanı
+
+option.XLIGHT_R=Blok Işığı Kırmızı Çarpanı
+option.XLIGHT_G=Blok Işığı Yeşil Çarpanı
+option.XLIGHT_B=Blok Işığı Mavi Çarpanı
+option.XLIGHT_I=Blok Işığı Yoğunluğu
+
+option.XLIGHT_CURVE=Blok Işığı Kontrastı
+option.XLIGHT_CURVE.comment=Işık kaynağından uzaklaştıkça ışık şiddetinin ne kadar hızlı solacağını ayarlar.
