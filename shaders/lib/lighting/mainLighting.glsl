@@ -593,19 +593,21 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Light Highlight
     vec3 lightHighlight = vec3(0.0);
     #ifdef LIGHT_HIGHLIGHT
-        float specularHighlight = GGX(normalM, nViewPos, lightVec, NdotLmax0, smoothnessG);
+        if (shadowMult.r + shadowMult.g + shadowMult.b > 0.0) {
+            float specularHighlight = GGX(normalM, nViewPos, lightVec, NdotLmax0, smoothnessG);
 
-        specularHighlight *= highlightMult;
+            specularHighlight *= highlightMult;
 
-        lightHighlight = isEyeInWater != 1 ? shadowMult : pow(shadowMult, vec3(0.25)) * 0.35;
-        lightHighlight *= (subsurfaceHighlight + specularHighlight) * highlightColor;
+            lightHighlight = isEyeInWater != 1 ? shadowMult : pow(shadowMult, vec3(0.25)) * 0.35;
+            lightHighlight *= (subsurfaceHighlight + specularHighlight) * highlightColor;
 
-        #ifdef LIGHT_COLOR_MULTS
-            lightHighlight *= lightColorMult;
-        #endif
-        #ifdef MOON_PHASE_INF_REFLECTION
-            lightHighlight *= pow2(moonPhaseInfluence);
-        #endif
+            #ifdef LIGHT_COLOR_MULTS
+                lightHighlight *= lightColorMult;
+            #endif
+            #ifdef MOON_PHASE_INF_REFLECTION
+                lightHighlight *= pow2(moonPhaseInfluence);
+            #endif
+        }
     #endif
 
     // Mix Colors
