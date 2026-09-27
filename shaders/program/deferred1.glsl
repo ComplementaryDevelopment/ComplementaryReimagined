@@ -140,9 +140,11 @@ float GetLinearDepth(float depth, float far, float near) {
                     tracePos -= nViewPos * 1.5; // Tweak to imitate shadow bias
             #endif
 
+            vec4 clipPos = projection * vec4(tracePos.xyz, 1.0);
+            vec4 clipStep = projection * vec4(traceStep, 0.0);
+
             for (int i = 0; i < 32; i++) {
-                vec4 pos = projection * vec4(tracePos.xyz, 1.0);
-                pos = pos / pos.w * 0.5 + 0.5;
+                vec4 pos = clipPos / clipPos.w * 0.5 + 0.5;
 
                 if (pos.x < 0.0 || pos.x > 1.0 || pos.y < 0.0 || pos.y > 1.0) break;
 
@@ -160,6 +162,7 @@ float GetLinearDepth(float depth, float far, float near) {
 
                 shadow *= 1.0 - smoothstep(0.0, 0.01, zDelta) * smoothstep(5.0, 4.0, zDelta);
                 tracePos += traceStep;
+                clipPos += clipStep;
             }
 
             return shadow;
