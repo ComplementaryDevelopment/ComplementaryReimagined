@@ -71,7 +71,7 @@ vec4 GetVolumetricClouds(int cloudAltitude, float distanceThreshold, inout float
         float cloudMult = 1.0;
         if (lTracePosXZ > distanceThreshold) break;
         if (lTracePos > lViewPosM) {
-            if (skyFade < 0.7) continue;
+            if (skyFade < 0.7) break;
             else cloudMult = skyMult0;
         }
 
