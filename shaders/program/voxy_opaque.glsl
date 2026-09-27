@@ -24,9 +24,9 @@ layout(location = 0) out vec4 gbufferData0;
 layout(location = 1) out vec4 gbufferData6;
 
 //Common Variables//
-vec3 upVec = normalize(gbufferModelView[1].xyz);
-vec3 eastVec = normalize(gbufferModelView[0].xyz);
-vec3 northVec = normalize(gbufferModelView[2].xyz);
+vec3 upVec = GetUpVector();
+vec3 eastVec = GetEastVector();
+vec3 northVec = GetNorthVector();
 
 vec3 sunVec = GetSunVector();
 

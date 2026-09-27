@@ -1,7 +1,19 @@
 // Do these via macro as Apple otherwise complains
 #define SUN_ROTATION_DATA vec2(cos(sunPathRotation * 0.01745329251994), -sin(sunPathRotation * 0.01745329251994))
 
-#ifdef OVERWORLD
+#ifdef FRAME_DATA_READ
+    #define GetUpVector() fdUpVec.xyz
+    #define GetEastVector() fdEastVec.xyz
+    #define GetNorthVector() fdNorthVec.xyz
+#else
+    #define GetUpVector() normalize(gbufferModelView[1].xyz)
+    #define GetEastVector() normalize(gbufferModelView[0].xyz)
+    #define GetNorthVector() normalize(gbufferModelView[2].xyz)
+#endif
+
+#ifdef FRAME_DATA_READ
+    #define GetSunVector() fdSunVec.xyz
+#elif defined OVERWORLD
     float overworldAngleRaw = fract(timeAngle - 0.25);
     float overworldAngle = (overworldAngleRaw + (cos(overworldAngleRaw * 3.14159265358979) * -0.5 + 0.5 - overworldAngleRaw) / 3.0) * 6.28318530717959;
     #define GetSunVector() normalize((gbufferModelView * vec4(vec3(-sin(overworldAngle), cos(overworldAngle) * SUN_ROTATION_DATA) * 2000.0, 1.0)).xyz)

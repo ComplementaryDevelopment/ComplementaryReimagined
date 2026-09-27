@@ -186,7 +186,7 @@ void main() {
 
     #if WORLD_BLUR > 0
         texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-        upVec = normalize(gbufferModelView[1].xyz);
+        upVec = GetUpVector();
         sunVec = GetSunVector();
     #endif
 }

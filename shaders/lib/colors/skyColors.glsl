@@ -1,7 +1,15 @@
 #ifndef INCLUDE_SKY_COLORS
     #define INCLUDE_SKY_COLORS
 
-    #ifdef OVERWORLD
+    #if defined OVERWORLD && defined FRAME_DATA_READ
+        vec3 sunsetDownSkyColorP = vec3(1.45, 0.86, 0.5) - vec3(0.8, 0.3, 0.0) * rainFactor;
+        vec3 dayUpSkyColor       = fdDayUpSkyColor.xyz;
+        vec3 dayMiddleSkyColor   = fdDayMiddleSkyColor.xyz;
+        vec3 dayDownSkyColor     = fdDayDownSkyColor.xyz;
+        vec3 nightUpSkyColor     = fdNightUpSkyColor.xyz;
+        vec3 nightMiddleSkyColor = fdNightMiddleSkyColor.xyz;
+        vec3 nightDownSkyColor   = fdNightDownSkyColor.xyz;
+    #elif defined OVERWORLD
         vec3 skyColorSqrt = sqrt(skyColor);
         // Doing these things because vanilla skyColor gets to 0 during a thunderstorm
         float invRainStrength2 = (1.0 - rainStrength) * (1.0 - rainStrength);

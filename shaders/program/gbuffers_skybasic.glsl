@@ -202,7 +202,7 @@ void main() {
 
     glColor = gl_Color;
 
-    upVec = normalize(gbufferModelView[1].xyz);
+    upVec = GetUpVector();
     sunVec = GetSunVector();
 
     #ifdef OVERWORLD

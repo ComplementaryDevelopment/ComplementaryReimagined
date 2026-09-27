@@ -491,9 +491,9 @@ void main() {
     gl_Position = ftransform();
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-    upVec = normalize(gbufferModelView[1].xyz);
+    upVec = GetUpVector();
     sunVec = GetSunVector();
-    eastVec = normalize(gbufferModelView[0].xyz);
+    eastVec = GetEastVector();
 
     #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
         vlFactor = texelFetch(colortex5, ivec2(viewWidth-1, viewHeight-1), 0).a;

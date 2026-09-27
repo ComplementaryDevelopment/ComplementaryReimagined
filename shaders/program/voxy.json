@@ -41,6 +41,18 @@
         #endif
     }",
 
+    #if FRAME_DATA_BUFFER == 1
+    "ssbos": {
+        "-1": "layout(std430) buffer;",
+        "8": "{
+            vec4 fdTime; vec4 fdSunVec; vec4 fdUpVec; vec4 fdEastVec; vec4 fdNorthVec; vec4 fdUnderwaterColorM1;
+            vec4 fdLightColor; vec4 fdAmbientColor; vec4 fdLightColorD1; vec4 fdLightColorC1; vec4 fdAmbientColorC1;
+            vec4 fdHighlightColor; vec4 fdDayUpSkyColor; vec4 fdDayMiddleSkyColor; vec4 fdDayDownSkyColor;
+            vec4 fdNightUpSkyColor; vec4 fdNightMiddleSkyColor; vec4 fdNightDownSkyColor;
+        }"
+    },
+    #endif
+
     "uniforms": [
         "viewWidth",
         "viewHeight",

@@ -31,7 +31,11 @@
     #include "/lib/misc/pixelation.glsl"
 #endif
 
-vec3 highlightColor = normalize(pow(lightColor, vec3(0.37))) * (0.3 + 1.5 * sunVisibility2) * (1.0 - 0.85 * rainFactor);
+#if defined FRAME_DATA_READ && defined OVERWORLD
+    vec3 highlightColor = fdHighlightColor.xyz;
+#else
+    vec3 highlightColor = HIGHLIGHT_COLOR;
+#endif
 
 //Lighting//
 void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 viewPos, float lViewPos, vec3 geoNormal, vec3 normalM, float dither,

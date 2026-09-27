@@ -24,7 +24,7 @@ flat in vec4 glColor;
 #include "/lib/pipelineSettings.glsl"
 
 //Common Variables//
-vec3 upVec = normalize(gbufferModelView[1].xyz);
+vec3 upVec = GetUpVector();
 
 vec3 sunVec = GetSunVector();
 

@@ -216,9 +216,9 @@ void main() {
     glColor = gl_Color;
 
     normal = normalize(gl_NormalMatrix * gl_Normal);
-    upVec = normalize(gbufferModelView[1].xyz);
-    eastVec = normalize(gbufferModelView[0].xyz);
-    northVec = normalize(gbufferModelView[2].xyz);
+    upVec = GetUpVector();
+    eastVec = GetEastVector();
+    northVec = GetNorthVector();
     sunVec = GetSunVector();
 
     #ifdef FLICKERING_FIX

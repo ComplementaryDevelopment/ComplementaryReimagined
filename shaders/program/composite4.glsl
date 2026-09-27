@@ -213,7 +213,7 @@ void main() {
     texCoord = gl_MultiTexCoord0.xy;
 
     #if MOTION_BLUR_EFFECT == 1 && defined MOTION_BLUR_BLOOM_FOG_FIX
-        upVec = normalize(gbufferModelView[1].xyz);
+        upVec = GetUpVector();
         sunVec = GetSunVector();
     #endif
 }
