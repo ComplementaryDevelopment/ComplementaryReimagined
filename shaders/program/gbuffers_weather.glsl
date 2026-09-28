@@ -129,7 +129,7 @@ void main() {
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
     lmCoord  = GetLightMapCoordinates();
 
-    upVec = normalize(gbufferModelView[1].xyz);
+    upVec = GetUpVector();
     sunVec = GetSunVector();
 }
 

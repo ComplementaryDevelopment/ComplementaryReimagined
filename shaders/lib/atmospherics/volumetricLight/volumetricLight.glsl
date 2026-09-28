@@ -177,6 +177,8 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 
     float activeThreshold = min(qualityThreshold, maxDistance);
     int totalSamples = (rayEnd <= qualityThreshold) ? nearSamples : (nearSamples + farSamples);
+
+    float lastWeight = smoothstep1(pow(lastDistance / maxDistance, fogCurve));
 // ============================== End of Step 2 ============================== //
 
 // ============================== Step 3: Execute Volumetric Tracing ============================== //
@@ -262,7 +264,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
         #endif
 
         // For fog density to not move regardless of how we distribute the samples
-        float currentWeight = smoothstep1(pow(lastDistance / maxDistance, fogCurve));
+        float currentWeight = lastWeight;
         float nextWeight    = smoothstep1(pow(nextDistance / maxDistance, fogCurve));
         float sliceWeight   = nextWeight - currentWeight;
 
@@ -283,6 +285,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
         volumetricLight += stepResult;
 
         lastDistance = nextDistance;
+        lastWeight = nextWeight;
     }
 // ============================== End of Step 3 ============================== //
 

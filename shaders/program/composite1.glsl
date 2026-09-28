@@ -371,7 +371,7 @@ void main() {
 
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-    upVec = normalize(gbufferModelView[1].xyz);
+    upVec = GetUpVector();
     sunVec = GetSunVector();
 
     #ifdef LIGHTSHAFTS_ACTIVE

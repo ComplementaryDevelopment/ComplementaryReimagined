@@ -45,9 +45,9 @@ in vec4 glColor;
 //Pipeline Constants//
 
 //Common Variables//
-vec3 upVec = normalize(gbufferModelView[1].xyz);
-vec3 eastVec = normalize(gbufferModelView[0].xyz);
-vec3 northVec = normalize(gbufferModelView[2].xyz);
+vec3 upVec = GetUpVector();
+vec3 eastVec = GetEastVector();
+vec3 northVec = GetNorthVector();
 
 vec3 sunVec = GetSunVector();
 
@@ -420,7 +420,7 @@ void main() {
     #endif
 
     #if ANISOTROPIC_FILTER > 0 && defined ANISOTROPIC_FILTER_ON_TRANSLUCENTS
-        vec3 upVec = normalize(gbufferModelView[1].xyz);
+        vec3 upVec = GetUpVector();
         if (mc_Entity.y > 0.5 && dot(normal, upVec) < 0.999) absMidCoordPos = vec2(0.0); // Fix257062
 
         vec2 spriteRadius = abs(texCoord - mc_midTexCoord.xy);

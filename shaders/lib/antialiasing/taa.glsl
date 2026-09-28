@@ -103,29 +103,44 @@ ivec2 neighbourhoodOffsets[8] = ivec2[8](
     ivec2( 0,-1)
 );
 
+void NeighbourhoodSample(ivec2 texelCoordM2, float z0, float z1, inout float edge, inout vec3 minclr, inout vec3 maxclr) {
+    float z0CheckLinear = GetLinearDepth(texelFetch(depthtex0, texelCoordM2, 0).r);
+    float z1CheckLinear = GetLinearDepth(texelFetch(depthtex1, texelCoordM2, 0).r);
+    float z0Linear = GetLinearDepth(z0);
+    float z1Linear = GetLinearDepth(z1);
+    if (max(abs(z0CheckLinear - z0Linear), abs(z1CheckLinear - z1Linear)) > 0.09) {
+        edge = regularEdge;
+
+        float approxClosestDist = min(z0CheckLinear, z0Linear) * far;
+        if (approxClosestDist < farEdgeDist)
+            if (int(texelFetch(colortex6, texelCoordM2, 0).g * 255.1) == 253) // Reduced Edge TAA (Leaves)
+                edge *= extraEdgeMult;
+    }
+
+    vec3 clr = texelFetch(colortex3, texelCoordM2, 0).rgb;
+    minclr = min(minclr, clr); maxclr = max(maxclr, clr);
+}
+
 void NeighbourhoodClamping(vec3 color, inout vec3 tempColor, float z0, float z1, inout float edge) {
     vec3 minclr = color; vec3 maxclr = minclr;
 
     int cc = 2;
     ivec2 texelCoordM1 = clamp(texelCoord, ivec2(cc), ivec2(view) - cc); // Fixes screen edges
-    for (int i = 0; i < 8; i++) {
-        ivec2 texelCoordM2 = texelCoordM1 + neighbourhoodOffsets[i];
-
-        float z0CheckLinear = GetLinearDepth(texelFetch(depthtex0, texelCoordM2, 0).r);
-        float z1CheckLinear = GetLinearDepth(texelFetch(depthtex1, texelCoordM2, 0).r);
-        float z0Linear = GetLinearDepth(z0);
-        float z1Linear = GetLinearDepth(z1);
-        if (max(abs(z0CheckLinear - z0Linear), abs(z1CheckLinear - z1Linear)) > 0.09) {
-            edge = regularEdge;
-
-            float approxClosestDist = min(z0CheckLinear, z0Linear) * far;
-            if (approxClosestDist < farEdgeDist)
-                if (int(texelFetch(colortex6, texelCoordM2, 0).g * 255.1) == 253) // Reduced Edge TAA (Leaves)
-                    edge *= extraEdgeMult;
+    if (cameraPosition != previousCameraPosition) {
+        // Keep the moving-camera samples unrolled
+        NeighbourhoodSample(texelCoordM1 + neighbourhoodOffsets[0], z0, z1, edge, minclr, maxclr);
+        NeighbourhoodSample(texelCoordM1 + neighbourhoodOffsets[1], z0, z1, edge, minclr, maxclr);
+        NeighbourhoodSample(texelCoordM1 + neighbourhoodOffsets[2], z0, z1, edge, minclr, maxclr);
+        NeighbourhoodSample(texelCoordM1 + neighbourhoodOffsets[3], z0, z1, edge, minclr, maxclr);
+        NeighbourhoodSample(texelCoordM1 + neighbourhoodOffsets[4], z0, z1, edge, minclr, maxclr);
+        NeighbourhoodSample(texelCoordM1 + neighbourhoodOffsets[5], z0, z1, edge, minclr, maxclr);
+        NeighbourhoodSample(texelCoordM1 + neighbourhoodOffsets[6], z0, z1, edge, minclr, maxclr);
+        NeighbourhoodSample(texelCoordM1 + neighbourhoodOffsets[7], z0, z1, edge, minclr, maxclr);
+    } else {
+        for (int i = 0; i < 8; i++) {
+            vec3 clr = texelFetch(colortex3, texelCoordM1 + neighbourhoodOffsets[i], 0).rgb;
+            minclr = min(minclr, clr); maxclr = max(maxclr, clr);
         }
-
-        vec3 clr = texelFetch(colortex3, texelCoordM2, 0).rgb;
-        minclr = min(minclr, clr); maxclr = max(maxclr, clr);
     }
 
     tempColor = ClipAABB(tempColor, minclr, maxclr);

@@ -17,7 +17,6 @@ flat in vec3 upVec, sunVec, eastVec;
 #endif
 
 //Pipeline Constants//
-const bool colortex0MipmapEnabled = true;
 
 //Common Variables//
 float SdotU = dot(sunVec, upVec);
@@ -140,9 +139,11 @@ float GetLinearDepth(float depth, float far, float near) {
                     tracePos -= nViewPos * 1.5; // Tweak to imitate shadow bias
             #endif
 
+            vec4 clipPos = projection * vec4(tracePos.xyz, 1.0);
+            vec4 clipStep = projection * vec4(traceStep, 0.0);
+
             for (int i = 0; i < 32; i++) {
-                vec4 pos = projection * vec4(tracePos.xyz, 1.0);
-                pos = pos / pos.w * 0.5 + 0.5;
+                vec4 pos = clipPos / clipPos.w * 0.5 + 0.5;
 
                 if (pos.x < 0.0 || pos.x > 1.0 || pos.y < 0.0 || pos.y > 1.0) break;
 
@@ -160,6 +161,7 @@ float GetLinearDepth(float depth, float far, float near) {
 
                 shadow *= 1.0 - smoothstep(0.0, 0.01, zDelta) * smoothstep(5.0, 4.0, zDelta);
                 tracePos += traceStep;
+                clipPos += clipStep;
             }
 
             return shadow;
@@ -488,9 +490,9 @@ void main() {
     gl_Position = ftransform();
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-    upVec = normalize(gbufferModelView[1].xyz);
+    upVec = GetUpVector();
     sunVec = GetSunVector();
-    eastVec = normalize(gbufferModelView[0].xyz);
+    eastVec = GetEastVector();
 
     #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
         vlFactor = texelFetch(colortex5, ivec2(viewWidth-1, viewHeight-1), 0).a;

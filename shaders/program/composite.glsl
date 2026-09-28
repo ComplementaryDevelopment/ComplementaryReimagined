@@ -20,9 +20,9 @@ in vec3 sunVec;
 const bool colortex5MipmapEnabled = true;
 
 //Common Variables//
-vec3 upVec = normalize(gbufferModelView[1].xyz);
-vec3 eastVec = normalize(gbufferModelView[0].xyz);
-vec3 northVec = normalize(gbufferModelView[2].xyz);
+vec3 upVec = GetUpVector();
+vec3 eastVec = GetEastVector();
+vec3 northVec = GetNorthVector();
 #ifdef OVERWORLD
     vec3 lightVec = sunVec * ((timeAngle < 0.5325 || timeAngle > 0.9675) ? 1.0 : -1.0);
 #else

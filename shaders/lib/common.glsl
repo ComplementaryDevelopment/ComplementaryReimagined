@@ -27,6 +27,7 @@
     #define ANISOTROPIC_FILTER 0 //[0 4 8 16]
     #define ENTITY_SHADOW 1 //[-1 1 2]
     #define RAIN_PUDDLES 0 //[0 1 2 3 4]
+    #define FRAME_DATA_BUFFER 1
 
     #define COLORED_LIGHTING 0 //[128 192 256 384 512 768 1024]
     #define WORLD_SPACE_REFLECTIONS -1 //[-1 1]
@@ -715,7 +716,11 @@
         #include "/lib/uniforms.glsl"
     #endif
 
-    #if SHADOW_QUALITY == -1
+    #include "/lib/util/frameData.glsl"
+
+    #ifdef FRAME_DATA_READ_TIME
+      float timeAngle = fdTime.x;
+    #elif SHADOW_QUALITY == -1
       float timeAngle = worldTime / 24000.0;
     #else
       float tAmin     = fract(sunAngle - 0.033333333);
@@ -738,9 +743,15 @@
     #endif
 
     const float shadowMapBias = 1.0 - 25.6 / shadowDistance;
-    float noonFactorRaw = max(sin(timeAngle * 6.28318530718), 0.0);
-    float noonFactor = sqrt(noonFactorRaw);
-    float nightFactor = max(sin(timeAngle * (-6.28318530718)), 0.0);
+    #ifdef FRAME_DATA_READ_TIME
+        float noonFactorRaw = fdTime.y;
+        float noonFactor = fdTime.z;
+        float nightFactor = fdTime.w;
+    #else
+        float noonFactorRaw = max(sin(timeAngle * 6.28318530718), 0.0);
+        float noonFactor = sqrt(noonFactorRaw);
+        float nightFactor = max(sin(timeAngle * (-6.28318530718)), 0.0);
+    #endif
     float invNightFactor = 1.0 - nightFactor;
     float rainFactor2 = rainFactor * rainFactor;
     float invRainFactor = 1.0 - rainFactor;
@@ -786,7 +797,9 @@
         vec3 caveFogColor = caveFogColorRaw2;
     #endif
 
-    #if WATERCOLOR_MODE >= 2
+    #if WATERCOLOR_MODE >= 2 && defined FRAME_DATA_READ
+        vec3 underwaterColorM1 = fdUnderwaterColorM1.xyz;
+    #elif WATERCOLOR_MODE >= 2
         vec3 underwaterColorM1 = pow(fogColor, vec3(0.33, 0.21, 0.26));
     #else
         vec3 underwaterColorM1 = vec3(0.46, 0.62, 1.0);

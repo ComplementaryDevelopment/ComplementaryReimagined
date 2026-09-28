@@ -262,7 +262,7 @@ void main() {
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
     #if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
-        upVec = normalize(gbufferModelView[1].xyz);
+        upVec = GetUpVector();
         sunVec = GetSunVector();
     #endif
 }

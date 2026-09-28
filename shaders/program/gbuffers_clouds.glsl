@@ -170,9 +170,9 @@ void main() {
 
         normal = normalize(gl_NormalMatrix * gl_Normal);
 
-        upVec = normalize(gbufferModelView[1].xyz);
+        upVec = GetUpVector();
         sunVec = GetSunVector();
-        northVec = normalize(gbufferModelView[2].xyz);
+        northVec = GetNorthVector();
 
         vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
         gl_Position = gl_ProjectionMatrix * gbufferModelView * position;

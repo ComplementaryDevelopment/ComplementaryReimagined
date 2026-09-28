@@ -6,6 +6,8 @@ vec3 GetHeldLighting(vec3 playerPos, vec3 color, float emission) {
         if (heldLight2 > 15.1) heldLight2 = 0.0;
     #endif
 
+    if (heldLight == 0.0 && heldLight2 == 0.0 && heldItemId != 45032 && heldItemId2 != 45032) return vec3(0.0);
+
     #if COLORED_LIGHTING_INTERNAL == 0
         vec3 heldLightCol = blocklightCol; vec3 heldLightCol2 = blocklightCol;
 

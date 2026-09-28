@@ -64,7 +64,7 @@ void main() {
     vec3 blur = vec3(0.0);
 
     #if BLOOM_ENABLED == 1
-        vec2 scaledCoord = texCoord * max(vec2(viewWidth, viewHeight) / vec2(1920.0, 1080.0), vec2(1.0));
+        vec2 scaledCoord = gl_FragCoord.xy / view * max(view / vec2(1920.0, 1080.0), vec2(1.0));
 
         #if defined OVERWORLD || defined END
             blur += BloomTile(2.0, vec2(0.0      , 0.0   ), scaledCoord);
@@ -213,7 +213,7 @@ void main() {
     texCoord = gl_MultiTexCoord0.xy;
 
     #if MOTION_BLUR_EFFECT == 1 && defined MOTION_BLUR_BLOOM_FOG_FIX
-        upVec = normalize(gbufferModelView[1].xyz);
+        upVec = GetUpVector();
         sunVec = GetSunVector();
     #endif
 }
