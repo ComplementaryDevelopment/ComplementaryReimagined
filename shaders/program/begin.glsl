@@ -25,23 +25,6 @@ float sunVisibility2 = sunVisibility * sunVisibility;
 #include "/lib/colors/lightAndAmbientColors.glsl"
 #include "/lib/colors/skyColors.glsl"
 
-#ifdef OVERWORLD
-    void GetDeferred1LightColor(out vec3 lightColorV) {
-        #define LAAC_DEFERRED1
-        #include "/lib/colors/overworldLightColors.glsl"
-        #undef LAAC_DEFERRED1
-        lightColorV = lightColor;
-    }
-
-    void GetComposite1LightColors(out vec3 lightColorV, out vec3 ambientColorV) {
-        #define LAAC_COMPOSITE1
-        #include "/lib/colors/overworldLightColors.glsl"
-        #undef LAAC_COMPOSITE1
-        lightColorV = lightColor;
-        ambientColorV = ambientColor;
-    }
-#endif
-
 //Program//
 void main() {
     fdTime = vec4(timeAngle, noonFactorRaw, noonFactor, nightFactor);
@@ -56,12 +39,11 @@ void main() {
         fdAmbientColor = vec4(ambientColor, 0.0);
         fdHighlightColor = vec4(HIGHLIGHT_COLOR, 0.0);
 
-        vec3 lightColorV, ambientColorV;
-        GetDeferred1LightColor(lightColorV);
-        fdLightColorD1 = vec4(lightColorV, 0.0);
-        GetComposite1LightColors(lightColorV, ambientColorV);
-        fdLightColorC1 = vec4(lightColorV, 0.0);
-        fdAmbientColorC1 = vec4(ambientColorV, 0.0);
+        LightAndAmbientColors cloudColors = GetOverworldLightColors(LIGHT_COLORS_CLOUDS);
+        LightAndAmbientColors shaftColors = GetOverworldLightColors(LIGHT_COLORS_SHAFTS);
+        fdLightColorD1 = vec4(cloudColors.light, 0.0);
+        fdLightColorC1 = vec4(shaftColors.light, 0.0);
+        fdAmbientColorC1 = vec4(shaftColors.ambient, 0.0);
 
         fdDayUpSkyColor = vec4(dayUpSkyColor, 0.0);
         fdDayMiddleSkyColor = vec4(dayMiddleSkyColor, 0.0);
