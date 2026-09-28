@@ -17,7 +17,6 @@ flat in vec3 upVec, sunVec, eastVec;
 #endif
 
 //Pipeline Constants//
-const bool colortex0MipmapEnabled = true;
 
 //Common Variables//
 float SdotU = dot(sunVec, upVec);
