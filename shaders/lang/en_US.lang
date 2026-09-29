@@ -333,6 +333,9 @@ option.ATM_FOG_ALTITUDE.comment=Determines the altitude that the atmospheric fog
 option.CAVE_FOG=Cave Fog
 option.CAVE_FOG.comment=Enables extra fog in deep underground areas.
 
+option.MODDED_FOG=Modded Fog
+option.MODDED_FOG.comment=Shows fog that a mod or a dimension pulls in closer than your render distance, in the color it sets. Has no effect in normal play.
+
 option.LIGHTSHAFT_BEHAVIOUR=Light Shaft Mode
 option.LIGHTSHAFT_BEHAVIOUR.comment=Determines the behaviour of light shafts. §a[+]§r Scene Aware Light Shafts automatically transition between regular and extreme modes to provide the best results. §c[-]§r Extreme mode is not recommended for general gameplay, and it can severely impact performance.
 value.LIGHTSHAFT_BEHAVIOUR.0=OFF

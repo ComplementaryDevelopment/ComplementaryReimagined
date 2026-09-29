@@ -255,6 +255,27 @@ void DoDarknessFog(inout vec4 color, float lViewPos) {
     color *= exp(-fog);
 }
 
+#ifdef MODDED_FOG
+#if defined OVERWORLD && !defined VOXY_PATCH
+    // How far vanilla's own fog has closed in, 0 to 1. Zero while vanilla's fog ends at or past the render
+    // distance, as it does in normal play and in rain, so nothing changes until a mod or a dimension pulls it in.
+    // Full once the end is inside half of it, so a fog closing in fades on rather than snapping on.
+    float GetModdedFogStrength() {
+        if (isEyeInWater != 0 || heavyFog || maxBlindnessDarkness > 0.00001) return 0.0;
+        float clearEnd = min(far, 512.0);
+        return clamp((clearEnd - gl_Fog.end) / (0.5 * clearEnd), 0.0, 1.0);
+    }
+
+    // Vanilla's linear fog toward vanilla's fog colour, faded in by GetModdedFogStrength.
+    void DoModdedFog(inout vec4 color, float lViewPos) {
+        float strength = GetModdedFogStrength();
+        if (strength < 0.00001) return;
+        float fog = clamp((lViewPos - gl_Fog.start) / max(gl_Fog.end - gl_Fog.start, 0.01), 0.0, 1.0);
+        color = mix(color, vec4(fogColor, 0.0), fog * strength);
+    }
+#endif
+#endif
+
 void DoFog(inout vec4 color, inout float skyFade, float lViewPos, vec3 playerPos, float VdotU, float VdotS, float dither, bool isReflection, float lBlockPos) {
     #ifdef CAVE_FOG
         DoCaveFog(color, lViewPos);
@@ -275,4 +296,8 @@ void DoFog(inout vec4 color, inout float skyFade, float lViewPos, vec3 playerPos
 
     if (blindness > 0.00001) DoBlindnessFog(color, lViewPos);
     if (darknessFactor > 0.00001) DoDarknessFog(color, lViewPos);
+
+    #if defined MODDED_FOG && defined OVERWORLD && !defined VOXY_PATCH
+        DoModdedFog(color, lViewPos);
+    #endif
 }

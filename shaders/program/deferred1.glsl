@@ -371,6 +371,9 @@ void main() {
                     nightNebula += GetNightNebula(viewPos.xyz, VdotU, VdotS);
                     color.rgb += nightNebula;
                 #endif
+                #if defined MODDED_FOG // The sky lies past any fog end
+                    color.rgb = mix(color.rgb, fogColor, GetModdedFogStrength());
+                #endif
             #endif
             #ifdef NETHER
                 color.rgb = netherColor * (1.0 - maxBlindnessDarkness);
@@ -401,6 +404,9 @@ void main() {
             clouds = GetClouds(cloudLinearDepth, skyFade, vec3(0.0), playerPos,
                                lViewPos, VdotS, VdotU, dither, auroraBorealis, nightNebula);
 
+            #if defined MODDED_FOG && defined OVERWORLD // Fog the clouds like the sky
+                clouds.rgb = mix(clouds.rgb, fogColor, GetModdedFogStrength());
+            #endif
             color = mix(color, vec4(clouds.rgb, 0.0), clouds.a);
         }
     #endif
