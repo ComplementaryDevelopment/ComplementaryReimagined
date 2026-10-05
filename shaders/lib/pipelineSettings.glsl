@@ -1,7 +1,7 @@
 /*
 const int colortex0Format = R11F_G11F_B10F; //main color
 const int colortex1Format = RGB8_SNORM;     //half res normalM
-const int colortex2Format = RGB16F;         //taa
+const int colortex2Format = RGBA16F;        //encoded HDR TAA/U history, alpha: TAAU temporal state
 const int colortex3Format = RGBA8;          //(cloud/water map on deferred/gbuffer) | translucentMult & bloom & final color
 const int colortex4Format = RGBA8_SNORM;    //normalM & reflection strength
 const int colortex5Format = RGBA8;          //scene image for water reflections & volumetric cloud linear depth & volumetric light factor

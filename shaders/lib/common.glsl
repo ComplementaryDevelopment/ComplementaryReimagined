@@ -155,6 +155,7 @@
     #define DISTANT_LIGHT_BOKEH
 
     #define TAA_DEFINE -1 //[-1 0 1]
+    #define RENDER_SCALE_PCT 100 //[50 65 75 85 100]
     #define TAA_SMOOTHING 3 //[2 3 4]
     #define TAA_JITTER 1 //[0 1 2 3]
     #define TAA_MOVEMENT_IMPROVEMENT_FILTER 1 //[0 1]
@@ -576,6 +577,8 @@
     #endif
 
 //Define Handling//
+    #define TAA_SMOOTHING_M TAA_SMOOTHING
+
     #ifdef OVERWORLD
         #if CLOUD_STYLE > 0 && CLOUD_STYLE != 50 && CLOUD_QUALITY > 0
             #define VL_CLOUDS_ACTIVE
