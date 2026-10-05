@@ -26,7 +26,12 @@
 #if WORLD_BLUR > 0
     #if WORLD_BLUR == 2 && WB_DOF_FOCUS >= 0
         #if WB_DOF_FOCUS == 0
-            uniform float centerDepthSmooth;
+            #ifdef TAAU
+                uniform sampler2D colortex9;
+                #define centerDepthSmooth texelFetch(colortex9, ivec2(0), 0).r
+            #else
+                uniform float centerDepthSmooth;
+            #endif
         #else
             float centerDepthSmooth = (far * (WB_DOF_FOCUS - near)) / (WB_DOF_FOCUS * (far - near));
         #endif

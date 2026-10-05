@@ -8,6 +8,7 @@ const int colortex5Format = RGBA8;          //scene image for water reflections 
 const int colortex6Format = RGB8;           //smoothnessD & materialMask & skyLightFactor
 const int colortex7Format = RGBA16F;        //(cloud/water map on gbuffer) | reflection temporal image (rgb) & previous depth
 const int colortex8Format = RGBA16F;        //SSR results for WSR, topmost translucent opacity
+const int colortex9Format = R32F;           //1x1 smoothed center depth for TAAU depth-of-field
 
 const int colortex12Format = RGBA8;         //Improved Rain
 const int colortex13Format = R8;            //Entity linear depth for vl blending
