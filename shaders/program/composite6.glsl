@@ -5,44 +5,331 @@
 //Common//
 #include "/lib/common.glsl"
 
+// Motion blur, bloom and tonemapping after TAA/U and DoF
+
 //////////Fragment Shader//////////Fragment Shader//////////Fragment Shader//////////
 #ifdef FRAGMENT_SHADER
 
 noperspective in vec2 texCoord;
 
-//Pipeline Constants//
-#include "/lib/pipelineSettings.glsl"
+#if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+    flat in vec3 upVec, sunVec;
+#endif
 
-const bool colortex3MipmapEnabled = true;
+//Pipeline Constants//
 
 //Common Variables//
+float pw = 1.0 / viewWidth;
+float ph = 1.0 / viewHeight;
+
 vec2 view = vec2(viewWidth, viewHeight);
 
+#if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+    float SdotU = dot(sunVec, upVec);
+    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
+#endif
+
 //Common Functions//
-float GetLinearDepth(float depth) {
-    return (2.0 * near) / (far + near - depth * (far - near));
+void LinearToRGB(inout vec3 color) {
+    const vec3 k = vec3(0.055);
+    color = mix((vec3(1.0) + k) * pow(color, vec3(1.0 / 2.4)) - k, 12.92 * color, lessThan(color, vec3(0.0031308)));
 }
 
+void DoCompTonemap(inout vec3 color) {
+    // Lottes tonemap modified for Complementary Shaders
+    // Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
+    // http://32ipi028l5q82yhj72224m8j.wpengine.netdna-cdn.com/wp-content/uploads/2016/03/GdcVdrLottes.pdf
+    color = TM_EXPOSURE * color;
+
+    float colorMax = max(color.r, max(color.g, color.b));
+    float initialLuminance = GetLuminance(color);
+
+    vec3 a      = vec3(TM_CONTRAST); // General Contrast
+    vec3 d      = vec3(1.0); // Roll-off control
+    vec3 hdrMax = vec3(8.0); // Maximum input brightness
+    vec3 midIn  = vec3(0.25); // Input middle gray
+    vec3 midOut = vec3(0.25); // Output middle gray
+
+    vec3 a_d = a * d;
+    vec3 hdrMaxA = pow(hdrMax, a);
+    vec3 hdrMaxAD = pow(hdrMax, a_d);
+    vec3 midInA = pow(midIn, a);
+    vec3 midInAD = pow(midIn, a_d);
+    vec3 HM1 = hdrMaxA * midOut;
+    vec3 HM2 = hdrMaxAD - midInAD;
+
+    vec3 b = (-midInA + HM1) / (HM2 * midOut);
+    vec3 c = (hdrMaxAD * midInA - HM1 * midInAD) / (HM2 * midOut);
+
+    vec3 colorOut = pow(color, a) / (pow(color, a_d) * b + c);
+
+    LinearToRGB(colorOut);
+
+    // Remove tonemapping from darker colors for better readability
+    const float darkLiftStart = 0.1;
+    const float darkLiftMix = 0.75;
+    float darkLift = smoothstep(darkLiftStart, 0.0, initialLuminance);
+    vec3 smoothColor = pow(color, vec3(1.0 / 2.2));
+    colorOut = mix(colorOut, smoothColor, darkLift * darkLiftMix * max0(0.55 - abs(1.05 - TM_CONTRAST)) / 0.55);
+
+    // Path to White
+    const float wpInputCurveStart = 0.0;
+    const float wpInputCurveMax = 16.0; // Increase this value to reduce the effect of white path
+    float modifiedLuminance = pow(initialLuminance / wpInputCurveMax, 2.0 - TM_WHITE_PATH) * wpInputCurveMax;
+    float whitePath = smoothstep(wpInputCurveStart, wpInputCurveMax, modifiedLuminance);
+    colorOut = mix(colorOut, vec3(1.0), whitePath);
+
+    // Desaturate dark colors
+    const float dpInputCurveStart = 0.1;
+    const float dpInputCurveMax = 0.0;
+    float desaturatePath = smoothstep(dpInputCurveStart, dpInputCurveMax, initialLuminance);
+    colorOut = mix(colorOut, vec3(GetLuminance(colorOut)), desaturatePath * TM_DARK_DESATURATION);
+
+    color = clamp01(colorOut);
+}
+
+void DoBSLColorSaturation(inout vec3 color) {
+    float saturationFactor = T_SATURATION + 0.07;
+
+    float grayVibrance = (color.r + color.g + color.b) / 3.0;
+    float graySaturation = grayVibrance;
+    if (saturationFactor < 1.00) graySaturation = dot(color, vec3(0.299, 0.587, 0.114));
+
+    float mn = min(color.r, min(color.g, color.b));
+    float mx = max(color.r, max(color.g, color.b));
+    float sat = (1.0 - (mx - mn)) * (1.0 - mx) * grayVibrance * 5.0;
+    vec3 lightness = vec3((mn + mx) * 0.5);
+
+    color = mix(color, mix(color, lightness, 1.0 - T_VIBRANCE), sat);
+    color = mix(color, lightness, (1.0 - lightness) * (2.0 - T_VIBRANCE) / 2.0 * abs(T_VIBRANCE - 1.0));
+    color = color * saturationFactor - graySaturation * (saturationFactor - 1.0);
+}
+
+#if BLOOM_ENABLED == 1
+    vec2 rescale = max(vec2(viewWidth, viewHeight) / vec2(1920.0, 1080.0), vec2(1.0));
+    vec3 GetBloomTile(float lod, vec2 coord, vec2 offset) {
+        float scale = exp2(lod);
+        vec2 bloomCoord = coord / scale + offset;
+        bloomCoord = clamp(bloomCoord, offset, 1.0 / scale + offset);
+
+        vec3 bloom = texture2D(colortex3, bloomCoord / rescale).rgb;
+        bloom *= bloom;
+        bloom *= bloom;
+        return bloom * 128.0;
+    }
+
+    void DoBloom(inout vec3 color, vec2 coord, float dither, float lViewPos) {
+        vec3 blur1 = GetBloomTile(2.0, coord, vec2(0.0      , 0.0   ));
+        vec3 blur2 = GetBloomTile(3.0, coord, vec2(0.0      , 0.26  ));
+        vec3 blur3 = GetBloomTile(4.0, coord, vec2(0.135    , 0.26  ));
+        vec3 blur4 = GetBloomTile(5.0, coord, vec2(0.2075   , 0.26  ));
+        vec3 blur5 = GetBloomTile(6.0, coord, vec2(0.135    , 0.3325));
+        vec3 blur6 = GetBloomTile(7.0, coord, vec2(0.160625 , 0.3325));
+        vec3 blur7 = GetBloomTile(8.0, coord, vec2(0.1784375, 0.3325));
+
+        vec3 blur = (blur1 + blur2 + blur3 + blur4 + blur5 + blur6 + blur7) * 0.14;
+
+        float bloomStrength = BLOOM_STRENGTH + 0.2 * darknessFactor;
+
+        #if defined BLOOM_FOG && defined NETHER && defined BORDER_FOG
+            float farM = min(renderDistance, NETHER_VIEW_LIMIT); // consistency9023HFUE85JG
+            float netherBloom = lViewPos / clamp(farM, 96.0, 256.0);
+            netherBloom *= netherBloom;
+            netherBloom *= netherBloom;
+            netherBloom = 1.0 - exp(-8.0 * netherBloom);
+            netherBloom *= 1.0 - maxBlindnessDarkness;
+            bloomStrength = mix(bloomStrength * 0.7, bloomStrength * 1.8, netherBloom);
+        #endif
+
+        color = mix(color, blur, bloomStrength);
+        //color += blur * bloomStrength * (ditherFactor.x + ditherFactor.y);
+    }
+#endif
+
 //Includes//
-#ifdef TAA
-    #include "/lib/antialiasing/taa.glsl"
+#if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX
+    #include "/lib/atmospherics/fog/bloomFog.glsl"
+#endif
+
+#if BLOOM_ENABLED == 1 || MOTION_BLUR_EFFECT == 1
+    #include "/lib/util/dither.glsl"
+#endif
+
+#if LENSFLARE_MODE > 0 && defined OVERWORLD
+    #include "/lib/misc/lensFlare.glsl"
 #endif
 
 //Program//
 void main() {
-    vec3 color = texelFetch(colortex3, texelCoord, 0).rgb;
+    vec3 color = texture2D(colortex0, texCoord).rgb;
+    #if MOTION_BLUR_EFFECT == 1
+    {
+        color = vec3(0.0);
 
-    vec3 temp = vec3(0.0);
-    float z1 = 0.0;
+        float z = texture2D(depthtex1, texCoord).x;
+        float dither = Bayer64(gl_FragCoord.xy);
 
-    #ifdef TAA
-        z1 = texelFetch(depthtex1, texelCoord, 0).r;
-        DoTAA(color, temp, z1);
+        if (z <= 0.56) {
+            color = texelFetch(colortex0, texelCoord, 0).rgb;
+        } else {
+            float mbwg = 0.0;
+            vec2 doublePixel = 2.0 / vec2(viewWidth, viewHeight);
+
+            vec4 currentPosition = vec4(texCoord, z, 1.0) * 2.0 - 1.0;
+
+            vec4 viewPos = gbufferProjectionInverse * currentPosition;
+            viewPos = gbufferModelViewInverse * viewPos;
+            viewPos /= viewPos.w;
+            float lViewPos = length(viewPos.xyz);
+
+            #if defined DISTANT_HORIZONS || defined VOXY
+                #ifdef DISTANT_HORIZONS
+                    float z1lod = texelFetch(dhDepthTex1, texelCoord, 0).r;
+                    vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+                    vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
+                #elif defined VOXY
+                    float z1lod = texelFetch(vxDepthTexOpaque, texelCoord, 0).r;
+                    vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+                    vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
+                #endif
+                viewPos1Lod /= viewPos1Lod.w;
+                lViewPos = min(lViewPos, length(viewPos1Lod.xyz));
+            #endif
+
+            vec3 cameraOffset = cameraPosition - previousCameraPosition;
+
+            vec4 previousPosition = viewPos + vec4(cameraOffset, 0.0);
+            previousPosition = gbufferPreviousModelView * previousPosition;
+            previousPosition = gbufferPreviousProjection * previousPosition;
+            previousPosition /= previousPosition.w;
+
+            vec2 velocity = (currentPosition - previousPosition).xy;
+            velocity = velocity / (1.0 + length(velocity)) * MOTION_BLURRING_STRENGTH;
+
+            #ifndef LOW_QUALITY_MOTION_BLUR
+                int sampleCount = 9;
+                velocity *= 0.02;
+            #else
+                int sampleCount = 3;
+                velocity *= 0.06;
+            #endif
+
+            vec2 coord = texCoord - velocity * (float(sampleCount) / 2.0 - 1.0 + dither);
+            for (int i = 0; i < sampleCount; i++, coord += velocity) {
+                vec2 coordb = clamp(coord, doublePixel, 1.0 - doublePixel);
+                vec3 sampleb = texture2DLod(colortex0, coordb, 0).rgb;
+
+                #ifdef MOTION_BLUR_BLOOM_FOG_FIX
+                    float z1 = texture2D(depthtex1, coordb).r;
+                    vec4 screenPos = vec4(coordb, z1, 1.0);
+                    vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+                    viewPos /= viewPos.w;
+                    float lViewPos = length(viewPos.xyz);
+
+                    #if defined DISTANT_HORIZONS || defined VOXY
+                        #ifdef DISTANT_HORIZONS
+                            float z1lod = texture2D(dhDepthTex1, coordb).r;
+                            vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+                            vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
+                        #elif defined VOXY
+                            float z1lod = texture2D(vxDepthTexOpaque, coordb).r;
+                            vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
+                            vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
+                        #endif
+                        viewPos1Lod /= viewPos1Lod.w;
+                        lViewPos = min(lViewPos, length(viewPos1Lod.xyz));
+                    #endif
+
+                    // Remove bloom fog from mb samples or else we get edge artifacts
+                    sampleb /= GetBloomFog(lViewPos);
+                #endif
+
+                color += sampleb;
+                mbwg += 1.0;
+            }
+            color /= mbwg;
+
+            #ifdef MOTION_BLUR_BLOOM_FOG_FIX
+                // Reapply bloom fog because we removed it from our samples
+                color *= GetBloomFog(lViewPos);
+            #endif
+        }
+    }
     #endif
 
-    /* DRAWBUFFERS:32 */
+    #if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+        float z0 = texture2D(depthtex0, texCoord).r;
+        vec4 screenPos = vec4(texCoord, z0, 1.0);
+        vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+        viewPos /= viewPos.w;
+        float lViewPos = length(viewPos.xyz);
+
+        #if defined DISTANT_HORIZONS || defined VOXY
+            #ifdef DISTANT_HORIZONS
+                float z0lod = texelFetch(dhDepthTex, texelCoord, 0).r;
+                vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+                vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
+            #elif defined VOXY
+                float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
+                vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+                vec4 viewPosLod = vxProjInv * (screenPosLod * 2.0 - 1.0);
+            #endif
+            viewPosLod /= viewPosLod.w;
+            lViewPos = min(lViewPos, length(viewPosLod.xyz));
+        #endif
+    #else
+        float lViewPos = 0.0;
+    #endif
+
+    float dither = texture2DLod(noisetex, texCoord * view / 128.0, 0.0).b;
+    #ifdef TAA
+        dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
+    #endif
+
+    #ifdef BLOOM_FOG
+        color /= GetBloomFog(lViewPos);
+    #endif
+
+    #if BLOOM_ENABLED == 1
+        DoBloom(color, texCoord, dither, lViewPos);
+    #endif
+
+    #ifdef COLORGRADING
+        color =
+            pow(color.r, GR_RC) * vec3(GR_RR, GR_RG, GR_RB) +
+            pow(color.g, GR_GC) * vec3(GR_GR, GR_GG, GR_GB) +
+            pow(color.b, GR_BC) * vec3(GR_BR, GR_BG, GR_BB);
+        color *= 0.01;
+    #endif
+
+    DoCompTonemap(color);
+
+    #if defined GREEN_SCREEN_LIME || SELECT_OUTLINE == 4
+        int materialMaskInt = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);
+    #endif
+
+    #ifdef GREEN_SCREEN_LIME
+        if (materialMaskInt == 240) { // Green Screen Lime Blocks
+            color = vec3(0.0, 1.0, 0.0);
+        }
+    #endif
+
+    #if SELECT_OUTLINE == 4
+        if (materialMaskInt == 252) { // Versatile Selection Outline
+            float colorMF = 1.0 - dot(color, vec3(0.25, 0.45, 0.1));
+            colorMF = smoothstep1(smoothstep1(smoothstep1(smoothstep1(smoothstep1(colorMF)))));
+            color = mix(color, 3.0 * (color + 0.2) * vec3(colorMF * SELECT_OUTLINE_I), 0.3);
+        }
+    #endif
+
+    #if LENSFLARE_MODE > 0 && defined OVERWORLD
+        DoLensFlare(color, viewPos.xyz, dither);
+    #endif
+
+    DoBSLColorSaturation(color);
+
+    /* DRAWBUFFERS:3 */
     gl_FragData[0] = vec4(color, 1.0);
-    gl_FragData[1] = vec4(temp, 1.0);
 }
 
 #endif
@@ -51,6 +338,10 @@ void main() {
 #ifdef VERTEX_SHADER
 
 noperspective out vec2 texCoord;
+
+#if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+    flat out vec3 upVec, sunVec;
+#endif
 
 //Attributes//
 
@@ -65,6 +356,11 @@ void main() {
     gl_Position = ftransform();
 
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+
+    #if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+        upVec = normalize(gbufferModelView[1].xyz);
+        sunVec = GetSunVector();
+    #endif
 }
 
 #endif

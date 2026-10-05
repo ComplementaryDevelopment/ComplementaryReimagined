@@ -622,11 +622,7 @@
     #endif
 
     #ifdef BLOOM_FOG
-        #if WORLD_BLUR > 0
-            #define BLOOM_FOG_COMPOSITE3
-        #else
-            #define BLOOM_FOG_COMPOSITE1
-        #endif
+        #define BLOOM_FOG_COMPOSITE1
     #endif
 
     #if defined GBUFFERS_HAND || defined GBUFFERS_ENTITIES

@@ -326,7 +326,7 @@ void main() {
     #endif
 
     #ifdef BLOOM_FOG_COMPOSITE1
-        color *= GetBloomFog(lViewPos); // Reminder: Bloom Fog can move between composite1-2-3
+        color *= GetBloomFog(lViewPos);
     #endif
 
     /* DRAWBUFFERS:0 */
