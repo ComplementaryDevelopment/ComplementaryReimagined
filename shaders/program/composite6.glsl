@@ -12,7 +12,7 @@
 
 noperspective in vec2 texCoord;
 
-#if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+#if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
     flat in vec3 upVec, sunVec;
 #endif
 
@@ -24,7 +24,7 @@ float ph = 1.0 / viewHeight;
 
 vec2 view = vec2(viewWidth, viewHeight);
 
-#if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+#if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
     float SdotU = dot(sunVec, upVec);
     float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
 #endif
@@ -147,10 +147,6 @@ void DoBSLColorSaturation(inout vec3 color) {
 #endif
 
 //Includes//
-#if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX
-    #include "/lib/atmospherics/fog/bloomFog.glsl"
-#endif
-
 #if BLOOM_ENABLED == 1 || MOTION_BLUR_EFFECT == 1
     #include "/lib/util/dither.glsl"
 #endif
@@ -168,8 +164,6 @@ void main() {
     vec3 color = texture2D(colortex0, texCoord).rgb;
     #if MOTION_BLUR_EFFECT == 1
     {
-        color = vec3(0.0);
-
         #ifdef TAA
             vec2 depthCoord = TAAJitter(texCoord, 0.5);
         #else
@@ -178,9 +172,8 @@ void main() {
         float z = texture2D(depthtex1, ToBufferUV(depthCoord)).x;
         float dither = Bayer64(gl_FragCoord.xy);
 
-        if (z <= 0.56) {
-            color = texelFetch(colortex0, texelCoord, 0).rgb;
-        } else {
+        if (z > 0.56) {
+            color = vec3(0.0);
             float mbwg = 0.0;
             vec2 doublePixel = 2.0 / vec2(viewWidth, viewHeight);
 
@@ -189,22 +182,6 @@ void main() {
             vec4 viewPos = gbufferProjectionInverse * currentPosition;
             viewPos = gbufferModelViewInverse * viewPos;
             viewPos /= viewPos.w;
-            float lViewPos = length(viewPos.xyz);
-
-            #if defined DISTANT_HORIZONS || defined VOXY
-                #ifdef DISTANT_HORIZONS
-                    float z1lod = texelFetch(dhDepthTex1, ScaledTexelCoord(depthCoord), 0).r;
-                    vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
-                    vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
-                #elif defined VOXY
-                    float z1lod = texelFetch(vxDepthTexOpaque, ScaledTexelCoord(depthCoord), 0).r;
-                    vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
-                    vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
-                #endif
-                viewPos1Lod /= viewPos1Lod.w;
-                lViewPos = min(lViewPos, length(viewPos1Lod.xyz));
-            #endif
-
             vec3 cameraOffset = cameraPosition - previousCameraPosition;
 
             vec4 previousPosition = viewPos + vec4(cameraOffset, 0.0);
@@ -228,40 +205,10 @@ void main() {
                 vec2 coordb = clamp(coord, doublePixel, 1.0 - doublePixel);
                 vec3 sampleb = texture2DLod(colortex0, coordb, 0).rgb;
 
-                #ifdef MOTION_BLUR_BLOOM_FOG_FIX
-                    float z1 = texture2D(depthtex1, ToBufferUV(coordb)).r;
-                    vec4 screenPos = vec4(coordb, z1, 1.0);
-                    vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
-                    viewPos /= viewPos.w;
-                    float lViewPos = length(viewPos.xyz);
-
-                    #if defined DISTANT_HORIZONS || defined VOXY
-                        #ifdef DISTANT_HORIZONS
-                            float z1lod = texture2D(dhDepthTex1, LodBufferUV(coordb)).r;
-                            vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
-                            vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
-                        #elif defined VOXY
-                            float z1lod = texture2D(vxDepthTexOpaque, LodBufferUV(coordb)).r;
-                            vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
-                            vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
-                        #endif
-                        viewPos1Lod /= viewPos1Lod.w;
-                        lViewPos = min(lViewPos, length(viewPos1Lod.xyz));
-                    #endif
-
-                    // Remove bloom fog from mb samples or else we get edge artifacts
-                    sampleb /= GetBloomFog(lViewPos);
-                #endif
-
                 color += sampleb;
                 mbwg += 1.0;
             }
             color /= mbwg;
-
-            #ifdef MOTION_BLUR_BLOOM_FOG_FIX
-                // Reapply bloom fog because we removed it from our samples
-                color *= GetBloomFog(lViewPos);
-            #endif
         }
     }
     #endif
@@ -271,7 +218,7 @@ void main() {
         vec2 sceneCoord = texCoord;
     #endif
 
-    #if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+    #if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
         float z0 = texture2D(depthtex0, ToBufferUV(sceneCoord)).r;
         vec4 screenPos = vec4(texCoord, z0, 1.0);
         vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
@@ -298,10 +245,6 @@ void main() {
     float dither = texture2DLod(noisetex, texCoord * view / 128.0, 0.0).b;
     #ifdef TAA
         dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
-    #endif
-
-    #ifdef BLOOM_FOG
-        color /= GetBloomFog(lViewPos);
     #endif
 
     #if BLOOM_ENABLED == 1
@@ -353,7 +296,7 @@ void main() {
 
 noperspective out vec2 texCoord;
 
-#if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+#if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
     flat out vec3 upVec, sunVec;
 #endif
 
@@ -370,7 +313,7 @@ void main() {
 
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-    #if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
+    #if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
         upVec = normalize(gbufferModelView[1].xyz);
         sunVec = GetSunVector();
     #endif

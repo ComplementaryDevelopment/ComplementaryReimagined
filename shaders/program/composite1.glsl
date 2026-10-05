@@ -329,7 +329,11 @@ void main() {
         color *= GetBloomFog(lViewPos);
     #endif
 
-    /* DRAWBUFFERS:0 */
+    #ifdef TAAU_BLOOM
+        /* RENDERTARGETS:11 */
+    #else
+        /* DRAWBUFFERS:0 */
+    #endif
     gl_FragData[0] = vec4(color, 1.0);
 
     // supposed to be #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
@@ -339,8 +343,13 @@ void main() {
                 vlFactorM = texelFetch(colortex5, texelCoord, 0).a;
         #endif
 
-        /* DRAWBUFFERS:05 */
-        gl_FragData[1] = vec4(0.0, 0.0, 0.0, vlFactorM);
+        #ifdef TAAU_BLOOM
+            // Forward this through bloom since colortex5 is full size
+            gl_FragData[0].a = vlFactorM;
+        #else
+            /* DRAWBUFFERS:05 */
+            gl_FragData[1] = vec4(0.0, 0.0, 0.0, vlFactorM);
+        #endif
     #endif
 }
 
