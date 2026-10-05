@@ -1,4 +1,4 @@
-const float handDepthThreshold = 0.56; // Hand depth is 0.44-0.56
+const float handDepthThreshold = 0.56; // Hand depth ranges from 0.44 to 0.56
 
 vec3 SampleFilteredCurrent(vec2 sourcePosition) {
     sourcePosition = clamp(sourcePosition, vec2(0.5), scaledViewSizeF - 0.5);
@@ -30,8 +30,8 @@ vec2 GetTAAUHistoryCoord(ivec2 sourceTexel, float opaqueDepth, vec4 viewPosition
 
 #ifdef CLOUDS_REIMAGINED
     bool IsValidTAAUCloudDepth(float cloudDepth, ivec2 sourceTexel) {
-        // Cloud distance can exceed 1.0; exactly 1.0 means no cloud.
-        // The top-right pixel is reserved for light shafts.
+        // Cloud depth can exceed 1.0. Exactly 1.0 means no cloud.
+        // The top-right pixel may contain light-shaft data instead.
         return cloudDepth > 0.0 && cloudDepth != 1.0
             && sourceTexel != scaledViewSize - 1;
     }
@@ -40,7 +40,7 @@ vec2 GetTAAUHistoryCoord(ivec2 sourceTexel, float opaqueDepth, vec4 viewPosition
         float cloudDepth = texelFetch(colortex5, sourceTexel, 0).a;
         if (cloudDepth != 1.0) return cloudDepth;
 
-        // Look for cloud depth in the other samples covered by this output pixel.
+        // Fall back to the other texels in the bilinear footprint.
         ivec2 sampleBase = ivec2(floor(sourcePosition - 0.5));
         for (int y = 0; y < 2; y++) {
             for (int x = 0; x < 2; x++) {
@@ -57,7 +57,7 @@ vec2 GetTAAUHistoryCoord(ivec2 sourceTexel, float opaqueDepth, vec4 viewPosition
     }
 #endif
 
-// Entities move without motion vectors, so camera reprojection can't follow them.
+// Camera reprojection cannot account for entity movement.
 bool IsTAAUEntity(int materialMask) {
     return (materialMask >= 100 && materialMask <= 199) // Entity Reflection Handling (see common.glsl for details)
         || materialMask == 254; // No SSAO, No TAA, Reduce Reflection
@@ -79,7 +79,7 @@ vec4 DoTAAU() {
     vec4 viewPosition = gbufferProjectionInverse * (vec4(texCoord, opaqueDepth, 1.0) * 2.0 - 1.0);
     viewPosition /= viewPosition.w;
 
-    // Extend hand and entity treatment to the neighbouring silhouette pixels, which jitter would otherwise toggle.
+    // Pad hand and entity silhouettes so jitter does not flicker at their edges.
     float nearestDepth = sceneDepth;
     bool isEntity = IsTAAUEntity(materialMask);
     for (int i = 4; i < 8; i++) {
@@ -93,6 +93,7 @@ vec4 DoTAAU() {
         float cloudLinearDepth = texture2D(colortex5, ToBufferUV(texCoord)).a;
         float viewDistance = length(viewPosition);
         if (pow2(cloudLinearDepth) * renderDistance < min(viewDistance, renderDistance)) {
+            // Ignore entities hidden behind the cloud volume.
             materialMask = 0;
             isEntity = false;
         }
@@ -108,6 +109,7 @@ vec4 DoTAAU() {
     if (!isHand) historyCoord = GetTAAUHistoryCoord(sourceTexel, opaqueDepth, viewPosition, isLodChunk);
 
     #ifdef CLOUDS_REIMAGINED
+        // Use cloud depth to reproject sky pixels that contain clouds.
         if (!isMoving && sceneDepth == 1.0 && opaqueDepth == 1.0 && !isLodChunk) {
             float cloudDepth = FindTAAUCloudDepth(sourcePosition, sourceTexel);
             if (IsValidTAAUCloudDepth(cloudDepth, sourceTexel)) {
@@ -120,12 +122,12 @@ vec4 DoTAAU() {
     vec3 historyColor = SampleHistory(historyCoord);
 
     if (historyColor == vec3(0.0) || any(isnan(historyColor)) || any(isinf(historyColor))) {
-        // The history is unavailable on the first frame and invalid after some camera transitions.
+        // History is missing on the first frame and can become invalid after camera transitions.
         return vec4(SampleFilteredCurrent(sourcePosition), isHand ? 0.0 : 1.0);
     }
 
     // History alpha recovers from 0 to 1 over four frames after a hand or entity leaves the pixel.
-    // Entity pixels store 2 + their history confidence instead.
+    // Entity pixels use 2 + confidence to keep the two states separate.
     ivec2 historyTexel = clamp(ivec2(historyCoord * view), ivec2(0), ivec2(view) - 1);
     float previousHistoryAlpha = texelFetch(colortex2, historyTexel, 0).a;
     float previousConfidence = clamp(previousHistoryAlpha - 2.0, 0.0, 1.0);
@@ -143,6 +145,7 @@ vec4 DoTAAU() {
     float colorWeight = 0.0;
     vec3 handFill = vec3(0.0);
 
+    // Build colour bounds for world history and variance for moving pixels.
     ivec2 maxSourceTexel = scaledViewSize - 1;
     for (int i = 0; i < 9; i++) {
         ivec2 offset = i < 8 ? neighbourhoodOffsets[i] : ivec2(0);
@@ -157,6 +160,7 @@ vec4 DoTAAU() {
             colorSquaredSum += weight * neighbourYCoCg * neighbourYCoCg;
             colorWeight += weight;
             if (isHand) {
+                // Keep a bilinear fallback for rejected hand history.
                 vec2 tent = max(1.0 - abs(sampleOffset), 0.0);
                 handFill += tent.x * tent.y * neighbourColor;
             }
@@ -170,8 +174,8 @@ vec4 DoTAAU() {
         float entityDistance = length(entityViewPosition.xyz / entityViewPosition.w);
         float entityDistanceFactor = 1.0 - exp2(-0.05 * max(entityDistance - 8.0, 0.0));
 
-        // Build confidence over half a second while the history stays within the neighbourhood's colour range,
-        // as it does for stationary entities. A mismatch halves it, since jitter alone causes some at the edges.
+        // Matching history builds confidence over half a second.
+        // A mismatch halves it because edge jitter can move a stationary entity outside the local range.
         float worldClipDistance = length(historyColor - worldHistoryColor) / (length(colorMax - colorMin) + 0.01);
         float historyConfidence = worldClipDistance < 0.1 ? min(previousConfidence + 2.0 * frameTime, 1.0)
                                                           : previousConfidence * 0.5;
@@ -182,6 +186,7 @@ vec4 DoTAAU() {
 
     float clipDistance = 0.0;
     if (isMoving) {
+        // Variance clipping limits trails from moving and recently uncovered pixels.
         vec3 mean = colorSum / colorWeight;
         vec3 sigma = sqrt(max(colorSquaredSum / colorWeight - mean * mean, 0.0));
         vec3 historyYCoCg = RGBToYCoCg(historyColor);
@@ -202,12 +207,12 @@ vec4 DoTAAU() {
         historyWeight = isHand ? (2.0 / 3.0) / (1.0 + clipDistance * clipDistance)
                                : min(historyWeight, 0.75) * exp(-4.0 * clipDistance);
 
-        // Approximate the old Gaussian with the centre sample; bilinear fill replaces rejected history.
+        // Preserve the Gaussian centre weight while filling rejected history from the current frame.
         float sampleBlend = isHand ? currentSampleWeight / (3.0 * (1.0 - historyWeight)) : currentSampleWeight;
         vec3 filteredCurrent = mix(isHand ? handFill : SampleFilteredCurrent(sourcePosition), currentColor, sampleBlend);
         vec3 movingColor = mix(historyColor, filteredCurrent, 1.0 - historyWeight);
 
-        // Keep more world history on distant or confident entities to reduce shimmer.
+        // Distant or stable entities keep more world history to reduce shimmer.
         resolvedColor = mix(movingColor, resolvedColor, distanceBlendFactor);
     }
 
