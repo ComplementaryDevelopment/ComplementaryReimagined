@@ -6,32 +6,26 @@ vec3 SampleFilteredCurrent(vec2 sourcePosition) {
 }
 
 vec2 GetTAAUHistoryCoord(ivec2 sourceTexel, float opaqueDepth, vec4 viewPosition, out bool isLodChunk) {
-    vec2 historyCoord = texCoord;
-    if (opaqueDepth > handDepthThreshold) {
-        historyCoord = Reprojection(viewPosition);
-    }
-
     isLodChunk = false;
     #if defined DISTANT_HORIZONS || defined VOXY
         if (opaqueDepth == 1.0) {
             #ifdef VOXY
-                float voxyDepth = texelFetch(vxDepthTexOpaque, sourceTexel, 0).r;
-                if (voxyDepth < 1.0) {
-                    historyCoord = Reprojection(vec3(texCoord, voxyDepth), vxProjInv, vxProjPrev);
-                    isLodChunk = true;
-                }
-            #elif defined DISTANT_HORIZONS
-                float distantHorizonsDepth = texelFetch(dhDepthTex1, sourceTexel, 0).r;
-                if (distantHorizonsDepth < 1.0) {
-                    historyCoord = Reprojection(vec3(texCoord, distantHorizonsDepth),
-                                                dhProjectionInverse, dhPreviousProjection);
-                    isLodChunk = true;
-                }
+                float lodDepth = texelFetch(vxDepthTexOpaque, sourceTexel, 0).r;
+            #else
+                float lodDepth = texelFetch(dhDepthTex1, sourceTexel, 0).r;
             #endif
+            isLodChunk = lodDepth < 1.0;
+            if (isLodChunk) {
+                #ifdef VOXY
+                    return Reprojection(vec3(texCoord, lodDepth), vxProjInv, vxProjPrev);
+                #else
+                    return Reprojection(vec3(texCoord, lodDepth), dhProjectionInverse, dhPreviousProjection);
+                #endif
+            }
         }
     #endif
 
-    return historyCoord;
+    return opaqueDepth > handDepthThreshold ? Reprojection(viewPosition) : texCoord;
 }
 
 #ifdef CLOUDS_REIMAGINED
@@ -39,7 +33,7 @@ vec2 GetTAAUHistoryCoord(ivec2 sourceTexel, float opaqueDepth, vec4 viewPosition
         // Cloud distance can exceed 1.0; exactly 1.0 means no cloud.
         // The top-right pixel is reserved for light shafts.
         return cloudDepth > 0.0 && cloudDepth != 1.0
-            && any(notEqual(sourceTexel, scaledViewSize - 1));
+            && sourceTexel != scaledViewSize - 1;
     }
 
     float FindTAAUCloudDepth(vec2 sourcePosition, ivec2 sourceTexel) {
@@ -51,7 +45,7 @@ vec2 GetTAAUHistoryCoord(ivec2 sourceTexel, float opaqueDepth, vec4 viewPosition
         for (int y = 0; y < 2; y++) {
             for (int x = 0; x < 2; x++) {
                 ivec2 sampleTexel = clamp(sampleBase + ivec2(x, y), ivec2(0), scaledViewSize - 1);
-                if (all(equal(sampleTexel, sourceTexel))) continue;
+                if (sampleTexel == sourceTexel) continue;
 
                 float sampleDepth = texelFetch(colortex5, sampleTexel, 0).a;
                 if (IsValidTAAUCloudDepth(sampleDepth, sampleTexel)) {
@@ -61,23 +55,11 @@ vec2 GetTAAUHistoryCoord(ivec2 sourceTexel, float opaqueDepth, vec4 viewPosition
         }
         return cloudDepth;
     }
-
-    vec2 ReprojectTAAUCloud(vec2 historyCoord, vec4 viewPosition, vec2 sourcePosition, ivec2 sourceTexel,
-                           float sceneDepth, float opaqueDepth, bool isMoving, bool isLodChunk) {
-        if (isMoving || sceneDepth != 1.0 || opaqueDepth != 1.0 || isLodChunk) return historyCoord;
-
-        float cloudDepth = FindTAAUCloudDepth(sourcePosition, sourceTexel);
-        if (!IsValidTAAUCloudDepth(cloudDepth, sourceTexel)) return historyCoord;
-
-        float cloudDistance = cloudDepth * cloudDepth * renderDistance;
-        vec4 cloudViewPosition = vec4(normalize(viewPosition.xyz) * cloudDistance, 1.0);
-        return Reprojection(cloudViewPosition);
-    }
 #endif
 
 // Entities move without motion vectors, so camera reprojection can't follow them.
 bool IsTAAUEntity(int materialMask) {
-    return abs(float(materialMask) - 149.5) < 50.0 // Entity Reflection Handling (see common.glsl for details)
+    return (materialMask >= 100 && materialMask <= 199) // Entity Reflection Handling (see common.glsl for details)
         || materialMask == 254; // No SSAO, No TAA, Reduce Reflection
 }
 
@@ -94,8 +76,7 @@ vec4 DoTAAU() {
     float sceneDepth = texelFetch(depthtex0, sourceTexel, 0).r;
     int materialMask = int(texelFetch(colortex6, sourceTexel, 0).g * 255.1);
 
-    vec4 screenPosition = vec4(texCoord, opaqueDepth, 1.0);
-    vec4 viewPosition = gbufferProjectionInverse * (screenPosition * 2.0 - 1.0);
+    vec4 viewPosition = gbufferProjectionInverse * (vec4(texCoord, opaqueDepth, 1.0) * 2.0 - 1.0);
     viewPosition /= viewPosition.w;
 
     // Extend hand and entity treatment to the neighbouring silhouette pixels, which jitter would otherwise toggle.
@@ -127,10 +108,13 @@ vec4 DoTAAU() {
     if (!isHand) historyCoord = GetTAAUHistoryCoord(sourceTexel, opaqueDepth, viewPosition, isLodChunk);
 
     #ifdef CLOUDS_REIMAGINED
-        historyCoord = ReprojectTAAUCloud(
-            historyCoord, viewPosition, sourcePosition, sourceTexel,
-            sceneDepth, opaqueDepth, isMoving, isLodChunk
-        );
+        if (!isMoving && sceneDepth == 1.0 && opaqueDepth == 1.0 && !isLodChunk) {
+            float cloudDepth = FindTAAUCloudDepth(sourcePosition, sourceTexel);
+            if (IsValidTAAUCloudDepth(cloudDepth, sourceTexel)) {
+                float cloudDistance = cloudDepth * cloudDepth * renderDistance;
+                historyCoord = Reprojection(vec4(normalize(viewPosition.xyz) * cloudDistance, 1.0));
+            }
+        }
     #endif
 
     vec3 historyColor = SampleHistory(historyCoord);
@@ -147,14 +131,7 @@ vec4 DoTAAU() {
     float previousConfidence = clamp(previousHistoryAlpha - 2.0, 0.0, 1.0);
     if (previousHistoryAlpha >= 2.0) previousHistoryAlpha = 0.0;
 
-    float entityDistanceFactor = 0.0;
-    if (isEntity) {
-        // At a silhouette the nearest surface is the entity, not the background behind it.
-        vec4 entityViewPosition = gbufferProjectionInverse * (vec4(texCoord, nearestDepth, 1.0) * 2.0 - 1.0);
-        float entityDistance = length(entityViewPosition.xyz / entityViewPosition.w);
-        entityDistanceFactor = 1.0 - exp2(-0.05 * max(entityDistance - 8.0, 0.0));
-    }
-    float distanceBlendFactor = isMoving ? entityDistanceFactor : previousHistoryAlpha;
+    float distanceBlendFactor = isMoving ? 0.0 : previousHistoryAlpha;
     float historyAlpha = isMoving ? 0.0 : min(previousHistoryAlpha + 0.25, 1.0);
     isMoving = isMoving || previousHistoryAlpha < 1.0;
 
@@ -187,7 +164,20 @@ vec4 DoTAAU() {
     }
 
     vec3 worldHistoryColor = ClipAABB(historyColor, colorMin, colorMax);
-    float worldClipDistance = length(historyColor - worldHistoryColor) / (length(colorMax - colorMin) + 0.01);
+    if (isEntity) {
+        // At a silhouette the nearest surface is the entity, not the background behind it.
+        vec4 entityViewPosition = gbufferProjectionInverse * (vec4(texCoord, nearestDepth, 1.0) * 2.0 - 1.0);
+        float entityDistance = length(entityViewPosition.xyz / entityViewPosition.w);
+        float entityDistanceFactor = 1.0 - exp2(-0.05 * max(entityDistance - 8.0, 0.0));
+
+        // Build confidence over half a second while the history stays within the neighbourhood's colour range,
+        // as it does for stationary entities. A mismatch halves it, since jitter alone causes some at the edges.
+        float worldClipDistance = length(historyColor - worldHistoryColor) / (length(colorMax - colorMin) + 0.01);
+        float historyConfidence = worldClipDistance < 0.1 ? min(previousConfidence + 2.0 * frameTime, 1.0)
+                                                          : previousConfidence * 0.5;
+        distanceBlendFactor = max(entityDistanceFactor, historyConfidence);
+        historyAlpha = 2.0 + historyConfidence;
+    }
     if (!isHand) historyColor = worldHistoryColor;
 
     float clipDistance = 0.0;
@@ -200,37 +190,25 @@ vec4 DoTAAU() {
         historyColor = YCoCgToRGB(clippedHistory);
     }
 
-    if (isEntity) {
-        // Build confidence over half a second while the history stays within the neighbourhood's colour range,
-        // as it does for stationary entities. A mismatch halves it, since jitter alone causes some at the edges.
-        float historyConfidence = worldClipDistance < 0.1 ? min(previousConfidence + 2.0 * frameTime, 1.0)
-                                                          : previousConfidence * 0.5;
-        distanceBlendFactor = max(distanceBlendFactor, historyConfidence);
-        historyAlpha = 2.0 + historyConfidence;
-    }
-
     float historyWeight = GetHistoryWeight(historyCoord, opaqueDepth, materialMask, edge, isLodChunk);
 
-    vec3 resolvedColor;
     if (historyWeight == 0.0) {
-        resolvedColor = SampleFilteredCurrent(sourcePosition);
         historyAlpha = isHand ? 0.0 : (isEntity ? 2.0 : 1.0);
-    } else if (isMoving && distanceBlendFactor < 1.0) {
-        float worldHistoryWeight = historyWeight;
+        return vec4(clamp(SampleFilteredCurrent(sourcePosition), 0.0, 1.0), historyAlpha);
+    }
+
+    vec3 resolvedColor = mix(worldHistoryColor, currentColor, (1.0 - historyWeight) * currentSampleWeight);
+    if (isMoving && distanceBlendFactor < 1.0) {
         historyWeight = isHand ? (2.0 / 3.0) / (1.0 + clipDistance * clipDistance)
                                : min(historyWeight, 0.75) * exp(-4.0 * clipDistance);
 
         // Approximate the old Gaussian with the centre sample; bilinear fill replaces rejected history.
         float sampleBlend = isHand ? currentSampleWeight / (3.0 * (1.0 - historyWeight)) : currentSampleWeight;
         vec3 filteredCurrent = mix(isHand ? handFill : SampleFilteredCurrent(sourcePosition), currentColor, sampleBlend);
-        resolvedColor = mix(historyColor, filteredCurrent, 1.0 - historyWeight);
+        vec3 movingColor = mix(historyColor, filteredCurrent, 1.0 - historyWeight);
 
         // Keep more world history on distant or confident entities to reduce shimmer.
-        vec3 worldColor = mix(worldHistoryColor, currentColor,
-                              (1.0 - worldHistoryWeight) * currentSampleWeight);
-        resolvedColor = mix(resolvedColor, worldColor, distanceBlendFactor);
-    } else {
-        resolvedColor = mix(worldHistoryColor, currentColor, (1.0 - historyWeight) * currentSampleWeight);
+        resolvedColor = mix(movingColor, resolvedColor, distanceBlendFactor);
     }
 
     return vec4(clamp(resolvedColor, 0.0, 1.0), historyAlpha);
