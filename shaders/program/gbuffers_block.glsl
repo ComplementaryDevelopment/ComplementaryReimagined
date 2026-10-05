@@ -105,7 +105,7 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 void main() {
     RenderScaleSkipOutside();
 
-    vec4 color = texture2D(tex, texCoord);
+    vec4 color = texture2DMaterial(tex, texCoord);
     #ifdef GENERATED_NORMALS
         vec3 colorP = color.rgb;
     #endif

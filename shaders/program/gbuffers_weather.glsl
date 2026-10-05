@@ -40,10 +40,10 @@ float sunVisibility2 = sunVisibility * sunVisibility;
 void main() {
     RenderScaleSkipOutside();
 
-    vec4 color = texture2D(tex, texCoord);
+    vec4 color = texture2DMaterial(tex, texCoord);
 
     #ifdef IMPROVED_RAIN
-        vec4 sampleRain = texture2D(tex, texCoord * vec2(2.0, 1.0));
+        vec4 sampleRain = texture2DMaterial(tex, texCoord * vec2(2.0, 1.0));
         if (sampleRain.r + sampleRain.g < 1.5 && (sampleRain.a > 0.0 || color.r + color.g < 1.5)) color = sampleRain;
     #endif
 

@@ -159,7 +159,7 @@ void main() {
     RenderScaleSkipOutside();
 
     #if ANISOTROPIC_FILTER == 0 || !defined ANISOTROPIC_FILTER_ON_TRANSLUCENTS
-        vec4 colorP = texture2D(tex, texCoord);
+        vec4 colorP = texture2DMaterial(tex, texCoord);
     #else
         vec4 colorP = textureAF(tex, texCoord);
     #endif

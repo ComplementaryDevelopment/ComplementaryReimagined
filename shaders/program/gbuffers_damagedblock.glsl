@@ -27,7 +27,7 @@ flat in vec4 glColor;
 void main() {
     RenderScaleSkipOutside();
 
-    vec4 color = texture2D(tex, texCoord);
+    vec4 color = texture2DMaterial(tex, texCoord);
 
     #ifdef GBUFFERS_COLORWHEEL
         vec2 lmcoord;

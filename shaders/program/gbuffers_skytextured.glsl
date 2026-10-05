@@ -48,7 +48,7 @@ void main() {
 
     #ifdef OVERWORLD
         vec2 tSize = textureSize(tex, 0);
-        vec4 color = texture2D(tex, texCoord);
+        vec4 color = texture2DMaterial(tex, texCoord);
         color.rgb *= glColor.rgb;
 
         vec4 screenPos = vec4(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z, 1.0);

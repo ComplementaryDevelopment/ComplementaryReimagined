@@ -27,7 +27,7 @@ in vec4 glColor;
 void main() {
     RenderScaleSkipOutside();
 
-    vec4 color = texture2D(tex, texCoord) * glColor;
+    vec4 color = texture2DMaterial(tex, texCoord) * glColor;
 
     color.rgb = pow1_5(color.rgb) * (
         1.5

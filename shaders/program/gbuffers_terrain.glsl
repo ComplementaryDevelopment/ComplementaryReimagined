@@ -202,7 +202,7 @@ void main() {
     RenderScaleSkipOutside();
 
     #if ANISOTROPIC_FILTER == 0
-        vec4 color = texture2D(tex, texCoord);
+        vec4 color = texture2DMaterial(tex, texCoord);
     #else
         vec4 color = textureAF(tex, texCoord);
     #endif

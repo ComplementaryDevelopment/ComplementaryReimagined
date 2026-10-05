@@ -60,7 +60,7 @@ void main() {
     #if CLOUD_STYLE_DEFINE != 50
         discard;
     #else
-        vec4 color = texture2D(tex, texCoord) * vec4(vec3(1.0), glColor.a);
+        vec4 color = texture2DMaterial(tex, texCoord) * vec4(vec3(1.0), glColor.a);
 
         color.rgb *= 1.0 + 0.15 * dot(upVec, normal) - 0.1 * abs(dot(northVec, normal)) - rainFactor * 0.2;
 

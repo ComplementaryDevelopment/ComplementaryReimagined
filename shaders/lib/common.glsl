@@ -591,10 +591,12 @@
         #endif
         #define TAA_JITTER_M 3
         #define TAA_SMOOTHING_M 3
+        #define texture2DMaterial(sampler, uv) texture2D(sampler, uv, log2(RENDER_SCALE_M))
     #else
         #define RENDER_SCALE_M 1.0
         #define TAA_JITTER_M TAA_JITTER
         #define TAA_SMOOTHING_M TAA_SMOOTHING
+        #define texture2DMaterial(sampler, uv) texture2D(sampler, uv)
     #endif
 
     #define scaledViewSize (RENDER_SCALE_M < 1.0 ? ivec2(vec2(viewWidth, viewHeight) * RENDER_SCALE_M) : ivec2(viewWidth, viewHeight))
