@@ -91,41 +91,36 @@ void main() {
         #endif
     #endif
 
-    #if defined TAAU_BLOOM || defined BLOOM_FOG
-        vec3 color = texelFetch(sceneTex, texelCoord, 0).rgb;
+    vec3 color = texelFetch(sceneTex, texelCoord, 0).rgb;
 
-        #ifdef BLOOM_FOG
-            float z0 = texture2D(depthtex0, ToBufferUV(texCoord)).r;
-            vec4 screenPos = vec4(texCoord, z0, 1.0);
-            vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
-            viewPos /= viewPos.w;
-            float lViewPos = length(viewPos.xyz);
+    #ifdef BLOOM_FOG
+        float z0 = texture2D(depthtex0, ToBufferUV(texCoord)).r;
+        vec4 screenPos = vec4(texCoord, z0, 1.0);
+        vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+        viewPos /= viewPos.w;
+        float lViewPos = length(viewPos.xyz);
 
-            #if defined DISTANT_HORIZONS || defined VOXY
-                #ifdef DISTANT_HORIZONS
-                    float z0lod = texelFetch(dhDepthTex, texelCoord, 0).r;
-                    vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
-                    vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
-                #elif defined VOXY
-                    float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
-                    vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
-                    vec4 viewPosLod = vxProjInv * (screenPosLod * 2.0 - 1.0);
-                #endif
-                viewPosLod /= viewPosLod.w;
-                lViewPos = min(lViewPos, length(viewPosLod.xyz));
+        #if defined DISTANT_HORIZONS || defined VOXY
+            #ifdef DISTANT_HORIZONS
+                float z0lod = texelFetch(dhDepthTex, texelCoord, 0).r;
+                vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+                vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
+            #elif defined VOXY
+                float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
+                vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+                vec4 viewPosLod = vxProjInv * (screenPosLod * 2.0 - 1.0);
             #endif
-
-            color /= GetBloomFog(lViewPos);
+            viewPosLod /= viewPosLod.w;
+            lViewPos = min(lViewPos, length(viewPosLod.xyz));
         #endif
+
+        color /= GetBloomFog(lViewPos);
     #endif
 
-    /* DRAWBUFFERS:3 */
+    // Always write colortex0, Optifine can't reliably tell when BLOOM_FOG is defined
+    /* DRAWBUFFERS:30 */
     gl_FragData[0] = vec4(blur, 1.0);
-
-    #if defined TAAU_BLOOM || defined BLOOM_FOG
-        /* DRAWBUFFERS:30 */
-        gl_FragData[1] = vec4(color, 1.0);
-    #endif
+    gl_FragData[1] = vec4(color, 1.0);
 
     #if defined TAAU_BLOOM && (LIGHTSHAFT_QUALI_DEFINE > 0 && LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 && defined OVERWORLD || defined END)
         /* DRAWBUFFERS:305 */

@@ -648,6 +648,11 @@
         #define TAAU_BLOOM
     #endif
 
+    #ifndef IS_IRIS
+        #undef TAAU
+        #undef TAAU_BLOOM
+    #endif
+
     #if BLOOM_ENABLED == -1
         #undef BLOOM_FOG
     #endif
