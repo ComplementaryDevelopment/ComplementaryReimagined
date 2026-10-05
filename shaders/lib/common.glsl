@@ -578,7 +578,7 @@
 
 //Define Handling//
     // Render Scale
-    #if defined IS_IRIS && RENDER_SCALE_PCT < 100 && defined TAA
+    #if RENDER_SCALE_PCT < 100 && defined TAA
         #define TAAU 1
         #if RENDER_SCALE_PCT == 50
             #define RENDER_SCALE_M 0.50
@@ -646,11 +646,6 @@
 
     #if defined TAAU && BLOOM_ENABLED == 1
         #define TAAU_BLOOM
-    #endif
-
-    #ifndef IS_IRIS
-        #undef TAAU
-        #undef TAAU_BLOOM
     #endif
 
     #if BLOOM_ENABLED == -1

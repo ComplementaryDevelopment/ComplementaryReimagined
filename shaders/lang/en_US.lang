@@ -292,7 +292,7 @@ value.COLORED_LIGHTING.768=§4§l§n§o24 Chunks §r§c[-]
 value.COLORED_LIGHTING.1024=§4§k-§r§4§l§n§o32 Chunks§r§4§k- §r§c[-]
 
 option.RENDER_SCALE_PCT=Render Scale
-option.RENDER_SCALE_PCT.comment=Renders the world at a lower resolution and uses the Temporal Filter to upscale the image. §a[+]§r Improves performance, especially at high screen resolutions. §c[-]§r Can reduce image clarity, especially on distant details and during movement. §e[*]§r Requires Temporal Filtering. §e[*]§r It's recommended to disable Waving Grass and Waving Leaves. §e[*]§r This feature only works on Iris.
+option.RENDER_SCALE_PCT.comment=Renders the world at a lower resolution and uses the Temporal Filter to upscale the image. §a[+]§r Improves performance, especially at high screen resolutions. §c[-]§r Can reduce image clarity, especially on distant details and during movement. §e[*]§r Requires Temporal Filtering. §e[*]§r It's recommended to disable Waving Grass and Waving Leaves.
 value.RENDER_SCALE_PCT.100=§cNative
 value.RENDER_SCALE_PCT.85=§eUltra Quality
 value.RENDER_SCALE_PCT.75=§eQuality
