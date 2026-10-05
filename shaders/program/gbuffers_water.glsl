@@ -287,6 +287,15 @@ void main() {
         color.a *= fog;
     #endif
 
+    #ifdef TAAU
+        // Mirror image distance = surface + reflection distance
+        #if WATER_REFLECT_QUALITY >= 0
+            vec4 Reflection = vec4(lViewPos + refDist, fresnelM * color.a, 0.0, 1.0);
+        #else
+            vec4 Reflection = vec4(0.0, 0.0, 0.0, 1.0);
+        #endif
+    #endif
+
     /* DRAWBUFFERS:03 */
     gl_FragData[0] = color;
     gl_FragData[1] = vec4(1.0 - translucentMult.rgb, translucentMult.a);
@@ -300,11 +309,27 @@ void main() {
             /* DRAWBUFFERS:03648 */
             gl_FragData[3] = vec4(mat3(gbufferModelViewInverse) * normalM, sqrt(fresnelM * color.a * fogAlpha));
             gl_FragData[4] = vec4(reflection.rgb * fresnelM * color.a * fogAlpha, reflection.a);
+
+            #ifdef TAAU
+                /* RENDERTARGETS: 0,3,6,4,8,10 */
+                gl_FragData[5] = Reflection;
+            #endif
+        #elif defined TAAU
+            /* RENDERTARGETS: 0,3,6,10 */
+            gl_FragData[3] = Reflection;
         #endif
     #elif WORLD_SPACE_REFLECTIONS > 0
         /* DRAWBUFFERS:0348 */
         gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, sqrt(fresnelM * color.a * fogAlpha));
         gl_FragData[3] = vec4(reflection.rgb * fresnelM * color.a * fogAlpha, reflection.a);
+
+        #ifdef TAAU
+            /* RENDERTARGETS: 0,3,4,8,10 */
+            gl_FragData[4] = Reflection;
+        #endif
+    #elif defined TAAU
+        /* RENDERTARGETS: 0,3,10 */
+        gl_FragData[2] = Reflection;
     #endif
 }
 
