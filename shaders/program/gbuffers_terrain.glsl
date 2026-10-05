@@ -199,6 +199,8 @@ void DoOceanBlockTweaks(inout float smoothnessD) {
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     #if ANISOTROPIC_FILTER == 0
         vec4 color = texture2D(tex, texCoord);
     #else
@@ -224,7 +226,7 @@ void main() {
         color.rgb *= glColor.rgb;
     #endif
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
     #else
@@ -510,6 +512,8 @@ void main() {
     #ifdef IRIS_FEATURE_FADE_VARIABLE
         chunkFade = mc_chunkFade;
     #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

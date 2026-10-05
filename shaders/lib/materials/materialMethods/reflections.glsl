@@ -98,19 +98,23 @@ vec4 GetReflection(inout vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerP
                 refPos = nvec3(gbufferProjection * vec4(viewPosRT, 1.0)) * 0.5 + 0.5;
                 if (abs(refPos.x - 0.5) > rEdge.x || abs(refPos.y - 0.5) > rEdge.y) break;
 
-                sampleDepth = texture2D(depthtex, refPos.xy).r;
+                #ifdef VOXY_PATCH
+                    sampleDepth = texture2D(depthtex, LodBufferUV(refPos.xy)).r;
+                #else
+                    sampleDepth = texture2D(depthtex, ToBufferUV(refPos.xy)).r;
+                #endif
                 rfragpos = nvec3(gbufferProjectionInverse * vec4(vec3(refPos.xy, sampleDepth) * 2.0 - 1.0, 1.0));
 
                 #if defined GBUFFERS_WATER && (defined DISTANT_HORIZONS || defined VOXY)
                     if (sampleDepth >= 1.0) {
                         #ifdef VOXY
-                            sampleDepth = texture2D(vxDepthTexOpaque, refPos.xy).r;
+                            sampleDepth = texture2D(vxDepthTexOpaque, LodBufferUV(refPos.xy)).r;
                             if (sampleDepth < 1.0) {
                                 rfragpos = nvec3(vxProjInv * vec4(vec3(refPos.xy, sampleDepth) * 2.0 - 1.0, 1.0));
                             }
                         #endif
                         #ifdef DISTANT_HORIZONS
-                            sampleDepth = texture2D(dhDepthTex1, refPos.xy).r;
+                            sampleDepth = texture2D(dhDepthTex1, LodBufferUV(refPos.xy)).r;
                             if (sampleDepth < 1.0) {
                                 rfragpos = nvec3(dhProjectionInverse * vec4(vec3(refPos.xy, sampleDepth) * 2.0 - 1.0, 1.0));
                             }
@@ -185,9 +189,9 @@ vec4 GetReflection(inout vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerP
 
                     #if defined GBUFFERS_WATER || defined DH_WATER || defined VOXY_PATCH
                         #ifndef VOXY_PATCH
-                            reflection = vec4(texture2D(gaux2, refPos.xy).rgb, 1.0);
+                            reflection = vec4(texture2D(gaux2, ToBufferUV(refPos.xy)).rgb, 1.0);
                         #else
-                            reflection = vec4(texture2D(colortex19, refPos.xy).rgb, 1.0);
+                            reflection = vec4(texture2D(colortex19, ToBufferUV(refPos.xy)).rgb, 1.0);
                         #endif
                         reflection.rgb = pow2(reflection.rgb * 2.0);
                     #else
@@ -197,7 +201,7 @@ vec4 GetReflection(inout vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerP
                         if (z0 <= 0.56) lod *= 2.22; // Using more lod to compensate for less roughness noise on held items
                         lod = max(lod - 1.0, 0.0);
 
-                        reflection.rgb = texture2DLod(colortex5, refPos.xy, lod).rgb;
+                        reflection.rgb = texture2DLod(colortex5, ToBufferUV(refPos.xy), lod).rgb;
                         reflection.rgb = pow2(reflection.rgb * 2.0);
                     #endif
 
@@ -240,13 +244,13 @@ vec4 GetReflection(inout vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerP
             if (screenPosRM.x < rEdge.x && screenPosRM.y < rEdge.y) {
                 vec2 edgeFactor = pow2(pow2(pow2(screenPosRM / rEdge)));
                 screenPosR.y += (dither - 0.5) * (0.03 * (edgeFactor.x + edgeFactor.y) + 0.001);
-                float z1R = texture2D(depthtex1, screenPosR.xy).x;
+                float z1R = texture2D(depthtex1, ToBufferUV(screenPosR.xy)).x;
                 screenPosR.z = z1R;
                 vec3 viewPosR = ScreenToView(screenPosR);
                 float lViewPosR = length(viewPosR);
 
                 #ifdef DISTANT_HORIZONS
-                    float z1RDH = texture2D(dhDepthTex, screenPosR.xy).x;
+                    float z1RDH = texture2D(dhDepthTex, LodBufferUV(screenPosR.xy)).x;
                     vec4 screenPos1DH = vec4(screenPosR.xy, z1RDH, 1.0);
                     vec4 viewPos1DH = dhProjectionInverse * (screenPos1DH * 2.0 - 1.0);
                     viewPos1DH /= viewPos1DH.w;
@@ -256,7 +260,7 @@ vec4 GetReflection(inout vec3 normalM, vec3 viewPos, vec3 nViewPos, vec3 playerP
                 #endif
 
                 if (z1R < 0.9999 && lViewPos <= 2.0 + lViewPosR) {
-                    reflection.rgb = texture2D(gaux2, screenPosR.xy).rgb;
+                    reflection.rgb = texture2D(gaux2, ToBufferUV(screenPosR.xy)).rgb;
                     reflection.rgb = pow2(reflection.rgb * 2.0);
 
                     edgeFactor = 1.0 - edgeFactor;

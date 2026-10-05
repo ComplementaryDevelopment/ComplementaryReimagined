@@ -28,8 +28,8 @@ void DoDarkOutline(inout vec3 color, float z0) {
 
     for (int i = 0; i < sampleCount; i++) {
         vec2 offset = scale * darkOutlineOffsets[i];
-        sampleZA = texture2D(depthtex0, texCoord + offset).r;
-        sampleZB = texture2D(depthtex0, texCoord - offset).r;
+        sampleZA = texture2D(depthtex0, ToBufferUV(texCoord + offset)).r;
+        sampleZB = texture2D(depthtex0, ToBufferUV(texCoord - offset)).r;
         float sampleZsum = GetLinearDepth(sampleZA) + GetLinearDepth(sampleZB);
         outline *= clamp(1.0 - (z - sampleZsum * far), 0.0, 1.0);
         minZ = min(minZ, min(sampleZA, sampleZB));

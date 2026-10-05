@@ -60,11 +60,11 @@ void DoLensFlare(inout vec3 color, vec3 viewPos, float dither) {
         vec2 checkCoord1 = screenPosSun.xy + cOffset;
         vec2 checkCoord2 = screenPosSun.xy - cOffset;
 
-        float zSample1 = texture2D(depthtex0, checkCoord1).r;
-        float zSample2 = texture2D(depthtex0, checkCoord2).r;
+        float zSample1 = texture2DLod(depthtex0, ToBufferUV(checkCoord1), 0.0).r;
+        float zSample2 = texture2DLod(depthtex0, ToBufferUV(checkCoord2), 0.0).r;
         #ifdef VL_CLOUDS_ACTIVE
-            float cloudLinearDepth1 = texture2D(colortex5, checkCoord1).a;
-            float cloudLinearDepth2 = texture2D(colortex5, checkCoord2).a;
+            float cloudLinearDepth1 = texture2DLod(colortex5, ToBufferUV(checkCoord1), 0.0).a;
+            float cloudLinearDepth2 = texture2DLod(colortex5, ToBufferUV(checkCoord2), 0.0).a;
             zSample1 = min(zSample1, cloudLinearDepth1);
             zSample2 = min(zSample2, cloudLinearDepth2);
         #endif

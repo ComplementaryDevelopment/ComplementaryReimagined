@@ -46,8 +46,14 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
+
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     vec4 color = texture2D(tex, texCoord);
     vec3 colorP = color.rgb;
     color *= glColor;
@@ -110,6 +116,9 @@ out vec4 glColor;
 //Common Functions//
 
 //Includes//
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
 
 //Program//
 void main() {
@@ -133,6 +142,12 @@ void main() {
     #if defined FLICKERING_FIX && SHADOW_QUALITY == -1
         if (glColor.a < 0.5) gl_Position.z += 0.0005;
     #endif
+
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

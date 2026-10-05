@@ -55,6 +55,8 @@
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     #if CLOUD_STYLE_DEFINE != 50
         discard;
     #else
@@ -82,7 +84,7 @@ void main() {
         #endif
 
         #if defined BORDER_FOG || defined VOXY
-            vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+            vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
             #ifdef TAA
                 vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
             #else
@@ -181,6 +183,8 @@ void main() {
             gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
         #endif
     #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

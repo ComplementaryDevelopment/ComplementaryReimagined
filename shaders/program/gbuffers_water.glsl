@@ -156,6 +156,8 @@ float GetLinearDepth(float depth) {
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     #if ANISOTROPIC_FILTER == 0 || !defined ANISOTROPIC_FILTER_ON_TRANSLUCENTS
         vec4 colorP = texture2D(tex, texCoord);
     #else
@@ -173,7 +175,7 @@ void main() {
         vec4 color = colorP * vec4(glColor.rgb, 1.0);
     #endif
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
     #else
@@ -436,6 +438,8 @@ void main() {
     #if MC_VERSION >= 260100
         if (mat == 10049) mat = 32001; // Cauldron Water
     #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

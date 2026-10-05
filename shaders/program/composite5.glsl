@@ -2,6 +2,9 @@
 // Complementary Shaders by EminGT //
 /////////////////////////////////////
 
+// Full-size DoF / distance blur after TAA/U
+// Depth is still scaled, but the HDR color is full size
+
 //Common//
 #include "/lib/common.glsl"
 
@@ -58,6 +61,10 @@
 
 //Common Functions//
 #if WORLD_BLUR > 0
+    #ifdef TAA
+        #include "/lib/antialiasing/jitter.glsl"
+    #endif
+
     void DoWorldBlur(inout vec3 color, float z1, float lViewPos0) {
         if (z1 < 0.56) return;
         vec3 dof = vec3(0.0);
@@ -118,16 +125,19 @@
     }
 #endif
 
-//Includes//
-
-
 //Program//
 void main() {
     vec3 color = texelFetch(colortex0, texelCoord, 0).rgb;
 
     #if WORLD_BLUR > 0
-        float z1 = texelFetch(depthtex1, texelCoord, 0).r;
-        float z0 = texelFetch(depthtex0, texelCoord, 0).r;
+        #ifdef TAA
+            vec2 sceneCoord = TAAJitter(texCoord, 0.5);
+        #else
+            vec2 sceneCoord = texCoord;
+        #endif
+        ivec2 depthTexel = clamp(ScaledTexelCoord(sceneCoord), ivec2(0), scaledViewSize - 1);
+        float z1 = texelFetch(depthtex1, depthTexel, 0).r;
+        float z0 = texelFetch(depthtex0, depthTexel, 0).r;
 
         vec4 screenPos = vec4(texCoord, z0, 1.0);
         vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
@@ -136,11 +146,11 @@ void main() {
 
         #if defined DISTANT_HORIZONS || defined VOXY
             #ifdef DISTANT_HORIZONS
-                float z0lod = texelFetch(dhDepthTex, texelCoord, 0).r;
+                float z0lod = texelFetch(dhDepthTex, depthTexel, 0).r;
                 vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
                 vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
             #elif defined VOXY
-                float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
+                float z0lod = texelFetch(vxDepthTexTrans, depthTexel, 0).r;
                 vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
                 vec4 viewPosLod = vxProjInv * (screenPosLod * 2.0 - 1.0);
             #endif
@@ -149,7 +159,6 @@ void main() {
         #endif
 
         DoWorldBlur(color, z1, lViewPos);
-
     #endif
 
     /* DRAWBUFFERS:0 */

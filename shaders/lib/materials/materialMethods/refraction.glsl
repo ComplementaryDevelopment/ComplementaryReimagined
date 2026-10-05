@@ -27,17 +27,17 @@ vec2 DoRefraction(inout vec3 color, inout float z0, inout float z1, vec3 viewPos
 
     vec2 refractCoord = texCoord.xy + refractNoise;
 
-    if (int(texture2D(colortex6, refractCoord).g * 255.1) != 241) return texCoord.xy;
+    if (int(texture2D(colortex6, ToBufferUV(refractCoord)).g * 255.1) != 241) return texCoord.xy;
 
-    float z0check = texture2D(depthtex0, refractCoord).r;
-    float z1check = texture2D(depthtex1, refractCoord).r;
+    float z0check = texture2D(depthtex0, ToBufferUV(refractCoord)).r;
+    float z1check = texture2D(depthtex1, ToBufferUV(refractCoord)).r;
     float approxDifCheck = GetApproxDistance(z1check) - GetApproxDistance(z0check);
     refractNoise *= clamp(approxDifCheck, 0.0, 1.0);
 
     // Sample
     refractCoord = texCoord.xy + refractNoise;
-    color = texture2D(colortex0, refractCoord).rgb;
-    z0 = texture2D(depthtex0, refractCoord).r;
-    z1 = texture2D(depthtex1, refractCoord).r;
+    color = texture2D(colortex0, ToBufferUV(refractCoord)).rgb;
+    z0 = texture2D(depthtex0, ToBufferUV(refractCoord)).r;
+    z1 = texture2D(depthtex1, ToBufferUV(refractCoord)).r;
     return refractCoord;
 }

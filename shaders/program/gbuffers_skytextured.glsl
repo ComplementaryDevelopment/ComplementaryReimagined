@@ -38,14 +38,23 @@ flat in vec4 glColor;
     #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
+
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     #ifdef OVERWORLD
         vec2 tSize = textureSize(tex, 0);
         vec4 color = texture2D(tex, texCoord);
         color.rgb *= glColor.rgb;
 
-        vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
+        vec4 screenPos = vec4(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z, 1.0);
+        #ifdef TAA
+            if (RENDER_SCALE_M < 1.0) screenPos.xy = TAAJitter(screenPos.xy, -0.5);
+        #endif
         vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
         viewPos /= viewPos.w;
         vec3 nViewPos = normalize(viewPos.xyz);
@@ -140,6 +149,9 @@ flat out vec4 glColor;
 //Common Functions//
 
 //Includes//
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
 
 //Program//
 void main() {
@@ -152,6 +164,12 @@ void main() {
         upVec = normalize(gbufferModelView[1].xyz);
         sunVec = GetSunVector();
     #endif
+
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

@@ -155,6 +155,10 @@ void DoBSLColorSaturation(inout vec3 color) {
     #include "/lib/util/dither.glsl"
 #endif
 
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
+
 #if LENSFLARE_MODE > 0 && defined OVERWORLD
     #include "/lib/misc/lensFlare.glsl"
 #endif
@@ -166,7 +170,12 @@ void main() {
     {
         color = vec3(0.0);
 
-        float z = texture2D(depthtex1, texCoord).x;
+        #ifdef TAA
+            vec2 depthCoord = TAAJitter(texCoord, 0.5);
+        #else
+            vec2 depthCoord = texCoord;
+        #endif
+        float z = texture2D(depthtex1, ToBufferUV(depthCoord)).x;
         float dither = Bayer64(gl_FragCoord.xy);
 
         if (z <= 0.56) {
@@ -184,11 +193,11 @@ void main() {
 
             #if defined DISTANT_HORIZONS || defined VOXY
                 #ifdef DISTANT_HORIZONS
-                    float z1lod = texelFetch(dhDepthTex1, texelCoord, 0).r;
+                    float z1lod = texelFetch(dhDepthTex1, ScaledTexelCoord(depthCoord), 0).r;
                     vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
                     vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
                 #elif defined VOXY
-                    float z1lod = texelFetch(vxDepthTexOpaque, texelCoord, 0).r;
+                    float z1lod = texelFetch(vxDepthTexOpaque, ScaledTexelCoord(depthCoord), 0).r;
                     vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
                     vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
                 #endif
@@ -220,7 +229,7 @@ void main() {
                 vec3 sampleb = texture2DLod(colortex0, coordb, 0).rgb;
 
                 #ifdef MOTION_BLUR_BLOOM_FOG_FIX
-                    float z1 = texture2D(depthtex1, coordb).r;
+                    float z1 = texture2D(depthtex1, ToBufferUV(coordb)).r;
                     vec4 screenPos = vec4(coordb, z1, 1.0);
                     vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
                     viewPos /= viewPos.w;
@@ -228,11 +237,11 @@ void main() {
 
                     #if defined DISTANT_HORIZONS || defined VOXY
                         #ifdef DISTANT_HORIZONS
-                            float z1lod = texture2D(dhDepthTex1, coordb).r;
+                            float z1lod = texture2D(dhDepthTex1, LodBufferUV(coordb)).r;
                             vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
                             vec4 viewPos1Lod = dhProjectionInverse * (screenPos1Lod * 2.0 - 1.0);
                         #elif defined VOXY
-                            float z1lod = texture2D(vxDepthTexOpaque, coordb).r;
+                            float z1lod = texture2D(vxDepthTexOpaque, LodBufferUV(coordb)).r;
                             vec4 screenPos1Lod = vec4(texCoord, z1lod, 1.0);
                             vec4 viewPos1Lod = vxProjInv * (screenPos1Lod * 2.0 - 1.0);
                         #endif
@@ -256,9 +265,14 @@ void main() {
         }
     }
     #endif
+    #ifdef TAA
+        vec2 sceneCoord = TAAJitter(texCoord, 0.5);
+    #else
+        vec2 sceneCoord = texCoord;
+    #endif
 
     #if defined BLOOM_FOG || defined MOTION_BLUR_BLOOM_FOG_FIX || LENSFLARE_MODE > 0 && defined OVERWORLD
-        float z0 = texture2D(depthtex0, texCoord).r;
+        float z0 = texture2D(depthtex0, ToBufferUV(sceneCoord)).r;
         vec4 screenPos = vec4(texCoord, z0, 1.0);
         vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
         viewPos /= viewPos.w;
@@ -266,11 +280,11 @@ void main() {
 
         #if defined DISTANT_HORIZONS || defined VOXY
             #ifdef DISTANT_HORIZONS
-                float z0lod = texelFetch(dhDepthTex, texelCoord, 0).r;
+                float z0lod = texelFetch(dhDepthTex, ScaledTexelCoord(sceneCoord), 0).r;
                 vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
                 vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
             #elif defined VOXY
-                float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
+                float z0lod = texelFetch(vxDepthTexTrans, ScaledTexelCoord(sceneCoord), 0).r;
                 vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
                 vec4 viewPosLod = vxProjInv * (screenPosLod * 2.0 - 1.0);
             #endif
@@ -291,7 +305,7 @@ void main() {
     #endif
 
     #if BLOOM_ENABLED == 1
-        DoBloom(color, texCoord, dither, lViewPos);
+        DoBloom(color, sceneCoord, dither, lViewPos);
     #endif
 
     #ifdef COLORGRADING
@@ -305,7 +319,7 @@ void main() {
     DoCompTonemap(color);
 
     #if defined GREEN_SCREEN_LIME || SELECT_OUTLINE == 4
-        int materialMaskInt = int(texelFetch(colortex6, texelCoord, 0).g * 255.1);
+        int materialMaskInt = int(texelFetch(colortex6, ScaledTexelCoord(sceneCoord), 0).g * 255.1);
     #endif
 
     #ifdef GREEN_SCREEN_LIME
@@ -350,7 +364,6 @@ noperspective out vec2 texCoord;
 //Common Functions//
 
 //Includes//
-
 //Program//
 void main() {
     gl_Position = ftransform();

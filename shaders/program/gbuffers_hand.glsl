@@ -65,6 +65,10 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 #include "/lib/util/spaceConversion.glsl"
 #include "/lib/lighting/mainLighting.glsl"
 
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
+
 #if defined GENERATED_NORMALS || defined COATED_TEXTURES
     #include "/lib/util/miplevel.glsl"
 #endif
@@ -91,6 +95,8 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     vec4 color = texture2D(tex, texCoord);
 
     float smoothnessD = 0.0, materialMask = OSIEBCA * 254.0; // No SSAO, No TAA, Reduce Reflection
@@ -109,7 +115,10 @@ void main() {
         #endif
         color *= glColor;
 
-        vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z + 0.38);
+        vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z + 0.38);
+        #ifdef TAA
+            if (RENDER_SCALE_M < 1.0) screenPos.xy = TAAJitter(screenPos.xy, -0.5);
+        #endif
         vec3 viewPos = ScreenToView(screenPos);
         vec3 playerPos = ViewToPlayer(viewPos);
 
@@ -218,6 +227,9 @@ out vec4 glColor;
 //Common Functions//
 
 //Includes//
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
 
 //Program//
 void main() {
@@ -266,6 +278,12 @@ void main() {
     #if HAND_SWAYING > 0
         #include "/lib/misc/handSway.glsl"
     #endif
+
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

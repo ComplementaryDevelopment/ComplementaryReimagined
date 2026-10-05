@@ -25,6 +25,8 @@ in vec4 glColor;
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     vec4 color = texture2D(tex, texCoord) * glColor;
 
     color.rgb = pow1_5(color.rgb) * (
@@ -59,6 +61,9 @@ out vec4 glColor;
 //Common Functions//
 
 //Includes//
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
 
 //Program//
 void main() {
@@ -67,6 +72,12 @@ void main() {
     texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
     glColor = gl_Color;
+
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

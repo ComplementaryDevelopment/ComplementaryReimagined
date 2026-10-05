@@ -301,7 +301,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                 #if SHADOW_QUALITY > -1 && defined VOXY_OPAQUE
                     // Screenspace shadows rendered in deferred1 of previous frame for Voxy
                     // Previous frame reprojection from Chocapic13
-                    vec3 screenSpaceShadowPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+                    vec3 screenSpaceShadowPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
                     vec4 viewPosPrev = vxProjInv * vec4(screenSpaceShadowPos * 2.0 - 1.0, 1.0);
                     viewPosPrev /= viewPosPrev.w;
 
@@ -312,7 +312,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
                     previousPosition = vxProjPrev * previousPosition;
                     screenSpaceShadowPos.xy = previousPosition.xy / previousPosition.w * 0.5 + 0.5;
 
-                    float screenSpaceShadowSample = texture2D(colortex18, screenSpaceShadowPos.xy).r;
+                    float screenSpaceShadowSample = texture2D(colortex18, ToBufferUV(screenSpaceShadowPos.xy)).r;
                     if (screenSpaceShadowSample >= OSIEBCA) {
                         if (subsurfaceMode == 1) {
                             shadowMult *= 0.82 * (0.2 + 0.8 * sqrt2(max(SdotU, nightFactor)));
