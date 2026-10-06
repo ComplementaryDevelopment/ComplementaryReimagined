@@ -342,6 +342,33 @@ void main() {
         #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && WORLD_SPACE_PLAYER_REF == 1
             UpdatePlayerVertexList(position.xyz);
         #endif
+
+        // Thanks to Chistaphee for letting me (SpacEagle17) know that we can make dropped items emit colored light via currentRenderedItemId
+        // this then started my wild goose chase to make it work without a dynamic light mod
+        if (gl_VertexID % 4 == 0 && currentRenderedItemId > 0) {
+            int lightId = 0;
+            if (currentRenderedItemId > 44000 && currentRenderedItemId < 45000) {
+                lightId = currentRenderedItemId - 44000; // item.properties light IDs
+            } else if (currentRenderedItemId >= 10000 && currentRenderedItemId < 40000) {
+                lightId = GetVoxelIDs(currentRenderedItemId); // items which are not in item.properties and come from block.properties (needed for glowing ores)
+            }
+
+            if (lightId > 1 && lightId < 200) { // skip none / solid / tint IDs
+                vec3 scenePos = position.xyz;
+                // Item in the player's hand: goes to the reserved texel, heldLighting.glsl lights it smoothly.
+                vec3 eyeRelPos = scenePos + relativeEyePosition;
+                bool isHeldItem = length(eyeRelPos.xz) < 1.2 && eyeRelPos.y > -1.35 && eyeRelPos.y < 0.5;
+
+                if (isHeldItem) {
+                    imageStore(voxel_img, HELD_ITEM_VOXEL_TEXEL, uvec4(uint(lightId) + HELD_ITEM_VOXEL_OFFSET, 0u, 0u, 0u));
+                } else {
+                    vec3 voxelPos = SceneToVoxel(scenePos);
+                    if (CheckInsideVoxelVolume(voxelPos)) {
+                        imageStore(voxel_img, ivec3(voxelPos), uvec4(uint(lightId) + ITEM_LIGHT_VOXEL_OFFSET, 0u, 0u, 0u));
+                    }
+                }
+            }
+        }
     #endif
 
     gl_Position = shadowProjection * shadowModelView * position;

@@ -7,10 +7,6 @@
     #include "/lib/lighting/shadowSampling.glsl"
 #endif
 
-#if HELD_LIGHTING_MODE >= 1
-    #include "/lib/lighting/heldLighting.glsl"
-#endif
-
 #ifdef CLOUD_SHADOWS
     #include "/lib/lighting/cloudShadows.glsl"
 #endif
@@ -25,6 +21,10 @@
 
 #if COLORED_LIGHTING_INTERNAL > 0
     #include "/lib/voxelization/lightVoxelization.glsl"
+#endif
+
+#if HELD_LIGHTING_MODE >= 1
+    #include "/lib/lighting/heldLighting.glsl"
 #endif
 
 #ifdef DO_PIXELATION_EFFECTS
