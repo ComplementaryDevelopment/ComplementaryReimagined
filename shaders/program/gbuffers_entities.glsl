@@ -126,15 +126,24 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/atmospherics/fog/mainFog.glsl"
 #endif
 
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
+
 //Program//
 void main() {
-    vec4 color = texture2D(tex, texCoord);
+    RenderScaleSkipOutside();
+
+    vec4 color = texture2DMaterial(tex, texCoord);
     #ifdef GENERATED_NORMALS
         vec3 colorP = color.rgb;
     #endif
     color *= glColor;
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) screenPos.xy = TAAJitter(screenPos.xy, -0.5);
+    #endif
     vec3 viewPos = ScreenToView(screenPos);
     vec3 nViewPos = normalize(viewPos);
     vec3 playerPos = ViewToPlayer(viewPos);
@@ -315,6 +324,9 @@ out vec4 glColor;
 //Common Functions//
 
 //Includes//
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
 
 //Program//
 void main() {
@@ -387,6 +399,12 @@ void main() {
             if (glColor.a < 0.5) gl_Position.z += 0.0005;
         #endif
     #endif
+
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

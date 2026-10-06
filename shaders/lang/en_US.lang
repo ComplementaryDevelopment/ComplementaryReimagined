@@ -291,6 +291,14 @@ value.COLORED_LIGHTING.512=§4§l§n§o16 Chunks
 value.COLORED_LIGHTING.768=§4§l§n§o24 Chunks §r§c[-]
 value.COLORED_LIGHTING.1024=§4§k-§r§4§l§n§o32 Chunks§r§4§k- §r§c[-]
 
+option.RENDER_SCALE_PCT=Render Scale
+option.RENDER_SCALE_PCT.comment=Renders the world at a lower resolution and uses the Temporal Filter to upscale the image. §a[+]§r Improves performance, especially at high screen resolutions. §c[-]§r Can reduce image clarity, especially on distant details and during movement. §e[*]§r Requires Temporal Filtering. §e[*]§r It's recommended to disable Waving Grass and Waving Leaves.
+value.RENDER_SCALE_PCT.100=§cNative
+value.RENDER_SCALE_PCT.85=§eUltra Quality
+value.RENDER_SCALE_PCT.75=§eQuality
+value.RENDER_SCALE_PCT.65=§eBalanced
+value.RENDER_SCALE_PCT.50=§aPerformance
+
 option.WORLD_SPACE_REFLECTIONS=World-Space Reflections §e[*]§r
 option.WORLD_SPACE_REFLECTIONS.comment=Calculates reflections in world-space rather than screen-space. §e[*]§r This feature only works if Advanced Color Tracing is on in Performance Settings and your system supports it. §e[*]§r The maximum distance of this effect depends on the Advanced Color Tracing distance, but it is internally capped at 16 chunks for technical reasons. §c[-]§r This effect can severely impact performance especially with higher Advanced Color Tracing distances. §c[-]§r World-space reflections can have several types of issues with mods or resource packs.
 value.WORLD_SPACE_REFLECTIONS.-1=§aOFF
@@ -705,13 +713,13 @@ value.TAA_DEFINE.0=§cOFF [-]
 value.TAA_DEFINE.1=ON §a[+]
 
 option.TAA_SMOOTHING=Temporal Smoothing
-option.TAA_SMOOTHING.comment=Adjusts the amount of smoothing that the Temporal Filter will apply. Higher values produce a blurrier image but reduce flickering and graining. The difference won't be noticeable when standing still.
+option.TAA_SMOOTHING.comment=Adjusts the amount of smoothing that the Temporal Filter will apply. Higher values produce a blurrier image but reduce flickering and graining. The difference won't be noticeable when standing still. §e[*]§r This setting has no effect when Render Scale is below Native.
 value.TAA_SMOOTHING.2=Low
 value.TAA_SMOOTHING.3=Medium
 value.TAA_SMOOTHING.4=High
 
 option.TAA_JITTER=Temporal Jitter §e[*]§r
-option.TAA_JITTER.comment=Jittering helps the Temporal Filter to better anti-aliase the image, but has some drawbacks. §e[*]§r Higher values will improve anti-aliasing, but will also cause a lot of flickering and blur at the same time. §e[*]§r High Temporal Smoothing is recommended with Full jitter. §c[-]§r Turning jitter off will eliminate anti-aliasing benefits.
+option.TAA_JITTER.comment=Jittering helps the Temporal Filter to better anti-aliase the image, but has some drawbacks. §e[*]§r Higher values will improve anti-aliasing, but will also cause a lot of flickering and blur at the same time. §e[*]§r High Temporal Smoothing is recommended with Full jitter. §c[-]§r Turning jitter off will eliminate anti-aliasing benefits. §e[*]§r Render Scale below Native always uses Full jitter.
 value.TAA_JITTER.0=OFF §c[-]
 value.TAA_JITTER.1=Low
 value.TAA_JITTER.2=Medium

@@ -38,10 +38,12 @@ float sunVisibility2 = sunVisibility * sunVisibility;
 
 //Program//
 void main() {
-    vec4 color = texture2D(tex, texCoord);
+    RenderScaleSkipOutside();
+
+    vec4 color = texture2DMaterial(tex, texCoord);
 
     #ifdef IMPROVED_RAIN
-        vec4 sampleRain = texture2D(tex, texCoord * vec2(2.0, 1.0));
+        vec4 sampleRain = texture2DMaterial(tex, texCoord * vec2(2.0, 1.0));
         if (sampleRain.r + sampleRain.g < 1.5 && (sampleRain.a > 0.0 || color.r + color.g < 1.5)) color = sampleRain;
     #endif
 
@@ -107,6 +109,9 @@ flat out vec4 glColor;
 //Common Functions//
 
 //Includes//
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
 
 //Program//
 void main() {
@@ -131,6 +136,12 @@ void main() {
 
     upVec = normalize(gbufferModelView[1].xyz);
     sunVec = GetSunVector();
+
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

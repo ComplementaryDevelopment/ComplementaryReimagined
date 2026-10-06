@@ -64,9 +64,11 @@ mat4 gbufferProjectionInverse = dhProjectionInverse;
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     vec4 color = vec4(glColor.rgb, 1.0);
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
     #else
@@ -174,6 +176,8 @@ void main() {
     playerPos = position.xyz;
 
     glColor = gl_Color;
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

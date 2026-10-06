@@ -156,8 +156,10 @@ float GetLinearDepth(float depth) {
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     #if ANISOTROPIC_FILTER == 0 || !defined ANISOTROPIC_FILTER_ON_TRANSLUCENTS
-        vec4 colorP = texture2D(tex, texCoord);
+        vec4 colorP = texture2DMaterial(tex, texCoord);
     #else
         vec4 colorP = textureAF(tex, texCoord);
     #endif
@@ -173,7 +175,7 @@ void main() {
         vec4 color = colorP * vec4(glColor.rgb, 1.0);
     #endif
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
     #else
@@ -285,6 +287,15 @@ void main() {
         color.a *= fog;
     #endif
 
+    #ifdef TAAU
+        // Mirror image distance = surface + reflection distance
+        #if WATER_REFLECT_QUALITY >= 0
+            vec4 Reflection = vec4(lViewPos + refDist, fresnelM * color.a, 0.0, 1.0);
+        #else
+            vec4 Reflection = vec4(0.0, 0.0, 0.0, 1.0);
+        #endif
+    #endif
+
     /* DRAWBUFFERS:03 */
     gl_FragData[0] = color;
     gl_FragData[1] = vec4(1.0 - translucentMult.rgb, translucentMult.a);
@@ -298,11 +309,27 @@ void main() {
             /* DRAWBUFFERS:03648 */
             gl_FragData[3] = vec4(mat3(gbufferModelViewInverse) * normalM, sqrt(fresnelM * color.a * fogAlpha));
             gl_FragData[4] = vec4(reflection.rgb * fresnelM * color.a * fogAlpha, reflection.a);
+
+            #ifdef TAAU
+                /* RENDERTARGETS: 0,3,6,4,8,10 */
+                gl_FragData[5] = Reflection;
+            #endif
+        #elif defined TAAU
+            /* RENDERTARGETS: 0,3,6,10 */
+            gl_FragData[3] = Reflection;
         #endif
     #elif WORLD_SPACE_REFLECTIONS > 0
         /* DRAWBUFFERS:0348 */
         gl_FragData[2] = vec4(mat3(gbufferModelViewInverse) * normalM, sqrt(fresnelM * color.a * fogAlpha));
         gl_FragData[3] = vec4(reflection.rgb * fresnelM * color.a * fogAlpha, reflection.a);
+
+        #ifdef TAAU
+            /* RENDERTARGETS: 0,3,4,8,10 */
+            gl_FragData[4] = Reflection;
+        #endif
+    #elif defined TAAU
+        /* RENDERTARGETS: 0,3,10 */
+        gl_FragData[2] = Reflection;
     #endif
 }
 
@@ -436,6 +463,8 @@ void main() {
     #if MC_VERSION >= 260100
         if (mat == 10049) mat = 32001; // Cauldron Water
     #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

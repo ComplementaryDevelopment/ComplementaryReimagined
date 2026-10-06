@@ -57,7 +57,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
     #endif
 
     #if DETAIL_QUALITY > 0
-        float entityLinearDepth = texture2D(colortex13, texCoord).r;
+        float entityLinearDepth = texture2D(colortex13, ToBufferUV(texCoord)).r;
               entityLinearDepth = entityLinearDepth == 0.0 ? 1000000.0 : pow2(entityLinearDepth) * far;
     #endif
 
@@ -288,7 +288,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
 
 // ============================== Step 4: Calculate factor of Scene Aware Light Shafts ============================== //
     #if defined OVERWORLD && LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 && defined COMPOSITE1
-        if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5) {
+        if (all(equal(ivec2(gl_FragCoord.xy), scaledViewSize - 1))) {
             if (frameCounter % int(0.06666 / frameTimeSmooth + 0.5) == 0) { // Change speed is not too different above 10 fps
                 int salsX = 5;
                 int salsY = 5;
@@ -319,7 +319,7 @@ vec4 GetVolumetricLight(inout float vlFactor, vec3 translucentMult, float lViewP
                 int skyCheck = 0;
                 float translucentDistanceTreshold = 5.0 / far;
                 for (float i = 0.1; i < 1.0; i += 0.2) {
-                    ivec2 checkCoord = ivec2(view.x * i, view.y * 0.9);
+                    ivec2 checkCoord = ivec2(vec2(view.x * i, view.y * 0.9) * renderScaleV);
                     float depth0Check = texelFetch(depthtex0, checkCoord, 0).x;
 
                     if (GetLinearDepth(depth0Check) < translucentDistanceTreshold) {

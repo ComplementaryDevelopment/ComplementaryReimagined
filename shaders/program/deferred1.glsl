@@ -8,6 +8,10 @@
 //////////Fragment Shader//////////Fragment Shader//////////Fragment Shader//////////
 #ifdef FRAGMENT_SHADER
 
+#ifdef TAAU
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
+
 noperspective in vec2 texCoord;
 
 flat in vec3 upVec, sunVec, eastVec;
@@ -61,7 +65,7 @@ float GetLinearDepth(float depth, float far, float near) {
         return pow2(vec2(cos(n), sin(n)) * x / s);
     }
 
-    float GetAmbientOcclusion(sampler2D depthtex, float z0, float linearZ0, float dither, float farM, float nearM, float aoWorldRange) {
+    float GetAmbientOcclusion(sampler2D depthtex, bool lodDepth, float z0, float linearZ0, float dither, float farM, float nearM, float aoWorldRange) {
         if (z0 < 0.56) return 1.0;
         float ao = 0.0;
 
@@ -86,6 +90,13 @@ float GetLinearDepth(float depth, float far, float near) {
 
             vec2 coord1 = texCoord + offset;
             vec2 coord2 = texCoord - offset;
+            if (lodDepth) {
+                coord1 = LodBufferUV(coord1);
+                coord2 = LodBufferUV(coord2);
+            } else {
+                coord1 = ToBufferUV(coord1);
+                coord2 = ToBufferUV(coord2);
+            }
 
             sampleDepth = GetLinearDepth(texture2D(depthtex, coord1).r, farM, nearM);
             float aosample = aoWorldRange * (linearZ0 - sampleDepth) * 2.0;
@@ -144,6 +155,9 @@ float GetLinearDepth(float depth, float far, float near) {
                 vec4 pos = projection * vec4(tracePos.xyz, 1.0);
                 pos = pos / pos.w * 0.5 + 0.5;
 
+                #ifdef TAAU
+                    pos.xy = TAAJitter(pos.xy, 0.5);
+                #endif
                 if (pos.x < 0.0 || pos.x > 1.0 || pos.y < 0.0 || pos.y > 1.0) break;
 
                 #ifdef VOXY
@@ -154,7 +168,7 @@ float GetLinearDepth(float depth, float far, float near) {
                     // } else
                 #endif
                 {
-                    traceZ = texture2D(depthtex, pos.xy).r;
+                    traceZ = texture2D(depthtex, LodBufferUV(pos.xy)).r;
                     zDelta = -tracePos.z - GetLinearDepth(traceZ, projectionInverse);
                 }
 
@@ -209,6 +223,11 @@ float GetLinearDepth(float depth, float far, float near) {
 
 #ifdef DISTANT_LIGHT_BOKEH
     #include "/lib/misc/distantLightBokeh.glsl"
+
+    vec3 GetDistantLightBokehSample(ivec2 coord) {
+        if (RENDER_SCALE_M < 1.0) coord = clamp(coord, ivec2(0), scaledViewSize - 1);
+        return texelFetch(colortex0, coord, 0).rgb;
+    }
 #endif
 
 //Program//
@@ -217,13 +236,16 @@ void main() {
     float z0 = texelFetch(depthtex0, texelCoord, 0).r;
 
     vec4 screenPos = vec4(texCoord, z0, 1.0);
+    #ifdef TAAU
+        screenPos.xy = TAAJitter(screenPos.xy, -0.5);
+    #endif
     vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
     viewPos /= viewPos.w;
     float lViewPos = length(viewPos);
     vec3 nViewPos = normalize(viewPos.xyz);
     vec3 playerPos = ViewToPlayer(viewPos.xyz);
 
-    float dither = texture2DLod(noisetex, texCoord * vec2(viewWidth, viewHeight) / 128.0, 0.0).b;
+    float dither = texture2DLod(noisetex, texCoord * scaledViewSizeF / 128.0, 0.0).b;
     #ifdef TAA
         dither = fract(dither + goldenRatio * mod(float(frameCounter), 3600.0));
     #endif
@@ -251,10 +273,10 @@ void main() {
         #ifdef DISTANT_LIGHT_BOKEH
             int dlbo = 1;
             vec3 dlbColor = color.rgb;
-            dlbColor += texelFetch(colortex0, texelCoord + ivec2( 0, dlbo), 0).rgb;
-            dlbColor += texelFetch(colortex0, texelCoord + ivec2( 0,-dlbo), 0).rgb;
-            dlbColor += texelFetch(colortex0, texelCoord + ivec2( dlbo, 0), 0).rgb;
-            dlbColor += texelFetch(colortex0, texelCoord + ivec2(-dlbo, 0), 0).rgb;
+            dlbColor += GetDistantLightBokehSample(texelCoord + ivec2( 0, dlbo));
+            dlbColor += GetDistantLightBokehSample(texelCoord + ivec2( 0,-dlbo));
+            dlbColor += GetDistantLightBokehSample(texelCoord + ivec2( dlbo, 0));
+            dlbColor += GetDistantLightBokehSample(texelCoord + ivec2(-dlbo, 0));
             dlbColor = max(color.rgb, dlbColor * 0.2);
             float dlbMix = GetDistantLightBokehMix(lViewPos);
             color.rgb = mix(color.rgb, dlbColor, dlbMix);
@@ -265,7 +287,7 @@ void main() {
         #endif
 
         #if SSAO_QUALI > 0
-            float ssao = GetAmbientOcclusion(depthtex0, z0, linearZ0, dither, far, near, far - near);
+            float ssao = GetAmbientOcclusion(depthtex0, false, z0, linearZ0, dither, far, near, far - near);
         #else
             float ssao = 1.0;
         #endif
@@ -327,7 +349,7 @@ void main() {
                 float z0lod = texelFetch(vxDepthTexTrans, texelCoord, 0).r;
             #endif
             if (z0lod < 1.0 && z0lod > 0.0) { // Lod Chunks
-                vec4 screenPosLod = vec4(texCoord, z0lod, 1.0);
+                vec4 screenPosLod = vec4(screenPos.xy, z0lod, 1.0);
                 #ifdef DISTANT_HORIZONS
                     vec4 viewPosLod = dhProjectionInverse * (screenPosLod * 2.0 - 1.0);
                     viewPosLod /= viewPosLod.w;
@@ -347,7 +369,7 @@ void main() {
                     #if SSAO_QUALI > 0
                         float farLod = 16*20, nearLod = 4;
                         float aoWorldRange = (farLod - nearLod);
-                        float ssao = GetAmbientOcclusion(vxDepthTexTrans, z0lod, GetLinearDepth(z0lod, farLod, nearLod), dither, farLod, nearLod, aoWorldRange);
+                        float ssao = GetAmbientOcclusion(vxDepthTexTrans, true, z0lod, GetLinearDepth(z0lod, farLod, nearLod), dither, farLod, nearLod, aoWorldRange);
                         color.rgb *= pow3(ssao);
                     #endif
                 #endif
@@ -411,7 +433,7 @@ void main() {
     waterRefColor = sqrt(waterRefColor) * 0.5;
 
     #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
-        if (viewWidth + viewHeight - gl_FragCoord.x - gl_FragCoord.y < 1.5)
+        if (all(equal(ivec2(gl_FragCoord.xy), scaledViewSize - 1))) // Top right pixel is used for vlFactor
             cloudLinearDepth = vlFactor;
     #endif
 
@@ -493,7 +515,7 @@ void main() {
     eastVec = normalize(gbufferModelView[0].xyz);
 
     #if defined LIGHTSHAFTS_ACTIVE && (LIGHTSHAFT_BEHAVIOUR == 1 && SHADOW_QUALITY >= 1 || defined END)
-        vlFactor = texelFetch(colortex5, ivec2(viewWidth-1, viewHeight-1), 0).a;
+        vlFactor = texelFetch(colortex5, scaledViewSize - 1, 0).a;
 
         #ifdef END
             if (frameCounter % int(0.06666 / frameTimeSmooth + 0.5) == 0) { // Change speed is not too different above 10 fps
