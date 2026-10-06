@@ -11,11 +11,36 @@ vec3 GetHeldLighting(vec3 playerPos, vec3 color, float emission) {
 
         if (heldItemId == 45032) heldLight = 15; if (heldItemId2 == 45032) heldLight2 = 15; // Lava Bucket
     #else
-        vec3 heldLightCol = GetSpecialBlocklightColor(heldItemId - 44000).rgb;
-        vec3 heldLightCol2 = GetSpecialBlocklightColor(heldItemId2 - 44000).rgb;
+        int heldLightId = heldItemId - 44000; // item.properties light IDs
+        int heldLightId2 = heldItemId2 - 44000;
+        vec3 heldLightCol = GetSpecialBlocklightColor(heldLightId).rgb;
+        vec3 heldLightCol2 = GetSpecialBlocklightColor(heldLightId2).rgb;
 
         if (heldItemId == 45032) { heldLightCol = lavaSpecialLightColor; heldLight = 15; } // Lava Bucket
         if (heldItemId2 == 45032) { heldLightCol2 = lavaSpecialLightColor; heldLight2 = 15; }
+
+        #ifdef INCLUDE_VOXELIZATION
+            // The shadow pass passes every held light source through a reserved voxel texel, see HELD_ITEM_VOXEL_OFFSET.
+            // This is to make the held-item light smooth instead of jumping between voxels
+            int heldVoxelLightId = int(texelFetch(voxel_sampler, HELD_ITEM_VOXEL_TEXEL, 0).x & 32767u) - int(HELD_ITEM_VOXEL_OFFSET);
+            // Skip items item.properties already handles, they would be lit twice
+            if (heldVoxelLightId > 1 && heldVoxelLightId < 200 && heldVoxelLightId != heldLightId && heldVoxelLightId != heldLightId2) {
+                vec4 heldVoxelColor = GetSpecialBlocklightColor(heldVoxelLightId);
+                // Modded blocks which are not added to item.properties would not be catched above and have no alpha, so we force it to 1.0 to make them emit light.
+                float heldVoxelAlpha = heldVoxelColor.a > 0.0 ? heldVoxelColor.a : 1.0;
+
+                // This falloff seemed about right based on the voxel alpha
+                float heldVoxelReach = 6.0 * pow(heldVoxelAlpha, 0.5);
+                float heldVoxelLight = (6.0 + heldVoxelReach) * 1.196;
+                if (heldLight <= 0.0) {
+                    heldLight = heldVoxelLight;
+                    heldLightCol = heldVoxelColor.rgb;
+                } else if (heldLight2 <= 0.0) {
+                    heldLight2 = heldVoxelLight;
+                    heldLightCol2 = heldVoxelColor.rgb;
+                }
+            }
+        #endif
 
         #if COLORED_LIGHT_SATURATION != 100
             heldLightCol = mix(blocklightCol, heldLightCol, COLORED_LIGHT_SATURATION * 0.01);
