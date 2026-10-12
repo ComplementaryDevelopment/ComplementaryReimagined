@@ -155,6 +155,7 @@
     #define DISTANT_LIGHT_BOKEH
 
     #define TAA_DEFINE -1 //[-1 0 1]
+    #define RENDER_SCALE_PCT 100 //[50 65 75 85 100]
     #define TAA_SMOOTHING 3 //[2 3 4]
     #define TAA_JITTER 1 //[0 1 2 3]
     #define TAA_MOVEMENT_IMPROVEMENT_FILTER 1 //[0 1]
@@ -576,6 +577,46 @@
     #endif
 
 //Define Handling//
+    // Render Scale
+    #if RENDER_SCALE_PCT < 100 && defined TAA
+        #define TAAU 1
+        #if RENDER_SCALE_PCT == 50
+            #define RENDER_SCALE_M 0.50
+        #elif RENDER_SCALE_PCT == 65
+            #define RENDER_SCALE_M 0.65
+        #elif RENDER_SCALE_PCT == 75
+            #define RENDER_SCALE_M 0.75
+        #elif RENDER_SCALE_PCT == 85
+            #define RENDER_SCALE_M 0.85
+        #endif
+        #define TAA_JITTER_M 3
+        #define TAA_SMOOTHING_M 3
+        #define texture2DMaterial(sampler, uv) texture2D(sampler, uv, log2(RENDER_SCALE_M))
+    #else
+        #define RENDER_SCALE_M 1.0
+        #define TAA_JITTER_M TAA_JITTER
+        #define TAA_SMOOTHING_M TAA_SMOOTHING
+        #define texture2DMaterial(sampler, uv) texture2D(sampler, uv)
+    #endif
+
+    #define scaledViewSize (RENDER_SCALE_M < 1.0 ? ivec2(vec2(viewWidth, viewHeight) * RENDER_SCALE_M) : ivec2(viewWidth, viewHeight))
+    #define scaledViewSizeF (RENDER_SCALE_M < 1.0 ? vec2(scaledViewSize) : vec2(viewWidth, viewHeight))
+    #define renderScaleV (RENDER_SCALE_M < 1.0 ? vec2(scaledViewSize) / vec2(viewWidth, viewHeight) : vec2(1.0))
+
+    #define ToBufferUV(uv) (RENDER_SCALE_M < 1.0 ? min(uv, 1.0 - 0.5 / vec2(scaledViewSize)) * renderScaleV : (uv))
+    #define ToScreenUV(uv) ((uv) / renderScaleV)
+    // Full-size passes still sample the scaled depth and material buffers
+    #define ScaledTexelCoord(uv) min(ivec2((uv) * scaledViewSizeF), scaledViewSize - 1)
+
+    // Voxy natively supports scaled buffers
+    #ifdef VOXY
+        #define LodBufferUV(uv) (uv)
+    #else
+        #define LodBufferUV(uv) ToBufferUV(uv)
+    #endif
+    #define DoRenderScale(pos) pos.xy = pos.xy * renderScaleV + (renderScaleV - 1.0) * pos.w
+    #define RenderScaleSkipOutside() if (RENDER_SCALE_M < 1.0 && any(greaterThanEqual(gl_FragCoord.xy, vec2(scaledViewSize)))) return
+
     #ifdef OVERWORLD
         #if CLOUD_STYLE > 0 && CLOUD_STYLE != 50 && CLOUD_QUALITY > 0
             #define VL_CLOUDS_ACTIVE
@@ -603,8 +644,8 @@
         #undef BLOOM_FOG
     #endif
 
-    #if BLOOM_ENABLED == 1 && MOTION_BLUR_EFFECT == 1 && !defined LOW_QUALITY_MOTION_BLUR
-        #define MOTION_BLUR_BLOOM_FOG_FIX
+    #if defined TAAU && BLOOM_ENABLED == 1
+        #define TAAU_BLOOM
     #endif
 
     #if BLOOM_ENABLED == -1
@@ -622,11 +663,7 @@
     #endif
 
     #ifdef BLOOM_FOG
-        #if WORLD_BLUR > 0
-            #define BLOOM_FOG_COMPOSITE3
-        #else
-            #define BLOOM_FOG_COMPOSITE1
-        #endif
+        #define BLOOM_FOG_COMPOSITE1
     #endif
 
     #if defined GBUFFERS_HAND || defined GBUFFERS_ENTITIES

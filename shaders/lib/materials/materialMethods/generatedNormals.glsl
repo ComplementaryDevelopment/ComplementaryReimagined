@@ -9,9 +9,9 @@ const float normalClamp = 0.2;
 
 float GetDif(float lOriginalAlbedo, vec2 offsetCoord) {
     #ifndef GBUFFERS_WATER
-        float lNearbyAlbedo = length(texture2D(tex, offsetCoord).rgb);
+        float lNearbyAlbedo = length(texture2DMaterial(tex, offsetCoord).rgb);
     #else
-        vec4 textureSample = texture2D(tex, offsetCoord);
+        vec4 textureSample = texture2DMaterial(tex, offsetCoord);
         float lNearbyAlbedo = length(textureSample.rgb * textureSample.a * 1.5);
     #endif
 

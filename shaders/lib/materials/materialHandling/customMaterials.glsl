@@ -58,9 +58,9 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
     // Normal Map
     #if NORMAL_MAP_STRENGTH != 0
         #ifdef POM
-            else normalMap = texture2D(normals, texCoordM);
+            else normalMap = texture2DMaterial(normals, texCoordM);
         #else
-            vec4 normalMap = texture2D(normals, texCoordM);
+            vec4 normalMap = texture2DMaterial(normals, texCoordM);
         #endif
 
         normalM = normalMap.xyz;
@@ -112,7 +112,7 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
     #endif
 
     // Specular Map
-    vec4 specularMap = texture2D(specular, texCoordM);
+    vec4 specularMap = texture2DMaterial(specular, texCoordM);
 
     float smoothnessM = pow2(specularMap.r);
     smoothnessG = smoothnessM;

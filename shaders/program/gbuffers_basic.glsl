@@ -50,9 +50,11 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     vec4 color = glColor;
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
     #else
@@ -172,6 +174,8 @@ void main() {
     eastVec = normalize(gbufferModelView[0].xyz);
     northVec = normalize(gbufferModelView[2].xyz);
     sunVec = GetSunVector();
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

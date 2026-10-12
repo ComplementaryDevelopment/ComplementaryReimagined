@@ -65,14 +65,14 @@ if (mat < 11024) {
                                             vec2 absMidCoordPosM = absMidCoordPos - epsilon;
                                             vec3 avgBorderColor = vec3(0.0);
 
-                                            avgBorderColor += texture2D(tex, midCoord + vec2( absMidCoordPosM.x, absMidCoordPosM.y)).rgb;
-                                            avgBorderColor += texture2D(tex, midCoord + vec2(-absMidCoordPosM.x, absMidCoordPosM.y)).rgb;
-                                            avgBorderColor += texture2D(tex, midCoord + vec2( absMidCoordPosM.x,-absMidCoordPosM.y)).rgb;
-                                            avgBorderColor += texture2D(tex, midCoord + vec2(-absMidCoordPosM.x,-absMidCoordPosM.y)).rgb;
-                                            avgBorderColor += texture2D(tex, midCoord + vec2(epsilon, absMidCoordPosM.y)).rgb;
-                                            avgBorderColor += texture2D(tex, midCoord + vec2(epsilon,-absMidCoordPosM.y)).rgb;
-                                            avgBorderColor += texture2D(tex, midCoord + vec2( absMidCoordPosM.x, epsilon)).rgb;
-                                            avgBorderColor += texture2D(tex, midCoord + vec2(-absMidCoordPosM.x, epsilon)).rgb;
+                                            avgBorderColor += texture2DMaterial(tex, midCoord + vec2( absMidCoordPosM.x, absMidCoordPosM.y)).rgb;
+                                            avgBorderColor += texture2DMaterial(tex, midCoord + vec2(-absMidCoordPosM.x, absMidCoordPosM.y)).rgb;
+                                            avgBorderColor += texture2DMaterial(tex, midCoord + vec2( absMidCoordPosM.x,-absMidCoordPosM.y)).rgb;
+                                            avgBorderColor += texture2DMaterial(tex, midCoord + vec2(-absMidCoordPosM.x,-absMidCoordPosM.y)).rgb;
+                                            avgBorderColor += texture2DMaterial(tex, midCoord + vec2(epsilon, absMidCoordPosM.y)).rgb;
+                                            avgBorderColor += texture2DMaterial(tex, midCoord + vec2(epsilon,-absMidCoordPosM.y)).rgb;
+                                            avgBorderColor += texture2DMaterial(tex, midCoord + vec2( absMidCoordPosM.x, epsilon)).rgb;
+                                            avgBorderColor += texture2DMaterial(tex, midCoord + vec2(-absMidCoordPosM.x, epsilon)).rgb;
                                             avgBorderColor *= 0.125;
 
                                             vec3 colorDif = abs(avgBorderColor - color.rgb);
@@ -1962,7 +1962,7 @@ if (mat < 11024) {
                                     noSmoothLighting = true;
 
                                     #if ANISOTROPIC_FILTER > 0 && !defined IPBR_COMPAT_MODE
-                                        color = texture2D(tex, texCoord); // Fixes artifacts
+                                        color = texture2DMaterial(tex, texCoord); // Fixes artifacts
                                         color.rgb *= glColor.rgb;
                                     #endif
 
@@ -2338,7 +2338,7 @@ if (mat < 11024) {
                                     #if ANISOTROPIC_FILTER == 0
                                         vec4 checkColor = color;
                                     #else
-                                        vec4 checkColor = texture2D(tex, texCoord); // Fixes artifacts
+                                        vec4 checkColor = texture2DMaterial(tex, texCoord); // Fixes artifacts
                                     #endif
                                     if (checkColor.r + checkColor.b > checkColor.g * 2.2 || checkColor.r > 0.99) { // Amethyst Part
                                         #if GLOWING_AMETHYST >= 1
@@ -2376,7 +2376,7 @@ if (mat < 11024) {
                                     #if ANISOTROPIC_FILTER == 0
                                         vec4 checkColor = color;
                                     #else
-                                        vec4 checkColor = texture2D(tex, texCoord); // Fixes artifacts
+                                        vec4 checkColor = texture2DMaterial(tex, texCoord); // Fixes artifacts
                                     #endif
                                     if (checkColor.r + checkColor.b > checkColor.g * 2.2 || checkColor.r > 0.99) { // Amethyst Part
                                         lmCoordM.x = 1.0;

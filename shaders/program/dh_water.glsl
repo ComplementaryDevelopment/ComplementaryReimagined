@@ -96,11 +96,13 @@ mat4 gbufferProjectionInverse = dhProjectionInverse;
 
 //Program//
 void main() {
+    RenderScaleSkipOutside();
+
     vec4 colorP = vec4(vec3(0.85), glColor.a);
     vec4 color = glColor;
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
-    if (texture2D(depthtex0, screenPos.xy).r < 1.0) discard;
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
+    if (texture2D(depthtex0, ToBufferUV(screenPos.xy)).r < 1.0) discard;
     float lViewPos = length(playerPos);
 
     float dither = Bayer64(gl_FragCoord.xy);
@@ -236,6 +238,8 @@ void main() {
     viewVector = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
 
     glColor = gl_Color;
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

@@ -5,6 +5,8 @@
     ",
     "version": 1,
     "excludeLodsFromVanillaDepth": true,
+    "renderScale": [RENDER_SCALE_M, RENDER_SCALE_M],
+    "useViewportDims": true,
     "opaqueDrawBuffers": [
         0,
         6
@@ -17,22 +19,22 @@
         0: "SRC_ALPHA ONE_MINUS_SRC_ALPHA ONE ONE_MINUS_SRC_ALPHA"
     },
     "taaOffset": "{
-        #if defined TAA && TAA_JITTER > 0
+        #if defined TAA && TAA_JITTER_M > 0
             // Jitter offset from Chocapic13
             vec2 jitterOffsets[8] = vec2[8](
                 vec2( 0.125,-0.375),
                 vec2(-0.125, 0.375),
                 vec2( 0.625, 0.125),
+                vec2(-0.875,-0.125),
                 vec2( 0.375,-0.625),
                 vec2(-0.625, 0.625),
-                vec2(-0.875,-0.125),
-                vec2( 0.375,-0.875),
+                vec2(-0.375,-0.875),
                 vec2( 0.875, 0.875)
             );
-            vec2 offset = jitterOffsets[int(framemod8)] * (1.0 / vec2(viewWidth, viewHeight));
-            #if TAA_JITTER == 1
+            vec2 offset = jitterOffsets[int(framemod8)] * (1.0 / scaledViewSizeF);
+            #if TAA_JITTER_M == 1
                 offset *= 0.125;
-            #elif TAA_JITTER == 2
+            #elif TAA_JITTER_M == 2
                 offset *= 0.33;
             #endif
             return offset;

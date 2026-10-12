@@ -77,7 +77,7 @@ float GetLinearDepth(float depth) {
 
 //Program//
 void main() {
-    ivec2 texelCoord = ivec2(texCoord * view);
+    ivec2 texelCoord = ivec2(ToBufferUV(texCoord) * view);
     vec4 color = texelFetch(colortex0, texelCoord, 0);
     vec4 texture4 = texelFetch(colortex4, texelCoord, 0);
 
@@ -192,14 +192,14 @@ void main() {
 
                         float linearZ1 = GetLinearDepth(z1);
                         vec2 pixelMovement = view * (prevPos.xy - texCoord);
-                        vec3 prevNormalM = mat3(gbufferModelView) * texture2D(colortex1, virtualPrevRefPos.xy).rgb;
+                        vec3 prevNormalM = mat3(gbufferModelView) * texture2D(colortex1, ToBufferUV(virtualPrevRefPos.xy)).rgb;
 
                         vec4 prevRefCurrentPosHeuristic = playerVirtualRefPos;
                         prevRefCurrentPosHeuristic.xyz += normalize(previousCameraPosition - cameraPosition - playerVirtualRefPos.xyz) * refDist;
                         prevRefCurrentPosHeuristic = gbufferProjection * (gbufferModelView * prevRefCurrentPosHeuristic);
                         prevRefCurrentPosHeuristic.xyz = 0.5 * prevRefCurrentPosHeuristic.xyz / prevRefCurrentPosHeuristic.w + 0.5;
 
-                        vec4 prevRef = texture2D(colortex7, virtualPrevRefPos.xy);
+                        vec4 prevRef = texture2D(colortex7, ToBufferUV(virtualPrevRefPos.xy));
                         float prevValid = exp(
                             - 0.03 * length(view * (virtualPrevRefPos.xy - texCoord))
                             - min(0.75, 10.0 * sqrt(length(cameraPosition - previousCameraPosition)))
@@ -257,7 +257,7 @@ void main() {
     sunVec = GetSunVector();
 
     #ifdef END
-        vlFactor = texelFetch(colortex5, ivec2(viewWidth-1, viewHeight-1), 0).a;
+        vlFactor = texelFetch(colortex5, scaledViewSize - 1, 0).a;
     #endif
 }
 

@@ -54,15 +54,24 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
     #include "/lib/misc/colorCodedPrograms.glsl"
 #endif
 
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
+
 //Program//
 void main() {
-    vec4 color = texture2D(tex, texCoord);
+    RenderScaleSkipOutside();
+
+    vec4 color = texture2DMaterial(tex, texCoord);
     vec4 colorP = color;
     color *= glColor;
 
     if (color.a < 0.01) discard;
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) screenPos.xy = TAAJitter(screenPos.xy, -0.5);
+    #endif
     vec3 viewPos = ScreenToView(screenPos);
     float lViewPos = length(viewPos);
     vec3 playerPos = ViewToPlayer(viewPos);
@@ -205,6 +214,9 @@ flat out vec4 glColor;
 //Common Functions//
 
 //Includes//
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
 
 //Program//
 void main() {
@@ -224,6 +236,12 @@ void main() {
     #ifdef FLICKERING_FIX
         gl_Position.z -= 0.000002;
     #endif
+
+    #ifdef TAA
+        if (RENDER_SCALE_M < 1.0) gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+    #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

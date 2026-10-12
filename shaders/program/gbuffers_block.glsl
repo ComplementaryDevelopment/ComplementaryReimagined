@@ -103,13 +103,15 @@ float shadowTime = shadowTimeVar2 * shadowTimeVar2;
 
 //Program//
 void main() {
-    vec4 color = texture2D(tex, texCoord);
+    RenderScaleSkipOutside();
+
+    vec4 color = texture2DMaterial(tex, texCoord);
     #ifdef GENERATED_NORMALS
         vec3 colorP = color.rgb;
     #endif
     color *= glColor;
 
-    vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
+    vec3 screenPos = vec3(gl_FragCoord.xy / scaledViewSizeF, gl_FragCoord.z);
     #ifdef TAA
         vec3 viewPos = ScreenToView(vec3(TAAJitter(screenPos.xy, -0.5), screenPos.z));
     #else
@@ -319,6 +321,8 @@ void main() {
         vTexCoordAM.zw  = abs(texMinMidCoord) * 2;
         vTexCoordAM.xy  = min(texCoord, midCoord - texMinMidCoord);
     #endif
+
+    DoRenderScale(gl_Position);
 }
 
 #endif

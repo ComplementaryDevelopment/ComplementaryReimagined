@@ -1,13 +1,16 @@
 /*
 const int colortex0Format = R11F_G11F_B10F; //main color
 const int colortex1Format = RGB8_SNORM;     //half res normalM
-const int colortex2Format = RGB16F;         //taa
+const int colortex2Format = RGBA16F;        //encoded HDR TAA/U history, alpha: TAAU temporal state
 const int colortex3Format = RGBA8;          //(cloud/water map on deferred/gbuffer) | translucentMult & bloom & final color
 const int colortex4Format = RGBA8_SNORM;    //normalM & reflection strength
 const int colortex5Format = RGBA8;          //scene image for water reflections & volumetric cloud linear depth & volumetric light factor
 const int colortex6Format = RGB8;           //smoothnessD & materialMask & skyLightFactor
 const int colortex7Format = RGBA16F;        //(cloud/water map on gbuffer) | reflection temporal image (rgb) & previous depth
 const int colortex8Format = RGBA16F;        //SSR results for WSR, topmost translucent opacity
+const int colortex9Format = R32F;           //1x1 smoothed center depth for TAAU depth-of-field
+const int colortex10Format = RG16F;         //TAAU: translucent reflection distance & reflection share
+const int colortex11Format = RGBA16F;       //TAAU: scene color for bloom & cloud depth/light shaft factor
 
 const int colortex12Format = RGBA8;         //Improved Rain
 const int colortex13Format = R8;            //Entity linear depth for vl blending
@@ -24,6 +27,8 @@ const bool colortex4Clear = false;
 const bool colortex5Clear = false;
 const bool colortex6Clear = true;
 const bool colortex7Clear = false;
+const bool colortex10Clear = true;
+const bool colortex11Clear = false;
 
 const bool colortex12Clear = true;
 const bool colortex13Clear = true;

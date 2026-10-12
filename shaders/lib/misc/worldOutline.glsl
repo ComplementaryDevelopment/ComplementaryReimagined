@@ -42,10 +42,10 @@ void DoWorldOutline(inout vec3 color, float linearZ0, vec3 playerPos, float fres
 
     outlineMult *= 0.25;
 
-    float r0 = 1.0 / GetLinearDepth(texture2D(depthtex0, texCoord + vec2(-WORLD_OUTLINE_THICKNESS, -WORLD_OUTLINE_THICKNESS) * scale).r);
-    float r1 = 1.0 / GetLinearDepth(texture2D(depthtex0, texCoord + vec2(-WORLD_OUTLINE_THICKNESS,  WORLD_OUTLINE_THICKNESS) * scale).r);
-    float r2 = 1.0 / GetLinearDepth(texture2D(depthtex0, texCoord + vec2( WORLD_OUTLINE_THICKNESS, -WORLD_OUTLINE_THICKNESS) * scale).r);
-    float r3 = 1.0 / GetLinearDepth(texture2D(depthtex0, texCoord + vec2( WORLD_OUTLINE_THICKNESS,  WORLD_OUTLINE_THICKNESS) * scale).r);
+    float r0 = 1.0 / GetLinearDepth(texture2D(depthtex0, ToBufferUV(texCoord + vec2(-WORLD_OUTLINE_THICKNESS, -WORLD_OUTLINE_THICKNESS) * scale)).r);
+    float r1 = 1.0 / GetLinearDepth(texture2D(depthtex0, ToBufferUV(texCoord + vec2(-WORLD_OUTLINE_THICKNESS,  WORLD_OUTLINE_THICKNESS) * scale)).r);
+    float r2 = 1.0 / GetLinearDepth(texture2D(depthtex0, ToBufferUV(texCoord + vec2( WORLD_OUTLINE_THICKNESS, -WORLD_OUTLINE_THICKNESS) * scale)).r);
+    float r3 = 1.0 / GetLinearDepth(texture2D(depthtex0, ToBufferUV(texCoord + vec2( WORLD_OUTLINE_THICKNESS,  WORLD_OUTLINE_THICKNESS) * scale)).r);
     float rA = 0.25 * (r0 + r1 + r2 + r3);
     float slope = (1.0 / linearZ0 - rA) * (linearZ0 * linearZ0);
 
