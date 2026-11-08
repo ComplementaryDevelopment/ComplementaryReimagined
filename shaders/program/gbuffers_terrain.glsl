@@ -461,13 +461,19 @@ void main() {
     mat = int(mc_Entity.x + 0.5);
 
     vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
+    vec3 undisplacedPosition = position.xyz;
     vertexPos = position.xyz;
 
     #ifdef WAVING_ANYTHING_TERRAIN
         DoWave(position.xyz, mat);
     #endif
 
-    gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+    // Avoid the inverse-view/view round trip when no displacement was applied.
+    if (all(equal(position.xyz, undisplacedPosition))) {
+        gl_Position = ftransform();
+    } else {
+        gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+    }
 
     #ifdef FLICKERING_FIX
         if (mat == 10257) gl_Position.z -= 0.00001; // Iron Bars
