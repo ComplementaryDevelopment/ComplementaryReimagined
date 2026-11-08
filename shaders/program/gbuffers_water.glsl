@@ -407,13 +407,19 @@ void main() {
     #endif
 
     vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
+    vec3 undisplacedPosition = position.xyz;
     playerPos = position.xyz;
 
     #ifdef WAVING_WATER_VERTEX
         DoWave(position.xyz, mat);
     #endif
 
-    gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+    // Avoid the inverse-view/view round trip when no displacement was applied.
+    if (all(equal(position.xyz, undisplacedPosition))) {
+        gl_Position = ftransform();
+    } else {
+        gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+    }
 
     #ifdef TAA
         gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
