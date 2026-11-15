@@ -144,6 +144,13 @@ void main() {
             #endif
         #endif
 
+        #ifdef IRIS_INLINE_GLINT
+            if (mc_hasGlint()) {
+                vec3 glint = mc_sampleGlint();
+                color.rgb += glint * glint; // this is the specific blending glint uses
+            }
+        #endif
+
         DoLighting(color, shadowMult, playerPos, viewPos, 0.0, geoNormal, normalM, 0.5,
                    worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,
                    false, 0, smoothnessG, highlightMult, emission);

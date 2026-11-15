@@ -194,6 +194,12 @@ void main() {
         #endif
 
         color.rgb = mix(color.rgb, entityColor.rgb, entityColor.a);
+        #ifdef IRIS_INLINE_GLINT
+            if (mc_hasGlint()) {
+                vec3 glint = mc_sampleGlint();
+                color.rgb += glint * glint; // this is the specific blending glint uses
+            }
+        #endif
 
         normalM = gl_FrontFacing ? normalM : -normalM; // Inverted Normal Workaround
         vec3 geoNormal = normalM;
