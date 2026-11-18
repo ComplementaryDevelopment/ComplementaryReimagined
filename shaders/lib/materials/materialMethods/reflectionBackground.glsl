@@ -87,7 +87,8 @@ void AddBackgroundReflection(inout vec4 reflection, vec3 color, vec3 playerPos, 
             float lViewPos = 100000.0;
             float lViewPos1 = 100000.0;
 
-            vec4 volumetricEffect = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPosR, RVdotS, RVdotU, z0, z0, z0, dither);
+            vec4 volumetricEffect = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPosR, RVdotS, RVdotU,
+                                                       z0, z0, z0, dither, 1000000.0);
             volumetricEffect.rgb = pow(volumetricEffect.rgb, vec3(1.0 / 2.2));
 
             #ifdef COMPOSITE

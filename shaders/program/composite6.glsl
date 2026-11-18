@@ -13,8 +13,6 @@ noperspective in vec2 texCoord;
 //Pipeline Constants//
 #include "/lib/pipelineSettings.glsl"
 
-const bool colortex3MipmapEnabled = true;
-
 //Common Variables//
 vec2 view = vec2(viewWidth, viewHeight);
 

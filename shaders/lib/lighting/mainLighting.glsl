@@ -2,9 +2,14 @@
 #include "/lib/colors/lightAndAmbientColors.glsl"
 #include "/lib/lighting/ggx.glsl"
 #include "/lib/lighting/minimumLighting.glsl"
+#include "/lib/lighting/smoothLighting.glsl"
 
 #if SHADOW_QUALITY > -1 && (defined OVERWORLD || defined END) && !defined DH_TERRAIN && !defined DH_WATER && !defined VOXY_PATCH
     #include "/lib/lighting/shadowSampling.glsl"
+#endif
+
+#if HELD_LIGHTING_MODE >= 1
+    #include "/lib/lighting/heldLighting.glsl"
 #endif
 
 #ifdef CLOUD_SHADOWS
@@ -21,10 +26,6 @@
 
 #if COLORED_LIGHTING_INTERNAL > 0
     #include "/lib/voxelization/lightVoxelization.glsl"
-#endif
-
-#if HELD_LIGHTING_MODE >= 1
-    #include "/lib/lighting/heldLighting.glsl"
 #endif
 
 #ifdef DO_PIXELATION_EFFECTS
@@ -298,6 +299,11 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             #else
                 shadowMult *= skyLightShadowMult;
 
+                #if SHADOW_QUALITY > -1 && defined DH_TERRAIN
+                    if (subsurfaceMode == 1) shadowMult *= 0.6 + 0.3 * pow2(noonFactor);
+                    else if (subsurfaceMode == 2) shadowMult *= NdotL * 0.4999 + 0.5;
+                #endif
+
                 #if SHADOW_QUALITY > -1 && defined VOXY_OPAQUE
                     // Screenspace shadows rendered in deferred1 of previous frame for Voxy
                     // Previous frame reprojection from Chocapic13
@@ -333,7 +339,11 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             #endif
 
             #ifdef CLOUD_SHADOWS
-                shadowMult *= GetCloudShadow(playerPos);
+                #if defined DO_PIXELATION_EFFECTS && defined PIXELATED_SHADOWS
+                    shadowMult *= GetCloudShadow(playerPosPixelated, worldGeoNormal);
+                #else
+                    shadowMult *= GetCloudShadow(playerPos, worldGeoNormal);
+                #endif
             #endif
 
             shadowMult *= max(NdotLM * shadowTime, 0.0);
@@ -348,9 +358,7 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Blocklight
     float lightmapXM;
     if (!noSmoothLighting) {
-        float lightmapXMSteep = pow2(pow2(lightmap.x * lightmap.x))  * (2.8 - 0.6 * vsBrightness + XLIGHT_CURVE);
-        float lightmapXMCalm = (lightmap.x) * (2.8 + 0.6 * vsBrightness - XLIGHT_CURVE);
-        lightmapXM = pow(lightmapXMSteep + lightmapXMCalm, 2.25);
+        lightmapXM = GetTweakedSmoothLightmap(lightmap.x);
     } else {
         float xLightCurveM = XLIGHT_CURVE > 0.999 ? XLIGHT_CURVE : sqrt2(XLIGHT_CURVE);
         lightmapXM = pow(lightmap.x, 3.0 * xLightCurveM) * 10.0;
@@ -388,13 +396,17 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             lightVolume = GetLightVolume(voxelPosM);
             lightVolume = sqrt(lightVolume);
             specialLighting = lightVolume.rgb;
+
+            #ifdef COLORED_DYNAMIC_LIGHTING
+                lightVolume.a = min1(lightVolume.a); // Some entities can get a bit intense
+            #endif
         }
 
         // Add extra articial light for blocks that request it
         lightmapXM = max(lightmapXM, mix(lightmapXM, 10.0, lightVolume.a));
         specialLighting *= 1.0 + 50.0 * lightVolume.a;
 
-        // Color Balance
+        // Color Balance / consistencyCB72412HF
         specialLighting = lightmapXM * 0.13 * DoLuminanceCorrection(specialLighting + blocklightCol * 0.05);
 
         // Add some extra non-contrasty detail
@@ -433,6 +445,8 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
             blockLighting *= 0.5;
             heldLighting *= 2.0;
         #endif
+
+        blockLighting = sqrt(pow2(blockLighting) + heldLighting);
     #endif
 
     vec3 minLighting = GetMinimumLighting(lightmapYM);
@@ -537,11 +551,6 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Scene Lighting Stuff
     vec3 sceneLighting = lightColorM * shadowLightMult + ambientColorM * ambientMult;
     float dotSceneLighting = dot(sceneLighting, sceneLighting);
-
-    #if HELD_LIGHTING_MODE >= 1
-        blockLighting = sqrt(pow2(blockLighting) + heldLighting);
-    #endif
-
     blockLighting *= XLIGHT_I;
 
     #ifdef LIGHT_COLOR_MULTS
@@ -593,19 +602,21 @@ void DoLighting(inout vec4 color, inout vec3 shadowMult, vec3 playerPos, vec3 vi
     // Light Highlight
     vec3 lightHighlight = vec3(0.0);
     #ifdef LIGHT_HIGHLIGHT
-        float specularHighlight = GGX(normalM, nViewPos, lightVec, NdotLmax0, smoothnessG);
+        if (shadowMult.r + shadowMult.g + shadowMult.b > 0.0) {
+            float specularHighlight = GGX(normalM, nViewPos, lightVec, NdotLmax0, smoothnessG);
 
-        specularHighlight *= highlightMult;
+            specularHighlight *= highlightMult;
 
-        lightHighlight = isEyeInWater != 1 ? shadowMult : pow(shadowMult, vec3(0.25)) * 0.35;
-        lightHighlight *= (subsurfaceHighlight + specularHighlight) * highlightColor;
+            lightHighlight = isEyeInWater != 1 ? shadowMult : pow(shadowMult, vec3(0.25)) * 0.35;
+            lightHighlight *= (subsurfaceHighlight + specularHighlight) * highlightColor;
 
-        #ifdef LIGHT_COLOR_MULTS
-            lightHighlight *= lightColorMult;
-        #endif
-        #ifdef MOON_PHASE_INF_REFLECTION
-            lightHighlight *= pow2(moonPhaseInfluence);
-        #endif
+            #ifdef LIGHT_COLOR_MULTS
+                lightHighlight *= lightColorMult;
+            #endif
+            #ifdef MOON_PHASE_INF_REFLECTION
+                lightHighlight *= pow2(moonPhaseInfluence);
+            #endif
+        }
     #endif
 
     // Mix Colors

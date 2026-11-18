@@ -18,8 +18,8 @@ in vec4 glColor;
 
 //Common Variables//
 float SdotU = dot(sunVec, upVec);
-float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;

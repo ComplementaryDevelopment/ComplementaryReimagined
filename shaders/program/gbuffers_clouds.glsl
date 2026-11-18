@@ -23,8 +23,8 @@
 //Common Variables//
 #if CLOUD_STYLE_DEFINE == 50
     float SdotU = dot(sunVec, upVec);
-    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-    float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+    float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
     float sunVisibility2 = sunVisibility * sunVisibility;
 #endif
 
@@ -34,8 +34,11 @@
 #if CLOUD_STYLE_DEFINE == 50
     #include "/lib/colors/skyColors.glsl"
     #include "/lib/colors/lightAndAmbientColors.glsl"
-    #include "/lib/colors/cloudColors.glsl"
     #include "/lib/util/spaceConversion.glsl"
+
+    #ifdef OVERWORLD
+        #include "/lib/colors/cloudColors.glsl"
+    #endif
 
     #if defined TAA && (defined BORDER_FOG || defined VOXY)
         #include "/lib/antialiasing/jitter.glsl"
@@ -58,6 +61,8 @@ void main() {
     #if CLOUD_STYLE_DEFINE != 50
         discard;
     #else
+        if (isEyeInWater != 0) discard; // Fixes vanilla clouds peaking from underwater with lower render distances
+
         vec4 color = texture2D(tex, texCoord) * vec4(vec3(1.0), glColor.a);
 
         color.rgb *= 1.0 + 0.15 * dot(upVec, normal) - 0.1 * abs(dot(northVec, normal)) - rainFactor * 0.2;

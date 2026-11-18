@@ -27,6 +27,7 @@
 #endif
 
 #if HELD_LIGHTING_MODE >= 1
+    #include "/lib/lighting/smoothLighting.glsl"
     #include "/lib/lighting/heldLighting.glsl"
 #endif
 
@@ -158,7 +159,7 @@ vec4 getShadedReflection(ivec3 voxelPos, vec3 oldPlayerPos, vec3 playerPos, vec3
     #endif
 
     #ifdef CLOUD_SHADOWS
-        shadow *= GetCloudShadow(playerPos);
+        shadow *= GetCloudShadow(playerPos, vec3(0.0));
     #endif
 
     faceData.lightmap = pow2(pow2(faceData.lightmap));
@@ -281,7 +282,7 @@ vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float R
         vec3 absWorldNormal = abs(worldNormal);
         vec3 worldNormalM = vec3(equal(absWorldNormal, vec3(maxOf(abs(worldNormal))))) * sign(worldNormal);
 
-        float normalOffsetDist = 1.0 - fract(dot(playerPos + cameraPositionBestFract - worldNormal * 0.1, worldNormalM));
+        normalOffsetDist += 1.0 - fract(dot(playerPos + cameraPositionBestFract - worldNormal * 0.1, worldNormalM));
     }
 
     playerPos += normalOffsetDist * worldNormal;
@@ -308,10 +309,10 @@ vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float R
                         float lightMult = 0.0;
                     #endif
 
-                    vec3 voxelPosM = SceneToVoxel(vec3(0.0));
-                        voxelPosM = clamp01(voxelPosM / vec3(voxelVolumeSize));
+                    vec3 voxelPosM = SceneToVoxel(vec3(-relativeEyePosition));
+                         voxelPosM = clamp01(voxelPosM / vec3(voxelVolumeSize));
                     vec4 lightVolume = GetLightVolume(voxelPosM);
-                        lightVolume = max(lightVolume, vec4(0.000001));
+                         lightVolume = max(lightVolume, vec4(0.000001));
                     vec3 specialLighting = pow(GetLuminance(lightVolume.rgb), 0.25) * DoLuminanceCorrection(pow(lightVolume.rgb, vec3(0.25)));
 
                     #if HELD_LIGHTING_MODE >= 1
@@ -330,7 +331,11 @@ vec4 getWSR(vec3 playerPos, vec3 normalMR, vec3 nViewPosR, float RVdotU, float R
                         sceneLighting *= moonPhaseInfluence;
                     #endif
 
-                    vec3 lighting = sceneLighting + specialLighting * (1.0 - lmCoord.y * sunFactor) * XLIGHT_I + minLighting;
+                    #ifdef OVERWORLD
+                        specialLighting *= 1.0 - lmCoord.y * sunFactor;
+                    #endif
+
+                    vec3 lighting = sceneLighting + specialLighting * XLIGHT_I + minLighting;
 
                     vec3 fadeout = smoothstep(0.0, 32.0, 0.5 * sceneVoxelVolumeSize - abs(playerPos));
                     float alphaFade = sqrt3(minOf(fadeout)) * 0.9 + 0.1;

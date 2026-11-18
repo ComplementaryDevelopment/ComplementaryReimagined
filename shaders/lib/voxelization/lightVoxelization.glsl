@@ -7,17 +7,14 @@
         const ivec3 voxelVolumeSize = ivec3(COLORED_LIGHTING_INTERNAL, 512 * 0.5, COLORED_LIGHTING_INTERNAL);
     #endif
 
-    // Dropped item lights are stored in the voxel as lightId + ITEM_LIGHT_VOXEL_OFFSET (torch id 2 -> 4098)
-    // Real IDs never reach 4096, so shadowcomp can tell "came from an item" by the value alone
-    #define ITEM_LIGHT_VOXEL_OFFSET 4096u
+    #ifdef COLORED_DYNAMIC_LIGHTING
+        // Dropped item lights are stored in the voxel as lightId + ITEM_LIGHT_VOXEL_OFFSET (item id 2 -> 4098)
+        // Real IDs never reach 4096, so shadowcomp can tell "came from an item" by the value alone
+        #define ITEM_LIGHT_VOXEL_OFFSET 4096u
 
-    // The light ID of the item in the player's hand is stored as lightId + HELD_ITEM_VOXEL_OFFSET (torch id 2 -> 8194)
-    // The texel is also a voxel, so without the offset shadowcomp would read the plain ID as a real light source in the corner of the volume.
-    #define HELD_ITEM_VOXEL_OFFSET 8192u
-
-    // The light ID of the item in the player's hand is written to one reserved texel so heldLighting.glsl can smoothly light it instead of jumping between voxels.
-    // Texel (0,0,0) is the far corner of the volume. CheckInsideVoxelVolume rejects it in the shadow pass so no block or entity writes there.
-    #define HELD_ITEM_VOXEL_TEXEL ivec3(0)
+        // Light emitting entities are stored in the voxel as lightId + ENTITY_LIGHT_VOXEL_OFFSET (entity id 2 -> 8194)
+        #define ENTITY_LIGHT_VOXEL_OFFSET 8192u
+    #endif
 
     float effectiveACTdistance = min(float(COLORED_LIGHTING_INTERNAL), shadowDistance * 2.0);
 
@@ -34,8 +31,6 @@
             voxelPos -= voxelVolumeSize / 2;
             voxelPos += sign(voxelPos) * 0.95;
             voxelPos += voxelVolumeSize / 2;
-        #else
-            if (all(equal(ivec3(voxelPos), HELD_ITEM_VOXEL_TEXEL))) return false;
         #endif
         voxelPos /= vec3(voxelVolumeSize);
         return clamp01(voxelPos) == voxelPos;
@@ -122,15 +117,15 @@
     }
 
     /* Value ranges of the voxel volume (r16ui). Keep them apart, shadowcomp.glsl and heldLighting.glsl rely on it:
-    0                                               Air
-    1                                               Solid block
-    2 - 199                                         Light sources, so every light ID returned by GetVoxelIDs must stay in here
-    200 - 4095 (255 is bedrock)                     Tints and other special IDs, GetVoxelIDs must never return 4096 or more
-    ITEM_LIGHT_VOXEL_OFFSET + 2..199 (4098 - 4295)  Dropped item light, a light source ID plus the offset
-    4296 - 8191                                     Reserved for future use
-    HELD_ITEM_VOXEL_OFFSET + 2..199 (8194 - 8391)   Held item light, a light source ID plus the offset
-    8392 - 32767                                    Reserved for future use
-    Bit 15 (32768)                                  Colorwheel geometry flag, the ID is stored in the lower 15 bits
+    0                                                 Air
+    1                                                 Solid block
+    2 - 199                                           Light sources, so every light ID returned by GetVoxelIDs must stay in here
+    200 - 4095 (255 is bedrock)                       Tints and other special IDs, GetVoxelIDs must never return 4096 or more
+    ITEM_LIGHT_VOXEL_OFFSET + 2..199 (4098 - 4295)    Item light, a light source ID plus the offset
+    4296 - 8191                                       unused
+    ENTITY_LIGHT_VOXEL_OFFSET + 2..199 (8194 - 8391)  Entity light, a light source ID plus the offset
+    8392 - 32767                                      unused
+    Bit 15 (32768)                                    Colorwheel geometry flag, the ID is stored in the lower 15 bits
     */
     int GetVoxelIDs(int mat) {
         /* These return IDs must be consistent across the following files:
@@ -323,6 +318,8 @@
                             #ifdef DO_IPBR_LIGHTS
                             if (mat == 10708) return  53; // Spawner
                             if (mat == 10736) return  64; // Structure Block, Jigsaw Block, Test Block, Test Instance Block
+                            if (mat == 10768) return  40; // Torchflower
+                            if (mat == 10772) return  40; // Potted Torchflower
                             #endif
                         } else {
                             #ifdef DO_IPBR_LIGHTS
@@ -380,6 +377,7 @@
                         if (mat < 30012) {
                             if (mat == 10980) return  81; // Potted Open Eyeblossom
                             if (abs(mat - 10986) <= 2) return 84; // Copper Torch, Copper Lantern
+                            if (mat == 11012) return  97; // Ice Crystal
                             if (mat == 30008) return 254; // Tinted Glass
                         } else {
                             if (mat == 30012) return 213; // Slime Block
@@ -423,17 +421,8 @@
                     if (scenePos.z < 0.0) return;
                 }
             #endif
-            #if defined GBUFFERS_COLORWHEEL || defined SHADOW_COLORWHEEL
-                bool isEligible = true;
-            #else
-                bool isEligible = any(equal(ivec4(renderStage), ivec4(
-                    MC_RENDER_STAGE_TERRAIN_SOLID,
-                    MC_RENDER_STAGE_TERRAIN_TRANSLUCENT,
-                    MC_RENDER_STAGE_TERRAIN_CUTOUT,
-                    MC_RENDER_STAGE_TERRAIN_CUTOUT_MIPPED)));
-            #endif
 
-            if (isEligible && CheckInsideVoxelVolume(voxelPos)) {
+            if (CheckInsideVoxelVolume(voxelPos)) {
                 int voxelData = GetVoxelIDs(mat);
 
                 #if defined GBUFFERS_COLORWHEEL || defined SHADOW_COLORWHEEL

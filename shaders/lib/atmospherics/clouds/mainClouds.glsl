@@ -78,14 +78,7 @@ vec4 GetClouds(inout float cloudLinearDepth, float skyFade, vec3 cameraPosOffset
     #endif
     cameraPos += cameraPosOffset;
 
-    #ifdef CLOUDS_REIMAGINED
-        float thresholdF = 4000.0;
-    #else
-        float thresholdF = 4000.0;
-    #endif
-
-    //float thresholdMix = pow2(clamp01(VdotU * 15.0));
-    //thresholdF = mix(far, thresholdF, thresholdMix * 0.5 + 0.5);
+    float thresholdF = 4000.0;
 
     #ifdef CLOUDS_REIMAGINED
         cloudAmbientColor *= 1.0 - 0.25 * rainFactor;

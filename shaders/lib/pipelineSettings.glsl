@@ -11,6 +11,7 @@ const int colortex8Format = RGBA16F;        //SSR results for WSR, topmost trans
 
 const int colortex12Format = RGBA8;         //Improved Rain
 const int colortex13Format = R8;            //Entity linear depth for vl blending
+const int colortex14Format = RGB16;         //Bloom Smoothing
 
 const int colortex18Format = R8;            //shadow for voxy chunks
 const int colortex19Format = RGBA8;         //scene image for voxy reflections
@@ -27,6 +28,7 @@ const bool colortex7Clear = false;
 
 const bool colortex12Clear = true;
 const bool colortex13Clear = true;
+const bool colortex14Clear = false;
 
 const bool colortex18Clear = false;
 const bool colortex19Clear = false;
@@ -36,7 +38,12 @@ const int noiseTextureResolution = 128;
 
 const bool shadowHardwareFiltering = true;
 const float shadowDistanceRenderMul = 1.0;
-const float entityShadowDistanceMul = 0.125; // Iris feature
+
+#ifndef END
+    const float entityShadowDistanceMul = 0.125;
+#else
+    const float entityShadowDistanceMul = 1.0;
+#endif
 
 const float drynessHalflife = 300.0;
 const float wetnessHalflife = 300.0;

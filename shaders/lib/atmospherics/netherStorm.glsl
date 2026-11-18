@@ -1,4 +1,4 @@
-vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 nPlayerPos, vec3 playerPos, float lViewPos, float lViewPos1, float dither) {
+vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 nPlayerPos, vec3 playerPos, float lViewPos, float lViewPos1, float dither, float entityLinearDepthM) {
     if (isEyeInWater != 0) return vec4(0.0);
     vec4 netherStorm = vec4(1.0, 1.0, 1.0, 0.0);
 
@@ -58,6 +58,9 @@ vec4 GetNetherStorm(vec3 color, vec3 translucentMult, vec3 nPlayerPos, vec3 play
         }
 
         if (lTracePos > lViewPos) {
+            #if DETAIL_QUALITY > 0
+                if (lTracePos > entityLinearDepthM) break; // fixes entities looking transparent behind glass
+            #endif
             netherStorm.rgb *= translucentMultM;
             netherStorm.a *= translucentMultM2;
         }

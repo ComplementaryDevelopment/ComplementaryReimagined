@@ -20,7 +20,6 @@ bool CheckInsidePuddleVoxelVolume(vec3 voxelPos) {
 
 #if defined SHADOW && defined VERTEX_SHADER
     void UpdatePuddleVoxelMap(int mat) {
-        if (renderStage != MC_RENDER_STAGE_TERRAIN_TRANSLUCENT) return;
         if (mat == 32000) return; // Water
 
         vec3 model_pos = gl_Vertex.xyz + at_midBlock.xyz / 64.0;

@@ -8,10 +8,69 @@ int subsurfaceMode;
 bool centerShadowBias;
 float noPuddles;
 
-if (currentRenderedItemId < 45000) {
-    #include "/lib/materials/materialHandling/terrainIPBR.glsl"
-} else
+bool translucentMultCalculated;
+vec4 translucentMult;
 
+if (currentRenderedItemId < 45000) {
+    if (currentRenderedItemId < 30000) {
+        #include "/lib/materials/materialHandling/terrainIPBR.glsl"
+    } else {
+        if (currentRenderedItemId < 44090) {
+            if (currentRenderedItemId < 44053) {
+                if (currentRenderedItemId == 32016) { // Beacon
+                    #include "/lib/materials/specificMaterials/translucents/beacon.glsl"
+                } else if (currentRenderedItemId == 44013) { // Lava Bucket
+                    if (color.r + color.g > color.b * 2.0) {
+                        emission = color.r + color.g - color.b * 1.5;
+                        emission *= 1.8;
+                        color.rg += color.b * vec2(0.4, 0.15);
+                        color.b *= 0.8;
+                    } else {
+                        #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
+                    }
+                } else if (currentRenderedItemId == 44040) { // Spectral Arrow
+                    emission = 1.0;
+                }
+            } else {
+                if (currentRenderedItemId == 44053) { // End Crystal
+                    if (color.g < color.r) {
+                        emission = 3.0;
+                        color.r *= 1.1;
+                    }
+                } else if (currentRenderedItemId == 44085) { // Trident Item
+                    #include "/lib/materials/specificMaterials/others/trident.glsl"
+                } else if (currentRenderedItemId == 44086) { // Bottle o' Enchanting
+                    emission = color.b * 2.0;
+                }
+            }
+        } else {
+            if (currentRenderedItemId < 44094) {
+                if (currentRenderedItemId == 44090) { // Eye of Ender
+                    smoothnessG = 1.0;
+                    highlightMult = 2.0;
+                    smoothnessD = 1.0;
+                    emission = max0(color.g - color.b * 0.25);
+                    color.rgb = pow(color.rgb, vec3(1.0 - 0.75 * emission));
+                } else if (currentRenderedItemId == 44092) { // Glow Ink Sac
+                    emission = color.b * 2.0;
+                } else if (currentRenderedItemId == 44093) { // Blaze Rod, Blaze Powder
+                    noSmoothLighting = false;
+                    lmCoordM.x = 0.85;
+                    emission = color.g;
+                    color.rgb = sqrt1(color.rgb);
+                }
+            } else {
+                if (currentRenderedItemId == 44094) { // Glowstone Dust
+                    emission = dot(color.rgb, color.rgb) * 0.5 + 1.0;
+                } else if (currentRenderedItemId == 44095) { // Prismarine Crystals
+                    emission = pow1_5(color.r) * 2.5 + 0.2;
+                } else if (currentRenderedItemId == 44096) { // Nether Star
+                    emission = pow2(color.r + color.g) * 0.5;
+                }
+            }
+        }
+    }
+} else
 if (currentRenderedItemId < 45128) {
     if (currentRenderedItemId < 45064) {
         if (currentRenderedItemId < 45032) {
@@ -102,23 +161,16 @@ if (currentRenderedItemId < 45128) {
                                 HideArmorDontSkip(color, playerPos);
                             }
                         #endif
-                    } else { // Trident Item
-                        #include "/lib/materials/specificMaterials/others/trident.glsl"
+                    } else {
+
                     }
                 }
             }
         } else {
             if (currentRenderedItemId < 45048) {
                 if (currentRenderedItemId < 45040) {
-                    if (currentRenderedItemId < 45036) { // Lava Bucket
-                        if (color.r + color.g > color.b * 2.0) {
-                            emission = color.r + color.g - color.b * 1.5;
-                            emission *= 1.8;
-                            color.rg += color.b * vec2(0.4, 0.15);
-                            color.b *= 0.8;
-                        } else {
-                            #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
-                        }
+                    if (currentRenderedItemId < 45036) {
+
                     } else { // Bucket++
                         if (GetMaxColorDif(color.rgb) < 0.01) {
                             #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
@@ -130,13 +182,10 @@ if (currentRenderedItemId < 45128) {
                         }
                     }
                 } else {
-                    if (currentRenderedItemId < 45044) { // Blaze Rod, Blaze Powder
-                        noSmoothLighting = false;
-                        lmCoordM.x = 0.85;
-                        emission = color.g;
-                        color.rgb = sqrt1(color.rgb);
-                    } else { // Bottle o' Enchanting, Glow Inc Sac
-                        emission = color.b * 2.0;
+                    if (currentRenderedItemId < 45044) {
+
+                    } else {
+
                     }
                 }
             } else {
@@ -181,12 +230,8 @@ if (currentRenderedItemId < 45128) {
                         smoothnessD = 1.0;
                     }
                 } else {
-                    if (currentRenderedItemId < 45076) { // Eye of Ender
-                        smoothnessG = 1.0;
-                        highlightMult = 2.0;
-                        smoothnessD = 1.0;
-                        emission = max0(color.g - color.b * 0.25);
-                        color.rgb = pow(color.rgb, vec3(1.0 - 0.75 * emission));
+                    if (currentRenderedItemId < 45076) { //
+
                     } else { // Clock
                         if (
                             CheckForColor(color.rgb, vec3(255, 255, 0)) ||
@@ -217,13 +262,10 @@ if (currentRenderedItemId < 45128) {
                         #include "/lib/materials/specificMaterials/terrain/ironBlock.glsl"
                     }
                 } else {
-                    if (currentRenderedItemId < 45092) { // Nether Star
-                        emission = pow2(color.r + color.g) * 0.5;
-                    } else { // End Crystal
-                        if (color.g < color.r) {
-                            emission = 3.0;
-                            color.r *= 1.1;
-                        }
+                    if (currentRenderedItemId < 45092) { //
+
+                    } else {
+
                     }
                 }
             }
@@ -232,12 +274,12 @@ if (currentRenderedItemId < 45128) {
                 if (currentRenderedItemId < 45104) {
                     if (currentRenderedItemId < 45100) { // Glow Berries
                         // iris needs to add support
-                    } else { // Glowstone Dust
-                        emission = dot(color.rgb, color.rgb) * 0.5 + 1.0;
+                    } else {
+
                     }
                 } else {
-                    if (currentRenderedItemId < 45108) { // Prismarine Crystals
-                        emission = pow1_5(color.r) * 2.5 + 0.2;
+                    if (currentRenderedItemId < 45108) {
+
                     } else { // Totem of Undying
                         #include "/lib/materials/specificMaterials/terrain/goldBlock.glsl"
                     }

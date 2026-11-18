@@ -29,7 +29,7 @@ vec3 upVec = normalize(gbufferModelView[1].xyz);
 vec3 sunVec = GetSunVector();
 
 float SdotU = dot(sunVec, upVec);
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 
 //Common Functions//
 void DoNaturalShadowCalculation(inout vec4 color1, inout vec4 color2) {
@@ -173,6 +173,11 @@ void main() {
                         color2.rgb = vec3(0.08, 0.12, 0.195);
                     #endif
                     color2.rgb *= waterNoise * (1.0 + sunVisibility - rainFactor);
+
+                    #if LIGHTSHAFT_WATER_I != 100
+                        if (isEyeInWater == 0)
+                            color2.rgb *= LIGHTSHAFT_WATER_I * 0.01;
+                    #endif
                     ////
 
                     #ifdef UNDERWATERCOLOR_CHANGED
@@ -210,6 +215,11 @@ void main() {
                 DoNaturalShadowCalculation(color1, color2);
             }
         }
+    #endif
+
+    #if LIGHTSHAFT_WATER_I != 100
+        if (isEyeInWater == 1)
+            color2.rgb *= LIGHTSHAFT_WATER_I * 0.01;
     #endif
 
     /* DRAWBUFFERS:0 */
@@ -259,7 +269,7 @@ attribute vec4 mc_midTexCoord;
 vec2 lmCoord;
 
 #if COLORED_LIGHTING_INTERNAL > 0
-    writeonly uniform uimage3D voxel_img;
+    layout(r32ui) uniform uimage3D voxel_img;
 
     #ifdef PUDDLE_VOXELIZATION
         writeonly uniform uimage2D puddle_img;
@@ -329,46 +339,73 @@ void main() {
 
     #if COLORED_LIGHTING_INTERNAL > 0
         if (gl_VertexID % 4 == 0) {
-            UpdateVoxelMap(mat);
-            #ifdef PUDDLE_VOXELIZATION
-                UpdatePuddleVoxelMap(mat);
+            #ifndef SHADOW_COLORWHEEL
+                bool solidTerrain = any(equal(ivec3(renderStage), ivec3(
+                    MC_RENDER_STAGE_TERRAIN_SOLID,
+                    MC_RENDER_STAGE_TERRAIN_CUTOUT,
+                    MC_RENDER_STAGE_TERRAIN_CUTOUT_MIPPED
+                )));
+            #else
+                bool solidTerrain = true;
             #endif
-            #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0
-                vec3 normal = mat3(shadowModelViewInverse) * gl_NormalMatrix * gl_Normal;
-                UpdateSceneVoxelMap(mat, normal, position.xyz);
+
+            if (solidTerrain) {
+                UpdateVoxelMap(mat);
+
+                #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && !defined SHADOW_COLORWHEEL
+                    vec3 normal = mat3(shadowModelViewInverse) * gl_NormalMatrix * gl_Normal;
+                    UpdateSceneVoxelMap(mat, normal, position.xyz);
+                #endif
+            } else if (renderStage == MC_RENDER_STAGE_TERRAIN_TRANSLUCENT) {
+                UpdateVoxelMap(mat);
+
+                #ifdef PUDDLE_VOXELIZATION
+                    UpdatePuddleVoxelMap(mat);
+                #endif
+            }
+
+            #ifdef COLORED_DYNAMIC_LIGHTING
+                else if (currentRenderedItemId >= 10000) {
+                    // Thanks to Chistaphee for discovering that we can make dropped items emit colored light via currentRenderedItemId
+                    // Then all thanks to SpacEagle17 for making it work without a dynamic light mod
+
+                    int lightId = 0;
+                    if (uint(currentRenderedItemId - 44001) < 999u /* same as 44000 < currentRenderedItemId < 45000 */) {
+                        lightId = currentRenderedItemId - 44000; // item.properties light IDs
+                    } else if (currentRenderedItemId < 40000) {
+                        lightId = GetVoxelIDs(currentRenderedItemId); // items which are not in item.properties and come from block.properties (needed for glowing ores)
+                    }
+
+                    if (uint(lightId - 2) < 198u /* same as 1 < lightId < 200*/) { // skip none / solid / tint IDs
+                        // We skip the item in player's hand as the existing held lighting function looks smoother
+                        vec3 eyeRelPos = position.xyz + relativeEyePosition;
+                        bool isHeldItem = length(eyeRelPos.xz) < 1.2 && eyeRelPos.y > -1.35 && eyeRelPos.y < 0.5;
+
+                        if (!isHeldItem) {
+                            vec3 voxelPos = SceneToVoxel(position.xyz);
+                            if (CheckInsideVoxelVolume(voxelPos)) {
+                                imageAtomicMax(voxel_img, ivec3(voxelPos), uint(lightId) + ITEM_LIGHT_VOXEL_OFFSET);
+                            }
+                        }
+                    }
+                } else if (entityId >= 50000) {
+                    int lightId = 0;
+
+                    #include "/lib/materials/materialHandling/shadowEntityLightMaterials.glsl"
+
+                    if (lightId != 0) {
+                        vec3 voxelPos = SceneToVoxel(position.xyz);
+                        if (CheckInsideVoxelVolume(voxelPos)) {
+                            imageAtomicMax(voxel_img, ivec3(voxelPos), uint(lightId) + ENTITY_LIGHT_VOXEL_OFFSET);
+                        }
+                    }
+                }
             #endif
         }
 
         #if WORLD_SPACE_REFLECTIONS_INTERNAL > 0 && WORLD_SPACE_PLAYER_REF == 1
             UpdatePlayerVertexList(position.xyz);
         #endif
-
-        // Thanks to Chistaphee for letting me (SpacEagle17) know that we can make dropped items emit colored light via currentRenderedItemId
-        // this then started my wild goose chase to make it work without a dynamic light mod
-        if (gl_VertexID % 4 == 0 && currentRenderedItemId > 0) {
-            int lightId = 0;
-            if (currentRenderedItemId > 44000 && currentRenderedItemId < 45000) {
-                lightId = currentRenderedItemId - 44000; // item.properties light IDs
-            } else if (currentRenderedItemId >= 10000 && currentRenderedItemId < 40000) {
-                lightId = GetVoxelIDs(currentRenderedItemId); // items which are not in item.properties and come from block.properties (needed for glowing ores)
-            }
-
-            if (lightId > 1 && lightId < 200) { // skip none / solid / tint IDs
-                vec3 scenePos = position.xyz;
-                // Item in the player's hand: goes to the reserved texel, heldLighting.glsl lights it smoothly.
-                vec3 eyeRelPos = scenePos + relativeEyePosition;
-                bool isHeldItem = length(eyeRelPos.xz) < 1.2 && eyeRelPos.y > -1.35 && eyeRelPos.y < 0.5;
-
-                if (isHeldItem) {
-                    imageStore(voxel_img, HELD_ITEM_VOXEL_TEXEL, uvec4(uint(lightId) + HELD_ITEM_VOXEL_OFFSET, 0u, 0u, 0u));
-                } else {
-                    vec3 voxelPos = SceneToVoxel(scenePos);
-                    if (CheckInsideVoxelVolume(voxelPos)) {
-                        imageStore(voxel_img, ivec3(voxelPos), uvec4(uint(lightId) + ITEM_LIGHT_VOXEL_OFFSET, 0u, 0u, 0u));
-                    }
-                }
-            }
-        }
     #endif
 
     gl_Position = shadowProjection * shadowModelView * position;

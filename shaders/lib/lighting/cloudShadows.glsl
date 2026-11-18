@@ -5,7 +5,7 @@
         #include "/lib/atmospherics/clouds/cloudCoord.glsl"
     #endif
 
-    float GetCloudShadow(vec3 playerPos) {
+    float GetCloudShadow(vec3 playerPos, vec3 worldGeoNormal) {
         #ifndef OVERWORLD
             return 1.0;
         #endif
@@ -13,8 +13,16 @@
         float cloudShadow = 1.0;
 
         vec3 worldPos = playerPos + cameraPosition;
-        #if defined DO_PIXELATION_EFFECTS && defined PIXELATED_SHADOWS
-            //worldPos = playerPosPixelated + cameraPosition; // Disabled for now because cloud shadows are too soft to notice pixelation
+
+        #ifdef PIXELATED_CLOUD_SHADOWS
+            #if defined GBUFFERS_TERRAIN || defined GBUFFERS_WATER || defined GBUFFERS_BLOCK
+                #ifdef CLOUDS_REIMAGINED
+                    float cloudPixelationScale = 1.0;
+                #else
+                    float cloudPixelationScale = 2.0;
+                #endif
+                worldPos = vec3(ivec3(worldPos / cloudPixelationScale + 0.01 * worldGeoNormal)) * cloudPixelationScale + vec3(0.5) * sign(worldPos);
+            #endif
         #endif
 
         #ifdef CLOUDS_REIMAGINED
@@ -83,10 +91,14 @@
                 vec2(-0.7071, 0.7071));
             float cloudSample = 0.0;
             for (int i = 0; i < 8; i++) {
-                cloudSample += texture2DLod(noisetex, csPos + 0.005 * shadowoffsets[i], 0.0).b;
+                cloudSample += texture2DLod(noisetex, csPos + 0.002 * shadowoffsets[i], 0.0).b;
             }
-
             cloudShadow = smoothstep1(pow2(min1(cloudSample * 0.2)));
+
+            #if defined PIXELATED_CLOUD_SHADOWS && (defined GBUFFERS_TERRAIN || defined GBUFFERS_WATER || defined GBUFFERS_BLOCK)
+                // float cloudShadowStepped = smoothstep1(floor(cloudShadow * 20.0) * 0.05);
+                // cloudShadow = mix(cloudShadowStepped, cloudShadow, pow2(1.0 - cloudShadow));
+            #endif
         #endif
 
         return cloudShadow;

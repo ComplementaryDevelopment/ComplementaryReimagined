@@ -178,7 +178,7 @@
 
         fog *= altitudeFactor;
 
-        if (fog > 0.01 + 0.0025 * dither) {
+        if (fog > 0.005 + 0.0025 * dither) {
             fog = clamp(fog, 0.0, 1.0);
 
             #ifdef OVERWORLD

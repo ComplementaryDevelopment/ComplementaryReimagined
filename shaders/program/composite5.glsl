@@ -24,7 +24,7 @@ vec2 view = vec2(viewWidth, viewHeight);
 
 #if defined BLOOM_FOG || LENSFLARE_MODE > 0 && defined OVERWORLD
     float SdotU = dot(sunVec, upVec);
-    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
+    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
 #endif
 
 //Common Functions//
@@ -108,9 +108,14 @@ void DoBSLColorSaturation(inout vec3 color) {
     vec3 GetBloomTile(float lod, vec2 coord, vec2 offset) {
         float scale = exp2(lod);
         vec2 bloomCoord = coord / scale + offset;
-        bloomCoord = clamp(bloomCoord, offset, 1.0 / scale + offset);
+        bloomCoord = clamp(bloomCoord, offset, 1.0 / scale + offset) / rescale;
 
-        vec3 bloom = texture2D(colortex3, bloomCoord / rescale).rgb;
+        #ifndef BLOOM_SMOOTHING
+            vec3 bloom = texture2D(colortex3, bloomCoord).rgb;
+        #else
+            vec3 bloom = texture2D(colortex14, bloomCoord).rgb;
+        #endif
+
         bloom *= bloom;
         bloom *= bloom;
         return bloom * 128.0;
@@ -123,9 +128,8 @@ void DoBSLColorSaturation(inout vec3 color) {
         vec3 blur4 = GetBloomTile(5.0, coord, vec2(0.2075   , 0.26  ));
         vec3 blur5 = GetBloomTile(6.0, coord, vec2(0.135    , 0.3325));
         vec3 blur6 = GetBloomTile(7.0, coord, vec2(0.160625 , 0.3325));
-        vec3 blur7 = GetBloomTile(8.0, coord, vec2(0.1784375, 0.3325));
 
-        vec3 blur = (blur1 + blur2 + blur3 + blur4 + blur5 + blur6 + blur7) * 0.14;
+        vec3 blur = (blur1 + blur2 + blur3 + blur4 + blur5 + blur6) * 0.155;
 
         float bloomStrength = BLOOM_STRENGTH + 0.2 * darknessFactor;
 

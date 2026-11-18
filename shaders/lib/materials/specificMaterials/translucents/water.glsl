@@ -65,11 +65,12 @@
     waterPos = 0.032 * (waterPos + worldPos.y * 2.0);
 
     #ifdef WATER_REFRACTION
-        materialMask = OSIEBCA * 241.0; // Water
+        materialMask = OSIEBCA * 241.0; // Water Refraction
     #endif
 
-    #if WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && !defined LOW_QUALITY_WATER_MATERIAL
+    #if !defined PHYSICS_OCEAN_V3 && (WATER_STYLE >= 2 || RAIN_PUDDLES >= 1 && WATER_STYLE == 1 && !defined LOW_QUALITY_WATER_MATERIAL)
         vec3 normalMap = vec3(0.0, 0.0, 1.0);
+
         #if WATER_STYLE >= 2
             vec2 waterPosM = waterPos;
 
@@ -77,28 +78,24 @@
                 #define WATER_SIZE_MULT_M WATER_SIZE_MULT * 0.01
                 waterPosM *= WATER_SIZE_MULT_M;
             #endif
-
             #define WATER_BUMPINESS_M WATER_BUMPINESS * 0.8
+            waterPosM *= 2.5; wind *= 2.5;
 
-            #if WATER_STYLE >= 2
-                waterPosM *= 2.5; wind *= 2.5;
-
-                #if !defined LOW_QUALITY_WATER_MATERIAL && defined GBUFFERS_WATER
-                    vec2 parallaxMult = -0.01 * viewVector.xy / viewVector.z;
-                    for (int i = 0; i < 4; i++) {
-                        waterPosM += parallaxMult * texture2D(gaux4, waterPosM - wind).a;
-                        waterPosM += parallaxMult * texture2D(gaux4, waterPosM * 0.25 - 0.5 * wind).a;
-                    }
-                #endif
-
-                vec2 normalMed = texture2D(gaux4, waterPosM + wind).rg - 0.5;
-                vec2 normalSmall = texture2D(gaux4, waterPosM * 4.0 - 2.0 * wind).rg - 0.5;
-                vec2 normalBig = texture2D(gaux4, waterPosM * 0.25 - 0.5 * wind).rg - 0.5;
-                     normalBig += texture2D(gaux4, waterPosM * 0.05 - 0.05 * wind).rg - 0.5;
-
-                normalMap.xy = normalMed * WATER_BUMP_MED + normalSmall * WATER_BUMP_SMALL + normalBig * WATER_BUMP_BIG;
-                normalMap.xy *= 6.0 * (1.0 - 0.7 * fresnel) * WATER_BUMPINESS_M;
+            #if !defined LOW_QUALITY_WATER_MATERIAL && defined GBUFFERS_WATER
+                vec2 parallaxMult = -0.01 * viewVector.xy / viewVector.z;
+                for (int i = 0; i < 4; i++) {
+                    waterPosM += parallaxMult * texture2D(gaux4, waterPosM - wind).a;
+                    waterPosM += parallaxMult * texture2D(gaux4, waterPosM * 0.25 - 0.5 * wind).a;
+                }
             #endif
+
+            vec2 normalMed = texture2D(gaux4, waterPosM + wind).rg - 0.5;
+            vec2 normalSmall = texture2D(gaux4, waterPosM * 4.0 - 2.0 * wind).rg - 0.5;
+            vec2 normalBig = texture2D(gaux4, waterPosM * 0.25 - 0.5 * wind).rg - 0.5;
+                normalBig += texture2D(gaux4, waterPosM * 0.05 - 0.05 * wind).rg - 0.5;
+
+            normalMap.xy = normalMed * WATER_BUMP_MED + normalSmall * WATER_BUMP_SMALL + normalBig * WATER_BUMP_BIG;
+            normalMap.xy *= 6.0 * (1.0 - 0.7 * fresnel) * WATER_BUMPINESS_M;
 
             normalMap.xy *= 0.03 * lmCoordM.y + 0.01;
         #else
@@ -117,34 +114,50 @@
                 normalMap.xy *= 2.0 - 1.8 * fresnel2;
         #endif
 
-            normalMap.z = sqrt(1.0 - (pow2(normalMap.x) + pow2(normalMap.y)));
-            normalM = clamp(normalize(normalMap * tbnMatrix), vec3(-1.0), vec3(1.0));
+        normalMap.z = sqrt(1.0 - (pow2(normalMap.x) + pow2(normalMap.y)));
+        normalM = clamp(normalize(normalMap * tbnMatrix), vec3(-1.0), vec3(1.0));
 
         #if WATER_STYLE == 1
             }
         #endif
+    #endif
 
-        #if WATER_STYLE >= 2
-            vec3 vector = reflect(nViewPos, normalize(normalM));
-            float norMix = pow2(pow2(pow2(1.0 - max0(dot(normal, vector))))) * 0.5;
-            normalM = mix(normalM, normal, norMix); // Fixes normals pointing inside water
+    #ifdef PHYSICS_OCEAN_V3
+        normalM = mat3(gbufferModelView) * ocean.normal;
+    #endif
 
-            float fresnelP = fresnel;
-            fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
-        #endif
+    #if WATER_STYLE >= 2 || defined PHYSICS_OCEAN_V3
+        vec3 vector = reflect(nViewPos, normalize(normalM));
+        float norMix = pow2(pow2(pow2(1.0 - max0(dot(normal, vector))))) * 0.5;
+        normalM = mix(normalM, normal, norMix); // Fixes normals pointing inside water
+
+        float fresnelP = fresnel;
+        fresnel = clamp(1.0 + dot(normalM, nViewPos), 0.0, 1.0);
     #endif
     // ============================== End of Step 2 ============================== //
 
     // ============================== Step 3: Water Material Features ============================== //
+    #if defined LOW_QUALITY_WATER_MATERIAL && WATER_NOISE_COLORING == 1
+        if (isEyeInWater != 1) {
+            // Noise Coloring // consistencyNC7429JG
+            float noise = texture2DLod(noisetex, (waterPos + wind) * 0.25, 0.0).g;
+                noise = noise - 0.5;
+                noise *= 0.25;
+            color.rgb = pow(color.rgb, vec3(1.0 + noise));
+            //
+        }
+    #endif
     #if !defined LOW_QUALITY_WATER_MATERIAL
         if (isEyeInWater != 1) {
-            // Noise Coloring //
-            float noise = texture2DLod(noisetex, (waterPos + wind) * 0.25, 0.0).g;
-                  noise = noise - 0.5;
-                  noise *= 0.25;
-            color.rgb = pow(color.rgb, vec3(1.0 + noise));
+            #if WATER_NOISE_COLORING != 0
+                // Noise Coloring // consistencyNC7429JG
+                float noise = texture2DLod(noisetex, (waterPos + wind) * 0.25, 0.0).g;
+                    noise = noise - 0.5;
+                    noise *= 0.25;
+                color.rgb = pow(color.rgb, vec3(1.0 + noise));
+                //
+            #endif
 
-            // Water Alpha //
             #ifdef GBUFFERS_WATER
                 float depthT = texelFetch(depthtex1, texelCoord, 0).r;
             #elif defined DH_WATER
@@ -164,8 +177,8 @@
                 float depthLod = texelFetch(vxDepthTexOpaque, texelCoord, 0).r;
                 vec3 screenPosLod = vec3(screenPos.xy, depthLod);
                 vec4 iProjDiag = vec4(vxProjInv[0].x,
-                                      vxProjInv[1].y,
-                                      vxProjInv[2].zw);
+                                    vxProjInv[1].y,
+                                    vxProjInv[2].zw);
                 vec3 p3 = screenPosLod * 2.0 - 1.0;
                 vec4 viewPosLod = iProjDiag * p3.xyzz + vxProjInv[3];
                 viewPosLod.xyz = viewPosLod.xyz / viewPosLod.w;
@@ -174,37 +187,42 @@
 
             float lViewPosDifM = lViewPos - lViewPosT;
 
-            #if WATER_STYLE < 3
-                color.a = sqrt1(color.a);
-            #else
-                color.a = 0.98;
-            #endif
-
-            #ifdef DISTANT_HORIZONS
-                // Don't do this on Voxy or else it will look broken
-                if (depthT == 1.0) color.a *= smoothstep(far, far * 0.9, lViewPos);
-            #endif
-
-            #if WATER_FOG_MULT != 100
-                #define WATER_FOG_MULT_M WATER_FOG_MULT * 0.01;
-                lViewPosDifM *= WATER_FOG_MULT_M;
-            #endif
-
-            float waterFog = max0(1.0 - exp(lViewPosDifM * 0.075));
-            color.a *= 0.25 + 0.75 * waterFog;
-
-            #if defined BRIGHT_CAVE_WATER && WATER_ALPHA_MULT < 200
-                // For better water visibility in caves and some extra color pop outdoors
-                color.rgb *= 2.5 - sqrt2(waterFog) - 0.5 * lmCoordM.y;
-            #endif
-
-            #if WATER_ALPHA_MULT != 100
-                #define WATER_ALPHA_MULT_M 100.0 / WATER_ALPHA_MULT
-                color.a = pow(color.a, WATER_ALPHA_MULT_M);
-                #if WATER_ALPHA_MULT > 100
-                    translucentMult.rgb *= pow2(WATER_ALPHA_MULT_M);
+            // Water Alpha //
+            if (nightVision < 0.01) {
+                #if WATER_STYLE < 3
+                    color.a = sqrt1(color.a);
+                #else
+                    color.a = 0.98;
                 #endif
-            #endif
+
+                #ifdef DISTANT_HORIZONS
+                    // Don't do this on Voxy or else it will look broken
+                    if (depthT == 1.0) color.a *= smoothstep(far, far * 0.9, lViewPos);
+                #endif
+
+                #if WATER_FOG_MULT != 100
+                    #define WATER_FOG_MULT_M WATER_FOG_MULT * 0.01;
+                    lViewPosDifM *= WATER_FOG_MULT_M;
+                #endif
+
+                float waterFog = max0(1.0 - exp(lViewPosDifM * 0.075));
+                color.a *= 0.25 + 0.75 * waterFog;
+
+                #if defined BRIGHT_CAVE_WATER && WATER_ALPHA_MULT < 200
+                    // For better water visibility in caves and some extra color pop outdoors
+                    color.rgb *= 2.5 - sqrt2(waterFog) - 0.5 * lmCoordM.y;
+                #endif
+
+                #if WATER_ALPHA_MULT != 100
+                    #define WATER_ALPHA_MULT_M 100.0 / WATER_ALPHA_MULT
+                    color.a = pow(color.a, WATER_ALPHA_MULT_M);
+                    #if WATER_ALPHA_MULT > 100
+                        translucentMult.rgb *= pow2(WATER_ALPHA_MULT_M);
+                    #endif
+                #endif
+            } else {
+                color.a *= 0.75;
+            }
             ////
 
             // Water Foam //
@@ -242,6 +260,10 @@
                         foamColor *= WATER_FOAM_IM;
                     #endif
 
+                    #ifdef PHYSICS_OCEAN_V3
+                        foam = mix(foam, 1.0, ocean.foam);
+                    #endif
+
                     color = mix(color, foamColor, foam);
                     reflectMult = 1.0 - foam;
                 }
@@ -277,27 +299,31 @@
     // ============================== Step 4: Final Tweaks ============================== //
     reflectMult *= 0.5 + 0.5 * NdotUmax0;
 
-    color.a = mix(color.a, 1.0, fresnel4);
-
+    if (nightVision < 0.01)
+        color.a = mix(color.a, 1.0, fresnel4);
 
     #if WATER_STYLE == 3 || WATER_STYLE == 2 && SUN_MOON_STYLE >= 2
         smoothnessG = 1.0;
 
-        const float WATER_BUMPINESS_M2 = min(WATER_BUMP_MED * WATER_BUMP_SMALL * WATER_BUMPINESS * 0.65, 1.0);
-        vec2 lightNormalP = WATER_BUMPINESS_M2 * (normalMed + 0.5 * normalSmall);
-        vec3 lightNormal = normalize(vec3(lightNormalP, 1.0) * tbnMatrix);
-        highlightMult = dot(lightNormal, lightVec);
-        highlightMult = max0(highlightMult) / max(dot(normal, lightVec), 0.17);
-        highlightMult = pow2(pow2(highlightMult * 1.1));
+        #ifndef PHYSICS_OCEAN_V3
+            float WATER_BUMPINESS_M2 = min(WATER_BUMP_MED * WATER_BUMP_SMALL * WATER_BUMPINESS * 0.65, 1.0);
+            vec2 lightNormalP = WATER_BUMPINESS_M2 * (normalMed + 0.5 * normalSmall);
+            vec3 lightNormal = normalize(vec3(lightNormalP, 1.0) * tbnMatrix);
+            highlightMult = dot(lightNormal, lightVec);
+            highlightMult = max0(highlightMult) / max(dot(normal, lightVec), 0.17);
+            highlightMult = pow2(pow2(highlightMult * 1.1));
 
-        #ifdef GBUFFERS_WATER
-            float highlightBlend = min1(sqrt(miplevel) * 0.45);
+            #ifdef GBUFFERS_WATER
+                float highlightBlend = min1(sqrt(miplevel) * 0.45);
+            #else
+                float fovScale = gbufferProjection[1][1];
+                float scaleFactor = min1(fovScale * 20.0 / lViewPos);
+                float highlightBlend = 1.0 - scaleFactor;
+            #endif
+            highlightMult = 0.24 * mix(highlightMult, 1.0, highlightBlend);
         #else
-            float fovScale = gbufferProjection[1][1];
-            float scaleFactor = min1(fovScale * 20.0 / lViewPos);
-            float highlightBlend = 1.0 - scaleFactor;
+            highlightMult = 0.24;
         #endif
-        highlightMult = 0.24 * mix(highlightMult, 1.0, highlightBlend);
     #else
         smoothnessG = 0.5;
 

@@ -215,7 +215,7 @@ if (mat < 11024) {
                                     }
                                 }
                                 else /*if (mat < 10064)*/ { // Lever
-                                    if (color.r > color.g + color.b) {
+                                    if (color.r * 0.5 > color.g + color.b) {
                                         color.rgb *= color.rgb;
                                         emission = 4.0;
                                     } else {
@@ -433,7 +433,7 @@ if (mat < 11024) {
                                 if (mat < 10156) { // Cobblestone+, Mossy Cobblestone+, Furnace:Unlit, Smoker:Unlit, Blast Furnace:Unlit, Lodestone, Piston, Sticky Piston, Dispenser, Dropper
                                     #include "/lib/materials/specificMaterials/terrain/cobblestone.glsl"
                                 }
-                                else /*if (mat < 10160)*/ { // Oak Planks++:Clean Variants, Bookshelf, Crafting Table, Tripwire Hook
+                                else /*if (mat < 10160)*/ { // Oak Planks++:Clean Variants, Bookshelf, Crafting Table, Tripwire Hook, Poplar Planks++:Clean Variants
                                     #include "/lib/materials/specificMaterials/planks/oakPlanks.glsl"
                                 }
                             }
@@ -441,12 +441,12 @@ if (mat < 11024) {
                     } else {
                         if (mat < 10176) {
                             if (mat < 10168) {
-                                if (mat < 10164) { // Oak Log, Oak Wood
-                                    if (color.g > 0.48 ||
+                                if (mat < 10164) { // Oak Log, Oak Wood, Poplar Log, Poplar Wood
+                                    if (color.g > 0.48 || color.b > 0.25 ||
                                         CheckForColor(color.rgb, vec3(126, 98, 55)) ||
-                                        CheckForColor(color.rgb, vec3(150, 116, 65))) { // Oak Log:Clean Part
+                                        CheckForColor(color.rgb, vec3(150, 116, 65))) { // Clean Part
                                         #include "/lib/materials/specificMaterials/planks/oakPlanks.glsl"
-                                    } else { // Oak Log:Wood Part, Oak Wood
+                                    } else { // Wood Part, Oak/Poplar Wood
                                         #include "/lib/materials/specificMaterials/terrain/oakWood.glsl"
                                     }
                                 }
@@ -1067,7 +1067,7 @@ if (mat < 11024) {
                     if (mat < 10416) {
                         if (mat < 10400) {
                             if (mat < 10392) {
-                                if (mat < 10388) { // Packed Ice
+                                if (mat < 10388) { // Packed Ice++
                                     materialMask = OSIEBCA; // Intense Fresnel
                                     float factor = pow2(color.g);
                                     float factor2 = pow2(factor);
@@ -2024,7 +2024,7 @@ if (mat < 11024) {
                                     float dotColor = dot(color.rgb, color.rgb);
                                     if (color.r > color.b) {
                                         #include "/lib/materials/specificMaterials/terrain/oakWood.glsl"
-                                    } else if (color.g - color.r > 0.1 || dotColor > 2.9) {
+                                    } else if (color.g - color.r > 0.05 || dotColor > 2.9) {
                                         noDirectionalShading = true;
                                         emission = 2.1;
                                         color.rgb *= sqrt1(GetLuminance(color.rgb));
@@ -2402,7 +2402,7 @@ if (mat < 11024) {
                                     }
                                 }
                             } else {
-                                if (mat < 10796) { // Oak Door
+                                if (mat < 10796) { // Oak Door, Poplar Door
                                     noSmoothLighting = true;
                                     #include "/lib/materials/specificMaterials/planks/oakPlanks.glsl"
                                 }
@@ -2580,9 +2580,8 @@ if (mat < 11024) {
                                     }
                                 }
                             } else {
-                                if (mat < 10892) { // Hay Block
+                                if (mat < 10892) { // Hay Block, Straw Bed
                                     smoothnessG = pow2(color.r) * 0.5;
-                                    highlightMult *= 1.5;
                                     smoothnessD = float(color.r > color.g * 2.0) * 0.3;
                                 }
                                 else /*if (mat < 10896)*/ { // Iron Door
@@ -2646,12 +2645,16 @@ if (mat < 11024) {
                                 if (mat < 10956) { // Snow: Layers 1 to 7
                                     #include "/lib/materials/specificMaterials/terrain/snow.glsl"
 
-                                    #if defined GBUFFERS_TERRAIN && defined TAA
+                                    #if defined GBUFFERS_TERRAIN && defined TAA && defined FLICKERING_FIX
                                         float snowFadeOut = 0.0;
-                                        snowFadeOut = clamp01((playerPos.y) * 0.1);
-                                        snowFadeOut *= clamp01((lViewPos - 64.0) * 0.01);
+                                        snowFadeOut = clamp01((playerPos.y + 1.0) * 0.25);
 
-                                        if (dither + 0.25 < snowFadeOut) discard;
+                                        float fovScale = gbufferProjection[1][1];
+                                        float resScale = viewHeight / 720.0;
+                                        float scaleFactor = min1(resScale * fovScale * 20.0 / max(0.0001, lViewPos - 32.0));
+                                        snowFadeOut *= 1.0 - smoothstep1(scaleFactor);
+
+                                        if (dither + 0.01 < snowFadeOut) discard;
                                     #endif
                                 }
                                 else /*if (mat < 10960)*/ { // Target Block: Inactive
@@ -2823,8 +2826,31 @@ if (mat < 11024) {
                                         highlightMult *= 0.5;
                                     #endif
                                 }
-                                else /*if (mat < 11016)*/ { //
+                                else /*if (mat < 11016)*/ { // Ice Crystal
+                                    materialMask = OSIEBCA; // Intense Fresnel
+                                    float factor = pow2(color.g);
+                                    float factor2 = pow2(factor);
+                                    smoothnessG = 1.0 - 0.5 * factor;
+                                    highlightMult = factor2 * 3.5;
+                                    smoothnessD = factor;
 
+                                    emission = pow2(pow2(color.g) * 2.0 + color.b) * 0.1;
+                                    #if defined GBUFFERS_TERRAIN && !defined IPBR_COMPAT_MODE
+                                        vec3 worldPos = playerPos.xyz + cameraPosition.xyz;
+                                        vec3 blockPos = abs(fract(worldPos) - vec3(0.5));
+                                        float maxBlockPos = max(blockPos.x, max(blockPos.y, blockPos.z));
+                                        emission *= pow1_5(max0(1.0 - maxBlockPos)) * 1.8;
+                                    #endif
+
+                                    color.rgb = mix(color.rgb, vec3(0.5, 0.75, 1.0), min(0.5, 0.5 * emission));
+
+                                    #if COLORED_LIGHTING_INTERNAL == 0
+                                        emission = emission * 0.35 + sqrt(emission) * 0.25;
+                                    #endif
+
+                                    #ifdef COATED_TEXTURES
+                                        noiseFactor = 0.33;
+                                    #endif
                                 }
                             } else {
                                 if (mat < 11020) { //

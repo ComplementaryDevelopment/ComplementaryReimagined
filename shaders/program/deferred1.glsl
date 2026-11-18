@@ -17,12 +17,11 @@ flat in vec3 upVec, sunVec, eastVec;
 #endif
 
 //Pipeline Constants//
-const bool colortex0MipmapEnabled = true;
 
 //Common Variables//
 float SdotU = dot(sunVec, upVec);
-float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
@@ -52,7 +51,7 @@ float GetLinearDepth(float depth) {
 }
 
 float GetLinearDepth(float depth, float far, float near) {
-    return (2.0 * near) / (far + near - depth * (far - near));
+    return (2.0 * near) / (far + near - depth * farMinusNear);
 }
 
 #if SSAO_QUALI > 0
@@ -140,9 +139,11 @@ float GetLinearDepth(float depth, float far, float near) {
                     tracePos -= nViewPos * 1.5; // Tweak to imitate shadow bias
             #endif
 
+            vec4 clipPos = projection * vec4(tracePos.xyz, 1.0);
+            vec4 clipStep = projection * vec4(traceStep, 0.0);
+
             for (int i = 0; i < 32; i++) {
-                vec4 pos = projection * vec4(tracePos.xyz, 1.0);
-                pos = pos / pos.w * 0.5 + 0.5;
+                vec4 pos = clipPos / clipPos.w * 0.5 + 0.5;
 
                 if (pos.x < 0.0 || pos.x > 1.0 || pos.y < 0.0 || pos.y > 1.0) break;
 
@@ -160,6 +161,7 @@ float GetLinearDepth(float depth, float far, float near) {
 
                 shadow *= 1.0 - smoothstep(0.0, 0.01, zDelta) * smoothstep(5.0, 4.0, zDelta);
                 tracePos += traceStep;
+                clipPos += clipStep;
             }
 
             return shadow;
@@ -400,6 +402,10 @@ void main() {
         if (z0 > cloudZCheck) {
             clouds = GetClouds(cloudLinearDepth, skyFade, vec3(0.0), playerPos,
                                lViewPos, VdotS, VdotU, dither, auroraBorealis, nightNebula);
+
+            #ifdef CAVE_FOG
+                clouds.a *= 1.0 - GetCaveFactor();
+            #endif
 
             color = mix(color, vec4(clouds.rgb, 0.0), clouds.a);
         }

@@ -78,8 +78,12 @@ vec4 GetLightCalculated(sampler3D lightSampler, ivec3 pos, ivec3 voxelVolumeSize
 void main() {
 	ivec3 pos = ivec3(gl_GlobalInvocationID);
 	vec3 posM = vec3(pos) / vec3(voxelVolumeSize);
-	vec3 posOffset = floor(previousCameraPosition) - floor(cameraPosition);
-	ivec3 previousPos = pos - ivec3(posOffset);
+	#if IRIS_VERSION >= 10800
+		ivec3 posOffset = previousCameraPositionInt - cameraPositionInt;
+	#else
+		ivec3 posOffset = ivec3(floor(previousCameraPosition) - floor(cameraPosition));
+	#endif
+	ivec3 previousPos = pos - posOffset;
     ivec3 localPos = ivec3(gl_LocalInvocationID);
 
 	#ifdef OPTIMIZATION_ACT_SHARED_MEMORY
@@ -93,7 +97,7 @@ void main() {
 
 		barrier();
 
-		ivec3 alignedOffset = ivec3(posOffset) / 8 * 8;
+		ivec3 alignedOffset = posOffset / 8 * 8;
 		previousPos = pos - alignedOffset;
 	#endif
 
@@ -119,10 +123,16 @@ void main() {
 	vec4 light = vec4(0.0);
 	uint rawData = GetVoxelVolumeRaw(pos);
 	uint voxel = rawData & 32767u;
-	uint isColorwheelGeometry = (rawData - voxel) >> 15u;
+	#ifdef HAS_COLORWHEEL
+		uint isColorwheelGeometry = (rawData - voxel) >> 15u;
+	#endif
+	#ifdef COLORED_DYNAMIC_LIGHTING
+		bool isItemLight = (voxel - ITEM_LIGHT_VOXEL_OFFSET) < 200u; // voxel >= ITEM_LIGHT_VOXEL_OFFSET && voxel < ITEM_LIGHT_VOXEL_OFFSET + 200u
+		if (isItemLight) voxel -= ITEM_LIGHT_VOXEL_OFFSET;
 
-	bool isItemLight = voxel >= ITEM_LIGHT_VOXEL_OFFSET && voxel < ITEM_LIGHT_VOXEL_OFFSET + 200u;
-	if (isItemLight) voxel -= ITEM_LIGHT_VOXEL_OFFSET;
+		bool isEntityLight = (voxel - ENTITY_LIGHT_VOXEL_OFFSET) < 200u; // voxel >= ENTITY_LIGHT_VOXEL_OFFSET && voxel < ENTITY_LIGHT_VOXEL_OFFSET + 200u
+		if (isEntityLight) voxel -= ENTITY_LIGHT_VOXEL_OFFSET;
+	#endif
 
 	if (voxel == 1u) { // Solid Blocks
 		light = vec4(0.0);
@@ -142,14 +152,26 @@ void main() {
 		}
 	} else { // Light Sources
 		vec4 color = GetSpecialBlocklightColor(int(voxel));
-		// Create does not give any lightmap data to its geometry, so if the geometry is from colorwheel (detection done via bit mask), we force the alpha of light sources to be 1.0 for our floodfill light
-		if (isColorwheelGeometry == 1u) color.a = 1.0;
-		// Dropped items have no vanilla lightmap without a dynamic lighting mod. Only light sources without an alpha (torch, glowstone...) get forced alpha 1.0, so glowing ores and other artificial act light boosts keep their own alpha value.
-		if (isItemLight && color.a <= 0.0) color.a = 1.0;
+
+		#ifdef HAS_COLORWHEEL
+			/* Create does not give any lightmap data to its geometry,
+			so if the geometry is from colorwheel (detection done via bit mask),
+			we force the alpha of light sources to be 1.0 for our floodfill light */
+			if (isColorwheelGeometry == 1u) color.a = 1.0;
+		#endif
+		#ifdef COLORED_DYNAMIC_LIGHTING
+			/* Dropped items or entities have no vanilla lightmap without a dynamic lighting mod.
+			We need to calculate an approximate lightmap value (color.a) for every light */
+			if (isItemLight || isEntityLight) {
+				float approxLightIntensity = pow((dot(color.rgb, vec3(0.11))), 2.75);
+				color.a = max(color.a, approxLightIntensity);
+			}
+		#endif
+
 		light = max(light, vec4(pow2(color.rgb), color.a));
 	}
 
-	light = clamp(light, vec4(0.0), vec4(1000.0)); // Prevents a random NaN from consuming the volume
+	light = clamp(light, vec4(0.0), vec4(100000.0)); // Prevents a random NaN from consuming the volume
 
 	if (int(framemod2) == 0) {
 		imageStore(floodfill_img_copy, pos, light);

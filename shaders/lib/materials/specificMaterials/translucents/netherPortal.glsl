@@ -75,3 +75,7 @@ emission = clamp(emission * 120.0, 0.03, 1.2) * 8.0;
         emission = mix(emission, 5.0, edge);
     }
 #endif
+
+#ifdef WATER_REFRACTION
+    materialMask = OSIEBCA * 241.0; // Water Refraction
+#endif

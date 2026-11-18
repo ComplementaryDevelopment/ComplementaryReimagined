@@ -139,12 +139,14 @@ void DoTAA(inout vec3 color, inout vec3 temp, float z1) {
     viewPos1 /= viewPos1.w;
     float lViewPos1 = length(viewPos1);
 
+    bool clouds = false;
     #ifdef ENTITY_TAA_NOISY_CLOUD_FIX
         float cloudLinearDepth = texture2D(colortex5, texCoord).a;
 
         if (pow2(cloudLinearDepth) * renderDistance < min(lViewPos1, renderDistance)) {
             // Material in question is obstructed by the cloud volume
             materialMask = 0;
+            clouds = true;
         }
     #endif
 

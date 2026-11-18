@@ -34,6 +34,9 @@
         #define COLORED_LIGHTING_INTERNAL COLORED_LIGHTING
         #if COLORED_LIGHTING_INTERNAL > 0
             #define COLORED_LIGHT_FOG
+            #if ENTITY_SHADOW >= 1
+                #define COLORED_DYNAMIC_LIGHTING
+            #endif
             #define COLORED_LIGHT_FOG_I 0.65 //[0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50]
 
             #if WORLD_SPACE_REFLECTIONS > 0
@@ -63,6 +66,7 @@
 
     #define WATER_STYLE_DEFINE -1 //[-1 1 2 3]
     #define WATER_CAUSTIC_STYLE_DEFINE -1 //[-1 1 3]
+    #define WATER_REFRACTION_DEFINE -1 //[-1 0 1]
     #define WATER_REFRACTION_INTENSITY 2.0 //[0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6 2.8 3.0]
     #define WATER_FOAM_I 100 //[0 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150]
     #define WATER_ALPHA_MULT 100 //[25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200 220 240 260 280 300 325 350 375 400 425 450 475 500 550 600 650 700 750 800 850 900]
@@ -138,12 +142,14 @@
     #define LIGHTSHAFT_SUNSET_I 100 //[1 3 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
     #define LIGHTSHAFT_NIGHT_I 100 //[1 3 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
     #define LIGHTSHAFT_RAIN_I 100 //[1 3 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130 140 150 160 170 180 190 200]
+    #define LIGHTSHAFT_WATER_I 100 //[1 3 5 7 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 110 120 130]
     //#define LIGHTSHAFT_SMOKE
     #define SPECIAL_PALE_GARDEN_LIGHTSHAFTS
     #define LIGHTSHAFT_SUNSET_SATURATION 0.25 //[-0.25 -0.20 -0.15 -0.10 -0.05 0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50]
 
     #define BLOOM_ENABLED 1 //[-1 1]
     #define BLOOM_STRENGTH 0.12 //[0.027 0.036 0.045 0.054 0.063 0.072 0.081 0.09 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 0.18 0.19 0.21 0.23 0.25 0.28 0.32 10.00]
+    //#define BLOOM_SMOOTHING
     #define IMAGE_SHARPENING 5 //[0 1 2 3 4 5 6 7 8 9 10]
     #define MOTION_BLUR_EFFECT -1 //[-1 1]
     #define MOTION_BLURRING_STRENGTH 1.00 //[0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00]
@@ -161,7 +167,7 @@
     #define FXAA_TAA_INTERACTION 10 //[0 2 4 6 8 10]
     #define FXAA_STRENGTH 75 //[-1 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100]
 
-    #define WORLD_BLUR 0 //[0 1 2]
+    #define WORLD_BLUR -1 //[-1 1 2]
     //#define WB_FOV_SCALED
     //#define WB_CHROMATIC
     //#define WB_ANAMORPHIC
@@ -234,9 +240,10 @@
     #define WAVING_LAVA
     //#define WAVING_LILY_PAD
     #define WAVING_WATER_VERTEX
+    #define WATER_NOISE_COLORING -1 //[-1 0 1]
     #define WAVING_RAIN
 
-    #define SPECIAL_PORTAL_EFFECTS
+    #define SPECIAL_PORTAL_EFFECT 3 //[0 1 2 3]
     #define REFLECTION_RES 0.5 //[1.0 0.5]
 
     #define SUN_ANGLE -1 //[-1 0 -20 -30 -40 -50 -60 60 50 40 30 20]
@@ -274,6 +281,7 @@
     //#define PIXELATED_SHADOWS
     //#define PIXELATED_BLOCKLIGHT
     //#define PIXELATED_AO
+    //#define PIXELATED_CLOUD_SHADOWS
     #define PIXEL_SCALE 1 //[-2 -1 1 2 3 4 5]
 
     #define TM_EXPOSURE 1.00 //[0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.10 2.20 2.30 2.40 2.50 2.60 2.70 2.80]
@@ -375,6 +383,9 @@
 
     #if MC_VERSION >= 260200
         #define SULFUR_CAVE_FOG
+    #endif
+    #if MC_VERSION >= 260400
+        #define ICE_CAVE_FOG
     #endif
 
 //Extensions//
@@ -533,6 +544,9 @@
             #define SKY_EFFECT_REFLECTION_OPAQUE
         #endif
     #endif
+    #if WATER_REFRACTION_DEFINE == 1
+        #define WATER_REFRACTION
+    #endif
 
     #if DETAIL_QUALITY == 0 // Potato
         #if LEAF_SHADOW_OPTIMISATION_DEFINE == -1
@@ -548,12 +562,15 @@
         #if TAA_DEFINE == -1
             #define TAA
         #endif
+        #define HAND_TRANSPARENCY_FIX
     #endif
     #if DETAIL_QUALITY >= 3 // High
         #if SKY_EFFECT_REFLECTION_DEFINE == -1
             #define SKY_EFFECT_REFLECTION_TRANSLUCENT
         #endif
-        #define WATER_REFRACTION
+        #if WATER_REFRACTION_DEFINE == -1
+            #define WATER_REFRACTION
+        #endif
         #define HQ_NIGHT_NEBULA
         #define CONNECTED_GLASS_CORNER_FIX
         #define ACT_CORNER_LEAK_FIX
@@ -694,6 +711,10 @@
         #define IMPROVED_RAIN
     #endif
 
+    #if defined MC_OS_MAC || MC_VERSION < 11605
+        #undef BLOOM_SMOOTHING
+    #endif
+
 //Activate Settings//
     #ifdef POM_ALLOW_CUTOUT
     #endif
@@ -780,8 +801,14 @@
     #elif CAVE_LIGHTING > 100
         vec3 caveFogColorRaw2 = caveFogColorRaw;
     #endif
-    #ifdef SULFUR_CAVE_FOG
-        vec3 caveFogColor = mix(caveFogColorRaw2, vec3(0.22, 0.25, 0.1), inSulfurCaves);
+    vec3 sulfurCaveFogColor = vec3(0.22, 0.25, 0.1);
+    vec3 iceCaveFogColor = vec3(0.1, 0.25, 0.5);
+    #if MC_VERSION >= 260200
+        #if MC_VERSION >= 260400
+            vec3 caveFogColor = mix(mix(caveFogColorRaw2, sulfurCaveFogColor, inSulfurCaves), iceCaveFogColor, inIceCaves);
+        #else
+            vec3 caveFogColor = mix(caveFogColorRaw2, sulfurCaveFogColor, inSulfurCaves);
+        #endif
     #else
         vec3 caveFogColor = caveFogColorRaw2;
     #endif
@@ -861,7 +888,7 @@
             0 to 229: Increasing f0
             230 to 240: Consistent metalness with still increasing f0
     241 to 255 - PBR Independant:
-        OSIEBCA * 241.0 = Water
+        OSIEBCA * 241.0 = Water Refraction
 
         OSIEBCA * 251.0 = No SSAO, Reduce Reflection
         OSIEBCA * 252.0 = Versatile Selection Outline

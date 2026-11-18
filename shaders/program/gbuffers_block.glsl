@@ -37,8 +37,8 @@ in vec4 glColor;
 float NdotU = dot(normal, upVec);
 float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
-float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
@@ -140,7 +140,7 @@ void main() {
         #endif
 
         if (blockEntityId == 5025) { // End Portal, End Gateway
-            #ifdef SPECIAL_PORTAL_EFFECTS
+            #if SPECIAL_PORTAL_EFFECT == 1 || SPECIAL_PORTAL_EFFECT == 3
                 #include "/lib/materials/specificMaterials/others/endPortalEffect.glsl"
             #endif
         } else if (blockEntityId == 5004) { // Signs

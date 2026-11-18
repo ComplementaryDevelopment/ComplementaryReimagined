@@ -24,8 +24,8 @@ in vec4 glColor;
 float NdotU = dot(normal, upVec);
 float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
-float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
@@ -65,6 +65,14 @@ mat4 gbufferProjectionInverse = dhProjectionInverse;
 //Program//
 void main() {
     vec4 color = vec4(glColor.rgb, 1.0);
+
+    #ifdef DISTANT_HORIZONS_TEXTURES
+        if (dh_hasTexture()) {
+            vec4 that = dh_sampleTexture();
+            vec3 clampedColor = clamp(color.rgb * (that.rgb * 2.0), 0.0, 1.0);
+            color.rgb = mix(color.rgb, clampedColor, that.a);
+        }
+    #endif
 
     vec3 screenPos = vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
     #ifdef TAA
@@ -113,10 +121,12 @@ void main() {
     color.a *= smoothstep(far * 0.4, far * 0.6, lengthCylinder);
     if (color.a < min(dither, 1.0)) discard;
 
-    vec3 noisePos = floor((playerPos + cameraPosition) * 4.0 + 0.001) / 32.0;
-    float noiseTexture = Noise3D(noisePos) + 0.5;
-    float noiseFactor = max0(1.0 - 0.3 * dot(color.rgb, color.rgb));
-    color.rgb *= pow(noiseTexture, 0.6 * noiseFactor);
+    #ifndef DISTANT_HORIZONS_TEXTURES
+        vec3 noisePos = floor((playerPos + cameraPosition) * 4.0 + 0.001) / 32.0;
+        float noiseTexture = Noise3D(noisePos) + 0.5;
+        float noiseFactor = max0(1.0 - 0.3 * dot(color.rgb, color.rgb));
+        color.rgb *= pow(noiseTexture, 0.6 * noiseFactor);
+    #endif
 
     DoLighting(color, shadowMult, playerPos, viewPos, lViewPos, geoNormal, normalM, 0.5,
                worldGeoNormal, lmCoordM, noSmoothLighting, noDirectionalShading, noVanillaAO,

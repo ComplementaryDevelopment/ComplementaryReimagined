@@ -27,7 +27,7 @@
     if (mat == 32000) { // Water
         #include "/lib/materials/specificMaterials/translucents/water.glsl"
     } else if (mat == 30020) { // Nether Portal
-        #ifdef SPECIAL_PORTAL_EFFECTS
+        #if SPECIAL_PORTAL_EFFECT >= 2
             #include "/lib/materials/specificMaterials/translucents/netherPortal.glsl"
         #endif
     }

@@ -38,8 +38,8 @@ in vec4 glColor;
 float NdotU = dot(normal, upVec);
 float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
-float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
@@ -166,7 +166,7 @@ void main() {
                 #include "/lib/materials/materialHandling/entityIPBR.glsl"
             #endif
 
-            if (materialMask != OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
+            if (materialMask < OSIEBCA * 254.0) materialMask += OSIEBCA * 100.0; // Entity Reflection Handling
 
             #ifdef GENERATED_NORMALS
                 if (!noGeneratedNormals) GenerateNormals(normalM, colorP);
@@ -186,10 +186,12 @@ void main() {
 
             if (entityId == 50004) { // Lightning Bolt
                 #include "/lib/materials/specificMaterials/others/lightningBolt.glsl"
-            } else if (entityId == 50008) { // Item Frame, Glow Item Frame
+            } else if (entityId == 50128 || entityId == 50132)  { // Item Frame, Glow Item Frame
                 noSmoothLighting = true;
             } else if (entityId == 50076) { // Boats
                 playerPos.y += 0.38; // consistentBOAT2176
+            } else if (entityId == 50136) { // Cushion
+                materialMask = 1.0; // clear color - we want taa on cushions to clear jittering
             }
         #endif
 
@@ -321,6 +323,9 @@ out vec4 glColor;
 //Common Functions//
 
 //Includes//
+#ifdef TAA
+    #include "/lib/antialiasing/jitter.glsl"
+#endif
 
 //Program//
 void main() {
@@ -373,7 +378,7 @@ void main() {
     #endif
 
     #ifdef FLICKERING_FIX
-        if (entityId == 50008 || entityId == 50012) { // Item Frame, Glow Item Frame
+        if (entityId == 50128 || entityId == 50132)  { // Item Frame, Glow Item Frame
             if (dot(normal, upVec) > 0.99) {
                 vec4 position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
                 vec3 comPos = fract(position.xyz + cameraPosition);
@@ -386,7 +391,15 @@ void main() {
                 normal = upVec * 2.0;
             }
         } else if (entityId == 50084) { // Slime, Chicken
-            gl_Position.z -= 0.00015;
+            gl_Position.z -= 0.0001
+            #ifdef TAA
+                + 0.00005 * pow2(TAA_JITTER)
+            #endif
+            ;
+        } else if (entityId == 50136) { // Cushion
+            #ifdef TAA
+                gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+            #endif
         }
 
         #if SHADOW_QUALITY == -1

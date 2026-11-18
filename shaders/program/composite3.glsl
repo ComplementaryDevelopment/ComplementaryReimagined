@@ -32,7 +32,7 @@
 
 #if WORLD_BLUR > 0
     float SdotU = dot(sunVec, upVec);
-    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
+    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
 
     vec2 dofOffsets[18] = vec2[18](
         vec2( 0.0    ,  0.25  ),

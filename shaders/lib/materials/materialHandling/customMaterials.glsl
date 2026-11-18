@@ -14,20 +14,20 @@ void GetCustomMaterials(inout vec4 color, inout vec3 normalM, inout vec2 lmCoord
         vec4 normalMap;
         bool skipPom = false;
 
+        #ifdef GBUFFERS_ENTITIES
+            if (entityId == 50128 || entityId == 50132) skipPom = true; // Item Frame, Glow Item Frame
+        #endif
+        #ifdef GBUFFERS_BLOCK
+            if (blockEntityId == 5004) skipPom = true; // Signs
+        #endif
+        #ifdef GBUFFERS_HAND
+            if (heldItemId == 40004 || heldItemId2 == 40004) skipPom = true; // Filled Map
+        #endif
+
         if (!skipPom) {
             texCoordM = vTexCoord.xy * vTexCoordAM.zw + vTexCoordAM.xy;
 
             parallaxFade = pow2(lViewPos / POM_DISTANCE);
-            #ifdef GBUFFERS_ENTITIES
-                if (entityId == 50008) parallaxFade = 1.1; // Item Frame, Glow Item Frame
-            #endif
-            #ifdef GBUFFERS_BLOCK
-                if (blockEntityId == 5004) parallaxFade = 1.1; // Signs
-            #endif
-            #ifdef GBUFFERS_HAND
-                if (heldItemId == 40004 || heldItemId2 == 40004) parallaxFade = 1.1; // Filled Map
-            #endif
-
             parallaxTraceCoordDepth = vec3(texCoordM, 1.0);
             parallaxLocalCoord = vTexCoord.st;
 

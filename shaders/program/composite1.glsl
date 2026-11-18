@@ -29,8 +29,8 @@ flat in vec3 upVec, sunVec;
 
 //Common Variables//
 float SdotU = dot(sunVec, upVec);
-float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 float sunVisibility2 = sunVisibility * sunVisibility;
 
 vec2 view = vec2(viewWidth, viewHeight);
@@ -218,6 +218,15 @@ void main() {
         lViewPos1 = min(lViewPos1, length(viewPos1Lod.xyz));
     #endif
 
+    #if defined LIGHTSHAFTS_ACTIVE || defined COLORED_LIGHT_FOG || defined NETHER_STORM
+        #if DETAIL_QUALITY > 0
+            float entityLinearDepth = texture2D(colortex13, texCoord).r;
+            float entityLinearDepthM = entityLinearDepth == 0.0 ? 1000000.0 : pow2(entityLinearDepth) * far;
+        #else
+            float entityLinearDepthM = 1000000.0;
+        #endif
+    #endif
+
     #if defined LIGHTSHAFTS_ACTIVE || RAINBOWS > 0 && defined OVERWORLD
         float VdotL = dot(nViewPos, lightVec);
         float VdotU = dot(nViewPos, upVec);
@@ -235,11 +244,12 @@ void main() {
     #ifdef LIGHTSHAFTS_ACTIVE
         float vlFactorM = vlFactor;
 
-        volumetricEffect = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPos, VdotL, VdotU, z0, z1, z1lod, dither);
+        volumetricEffect = GetVolumetricLight(vlFactorM, translucentMult, lViewPos, lViewPos1, nViewPos, VdotL, VdotU,
+                                              z0, z1, z1lod, dither, entityLinearDepthM);
     #endif
 
     #ifdef NETHER_STORM
-        volumetricEffect = GetNetherStorm(color, translucentMult, nPlayerPos, playerPos, lViewPos, lViewPos1, dither);
+        volumetricEffect = GetNetherStorm(color, translucentMult, nPlayerPos, playerPos, lViewPos, lViewPos1, dither, entityLinearDepthM);
     #endif
 
     #ifdef ATM_COLOR_MULTS
@@ -254,7 +264,7 @@ void main() {
     #endif
 
     #ifdef COLORED_LIGHT_FOG
-        vec3 lightFog = GetColoredLightFog(nPlayerPos, translucentMult, lViewPos, lViewPos1, dither);
+        vec3 lightFog = GetColoredLightFog(nPlayerPos, translucentMult, lViewPos, lViewPos1, dither, entityLinearDepthM);
         float lightFogMult = COLORED_LIGHT_FOG_I;
 
         #ifdef OVERWORLD
@@ -308,7 +318,7 @@ void main() {
                 vec3 rainMix = vec3(rainData.a);
                 if (rainDistance > lViewPos) rainMix *= pow2(DoReducedLuminanceCorrection(translucentMult, 0.25));
 
-                rainColor += lightFog * (1.0 + 4.0 * rainData.g) + color.rgb * rainData.g * 0.25;
+                rainColor += lightFog * (1.0 + 8.0 * rainData.g) + color.rgb * rainData.g * 0.25;
 
                 color = mix(color, rainColor, rainMix);
             }

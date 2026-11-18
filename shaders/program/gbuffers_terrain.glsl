@@ -63,8 +63,8 @@ float NdotU = dot(normal, upVec);
 float geoNdotU = NdotU;
 float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
-float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
@@ -207,8 +207,9 @@ void main() {
 
     float smoothnessD = 0.0, materialMask = 0.0;
 
-    #if !defined POM || !defined POM_ALLOW_CUTOUT // 6WIR4HT23
-        if (color.a <= 0.5) discard;
+    #if (!defined POM || !defined POM_ALLOW_CUTOUT) && (MC_VERSION < 260300 || !defined DO_PIXELATION_EFFECTS)
+        // 6WIR4HT23
+        if (color.a <= 0.00001) discard;
     #endif
 
     vec3 colorP = color.rgb;
@@ -323,6 +324,8 @@ void main() {
         if (newDither > fog) discard;
 
         fog *= fog;
+
+        if (mat != 10068) // skip lava because that is emissive on dh chunks as well
         emission *= fog;
     #endif
 
@@ -508,7 +511,8 @@ void main() {
     #endif
 
     #ifdef IRIS_FEATURE_FADE_VARIABLE
-        chunkFade = mc_chunkFade;
+        // Iris sets mc_chunkFade to -1 in unknown pipelines
+        chunkFade = mc_chunkFade < 0.0 ? 1.0 : mc_chunkFade;
     #endif
 }
 

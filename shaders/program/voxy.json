@@ -95,6 +95,9 @@
         #if MC_VERSION >= 260200
         "inSulfurCaves",
         #endif
+        #if MC_VERSION >= 260400
+        "inIceCaves",
+        #endif
 
         "shadowModelView",
         "shadowProjection",

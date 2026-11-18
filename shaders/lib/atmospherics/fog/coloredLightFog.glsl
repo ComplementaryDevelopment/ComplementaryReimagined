@@ -1,4 +1,4 @@
-vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, float lViewPos1, float dither) {
+vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, float lViewPos1, float dither, float entityLinearDepthM) {
     vec3 lightFog = vec3(0.0);
 
     float stepMult = 8.0;
@@ -35,9 +35,14 @@ vec3 GetColoredLightFog(vec3 nPlayerPos, vec3 translucentMult, float lViewPos, f
         lightSample *= max0(1.0 - lTracePosM / maxDist);
         lightSample *= pow2(min1(lTracePos * 0.03125));
 
-        if (lTracePos > lViewPos) lightSample *= translucentMult;
-        lightFog += lightSample;
+        if (lTracePos > lViewPos) {
+            #if DETAIL_QUALITY > 0
+                if (lTracePos > entityLinearDepthM) break; // fixes entities looking transparent behind glass
+            #endif
+            lightSample *= translucentMult;
+        }
 
+        lightFog += lightSample;
         tracePos += traceAdd;
     }
 

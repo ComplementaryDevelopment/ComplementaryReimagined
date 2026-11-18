@@ -350,6 +350,7 @@ option.LIGHTSHAFT_NOON_I=Light Shaft Noon Multiplier
 option.LIGHTSHAFT_SUNSET_I=Light Shaft Sunset Multiplier
 option.LIGHTSHAFT_NIGHT_I=Light Shaft Night Multiplier
 option.LIGHTSHAFT_RAIN_I=Light Shaft Rain Multiplier
+option.LIGHTSHAFT_WATER_I=Light Shaft Underwater Mult
 
 option.LIGHTSHAFT_SUNSET_SATURATION=Light Shaft Sunset Color
 option.LIGHTSHAFT_SUNSET_SATURATION.comment=Adjusts the extra color saturation given to the color of light shafts at sunrise and sunset times. Higher values are going to produce a red-ish orange, while lower values are going to shift it towards yellow.
@@ -489,6 +490,12 @@ option.WATER_CAUSTIC_STYLE_DEFINE.comment=Determines the style of water shadows,
 value.WATER_CAUSTIC_STYLE_DEFINE.-1=Same as Water
 value.WATER_CAUSTIC_STYLE_DEFINE.1=Reimagined
 value.WATER_CAUSTIC_STYLE_DEFINE.3=Unbound
+
+option.WATER_REFRACTION_DEFINE=Water Refraction
+option.WATER_REFRACTION_DEFINE.comment=Adds water refraction effect for water and nether portals.
+value.WATER_REFRACTION_DEFINE.-1=§aSet By DQ
+value.WATER_REFRACTION_DEFINE.0=§aOFF
+value.WATER_REFRACTION_DEFINE.1=§cON
 
 option.WATER_REFRACTION_INTENSITY=Water Refraction Intensity §e[*]§r
 option.WATER_REFRACTION_INTENSITY.comment=Adjusts the intensity of water refraction and underwater distortion. §e[*]§r This setting only fully works when Detail Quality is set to "High", or else it will only affect the subtle underwater distortion.
@@ -631,6 +638,9 @@ option.PIXELATED_BLOCKLIGHT.comment=Makes the lighting cast by light source bloc
 option.PIXELATED_AO=Pixelated Edge Shadows
 option.PIXELATED_AO.comment=Makes Minecraft's vanilla ambient occlusion look pixelated.
 
+option.PIXELATED_CLOUD_SHADOWS=Pixelated Cloud Shadows §e[*]§r
+option.PIXELATED_CLOUD_SHADOWS.comment=Makes cloud shadows more pixelated than regular pixel shadows. §e[*]§r Unlike other pixelation settings, this one does not respect the "Pixelation Scale" setting. §e[*]§r Cloud Shadows setting must be enabled in cloud settings for this feature to work.
+
 option.PIXEL_SCALE=Pixelation Scale
 option.PIXEL_SCALE.comment=Scaling done on the textures resolution.
 value.PIXEL_SCALE.-2=0.25x
@@ -672,6 +682,9 @@ value.BLOOM_STRENGTH.0.25=130% §c[-]
 value.BLOOM_STRENGTH.0.28=150% §c[-]
 value.BLOOM_STRENGTH.0.32=180% §c[-]
 value.BLOOM_STRENGTH.10.00=§cInsane
+
+option.BLOOM_SMOOTHING=Bloom Smoothing §e[*]§r
+option.BLOOM_SMOOTHING.comment=Smooths the bloom changes over a period of time to reduce flickering. §e[*]§r Bloom smoothing can cause TAA-like trailing artifacts.
 
 option.IMAGE_SHARPENING=Image Sharpening
 option.IMAGE_SHARPENING.comment=Makes the image sharper using a filter. §c[-]§r Too much sharpening might cause visual artifacts like aliasing, flickering, noise, and subtle brightness changes.
@@ -748,7 +761,7 @@ option.MOTION_BLURRING_STRENGTH.comment=Adjusts the intensity of motion blur.
 
 option.WORLD_BLUR=§eWorld Blur§r
 option.WORLD_BLUR.comment=Enables world blurring. Distance Blur: Blur gets applied like fog, depending on the distance from the camera. Depth of Field: Blurring happens depending on the focus point of the camera. §c[-]§r This effect can severely impact performance.
-value.WORLD_BLUR.0=§aOFF
+value.WORLD_BLUR.-1=§aOFF
 value.WORLD_BLUR.1=§cDistance Blur
 value.WORLD_BLUR.2=§cDepth of Field
 
@@ -1022,11 +1035,21 @@ option.WAVING_LILY_PAD.comment=Adds movement to lily pads and frogspawn to simul
 option.WAVING_WATER_VERTEX=Waving Water Height
 option.WAVING_WATER_VERTEX.comment=Adds movement to water position to simulate wind. §e[*]§r This option is not related to the "Water Wave Strength" setting.
 
+option.WATER_NOISE_COLORING=Waving Water Brightness
+option.WATER_NOISE_COLORING.comment=Adds slight color variance to oceans, making them look wavier. §e[*]§r "Set By DQ" means that this setting is determined by "Detail Quality" in Performance Settings unless you change it.
+value.WATER_NOISE_COLORING.-1=§aSet By DQ
+value.WATER_NOISE_COLORING.0=§aOFF
+value.WATER_NOISE_COLORING.1=§cON
+
 option.WAVING_RAIN=Waving Rain/Snow Texture
 option.WAVING_RAIN.comment=Adds movement to falling rain and snow textures to make it look more dynamic.
 
-option.SPECIAL_PORTAL_EFFECTS=Special Portal Effects
-option.SPECIAL_PORTAL_EFFECTS.comment=Adds special animations and emission to Nether Portals, End Portals, and End Gateways.
+option.SPECIAL_PORTAL_EFFECT=Special Portal Effects
+option.SPECIAL_PORTAL_EFFECT.comment=Adds special animations and emission to Nether Portals, End Portals, and End Gateways.
+value.SPECIAL_PORTAL_EFFECT.0=OFF
+value.SPECIAL_PORTAL_EFFECT.1=End Portal
+value.SPECIAL_PORTAL_EFFECT.2=Nether Portal
+value.SPECIAL_PORTAL_EFFECT.3=Full
 
 option.REFLECTION_RES=§eReflection Resolution§r
 option.REFLECTION_RES.comment=Changes the resolution of PBR reflections on blocks (and the world-space reflections if you have that setting enabled) to gain performance. §c[-]§r "Full" resolution reflections can impact performance way more than expected in some situations. §e[*]§r This feature does not work on Optifine.
@@ -1123,6 +1146,9 @@ option.COLORED_LIGHT_FOG.comment=Adds volumetric blocklight fog to the scene, mo
 
 option.COLORED_LIGHT_FOG_I=Light Fog Intensity
 option.COLORED_LIGHT_FOG_I.comment=Determines the brightness of the Colored Light Fog.
+
+option.COLORED_DYNAMIC_LIGHTING=§eColored Dynamic Lighting [*]§r
+option.COLORED_DYNAMIC_LIGHTING.comment=Allows dynamic light sources, like dropped torch items on the ground, to cast colored lighting. §e[*]§r This feature only works if "Advanced Color Tracing" and "Entity Shadows" (for regular entities) are enabled in Performance Settings. §c[-]§r This effect can impact performance.
 
 option.LIGHT_COLOR_MULTS=§eLighting Color Multipliers
 option.LIGHT_COLOR_MULTS.comment=Enables customization of lighting colors that are seen on all surfaces.

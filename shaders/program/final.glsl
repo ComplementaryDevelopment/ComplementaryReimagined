@@ -43,7 +43,11 @@ vec2 view = vec2(viewWidth, viewHeight);
     #define MULTIPLE_LOD_MODS_ERROR
 #endif
 
-#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0 || defined WSR_MISSING_ACT_ERROR || defined MULTIPLE_LOD_MODS_ERROR
+#if !defined IS_ANGELICA && MC_VERSION == 10710
+    #define OPTIFINE_1_7_10_ERROR
+#endif
+
+#if defined MC_ANISOTROPIC_FILTERING || COLORED_LIGHTING > 0 || defined WSR_MISSING_ACT_ERROR || defined MULTIPLE_LOD_MODS_ERROR || defined OPTIFINE_1_7_10_ERROR
     #define ANY_ERROR_MESSAGE
 #endif
 
@@ -124,7 +128,9 @@ void main() {
         color = max(color, texelFetch(colortex3, texelCoord + boxOffsets[i], 0).rgb);
     }*/
 
-    #ifdef MULTIPLE_LOD_MODS_ERROR
+    #ifdef OPTIFINE_1_7_10_ERROR
+        #include "/lib/textRendering/error_optifine_10710.glsl"
+    #elif defined MULTIPLE_LOD_MODS_ERROR
         #include "/lib/textRendering/error_multiple_lod_mods.glsl"
     #elif defined OPTIFINE_AF_ERROR
         #include "/lib/textRendering/error_optifine_af.glsl"

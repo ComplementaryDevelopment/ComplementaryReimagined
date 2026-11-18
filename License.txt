@@ -1,4 +1,4 @@
-Complementary License Agreement 1.7
+Complementary License Agreement 1.8
 ===================================
 
 0. Terminology
@@ -38,7 +38,9 @@ Complementary License Agreement 1.7
   1.1. All Users are free to use This Pack for Normal Usage. This isn't
        limited to, but includes:
          a. Using The Pack for gameplay
-         b. Using The Pack for content creation
+         b. Using gameplay footage recorded while using The Pack to create
+            other video content
+         c. Streaming live gameplay footage while using The Pack
 
   1.2. This Pack is allowed to be added to a Modpack as long as the following
        conditions are met:
@@ -83,16 +85,18 @@ Complementary License Agreement 1.7
 
 2. Denied Cases
 ---------------
-  2.1. Any usage or redistribution of any part of This Pack that isn't
+  2.1. It is explicitly disallowed to use any code, material, or gameplay
+       footage that was made with the aid of This Pack for the purpose of
+       training artificial intelligence models, machine learning algorithms,
+       or neural network technologies of any kind.
+
+  2.2. Any usage or redistribution of any part of This Pack that isn't
        explicitly covered in the "Grants" section of this license should be
-       treated as "All Rights Reserved". Only exceptions are the files that
-       contain a notice that they are covered by a different license.
+       treated as "All Rights Reserved" and avoided. Only exceptions are the
+       certain file included in This Pack that contain a notice regarding
+       being covered by a different license.
 
-  2.2. This agreement only applies to the version of This Pack that this exact
-       file can be found in. This agreement is not valid for future or past
-       versions of The Pack unless they contain the exact same agreement.
-
-3. License Infringement
+3. Further Information
 -----------------------
   3.1. By using This Pack for any purpose, you agree that Complementary
        Development has the right to take action against you in the case of a
@@ -104,3 +108,7 @@ Complementary License Agreement 1.7
        For this reason, cases that Complementary Development did not take
        action against in the past cannot be used as an excuse to ignore this
        agreement.
+
+  3.3. This agreement only applies to the version of This Pack that this exact
+       file can be found in. This agreement is not valid for future or past
+       versions of The Pack unless they contain the exact same agreement.

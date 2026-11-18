@@ -300,6 +300,10 @@ vec4 smoothstep1(vec4 x) {
     return x * x * (3.0 - 2.0 * x);
 }
 
+float smoothstep2(float x) {
+    return x * x * x * (x * (x * 6.0 - 15.0) + 10.0);
+}
+
 float dot3(vec3 x) {
     return dot(x, x);
 }

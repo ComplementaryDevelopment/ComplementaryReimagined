@@ -1,0 +1,2 @@
+doSolidBlockCheck = false;
+storeToAllFaces = true;

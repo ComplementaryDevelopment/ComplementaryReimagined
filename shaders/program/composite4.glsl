@@ -21,14 +21,23 @@ const bool colortex0MipmapEnabled = true;
 float weight[7] = float[7](1.0, 6.0, 15.0, 20.0, 15.0, 6.0, 1.0);
 
 vec2 view = vec2(viewWidth, viewHeight);
+vec2 rescale = max(view / vec2(1920.0, 1080.0), vec2(1.0));
+
+#ifdef BLOOM_SMOOTHING
+    float bloomSmoothingFactor = 1.0 - pow(0.65, frameTime * 50.0);
+#endif
 
 #if MOTION_BLUR_EFFECT == 1 && defined MOTION_BLUR_BLOOM_FOG_FIX
     float SdotU = dot(sunVec, upVec);
-    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
+    float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
 #endif
 
 //Common Functions//
-vec3 BloomTile(float lod, vec2 offset, vec2 scaledCoord) {
+#ifdef BLOOM_SMOOTHING
+    #include "/lib/misc/reprojection.glsl"
+#endif
+
+vec3 BloomTile(float lod, vec2 offset, vec2 scaledCoord, float tileWeight) {
     vec3 bloom = vec3(0.0);
     float scale = exp2(lod);
     vec2 scaledCoordMinusOffset = scaledCoord - offset;
@@ -44,10 +53,32 @@ vec3 BloomTile(float lod, vec2 offset, vec2 scaledCoord) {
                 bloom += texture2D(colortex0, bloomCoord).rgb * wg;
             }
         }
+
         bloom /= 4096.0;
+        bloom = pow(bloom / 128.0, vec3(0.25)) * tileWeight;
+
+        #ifdef BLOOM_SMOOTHING
+            vec3 screenPos = vec3(coord, texture2D(depthtex0, coord).x) * 2.0 - 1.0;
+            vec4 viewPos = gbufferProjectionInverse * vec4(screenPos, 1.0);
+            viewPos /= viewPos.w;
+            vec4 worldPos = gbufferModelViewInverse * viewPos;
+
+            vec4 previousPosition = worldPos + vec4(cameraPosition - previousCameraPosition, 0.0);
+            previousPosition = gbufferPreviousModelView * previousPosition;
+            previousPosition = gbufferPreviousProjection * previousPosition;
+            vec2 prevCoord = previousPosition.xy / previousPosition.w * 0.5 + 0.5;
+
+            if (max(abs(prevCoord.x - 0.5), abs(prevCoord.y - 0.5)) < 0.5) {
+                float lViewPos = length(viewPos.xyz);
+                float bloomSmoothingFactorM = mix(bloomSmoothingFactor, 1.0, max0(1.0 - lViewPos * 0.2));
+
+                vec3 prevBloom = texture2D(colortex14, (prevCoord / scale + offset) / rescale).rgb;
+                bloom = mix(prevBloom, bloom, bloomSmoothingFactorM);
+            }
+        #endif
     }
 
-    return pow(bloom / 128.0, vec3(0.25));
+    return bloom;
 }
 
 //Includes//
@@ -64,24 +95,22 @@ void main() {
     vec3 blur = vec3(0.0);
 
     #if BLOOM_ENABLED == 1
-        vec2 scaledCoord = texCoord * max(vec2(viewWidth, viewHeight) / vec2(1920.0, 1080.0), vec2(1.0));
+        vec2 scaledCoord = gl_FragCoord.xy / view * rescale;
 
         #if defined OVERWORLD || defined END
-            blur += BloomTile(2.0, vec2(0.0      , 0.0   ), scaledCoord);
-            blur += BloomTile(3.0, vec2(0.0      , 0.26  ), scaledCoord);
-            blur += BloomTile(4.0, vec2(0.135    , 0.26  ), scaledCoord);
-            blur += BloomTile(5.0, vec2(0.2075   , 0.26  ), scaledCoord) * 0.8;
-            blur += BloomTile(6.0, vec2(0.135    , 0.3325), scaledCoord) * 0.8;
-            blur += BloomTile(7.0, vec2(0.160625 , 0.3325), scaledCoord) * 0.6;
-            blur += BloomTile(8.0, vec2(0.1784375, 0.3325), scaledCoord) * 0.4;
+            blur += BloomTile(2.0, vec2(0.0      , 0.0   ), scaledCoord, 1.0);
+            blur += BloomTile(3.0, vec2(0.0      , 0.26  ), scaledCoord, 1.0);
+            blur += BloomTile(4.0, vec2(0.135    , 0.26  ), scaledCoord, 1.0);
+            blur += BloomTile(5.0, vec2(0.2075   , 0.26  ), scaledCoord, 0.8);
+            blur += BloomTile(6.0, vec2(0.135    , 0.3325), scaledCoord, 0.8);
+            blur += BloomTile(7.0, vec2(0.160625 , 0.3325), scaledCoord, 0.6);
         #else
-            blur += BloomTile(2.0, vec2(0.0      , 0.0   ), scaledCoord);
-            blur += BloomTile(3.0, vec2(0.0      , 0.26  ), scaledCoord);
-            blur += BloomTile(4.0, vec2(0.135    , 0.26  ), scaledCoord);
-            blur += BloomTile(5.0, vec2(0.2075   , 0.26  ), scaledCoord);
-            blur += BloomTile(6.0, vec2(0.135    , 0.3325), scaledCoord);
-            blur += BloomTile(7.0, vec2(0.160625 , 0.3325), scaledCoord);
-            blur += BloomTile(8.0, vec2(0.1784375, 0.3325), scaledCoord) * 0.6;
+            blur += BloomTile(2.0, vec2(0.0      , 0.0   ), scaledCoord, 1.0);
+            blur += BloomTile(3.0, vec2(0.0      , 0.26  ), scaledCoord, 1.0);
+            blur += BloomTile(4.0, vec2(0.135    , 0.26  ), scaledCoord, 1.0);
+            blur += BloomTile(5.0, vec2(0.2075   , 0.26  ), scaledCoord, 1.0);
+            blur += BloomTile(6.0, vec2(0.135    , 0.3325), scaledCoord, 1.0);
+            blur += BloomTile(7.0, vec2(0.160625 , 0.3325), scaledCoord, 1.0);
         #endif
     #endif
 
@@ -178,12 +207,22 @@ void main() {
         }
     #endif
 
-    /* DRAWBUFFERS:3 */
-    gl_FragData[0] = vec4(blur, 1.0);
+    #ifndef BLOOM_SMOOTHING
+        /* DRAWBUFFERS:3 */
+        gl_FragData[0] = vec4(blur, 1.0);
 
-    #if MOTION_BLUR_EFFECT == 1
+        #if MOTION_BLUR_EFFECT == 1
         /* DRAWBUFFERS:30 */
-        gl_FragData[1] = vec4(color, 1.0);
+            gl_FragData[1] = vec4(color, 1.0);
+        #endif
+    #else
+        /* RENDERTARGETS: 14 */
+        gl_FragData[0] = vec4(blur, 1.0);
+
+        #if MOTION_BLUR_EFFECT == 1
+            /* RENDERTARGETS: 14,0 */
+            gl_FragData[1] = vec4(color, 1.0);
+        #endif
     #endif
 }
 

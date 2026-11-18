@@ -14,7 +14,7 @@ if (entityId < 50128) { // 50000 to 50128
                         #include "/lib/materials/specificMaterials/others/lightningBolt.glsl"
                     }
                 } else { // 50008 to 50016
-                    if (entityId == 50008) { //
+                    if (entityId == 50008) { // Enderman
 
                     } else /*if (entityId == 50012)*/ { // Iron Golem
                         if (CheckForColor(color.rgb, vec3(141, 0, 42))) { // Eye - brighter bit
@@ -59,6 +59,9 @@ if (entityId < 50128) { // 50000 to 50128
                 } else { // 50024 to 50032
                     if (entityId == 50024) { // Creeper
                         emission = max0(color.b - color.g - color.r) * 10.0;
+                        #ifdef COLORED_DYNAMIC_LIGHTING
+                            emission *= 1.5;
+                        #endif
                     } else /*if (entityId == 50028)*/ { // Drowned
                         if (atlasSize.x < 900) {
                             if (CheckForColor(color.rgb, vec3(143, 241, 215)) || // Adult drowned
@@ -249,30 +252,21 @@ if (entityId < 50128) { // 50000 to 50128
                         lmCoordM.y = eyeBrightnessM;
                     }
                 } else { // 50136 to 50144
-                    if (entityId < 50140) { // 50136 to 50140
-                        // 50136
-                        // 50137
-                        // 50138
-                        // 50139
-                    } else { // 50140 to 50144
-                        // 50140
-                        // 50141
-                        // 50142
-                        // 50143
+                    if (entityId < 50140) { // Cushion
+                        materialMask = 1.0; // clear color - we want taa on cushions to clear jittering
+                    } else { // Spectral Arrow
+                        #ifdef COLORED_DYNAMIC_LIGHTING
+                            emission = 1.0;
+                        #endif
                     }
                 }
             } else { // 50144 to 50160
                 if (entityId < 50152) { // 50144 to 50152
-                    if (entityId < 50148) { // 50144 to 50148
-                        // 50144
-                        // 50145
-                        // 50146
-                        // 50147
-                    } else { // 50148 to 50152
-                        // 50148
-                        // 50149
-                        // 50150
-                        // 50151
+                    if (entityId < 50148) { // Eye of Ender
+                    } else { // Dragon Fireball
+                        emission = min(0.75, max0(color.r + color.b - color.g));
+                        color.g *= 1.0 - emission;
+                        emission *= 5.0;
                     }
                 } else { // 50152 to 50160
                     if (entityId < 50156) { // 50152 to 50156

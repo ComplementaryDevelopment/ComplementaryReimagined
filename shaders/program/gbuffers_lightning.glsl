@@ -22,8 +22,8 @@ in vec4 glColor;
 float NdotU = dot(normal, upVec);
 float NdotUmax0 = max(NdotU, 0.0);
 float SdotU = dot(sunVec, upVec);
-float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) / 0.75 : clamp(SdotU + 0.03125, 0.0, 0.0625) / 0.0625;
-float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) / 0.125;
+float sunFactor = SdotU < 0.0 ? clamp(SdotU + 0.375, 0.0, 0.75) * 1.33333 : clamp(SdotU + 0.03125, 0.0, 0.0625) * 16.0;
+float sunVisibility = clamp(SdotU + 0.0625, 0.0, 0.125) * 8.0;
 float sunVisibility2 = sunVisibility * sunVisibility;
 float shadowTimeVar1 = abs(sunVisibility - 0.5) * 2.0;
 float shadowTimeVar2 = shadowTimeVar1 * shadowTimeVar1;
@@ -130,8 +130,12 @@ void main() {
     northVec = normalize(gbufferModelView[2].xyz);
     sunVec = GetSunVector();
 
-    #if defined FLICKERING_FIX && SHADOW_QUALITY == -1
-        if (glColor.a < 0.5) gl_Position.z += 0.0005;
+    #ifdef FLICKERING_FIX
+        #if SHADOW_QUALITY == -1
+            if (glColor.a < 0.5) gl_Position.z += 0.0005;
+        #endif
+
+        if (glColor.a > 0.99) gl_Position.z -= 0.0002;
     #endif
 }
 
