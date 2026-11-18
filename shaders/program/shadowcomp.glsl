@@ -121,6 +121,9 @@ void main() {
 	uint voxel = rawData & 32767u;
 	uint isColorwheelGeometry = (rawData - voxel) >> 15u;
 
+	bool isItemLight = voxel >= ITEM_LIGHT_VOXEL_OFFSET && voxel < ITEM_LIGHT_VOXEL_OFFSET + 200u;
+	if (isItemLight) voxel -= ITEM_LIGHT_VOXEL_OFFSET;
+
 	if (voxel == 1u) { // Solid Blocks
 		light = vec4(0.0);
 	} else if (voxel == 0u || voxel >= 200u) { // Air, Non-solids, Translucents
@@ -139,7 +142,10 @@ void main() {
 		}
 	} else { // Light Sources
 		vec4 color = GetSpecialBlocklightColor(int(voxel));
+		// Create does not give any lightmap data to its geometry, so if the geometry is from colorwheel (detection done via bit mask), we force the alpha of light sources to be 1.0 for our floodfill light
 		if (isColorwheelGeometry == 1u) color.a = 1.0;
+		// Dropped items have no vanilla lightmap without a dynamic lighting mod. Only light sources without an alpha (torch, glowstone...) get forced alpha 1.0, so glowing ores and other artificial act light boosts keep their own alpha value.
+		if (isItemLight && color.a <= 0.0) color.a = 1.0;
 		light = max(light, vec4(pow2(color.rgb), color.a));
 	}
 
