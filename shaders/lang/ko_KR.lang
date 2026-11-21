@@ -1,0 +1,1214 @@
+#shaders/lang/ko_KR.lang
+
+#Profiles
+profile.POTATO=§aPotato
+profile.VERYLOW=§aVery Low
+profile.LOW=§aLow
+profile.MEDIUM=§aMedium
+profile.HIGH=§eHigh (기본)
+profile.VERYHIGH=§eVery High
+profile.ULTRA=§cUltra
+profile.COMPLEMENTARY=§4§lComplementary
+profile.comment=셰이더 프로필은 화질과 성능의 균형이 가장 좋게 성능 설정을 바꿉니다. §e[*]§r 잘 알고 있는 게 아니라면 이 프로필 중 하나를 쓰는 것을 권장합니다. §e[*]§r 바뀌는 설정은 모두 "성능 설정" 메뉴에 있습니다.
+
+#Information
+screen.INFORMATION=정보
+screen.INFORMATION.comment=정보를 보여 주기 위한 버튼만 있는 항목입니다.
+
+option.info0=§b버튼에 마우스를 올려 보세요
+value.info0.0=
+option.info0.comment=정보를 보여 주기 위한 버튼만 있는 항목입니다.
+
+option.info1=성능을 올리는 방법
+value.info1.0=
+option.info1.comment=- 마인크래프트 성능은 영향을 주는 것이 너무 많아서 복잡하지만, 아래를 시도해 볼 수 있습니다. - OptiFine 대신 Iris+Sodium을 쓰세요. OptiFine은 문제가 많고, 어떤 경우에는 이 설명의 나머지조차 읽히지 않습니다. - 셰이더 "프로필"을 낮추세요. 화질과 성능의 균형을 가장 좋게 맞춰 두었습니다. - 렌더 거리를 줄이세요. 고른 프로필의 "그림자 거리"보다 2~4청크 높게 두는 것을 권장합니다. 예를 들어 High 프로필은 렌더 거리 16청크, Potato 프로필은 6청크입니다. - 해상도가 너무 높지 않은지 확인하세요. 1920x1080은 중급 시스템에 알맞고, 1440p는 상급 시스템에서 쓸 만하며, 4K는 과합니다. - 모드를 너무 많이 넣지 마세요. "최적화 모드"라도 셰이더에는 별로 도움이 안 되는 경우가 많습니다. 나뭇잎처럼 복잡한 식물을 추가하는 리소스 팩도 성능을 많이 잡아먹습니다.
+
+option.info2=가장 좋은 설정
+value.info2.0=
+option.info2.comment=- 가장 좋은 설정은 사람마다 다르지만, 기본 "프로필"이 대부분에게 거의 최선입니다. - 기본 설정은 오랜 커뮤니티 평가와 테스트, 피드백을 거쳤고, 화질과 성능의 균형을 특히 신경 썼습니다. - 그래도 마음대로 만져 보면서 즐기세요!
+
+option.info3=프로필과 비주얼 스타일
+value.info3.0=
+option.info3.comment=- "프로필"은 "성능 설정" 메뉴의 값을 바꾸며, 취향으로 고르는 설정은 건드리지 않습니다. - "비주얼 스타일"은 여러 취향 설정에 있는 "스타일 따름" 값을 바꿉니다. 성능에는 크게 영향을 주지 않습니다. - Complementary Reimagined와 Unbound의 차이는 "비주얼 스타일"의 기본값뿐입니다.
+
+option.info4=리소스 팩 지원이란
+value.info4.0=
+option.info4.comment=- 리소스 팩 지원은 셰이더가 마인크래프트의 블록을 어떻게 다룰지 정합니다. - 예를 들어 §bIntegratedPBR+§r는 금 블록을 반사가 있는 것으로 다루지만, §elabPBR§r나 §eseuspbr§r는 그걸 셰이더에 알려 주는 리소스 팩이 필요합니다. - §aBasic§r로 두면 물처럼 몇 가지만 빼고는 특별한 블록이 없어집니다.
+
+option.info5=노란색 설정이란
+value.info5.0=
+option.info5.comment=- 이름이 노란색인 설정은 "성능 설정"에 없어도 성능에 눈에 띄게 영향을 줍니다. - 켰을 때 글자가 빨간색이 되면, 성능 비용이 매우 큽니다.
+
+option.info6=추천 모드
+value.info6.0=
+option.info6.comment=- 필수인 Iris와 Sodium 외에, 성능을 위해 "Optimized Block Entities"나 "Enhanced Block Entities" 같은 블록 엔티티 최적화 모드를 권장합니다. - "RenderScale"은 해상도를 쉽게 조절할 때 좋습니다. - "Voxy"나 "Distant Horizons"는 성능을 크게 희생하지 않고 렌더 거리를 아주 멀리 늘립니다. Voxy는 64~256청크, Distant Horizons는 64~128청크를 권장하고, 둘 중 하나를 쓴다면 일반 렌더 거리는 8~12청크로 두는 것이 좋습니다. - "Euphoria Patches"는 기능과 설정이 더 많은 수정판 Complementary를 셰이더 목록에 넣습니다. 그 셰이더를 쓰지 않을 때도 Iris 수정이 적용되어, 월드 좌표가 아주 높아도 색 조명이 동작하게 해 줍니다.
+
+option.info7=질문과 문제 제보
+value.info7.0=
+option.info7.comment=- 질문은 Complementary 디스코드로, 문제는 GitHub의 issues에 남겨 주세요. - www.complementary.dev/discord - www.complementary.dev/github
+
+option.info8=커뮤니티 참여
+value.info8.0=
+option.info8.comment=- Complementary 디스코드에서 커뮤니티에 참여하고, 개발자나 경험 많은 멤버에게 연락할 수 있습니다. - www.complementary.dev/discord
+
+option.info9=후원 방법
+value.info9.0=
+option.info9.comment=- Complementary를 돕는 가장 좋은 방법은 친구나 SNS에 공유하는 것입니다. 메인 개발자(저!)를 Patreon에서 직접 후원해도 됩니다. - www.patreon.com/emingt
+
+option.info10=크레딧
+value.info10.0=
+option.info10.comment=- EminGT: Complementary의 메인 개발자. - Capt Tatsu: BSL Shaders 개발자. 그의 너그러움 덕분에 Complementary가 만들어질 수 있었습니다. - 특별 감사: IMS212, sp614x, Chocapic13, Robobo1221, SixthSurge, null511, fayer3, catlikecoding, Builderb0y, Jessie, SpacEagle17, isuewo, flytrap, gri573, FoZy-STYLE, plazmal, aceralex
+
+#Style
+option.SHADER_STYLE=비주얼 스타일
+option.SHADER_STYLE.comment=셰이더 팩의 기본 화면 스타일을 정합니다. §bReimagined§r: 마인크래프트다운 느낌을 살리면서 보완합니다. §dUnbound§r: 반실사 판타지 느낌으로 화면을 다시 만듭니다. §e[*]§r 영향받는 설정: 물 스타일, 구름 스타일, 해/달 스타일, 해/달 각도, 오로라 스타일, 발광 광석.
+value.SHADER_STYLE.1=§bReimagined
+value.SHADER_STYLE.4=§dUnbound
+
+#Screens
+screen.PERFORMANCE_SETTINGS=§e성능 설정§r
+screen.PERFORMANCE_SETTINGS.comment=성능과 직접 연결되고, 셰이더 프로필에 따라 바뀌는 설정입니다.
+
+screen.ATMOSPHERE_SETTINGS=대기
+screen.ATMOSPHERE_SETTINGS.comment=대기와 관련된 설정입니다.
+
+screen.ATM_COLOR_SETTINGS=대기 색 배율
+screen.ATM_COLOR_SETTINGS.comment=하늘과 안개에서 주로 보이는 대기 색을 직접 고를 수 있습니다.
+
+screen.MORNING_ATM_MULTS=일출/일몰
+screen.NOON_ATM_MULTS=정오
+screen.NIGHT_ATM_MULTS=밤
+screen.RAIN_ATM_MULTS=비
+screen.NETHER_ATM_MULTS=네더
+screen.END_ATM_MULTS=엔드
+
+screen.CLOUD_SETTINGS=구름
+screen.CLOUD_SETTINGS.comment=구름과 관련된 설정입니다.
+
+screen.CLOUD_COLOR_SETTINGS=구름 색
+screen.CLOUD_COLOR_SETTINGS.comment=구름 색을 바꾸는 설정입니다.
+
+screen.CLOUD_UNBOUND_SETTINGS=Unbound 구름
+screen.CLOUD_REIMAGINED_SETTINGS=Reimagined 구름
+
+screen.FOG_SETTINGS=안개
+screen.FOG_SETTINGS.comment=여러 종류의 안개와 관련된 설정입니다.
+
+screen.SUN_MOON_SETTINGS=해 / 달
+screen.SUN_MOON_SETTINGS.comment=해와 달과 관련된 설정입니다.
+
+screen.NETHER_SETTINGS=네더
+screen.NETHER_SETTINGS.comment=네더와 관련된 설정입니다.
+
+screen.END_SETTINGS=엔드
+screen.END_SETTINGS.comment=엔드와 관련된 설정입니다.
+
+screen.WEATHER_SETTINGS=비 / 날씨
+screen.WEATHER_SETTINGS.comment=날씨와 관련된 설정입니다.
+
+screen.CAMERA_SETTINGS=카메라
+screen.CAMERA_SETTINGS.comment=시점과 카메라에 관련된 설정입니다.
+
+screen.TONEMAP_SETTINGS=색 균형
+screen.TONEMAP_SETTINGS.comment=화면의 색 균형을 정하는 설정입니다.
+
+screen.COLORGRADING_SETTINGS=색 보정
+screen.COLORGRADING_SETTINGS.comment=최종 색 채널을 섞는 설정입니다.
+
+screen.WORLD_BLUR_SETTINGS=월드 블러
+screen.WORLD_BLUR_SETTINGS.comment=화려한 월드 블러와 관련된 설정입니다.
+
+screen.TAA_SETTINGS=템포럴 필터
+screen.TAA_SETTINGS.comment=템포럴 안티앨리어싱이 어떻게 동작할지 정하는 설정입니다.
+
+screen.MATERIAL_SETTINGS=재질
+screen.MATERIAL_SETTINGS.comment=마인크래프트 재질과 관련된 설정입니다.
+
+screen.IPBR_SETTINGS=IntegratedPBR+ 재질
+screen.IPBR_SETTINGS.comment=IntegratedPBR+ 기능과 관련된 설정입니다.
+
+screen.GLOWING_ORE_SETTINGS=발광 광석
+screen.GLOWING_ORE_SETTINGS.comment=광석 블록의 발광을 조절하는 설정입니다.
+
+screen.GLOWING_STUFF_SETTINGS=기타 발광
+screen.GLOWING_STUFF_SETTINGS.comment=그 밖 블록의 발광을 조절하는 설정입니다.
+
+screen.OTHER_IPBR_SETTINGS=기타 IPBR+
+screen.OTHER_IPBR_SETTINGS.comment=그 밖의 IntegratedPBR+ 설정입니다.
+
+screen.CUSTOM_PBR_SETTINGS=labPBR/seuspbr 재질
+screen.CUSTOM_PBR_SETTINGS.comment=labPBR/seuspbr 기능과 관련된 설정입니다.
+
+screen.LIGHTING_SETTINGS=조명
+screen.LIGHTING_SETTINGS.comment=조명과 관련된 설정입니다.
+
+screen.LIGHT_COLOR_SETTINGS=조명 색 배율
+screen.LIGHT_COLOR_SETTINGS.comment=모든 표면에 보이는 조명 색을 직접 고를 수 있습니다.
+
+screen.MORNING_LIGHT_MULTS=일출/일몰
+screen.NOON_LIGHT_MULTS=정오
+screen.NIGHT_LIGHT_MULTS=밤
+screen.RAIN_LIGHT_MULTS=비
+screen.NETHER_LIGHT_MULTS=네더
+screen.END_LIGHT_MULTS=엔드
+
+screen.BLOCKLIGHT_SETTINGS=블록 조명 §e[*]§r
+screen.BLOCKLIGHT_SETTINGS.comment=광원 블록이 내는 조명을 조절하는 설정입니다. §e[*]§r 고급 색 추적이 켜져 있으면 빨강/초록/파랑 색 설정은 대부분의 빛에 적용되지 않습니다.
+
+screen.MOON_PHASE_INF_SETTINGS=달 위상
+screen.MOON_PHASE_INF_SETTINGS.comment=달의 위상이 밤 조명에 얼마나 영향을 줄지 정하는 설정입니다.
+
+screen.ACT_FEATURES_SETTINGS=ACT 전용 기능 §e[*]§r
+screen.ACT_FEATURES_SETTINGS.comment=고급 색 추적에서만 쓸 수 있는 기능입니다. §e[*]§r 성능 설정에서 고급 색 추적이 켜져 있고, 시스템이 지원할 때만 동작합니다.
+
+screen.PIXELATED_LIGHTING_SETTINGS=픽셀 조명
+screen.PIXELATED_LIGHTING_SETTINGS.comment=특정 조명 효과를 픽셀처럼 만드는 설정입니다.
+
+screen.WATER_SETTINGS=물
+screen.WATER_SETTINGS.comment=물에 대한 설정입니다.
+
+screen.WATER_COLOR_SETTINGS=수면 색
+
+screen.UNDERWATER_COLOR_SETTINGS=수중 색
+
+screen.WATER_WAVE_SETTINGS=물결 노멀 §e[*]§r
+screen.WATER_WAVE_SETTINGS.comment=물 표면에 보이는 방향성 물결(노멀)을 조절합니다. §e[*]§r 물 스타일이 "Reimagined + 물결"이거나 "Unbound"일 때만 동작합니다.
+
+screen.WAVING_SETTINGS=흔들리는 텍스처
+screen.WAVING_SETTINGS.comment=흔들리는 텍스처에 대한 설정입니다.
+
+screen.OTHER_SETTINGS=기타
+screen.OTHER_SETTINGS.comment=다른 항목에 넣기 어려운 설정입니다.
+
+screen.SELECT_OUTLINE_SETTINGS=선택 윤곽선
+screen.SELECT_OUTLINE_SETTINGS.comment=바라보는 블록의 윤곽선을 바꾸는 설정입니다.
+
+screen.WORLD_OUTLINE_SETTINGS=월드 윤곽선
+screen.WORLD_OUTLINE_SETTINGS.comment=선택해서 넣을 수 있는 윤곽선 효과입니다.
+
+#Settings
+option.RP_MODE=리소스 팩 지원
+option.RP_MODE.comment=블록과 재질을 그리는 내부 계산을 바꿉니다. §bIntegrated PBR+§r: PBR과 추가 효과를 계산합니다. 대부분의 경우 이것을 권장합니다. §aBasic§r: PBR도 추가 효과도 없습니다. §elabPBR/seuspbr§r: 필요한 PBR 리소스 팩의 재질을 사용합니다.
+value.RP_MODE.0=§aBasic
+value.RP_MODE.1=§bIntegrated PBR+
+value.RP_MODE.2=§eseuspbr (리소스 팩 필요)
+value.RP_MODE.3=§elabPBR (리소스 팩 필요)
+
+option.WATER_REFLECT_QUALITY=물 반사 품질
+option.WATER_REFLECT_QUALITY.comment=반투명한 것에 비치는 반사의 화질을 조절합니다. §cMedium§r: 물과 반투명 블록에 화면 공간 레이트레이싱 반사. §ePotato§r: 더 빠른 방식으로 바꿉니다. 상황에 따라 이상해 보일 수 있습니다. §a끔§r: 반사 없음.
+value.WATER_REFLECT_QUALITY.-1=§a끔
+value.WATER_REFLECT_QUALITY.0=§a하늘만
+value.WATER_REFLECT_QUALITY.1=§ePotato
+value.WATER_REFLECT_QUALITY.2=§cMedium
+
+option.BLOCK_REFLECT_QUALITY=블록 반사 품질 §e[*]§r
+option.BLOCK_REFLECT_QUALITY.comment=단단한 재질에 비치는 반사의 화질을 조절합니다. §cHigh§r: 해/달 하이라이트와 고급 스펙큘러 반사. §eLow§r: 해/달 하이라이트만. §e[*]§r 스펙큘러 반사가 나오려면 리소스 팩 지원이 Basic이 아니어야 합니다.
+value.BLOCK_REFLECT_QUALITY.0=§a끔
+value.BLOCK_REFLECT_QUALITY.1=§eLow
+value.BLOCK_REFLECT_QUALITY.3=§cHigh
+
+option.SHADOW_QUALITY=실시간 그림자
+option.SHADOW_QUALITY.comment=그림자 화질을 조절합니다. 단계가 올라갈수록 그림자 노이즈가 줄어듭니다. §eLow§r와 §eVery Low§r는 더 단순한 필터를 쓰고, §eVery Low§r는 색이 있는 그림자도 끄며, §a끔§r은 그림자와 빛줄기를 완전히 끕니다. §e[*]§r 템포럴 필터를 끄거나 픽셀 그림자를 켜면, 이 설정은 내부적으로 Low로 제한됩니다.
+value.SHADOW_QUALITY.-1=§a끔
+value.SHADOW_QUALITY.0=§eVery Low
+value.SHADOW_QUALITY.1=§eLow
+value.SHADOW_QUALITY.2=§eMedium
+value.SHADOW_QUALITY.3=§cHigh
+value.SHADOW_QUALITY.4=§cVery High
+value.SHADOW_QUALITY.5=§4§lUltra
+
+option.LIGHTSHAFT_QUALI_DEFINE=빛줄기 품질 §e[*]§r
+option.LIGHTSHAFT_QUALI_DEFINE.comment=빛줄기 화질을 조절합니다. 단계가 올라갈수록 노이즈가 줄어듭니다. §e[*]§r 빛줄기가 나오려면 "실시간 그림자"가 끔이 아니어야 합니다. §e[*]§r 엔드 광선 화질도 이 설정을 따르며, "끔"만 "Low"로 처리됩니다.
+value.LIGHTSHAFT_QUALI_DEFINE.0=§a끔
+value.LIGHTSHAFT_QUALI_DEFINE.1=§eLow
+value.LIGHTSHAFT_QUALI_DEFINE.2=§eMedium
+value.LIGHTSHAFT_QUALI_DEFINE.3=§cHigh
+value.LIGHTSHAFT_QUALI_DEFINE.4=§4§lVery High
+
+option.shadowDistance=그림자 거리
+option.shadowDistance.comment=플레이어로부터 실시간 그림자가 그려지는 거리를 조절합니다. §c[-]§r 값을 낮추면 빛줄기가 과도하게 샐 수 있습니다.
+value.shadowDistance.64.0=§a4청크 §c[-]
+value.shadowDistance.80.0=§a5청크 §c[-]
+value.shadowDistance.96.0=§a6청크 §c[-]
+value.shadowDistance.112.0=§a7청크 §c[-]
+value.shadowDistance.128.0=§a8청크
+value.shadowDistance.160.0=§e10청크
+value.shadowDistance.192.0=§e12청크
+value.shadowDistance.224.0=§e14청크
+value.shadowDistance.256.0=§c16청크
+value.shadowDistance.320.0=§c20청크
+value.shadowDistance.384.0=§4§l24청크
+value.shadowDistance.512.0=§4§l32청크
+value.shadowDistance.768.0=§4§l§n§o48청크
+value.shadowDistance.1024.0=§4§k-§r§4§l§n§o64청크§r§4§k-
+
+option.ENTITY_SHADOW=엔티티 그림자
+option.ENTITY_SHADOW.comment=엔티티와 블록 엔티티의 그림자를 켭니다. "일반 엔티티"는 동물과 몬스터 같은 것이고, "전체"는 상자 같은 블록 엔티티도 포함합니다. §c[-]§r 엔티티 그림자는 생각보다 성능을 훨씬 더 쓰며, 경우에 따라 FPS의 50% 이상을 잡아먹습니다.
+value.ENTITY_SHADOW.-1=§a끔
+value.ENTITY_SHADOW.1=§c일반 엔티티
+value.ENTITY_SHADOW.2=§4§k-§r§4§l§n§o전체§r§4§k- §r§c[-]
+
+option.DETAIL_QUALITY=디테일 품질
+option.DETAIL_QUALITY.comment=성능에 영향을 주는 자잘한 화질을 한꺼번에 조절합니다. 대상: 물 재질, TAA, 조명 보정, 밤 성운, 네더 폭풍, 하늘 효과 반사, 빗물 웅덩이 정확도, 흔들림, 모션 블러, 반사 보정, 반투명 텍스처 필터링.
+value.DETAIL_QUALITY.0=§aPotato
+value.DETAIL_QUALITY.2=§eMedium
+value.DETAIL_QUALITY.3=§cHigh
+value.DETAIL_QUALITY.4=§4§k-§r§4§l§n§oUltra§r§4§k-
+
+option.CLOUD_QUALITY=구름 품질
+option.CLOUD_QUALITY.comment=Reimagined/Unbound 구름의 조명, 디테일, 샘플 화질을 조절합니다. §e[*]§r 구름 스타일이 "Reimagined" 또는 "Unbound"일 때만 동작합니다.
+value.CLOUD_QUALITY.0=§a끔
+value.CLOUD_QUALITY.1=§aLow
+value.CLOUD_QUALITY.2=§eMedium
+value.CLOUD_QUALITY.3=§cHigh
+
+option.FXAA_DEFINE=안티앨리어싱 (FXAA)
+option.FXAA_DEFINE.comment=Fast Approximate Anti-Aliasing(FXAA)을 켭니다. 화면의 계단 현상을 줄여 더 부드럽게 보이게 합니다.
+value.FXAA_DEFINE.-1=§a끔
+value.FXAA_DEFINE.1=§e켬
+
+option.SSAO_QUALI_DEFINE=가장자리 그림자 (SSAO)
+option.SSAO_QUALI_DEFINE.comment=화면 가장자리에 은은한 그림자를 더하는 Screen-Space Ambient Occlusion(SSAO)의 화질을 조절합니다. 단계가 올라갈수록 SSAO 노이즈가 줄어듭니다.
+value.SSAO_QUALI_DEFINE.0=§a끔
+value.SSAO_QUALI_DEFINE.2=§eMedium
+value.SSAO_QUALI_DEFINE.3=§cHigh
+
+option.ANISOTROPIC_FILTER=텍스처 필터링
+option.ANISOTROPIC_FILTER.comment=비등방성 필터링으로 밉맵된 텍스처를 더 선명하게 합니다. §e[*]§r 비디오 설정의 "밉맵 단계"가 최대(4)가 아니면 효과가 좋지 않습니다.
+value.ANISOTROPIC_FILTER.0=§a끔
+value.ANISOTROPIC_FILTER.4=§e4x
+value.ANISOTROPIC_FILTER.8=§e8x
+value.ANISOTROPIC_FILTER.16=§4§l16x
+
+option.COLORED_LIGHTING=고급 색 추적 §e[*]§r
+option.COLORED_LIGHTING.comment=복셀로 빛을 퍼뜨려 블록 조명에 색을 입히고, 새로운 광원도 추가합니다. §e[*]§r Iris와 지원되는 환경에서만 동작합니다. §e[*]§r "실시간 그림자"가 끔이면 이 설정도 꺼집니다. §a[+]§r 고급 색 추적을 켜면 "기타"의 "ACT 전용 기능"에서 따로 끄고 켤 수 있는 기능도 열립니다. §c[-]§r 청크를 늘릴수록 성능 비용이 예상보다 훨씬 커지며, 한 단계마다 이전의 두 배를 넘을 수 있습니다. §c[-]§r 꽉 차지 않은 블록이나 모드 블록에서 빛 색이 새는 문제가 생길 수 있습니다.
+value.COLORED_LIGHTING.0=§a끔
+value.COLORED_LIGHTING.128=§c4청크
+value.COLORED_LIGHTING.192=§c6청크
+value.COLORED_LIGHTING.256=§4§l8청크
+value.COLORED_LIGHTING.384=§4§l12청크
+value.COLORED_LIGHTING.512=§4§l§n§o16청크
+value.COLORED_LIGHTING.768=§4§l§n§o24청크 §r§c[-]
+value.COLORED_LIGHTING.1024=§4§k-§r§4§l§n§o32청크§r§4§k- §r§c[-]
+
+option.WORLD_SPACE_REFLECTIONS=월드 스페이스 반사 §e[*]§r
+option.WORLD_SPACE_REFLECTIONS.comment=반사를 화면이 아니라 월드 공간에서 계산합니다. §e[*]§r 성능 설정에서 고급 색 추적이 켜져 있고, 시스템이 지원할 때만 동작합니다. §e[*]§r 최대 거리는 고급 색 추적 거리를 따르지만, 기술적인 이유로 16청크를 넘지 않습니다. §c[-]§r 고급 색 추적 거리가 길수록 성능에 매우 큰 영향을 줄 수 있습니다. §c[-]§r 모드나 리소스 팩에 따라 여러 문제가 생길 수 있습니다.
+value.WORLD_SPACE_REFLECTIONS.-1=§a끔
+value.WORLD_SPACE_REFLECTIONS.1=§4§l§n§o켬
+
+option.WORLD_SPACE_REF_MODE=WSR 모드 §e[*]§r
+option.WORLD_SPACE_REF_MODE.comment=월드 스페이스 반사의 동작 방식을 정합니다. WSR은 월드 스페이스 반사, SSR은 화면 공간 반사입니다. §e[*]§r "WSR만"은 월드 쪽 반사만 보여서 화면 공간 반사가 깨지는 문제를 없애기에 좋습니다. "WSR + SSR"은 화면에 있는 디테일을 거리나 블록 제한 없이 쓸 수 있어, 반사 디테일을 더 살리고 싶을 때 좋습니다.
+value.WORLD_SPACE_REF_MODE.1=WSR만
+value.WORLD_SPACE_REF_MODE.2=WSR + SSR
+
+option.WORLD_SPACE_PLAYER_REF=플레이어 반사 (WS)
+option.WORLD_SPACE_PLAYER_REF.comment=지금 플레이 중인 자신의 플레이어 모델이 월드 스페이스 반사에 비치게 합니다.
+value.WORLD_SPACE_PLAYER_REF.-1=끔
+value.WORLD_SPACE_PLAYER_REF.1=켬
+
+option.SSAO_I=가장자리 그림자 강도 (SSAO)
+option.SSAO_I.comment=화면 가장자리에 은은한 그림자를 더하는 SSAO의 강도를 정합니다. §e[*]§r "성능 설정"에서 SSAO가 꺼져 있으면 동작하지 않습니다.
+value.SSAO_I.0=끔
+
+option.VANILLAAO_I=가장자리 그림자 강도 (바닐라)
+option.VANILLAAO_I.comment=화면 가장자리에 은은한 그림자를 더하는 마인크래프트 앰비언트 오클루전의 강도를 정합니다.
+value.VANILLAAO_I.0=끔
+
+option.BORDER_FOG=경계 안개
+option.BORDER_FOG.comment=불러온 월드 가장자리에 짙은 안개를 깔아 청크 경계를 가립니다. §e[*]§r 렌더 거리가 8청크보다 짧으면 경계 안개를 끄는 것이 좋습니다.
+
+option.ATM_FOG_MULT=대기 안개
+option.ATM_FOG_MULT.comment=고도에 따라 생기는 안개의 강도를 조절합니다.
+value.ATM_FOG_MULT.0.50=매우 약함
+value.ATM_FOG_MULT.0.65=약함
+value.ATM_FOG_MULT.0.80=보통
+value.ATM_FOG_MULT.0.95=강함
+
+option.ATM_FOG_DISTANCE=대기 안개 거리
+option.ATM_FOG_DISTANCE.comment=카메라에서 대기 안개가 나타나기 시작하는 거리를 조절합니다. §e[*]§r 안개 거리는 비디오 설정의 렌더 거리에 따라서도 자동으로 바뀝니다.
+
+option.ATM_FOG_ALTITUDE=대기 안개 고도
+option.ATM_FOG_ALTITUDE.comment=대기 안개가 가장 짙게 나타나는 고도를 정합니다.
+
+option.CAVE_FOG=동굴 안개
+option.CAVE_FOG.comment=깊은 지하에 안개를 더합니다.
+
+option.LIGHTSHAFT_BEHAVIOUR=빛줄기 모드
+option.LIGHTSHAFT_BEHAVIOUR.comment=빛줄기가 어떻게 동작할지 정합니다. §a[+]§r 장면 인식은 일반과 극한을 상황에 맞게 자동으로 오가며 가장 좋은 결과를 냅니다. §c[-]§r 극한은 보통 플레이에 권장하지 않으며, 성능에 매우 큰 영향을 줄 수 있습니다.
+value.LIGHTSHAFT_BEHAVIOUR.0=끔
+value.LIGHTSHAFT_BEHAVIOUR.1=장면 인식 §a[+]
+value.LIGHTSHAFT_BEHAVIOUR.2=일반
+value.LIGHTSHAFT_BEHAVIOUR.3=극한 §c[-]
+
+option.LIGHTSHAFT_SMOKE=§e빛줄기 연기§r
+option.LIGHTSHAFT_SMOKE.comment=빛줄기에 볼륨이 있는 연기를 더합니다. §c[-]§r 성능에 매우 큰 영향을 줄 수 있습니다.
+
+option.SPECIAL_PALE_GARDEN_LIGHTSHAFTS=창백한 정원 빛줄기
+option.SPECIAL_PALE_GARDEN_LIGHTSHAFTS.comment="창백한 정원" 생물 군계에서 빛줄기를 훨씬 강렬하게 만듭니다.
+
+option.LIGHTSHAFT_NOON_I=빛줄기 정오 배율
+option.LIGHTSHAFT_SUNSET_I=빛줄기 일몰 배율
+option.LIGHTSHAFT_NIGHT_I=빛줄기 밤 배율
+option.LIGHTSHAFT_RAIN_I=빛줄기 비 배율
+option.LIGHTSHAFT_WATER_I=빛줄기 수중 배율
+
+option.LIGHTSHAFT_SUNSET_SATURATION=빛줄기 일몰 색
+option.LIGHTSHAFT_SUNSET_SATURATION.comment=일출과 일몰에 빛줄기 색에 더해지는 채도를 조절합니다. 값을 높이면 붉은 주황에 가깝고, 낮추면 노랑 쪽으로 이동합니다.
+
+option.CLOUD_STYLE_DEFINE=구름 스타일
+option.CLOUD_STYLE_DEFINE.comment=구름 스타일을 정합니다. §e[*]§r "스타일 따름"은 셰이더 옵션 첫 화면의 "비주얼 스타일"이 자동으로 정한다는 뜻입니다. §e[*]§r "바닐라"는 비디오 설정에서 구름이 켜져 있어야 합니다.
+value.CLOUD_STYLE_DEFINE.-1=스타일 따름
+value.CLOUD_STYLE_DEFINE.0=끔
+value.CLOUD_STYLE_DEFINE.1=Reimagined
+value.CLOUD_STYLE_DEFINE.3=Unbound
+value.CLOUD_STYLE_DEFINE.50=바닐라 §e[*]
+
+option.CLOUD_SHADOWS=구름 그림자
+option.CLOUD_SHADOWS.comment=구름이 드리우는 그림자를 켭니다. §e[*]§r 구름 스타일이 "Reimagined" 또는 "Unbound"일 때만 동작합니다. §e[*]§r 구름 스타일이 "Unbound"이면 구름이 복잡해서 구름 그림자가 무작위로 만들어집니다.
+
+option.CLOUD_CLOSED_AREA_CHECK=실내 구름 없애기
+option.CLOUD_CLOSED_AREA_CHECK.comment=닫힌 곳의 구름을 지우기 위해 추가로 검사합니다. §e[*]§r 구름 스타일이 "Reimagined" 또는 "Unbound"일 때만 동작합니다. §e[*]§r "실시간 그림자"가 끔이면 이 설정도 꺼집니다.
+
+option.CLOUD_ALT1=구름 고도 §e[*]§r
+option.CLOUD_ALT1.comment=구름이 나타나는 월드 높이를 정합니다. §e[*]§r 차원 설정과 모드에 따라 내부적으로 높아지거나 낮아질 수 있습니다. §e[*]§r 구름 스타일이 "Reimagined" 또는 "Unbound"일 때만 동작합니다.
+
+option.CLOUD_SPEED_MULT=구름 속도
+option.CLOUD_SPEED_MULT.comment=구름이 움직이는 속도를 정합니다. "월드 시간에 맞춤"은 마인크래프트 월드 시간으로 구름 위치를 옮겨, 같은 서버의 플레이어에게 구름이 같게 보이게 합니다. §e[*]§r 구름 스타일이 "Reimagined" 또는 "Unbound"일 때만 동작합니다.
+value.CLOUD_SPEED_MULT.100=월드 시간에 맞춤
+
+option.CLOUD_R=구름 빨강 배율
+option.CLOUD_G=구름 초록 배율
+option.CLOUD_B=구름 파랑 배율
+
+option.CLOUD_UNBOUND_AMOUNT=구름 양
+option.CLOUD_UNBOUND_AMOUNT.comment=Unbound 구름의 양을 조절합니다.
+
+option.CLOUD_UNBOUND_SIZE_MULT=구름 세밀도 §c[-]§r
+option.CLOUD_UNBOUND_SIZE_MULT.comment=Unbound 구름의 크기를 조절합니다. 값을 높이면 구름이 작아집니다. §c[-]§r 이 설정을 바꾸면 같은 서버의 플레이어끼리 구름을 맞추는 기능이 꺼집니다.
+
+option.CLOUD_UNBOUND_RAIN_ADD=비 구름 추가
+option.CLOUD_UNBOUND_RAIN_ADD.comment=비나 눈이 올 때 늘어나는 구름의 양을 조절합니다.
+prefix.CLOUD_UNBOUND_RAIN_ADD=+
+
+option.DOUBLE_REIM_CLOUDS=Reimagined 구름 2겹
+option.DOUBLE_REIM_CLOUDS.comment=Reimagined 구름을 한 겹 더 켭니다. §e[*]§r 구름 스타일이 "Reimagined"일 때만 동작합니다.
+
+option.CLOUD_ALT2=구름 2층 고도
+option.CLOUD_ALT2.comment=두 번째 구름이 나타나는 월드 높이를 정합니다. §e[*]§r 구름 스타일이 "Reimagined"이고 "Reimagined 구름 2겹"이 켜져 있을 때만 동작합니다.
+
+option.NETHER_STORM=§e네더 폭풍§r
+option.NETHER_STORM.comment=네더에 연기처럼 부피가 있는 효과를 더합니다. §c[-]§r 성능에 영향을 줄 수 있습니다.
+
+option.NETHER_STORM_I=네더 폭풍 불투명도
+option.NETHER_STORM_I.comment=네더 폭풍이 얼마나 불투명한지 조절합니다.
+
+option.NETHER_STORM_LOWER_ALT=네더 폭풍 하단 고도
+option.NETHER_STORM_LOWER_ALT.comment=네더 폭풍이 시작되는 아래쪽 높이를 정합니다. 이 고도보다 아래에는 나타나지 않고, 바로 위에서 가장 밝아 보입니다.
+
+option.NETHER_STORM_HEIGHT=네더 폭풍 높이
+option.NETHER_STORM_HEIGHT.comment=네더 폭풍이 쌓이는 높이를 정합니다. 값을 낮추면 "네더 폭풍 하단 고도" 근처에 모입니다.
+
+option.NETHER_VIEW_LIMIT=§e네더 시야 제한§r
+option.NETHER_VIEW_LIMIT.comment=네더에서 안개 너머로 볼 수 있는 최대 거리를 정합니다. §c[-]§r "네더 폭풍"이 켜진 상태에서 이 값을 높이면 성능에 영향을 줄 수 있습니다.
+value.NETHER_VIEW_LIMIT.96.0=6청크
+value.NETHER_VIEW_LIMIT.112.0=7청크
+value.NETHER_VIEW_LIMIT.128.0=8청크
+value.NETHER_VIEW_LIMIT.160.0=10청크
+value.NETHER_VIEW_LIMIT.192.0=12청크
+value.NETHER_VIEW_LIMIT.224.0=14청크
+value.NETHER_VIEW_LIMIT.256.0=16청크
+value.NETHER_VIEW_LIMIT.320.0=20청크
+value.NETHER_VIEW_LIMIT.384.0=24청크
+value.NETHER_VIEW_LIMIT.512.0=32청크 §c[-]
+value.NETHER_VIEW_LIMIT.768.0=48청크 §c[-]
+value.NETHER_VIEW_LIMIT.1024.0=64청크 §c[-]
+value.NETHER_VIEW_LIMIT.99999.0=무제한 §c[-]
+
+option.NETHER_COLOR_MODE=색 모드
+option.NETHER_COLOR_MODE.comment=네더의 분위기 색을 어떻게 다룰지 정합니다. 고정: 생물 군계와 상관없이 색이 바뀌지 않습니다. 생물 군계: 생물 군계에 따라 색이 바뀝니다. 생물 군계 (조정): 생물 군계를 따르되, Complementary의 기본 색감에 맞게 다시 맞춰 두었습니다.
+value.NETHER_COLOR_MODE.3=생물 군계 (조정)
+value.NETHER_COLOR_MODE.2=생물 군계
+value.NETHER_COLOR_MODE.0=고정
+
+option.END_BEAM_INTENSITY=엔드 광선 밝기
+option.END_BEAM_INTENSITY.comment=엔드에서 보이는 광선의 밝기를 조절합니다.
+
+option.END_STAR_INTENSITY=엔드 별 밝기
+option.END_STAR_INTENSITY.comment=엔드에서 보이는 별의 밝기를 조절합니다.
+
+option.END_FLASHES=엔드 플래시
+option.END_FLASHES.comment=마인크래프트 1.21.9에 추가된 "엔드 플래시"를 지원합니다. 하늘이 번쩍이는 세기는 엔드 광선 밝기에 직접 연결됩니다.
+
+option.END_BEAM_CENTER_ALT=엔드 광선 중심 고도
+option.END_BEAM_CENTER_ALT.comment=엔드 광선이 중심을 두는 월드 Y 높이를 조절합니다.
+
+option.END_BEAM_HEIGHT=엔드 광선 높이
+option.END_BEAM_HEIGHT.comment=엔드 광선이 실제로 얼마나 긴지 조절합니다.
+
+option.TM_EXPOSURE=전체 밝기
+option.TM_EXPOSURE.comment="톤맵 노출"이라고도 합니다. 화면 전체의 밝기를 조절합니다.
+
+option.TM_CONTRAST=전체 대비
+option.TM_CONTRAST.comment=어두운 색은 더 어둡게, 밝은 색은 더 밝게 조절합니다.
+
+option.T_SATURATION=채도
+option.T_SATURATION.comment=화면 전체가 얼마나 화려한지 조절합니다.
+
+option.T_VIBRANCE=옅은 색 채도
+option.T_VIBRANCE.comment="비브런스"라고도 합니다. 화면의 화려함을 조절하되, 이미 화려한 픽셀은 덜 바꿉니다.
+
+option.TM_DARK_DESATURATION=암부 탈색
+option.TM_DARK_DESATURATION.comment=어두운 곳에 적용되는 색 바램의 정도를 조절합니다.
+
+option.TM_WHITE_PATH=흰색 도달
+option.TM_WHITE_PATH.comment=밝은 색이 흰색에 얼마나 쉽게 도달하는지 조절합니다.
+
+option.COLORGRADING=§e색 보정
+option.COLORGRADING.comment=최종 색 채널을 자유롭게 섞는 설정을 켭니다.
+option.GR_RR=빨강>빨강
+option.GR_RG=빨강>초록
+option.GR_RB=빨강>파랑
+option.GR_RC=빨강 커브
+option.GR_GR=초록>빨강
+option.GR_GG=초록>초록
+option.GR_GB=초록>파랑
+option.GR_GC=초록 커브
+option.GR_BR=파랑>빨강
+option.GR_BG=파랑>초록
+option.GR_BB=파랑>파랑
+option.GR_BC=파랑 커브
+
+option.WATER_STYLE_DEFINE=물 스타일
+option.WATER_STYLE_DEFINE.comment=물 스타일을 정합니다. §e[*]§r "스타일 따름"은 셰이더 옵션 첫 화면의 "비주얼 스타일"이 자동으로 정한다는 뜻입니다.
+value.WATER_STYLE_DEFINE.-1=스타일 따름
+value.WATER_STYLE_DEFINE.1=Reimagined
+value.WATER_STYLE_DEFINE.2=Reimagined + 물결
+value.WATER_STYLE_DEFINE.3=Unbound
+
+option.WATER_CAUSTIC_STYLE_DEFINE=물 커스틱 스타일
+option.WATER_CAUSTIC_STYLE_DEFINE.comment=물 그림자, 즉 물 커스틱의 스타일을 정합니다.
+value.WATER_CAUSTIC_STYLE_DEFINE.-1=물과 같게
+value.WATER_CAUSTIC_STYLE_DEFINE.1=Reimagined
+value.WATER_CAUSTIC_STYLE_DEFINE.3=Unbound
+
+option.WATER_REFRACTION_DEFINE=물 굴절
+option.WATER_REFRACTION_DEFINE.comment=물과 네더 차원문에 굴절을 더합니다.
+value.WATER_REFRACTION_DEFINE.-1=§a디테일 따름
+value.WATER_REFRACTION_DEFINE.0=§a끔
+value.WATER_REFRACTION_DEFINE.1=§c켬
+
+option.WATER_REFRACTION_INTENSITY=물 굴절 강도 §e[*]§r
+option.WATER_REFRACTION_INTENSITY.comment=물 굴절과 수중 왜곡의 강도를 조절합니다. §e[*]§r 디테일 품질이 "High"일 때만 완전히 동작하고, 그 외에는 은은한 수중 왜곡만 바뀝니다.
+
+option.WATER_FOAM_I=물거품 강도
+option.WATER_FOAM_I.comment=물가에 보이는 거품이 얼마나 불투명한지 정합니다. §e[*]§r 디테일 품질이 Medium 이상일 때만 동작합니다.
+
+option.WATER_ALPHA_MULT=물 불투명도
+option.WATER_ALPHA_MULT.comment=물이 얼마나 불투명해 보이는지 조절합니다. §c[-]§r 극단적인 값은 물 조명의 균형을 깨뜨립니다. §e[*]§r 디테일 품질이 Medium 이상일 때만 동작합니다.
+
+option.WATER_FOG_MULT=물 안개 배율
+option.WATER_FOG_MULT.comment=물 안개가 얼마나 가까이 보이는지 조절합니다. 값을 높이면 안개가 더 가까워집니다. §c[-]§r 극단적인 값은 물 조명의 균형을 깨뜨립니다.
+
+option.WATERCOLOR_R=수면 빨강 배율
+option.WATERCOLOR_G=수면 초록 배율
+option.WATERCOLOR_B=수면 파랑 배율
+
+option.WATERCOLOR_MODE=색 모드
+option.WATERCOLOR_MODE.comment=물 색을 어떻게 다룰지 정합니다. 고정: 생물 군계와 상관없이 물 색이 바뀌지 않습니다. 생물 군계: 생물 군계에 따라 색이 바뀝니다. 생물 군계 (제한): 생물 군계를 따르되, 어떤 생물 군계에서 수면 색이 이상해지는 것을 막습니다. §e[*]§r 마인크래프트 1.13 미만에서는 제대로 동작하지 않습니다.
+value.WATERCOLOR_MODE.3=생물 군계 (제한)
+value.WATERCOLOR_MODE.2=생물 군계
+value.WATERCOLOR_MODE.0=고정
+
+option.BRIGHT_CAVE_WATER=얕은/동굴 물 밝게
+option.BRIGHT_CAVE_WATER.comment=얕은 물이나 닫힌 곳의 물을 더 밝게 해서 동굴이 잘 보이게 하고, 바다의 얕은 곳에 색 디테일을 더합니다. §e[*]§r 기술적인 이유로 물 불투명도가 199보다 높으면 동작하지 않습니다.
+
+option.UNDERWATERCOLOR_R=수중 빨강 배율
+option.UNDERWATERCOLOR_G=수중 초록 배율
+option.UNDERWATERCOLOR_B=수중 파랑 배율
+
+option.WATER_BUMPINESS=물결 강도
+option.WATER_BUMPINESS.comment=물 표면에 보이는 방향성 물결(노멀)의 강도를 조절합니다.
+
+option.WATER_BUMP_SMALL=물결 강도 - 작은 물결
+option.WATER_BUMP_SMALL.comment=다른 물결보다 작은 물결의 강도를 조절합니다.
+
+option.WATER_BUMP_MED=물결 강도 - 중간 물결
+option.WATER_BUMP_MED.comment=중간 크기 물결의 강도를 조절합니다.
+
+option.WATER_BUMP_BIG=물결 강도 - 큰 물결
+option.WATER_BUMP_BIG.comment=다른 물결보다 큰 물결의 강도를 조절합니다.
+
+option.WATER_SPEED_MULT=물결 속도
+option.WATER_SPEED_MULT.comment=물 표면에 보이는 방향성 물결(노멀)이 움직이는 속도를 조절합니다.
+
+option.WATER_SIZE_MULT=물결 크기
+option.WATER_SIZE_MULT.comment=물 표면에 보이는 방향성 물결(노멀)이 얼마나 커 보이는지 조절합니다.
+
+option.SUN_ANGLE=해/달 각도
+option.SUN_ANGLE.comment=정오에 해와 달이 월드와 이루는 각도를 조절합니다. §a[+]§r Reimagined 조명은 해 각도가 0이어도 다른 값만큼 자연스럽도록 맞춰져 있습니다.
+value.SUN_ANGLE.-1=스타일 따름
+value.SUN_ANGLE.0=0 §r(§bReimagined§r)
+value.SUN_ANGLE.-40=-40 §r(§dUnbound§r)
+
+option.SUN_MOON_STYLE_DEFINE=해/달 스타일
+option.SUN_MOON_STYLE_DEFINE.comment=해와 달의 스타일을 정합니다. §e[*]§r 해/달/스카이박스를 구분하는 한계 때문에 일부 리소스 팩과 어긋날 수 있습니다.
+value.SUN_MOON_STYLE_DEFINE.-1=스타일 따름
+value.SUN_MOON_STYLE_DEFINE.1=Reimagined
+value.SUN_MOON_STYLE_DEFINE.2=Unbound
+value.SUN_MOON_STYLE_DEFINE.3=Unbound - 작게
+
+option.SUN_MOON_HORIZON=해/달 지평선
+option.SUN_MOON_HORIZON.comment=해와 달이 지평선 아래에 나타나지 않게 합니다.
+
+option.SUN_MOON_DURING_RAIN=비 올 때 해/달 §e[*]§r
+option.SUN_MOON_DURING_RAIN.comment=비가 올 때 해와 달이 보일지 정합니다. §e[*]§r 비 올 때의 조명 균형도 같이 바뀝니다.
+
+option.IMPROVED_RAIN_DEFINE=개선된 날씨 텍스처
+option.IMPROVED_RAIN_DEFINE.comment=날씨 텍스처 처리를 개선해서 색이 더 좋아지고, 색유리나 변형된 유리 뒤에 비와 눈이 안 보이던 마인크래프트 버그도 고칩니다.
+value.IMPROVED_RAIN_DEFINE.0=끔
+value.IMPROVED_RAIN_DEFINE.1=켬
+
+option.NIGHT_STAR_AMOUNT=밤 별 개수
+option.NIGHT_STAR_AMOUNT.comment=밤하늘 별의 양을 정합니다.
+value.NIGHT_STAR_AMOUNT.0=끔
+value.NIGHT_STAR_AMOUNT.1=Low
+value.NIGHT_STAR_AMOUNT.2=Medium
+value.NIGHT_STAR_AMOUNT.3=High
+value.NIGHT_STAR_AMOUNT.4=Very High
+
+option.RAINBOWS=무지개
+option.RAINBOWS.comment=아침과 저녁에 해의 반대편에 나타나는 무지개를 켭니다.
+value.RAINBOWS.0=끔
+value.RAINBOWS.1=비 온 뒤
+value.RAINBOWS.3=항상
+
+option.RAINBOW_STYLE_DEFINE=무지개 스타일
+option.RAINBOW_STYLE_DEFINE.comment=무지개 스타일을 정합니다. §e[*]§r "스타일 따름"은 셰이더 옵션 첫 화면의 "비주얼 스타일"이 자동으로 정한다는 뜻입니다.
+value.RAINBOW_STYLE_DEFINE.-1=스타일 따름
+value.RAINBOW_STYLE_DEFINE.1=Reimagined
+value.RAINBOW_STYLE_DEFINE.4=Unbound
+
+option.AURORA_STYLE_DEFINE=오로라 스타일
+option.AURORA_STYLE_DEFINE.comment=밤하늘에 나타나는 오로라의 스타일을 정합니다.
+value.AURORA_STYLE_DEFINE.-1=스타일 따름
+value.AURORA_STYLE_DEFINE.0=끔
+value.AURORA_STYLE_DEFINE.1=Reimagined
+value.AURORA_STYLE_DEFINE.2=Unbound
+
+option.AURORA_CONDITION=오로라 조건
+option.AURORA_CONDITION.comment=오로라가 나타나는 조건을 정합니다. §e[*]§r 이 설정과 상관없이 오로라는 밤에만 나타납니다.
+value.AURORA_CONDITION.0=매일 밤
+value.AURORA_CONDITION.1=보름달
+value.AURORA_CONDITION.2=눈 생물 군계
+value.AURORA_CONDITION.3=눈 생물 군계의 보름달
+value.AURORA_CONDITION.4=보름달 또는 눈 생물 군계
+
+option.NIGHT_NEBULAE=§e밤 성운§r
+option.NIGHT_NEBULAE.comment=밤하늘에 은하 같은 성운을 더합니다. 성운은 절차적으로 만들어지며, 밤마다 다르게 보입니다. §c[-]§r 성능에 영향을 줄 수 있습니다. §e[*]§r 영어 "Nebulae"는 오타가 아니라 Nebula의 복수형입니다 =D
+value.NIGHT_NEBULAE.-1=끔
+value.NIGHT_NEBULAE.1=§e켬
+
+option.NIGHT_NEBULA_I=밤 성운 밝기
+option.NIGHT_NEBULA_I.comment=밤 성운의 밝기를 조절합니다.
+
+option.RAIN_STYLE=비 스타일
+option.RAIN_STYLE.comment=비 오는 날씨의 느낌을 정합니다.
+value.RAIN_STYLE.1=약하고 따뜻함
+value.RAIN_STYLE.2=세고 차가움
+
+option.SPECIAL_BIOME_WEATHER=추운/건조한 날씨
+option.SPECIAL_BIOME_WEATHER.comment=춥거나 건조한 생물 군계의 분위기를 바꿔, 눈보라나 모래폭풍처럼 느껴지게 합니다.
+
+option.WEATHER_TEX_OPACITY=날씨 텍스처 불투명도
+option.WEATHER_TEX_OPACITY.comment=비와 눈 텍스처가 얼마나 불투명한지 조절합니다.
+
+option.SHADOW_SMOOTHING=§e그림자 부드럽게§r
+option.SHADOW_SMOOTHING.comment=그림자가 얼마나 날카로운지 정합니다. §c[-]§r 값을 낮추면 그림자가 더 깜빡이고 성능에도 영향을 줍니다. §e[*]§r "실시간 그림자"가 Low 이상일 때만 동작합니다.
+value.SHADOW_SMOOTHING.4=§a매우 부드러움
+value.SHADOW_SMOOTHING.3=§a부드러움
+value.SHADOW_SMOOTHING.2=§c날카로움 [-]
+value.SHADOW_SMOOTHING.1=§c매우 날카로움 [-]
+
+option.PIXELATED_SHADOWS=픽셀 그림자
+option.PIXELATED_SHADOWS.comment=해와 달이 드리우는 그림자를 픽셀처럼 만듭니다.
+
+option.PIXELATED_BLOCKLIGHT=픽셀 블록 조명
+option.PIXELATED_BLOCKLIGHT.comment=광원 블록이 내는 조명을 픽셀처럼 만듭니다.
+
+option.PIXELATED_AO=픽셀 가장자리 그림자
+option.PIXELATED_AO.comment=마인크래프트 바닐라 앰비언트 오클루전을 픽셀처럼 만듭니다.
+
+option.PIXELATED_CLOUD_SHADOWS=픽셀 구름 그림자 §e[*]§r
+option.PIXELATED_CLOUD_SHADOWS.comment=구름 그림자를 일반 픽셀 그림자보다 더 픽셀처럼 만듭니다. §e[*]§r 다른 픽셀 설정과 달리 "픽셀 크기"를 따르지 않습니다. §e[*]§r 구름 설정에서 구름 그림자가 켜져 있어야 동작합니다.
+
+option.PIXEL_SCALE=픽셀 크기
+option.PIXEL_SCALE.comment=텍스처 해상도에 적용하는 배율입니다.
+value.PIXEL_SCALE.-2=0.25x
+value.PIXEL_SCALE.-1=0.5x
+value.PIXEL_SCALE.1=1x
+value.PIXEL_SCALE.2=2x
+value.PIXEL_SCALE.3=4x
+value.PIXEL_SCALE.4=8x
+value.PIXEL_SCALE.5=16x
+
+option.BLOOM_ENABLED=§e블룸§r
+option.BLOOM_ENABLED.comment=밝은 물체와 습기에서 빛이 번지게 합니다. §c[-]§r 성능에 영향을 줄 수 있습니다.
+value.BLOOM_ENABLED.-1=끔
+value.BLOOM_ENABLED.1=§e켬
+
+option.BLOOM_STRENGTH=블룸 강도
+option.BLOOM_STRENGTH.comment=밝은 것의 빛 번짐과, 비나 동굴 습기로 생기는 블룸의 강도를 정합니다. §c[-]§r 블룸이 너무 강하면 특히 습한 곳에서 의도보다 흐리고 밝아집니다.
+value.BLOOM_STRENGTH.0.027=15%
+value.BLOOM_STRENGTH.0.036=20%
+value.BLOOM_STRENGTH.0.045=25%
+value.BLOOM_STRENGTH.0.054=30%
+value.BLOOM_STRENGTH.0.063=35%
+value.BLOOM_STRENGTH.0.072=40%
+value.BLOOM_STRENGTH.0.081=45%
+value.BLOOM_STRENGTH.0.09=50%
+value.BLOOM_STRENGTH.0.10=55%
+value.BLOOM_STRENGTH.0.11=60%
+value.BLOOM_STRENGTH.0.12=65%
+value.BLOOM_STRENGTH.0.13=70%
+value.BLOOM_STRENGTH.0.14=75%
+value.BLOOM_STRENGTH.0.15=80% §c[-]
+value.BLOOM_STRENGTH.0.16=85% §c[-]
+value.BLOOM_STRENGTH.0.17=90% §c[-]
+value.BLOOM_STRENGTH.0.18=95% §c[-]
+value.BLOOM_STRENGTH.0.19=100% §c[-]
+value.BLOOM_STRENGTH.0.21=110% §c[-]
+value.BLOOM_STRENGTH.0.23=120% §c[-]
+value.BLOOM_STRENGTH.0.25=130% §c[-]
+value.BLOOM_STRENGTH.0.28=150% §c[-]
+value.BLOOM_STRENGTH.0.32=180% §c[-]
+value.BLOOM_STRENGTH.10.00=§c극단
+
+option.BLOOM_SMOOTHING=블룸 부드럽게 §e[*]§r
+option.BLOOM_SMOOTHING.comment=블룸 변화를 시간에 걸쳐 부드럽게 해서 깜빡임을 줄입니다. §e[*]§r TAA 같은 잔상이 생길 수 있습니다.
+
+option.IMAGE_SHARPENING=화면 선명도
+option.IMAGE_SHARPENING.comment=필터로 화면을 더 선명하게 만듭니다. §c[-]§r 너무 세게 하면 앨리어싱, 깜빡임, 노이즈, 은은한 밝기 변화 같은 문제가 생길 수 있습니다.
+value.IMAGE_SHARPENING.0=끔
+value.IMAGE_SHARPENING.1=1x
+value.IMAGE_SHARPENING.2=2x
+value.IMAGE_SHARPENING.3=3x
+value.IMAGE_SHARPENING.4=4x
+value.IMAGE_SHARPENING.5=5x
+value.IMAGE_SHARPENING.6=6x §c[-]
+value.IMAGE_SHARPENING.7=7x §c[-]
+value.IMAGE_SHARPENING.8=8x §c[-]
+value.IMAGE_SHARPENING.9=9x §c[-]
+value.IMAGE_SHARPENING.10=10x §c[-]
+
+option.LENSFLARE_MODE=§e렌즈 플레어§r
+option.LENSFLARE_MODE.comment=해나 달을 바라볼 때 카메라 렌즈에 빛이 비치는 효과를 더합니다. §c[-]§r 성능에 매우 큰 영향을 줄 수 있습니다.
+value.LENSFLARE_MODE.0=끔
+value.LENSFLARE_MODE.1=§c해만 - 원형
+value.LENSFLARE_MODE.2=§c해와 달 - 원형
+value.LENSFLARE_MODE.3=§c해만 - 사각형
+value.LENSFLARE_MODE.4=§c해와 달 - 사각형
+
+option.LENSFLARE_I=렌즈 플레어 강도
+option.LENSFLARE_I.comment=렌즈 플레어의 세기를 조절합니다.
+
+option.TAA_DEFINE=§e템포럴 필터§r
+option.TAA_DEFINE.comment=거친 효과를 부드럽게 하는 템포럴 안티앨리어싱을 켭니다. 무거운 효과의 샘플 수를 줄여 성능을 올리고, 설정을 맞추면 계단 현상도 줄일 수 있습니다. §c[-]§r 끄면 성능과 효과 화질이 모두 나빠지지만, 아주 낮은 셰이더 설정과 함께 쓰면 성능이 오르기도 합니다.
+value.TAA_DEFINE.-1=§a디테일 따름
+value.TAA_DEFINE.0=§c끔 [-]
+value.TAA_DEFINE.1=켬 §a[+]
+
+option.TAA_SMOOTHING=템포럴 부드럽게
+option.TAA_SMOOTHING.comment=템포럴 필터가 얼마나 부드럽게 할지 조절합니다. 값을 높이면 화면은 더 흐려지지만 깜빡임과 노이즈는 줄어듭니다. 가만히 있으면 차이가 잘 안 보입니다.
+value.TAA_SMOOTHING.2=Low
+value.TAA_SMOOTHING.3=Medium
+value.TAA_SMOOTHING.4=High
+
+option.TAA_JITTER=템포럴 지터 §e[*]§r
+option.TAA_JITTER.comment=지터는 템포럴 필터가 계단 현상을 더 잘 줄이게 하지만, 단점도 있습니다. §e[*]§r 값을 높이면 안티앨리어싱은 좋아지지만 깜빡임과 흐림도 함께 심해집니다. §e[*]§r 지터가 Full일 때는 템포럴 부드럽게를 High로 두는 것이 좋습니다. §c[-]§r 지터를 끄면 안티앨리어싱 이점이 사라집니다.
+value.TAA_JITTER.0=끔 §c[-]
+value.TAA_JITTER.1=Low
+value.TAA_JITTER.2=Medium
+value.TAA_JITTER.3=Full §e[*]
+
+option.TAA_MOVEMENT_IMPROVEMENT_FILTER=Catmull-Rom 샘플링
+option.TAA_MOVEMENT_IMPROVEMENT_FILTER.comment=더 정교한 샘플링으로 템포럴 필터의 흐림을 줄입니다.
+value.TAA_MOVEMENT_IMPROVEMENT_FILTER.0=끔 §c[-]
+value.TAA_MOVEMENT_IMPROVEMENT_FILTER.1=켬
+
+option.FXAA_STRENGTH=FXAA 강도
+option.FXAA_STRENGTH.comment=FXAA 강도를 조절합니다. 값을 높이면 계단 현상은 줄어들지만 화면은 더 흐려집니다.
+value.FXAA_STRENGTH.-1=끔
+
+option.FXAA_TAA_INTERACTION=이동 중 FXAA 줄이기
+option.FXAA_TAA_INTERACTION.comment=카메라가 움직일 때 FXAA 강도를 낮춥니다. 값을 높이면 화면은 더 선명해지지만 깜빡임도 늘어납니다.
+value.FXAA_TAA_INTERACTION.0=끔
+value.FXAA_TAA_INTERACTION.2=20
+value.FXAA_TAA_INTERACTION.4=40
+value.FXAA_TAA_INTERACTION.6=60
+value.FXAA_TAA_INTERACTION.8=80
+value.FXAA_TAA_INTERACTION.10=100
+
+option.DISTANT_LIGHT_BOKEH=먼 빛 보케
+option.DISTANT_LIGHT_BOKEH.comment=멀리 있는 광원에 한 픽셀 블러를 걸어 빛이 흩어져 보이게 합니다. §a[+]§r IntegratedPBR+(선택)가 먼 광원을 더 보기 좋게 맞춰 주면 효과가 더 좋습니다.
+
+option.MOTION_BLUR_EFFECT=§e모션 블러§r
+option.MOTION_BLUR_EFFECT.comment=카메라를 움직일 때 화면에 블러를 넣습니다. §c[-]§r 성능에 영향을 줄 수 있습니다.
+value.MOTION_BLUR_EFFECT.-1=끔
+value.MOTION_BLUR_EFFECT.1=§e켬
+
+option.MOTION_BLURRING_STRENGTH=모션 블러 강도
+option.MOTION_BLURRING_STRENGTH.comment=모션 블러의 강도를 조절합니다.
+
+option.WORLD_BLUR=§e월드 블러§r
+option.WORLD_BLUR.comment=월드 블러를 켭니다. 거리 블러: 카메라와의 거리에 따라 안개처럼 흐려집니다. 피사계 심도: 카메라 초점에 따라 흐려집니다. §c[-]§r 성능에 매우 큰 영향을 줄 수 있습니다.
+value.WORLD_BLUR.-1=§a끔
+value.WORLD_BLUR.1=§c거리 블러
+value.WORLD_BLUR.2=§c피사계 심도
+
+option.WB_FOV_SCALED=시야각 비례 블러
+option.WB_FOV_SCALED.comment=월드 블러를 카메라 시야각에 맞춥니다. 켜 둔 채로 확대하면 월드 블러가 더 강해집니다.
+
+option.WB_CHROMATIC=색수차 블러
+option.WB_CHROMATIC.comment=흐린 곳에 색수차를 넣어, 흐린 영역의 색이 갈라져 보이게 합니다.
+
+option.WB_ANAMORPHIC=아나모픽 블러
+option.WB_ANAMORPHIC.comment=블러를 한 방향으로 늘립니다. §c[-]§r 월드 블러의 화질이 떨어질 수 있습니다.
+
+option.WB_DOF_I=피사계 심도 강도
+option.WB_DOF_FOCUS=피사계 심도 초점
+option.WB_DOF_FOCUS.comment=카메라의 초점 거리를 정합니다. 자동: 화면 중심에 맞춰 초점이 바뀝니다. 밝기: 비디오 설정의 "밝기" 슬라이더로 초점이 정해집니다.
+value.WB_DOF_FOCUS.-1=밝기 §e[*]
+value.WB_DOF_FOCUS.0=자동
+
+option.WB_DB_DAY_I=거리 블러 - 낮
+option.WB_DB_NIGHT_I=거리 블러 - 밤/실내
+option.WB_DB_RAIN_I=거리 블러 - 비/눈
+option.WB_DB_WATER_I=거리 블러 - 수중
+option.WB_DB_NETHER_I=거리 블러 - 네더
+option.WB_DB_END_I=거리 블러 - 엔드
+
+option.VIGNETTE_R=비네트
+option.VIGNETTE_R.comment=화면 가장자리를 어둡게 합니다.
+
+option.CHROMA_ABERRATION=색수차
+option.CHROMA_ABERRATION.comment=화면 가장자리로 갈수록 색이 갈라집니다. §c[-]§r 색수차는 화면을 흐리게 느끼게 하므로, 높은 값은 플레이에 권장하지 않습니다.
+value.CHROMA_ABERRATION.4=4 §c[-]
+value.CHROMA_ABERRATION.5=5 §c[-]
+value.CHROMA_ABERRATION.6=6 §c[-]
+value.CHROMA_ABERRATION.7=7 §c[-]
+value.CHROMA_ABERRATION.8=8 §c[-]
+
+option.IPBR_EMISSIVE_MODE=IPBR+ 발광 모드
+option.IPBR_EMISSIVE_MODE.comment=IntegratedPBR+ 안에서 발광을 어떻게 다룰지 정합니다. labPBR나 seuspbr를 고르면, 스펙큘러 텍스처가 있는 블록의 IPBR+ 발광을 호환 리소스 팩이 완전히 덮어씁니다. §c[-]§r 잘 모르는 상태에서는 바꾸지 않는 것이 좋습니다.
+value.IPBR_EMISSIVE_MODE.1=IPBR+만
+value.IPBR_EMISSIVE_MODE.3=labPBR > IPBR+
+value.IPBR_EMISSIVE_MODE.2=seuspbr > IPBR+
+
+option.IPBR_COMPAT_MODE_DEFINE=IPBR+ 호환 모드
+option.IPBR_COMPAT_MODE_DEFINE.comment=일부 IPBR+ 계산을 덜 강하게 바꿔, 리소스 팩이나 모드와 문제가 덜 생기게 합니다.
+
+option.IPBR_PARTICLE_FEATURES=IPBR+ 입자 기능
+option.IPBR_PARTICLE_FEATURES.comment=입자용 기능을 켭니다. 빛나는 용암 입자, 색이 더 나은 물 입자 등이 들어 있습니다.
+
+option.FANCY_GLASS=개선된 유리 §c[-]§r
+option.FANCY_GLASS.comment=일반 유리에 반투명 층을 더합니다. §c[-]§r 오래된 Iris에서는 동작하지 않습니다. §e[*]§r 리소스 팩 지원이 Integrated PBR+여야 합니다.
+
+option.GREEN_SCREEN_LIME=그린 스크린 연두 블록
+option.GREEN_SCREEN_LIME.comment="연두색 콘크리트", "연두색 양털", "연두색 양탄자"를 영상 편집용 그린 스크린으로 바꿉니다. 팁 1: 더 깨끗하게 분리하려면 "블룸"을 끄세요. 팁 2: 조명이 필요하면 연두색 양탄자 아래에 광원을 두세요. 팁 3: 안티앨리어싱(FXAA)을 끄고 성능 설정의 디테일 품질을 Potato로 두면, 필터가 모두 꺼져 픽셀 단위로 분리됩니다.
+
+option.MIRROR_TINTED_GLASS=거울 같은 차광 유리
+option.MIRROR_TINTED_GLASS.comment=차광 유리의 반사와 불투명도를 높입니다. 가장 잘 보이게 하려면 월드 스페이스 반사를 켜세요. §c[-]§r 100% 거울은 반사 문제가 크게 드러나므로 보통 플레이에는 권장하지 않습니다.
+value.MIRROR_TINTED_GLASS.0=끔
+value.MIRROR_TINTED_GLASS.35=35% 거울
+value.MIRROR_TINTED_GLASS.70=70% 거울
+value.MIRROR_TINTED_GLASS.100=100% 거울 §c[-]
+
+option.MORE_REFLECTIVE_DISTANT_GLASS=먼 유리 반사 강화
+option.MORE_REFLECTIVE_DISTANT_GLASS.comment=멀리 있는 유리의 반사와 불투명도를 높여, 유리창이 있는 건물이 더 보기 좋게 합니다.
+
+option.HIDE_ARMOR=갑옷 숨기기 §e[*]§r
+option.HIDE_ARMOR.comment=플레이어나 모든 엔티티의 갑옷과 겉날개를 숨깁니다. 겉날개는 날 때만 보입니다. §e[*]§r Iris에서만 동작합니다. §e[*]§r "본인만"은 갑옷을 입은 다른 엔티티가 아주 가까이 오면 지저분해 보일 수 있습니다.
+value.HIDE_ARMOR.0=끔
+value.HIDE_ARMOR.1=본인만 §e[*]§r
+value.HIDE_ARMOR.2=모든 엔티티
+
+option.HAND_SWAYING=손 흔들림
+option.HAND_SWAYING.comment=숨 쉬는 것처럼 플레이어의 손이 천천히 움직입니다.
+value.HAND_SWAYING.0=끔
+value.HAND_SWAYING.1=약함
+value.HAND_SWAYING.2=보통
+value.HAND_SWAYING.3=강함
+
+option.LESS_LAVA_FOG=용암/가루눈 안개 줄이기
+option.LESS_LAVA_FOG.comment=용암 안개와 가루눈 안개를 줄여 안이 더 잘 보이게 합니다.
+
+option.REDUCE_CLOSE_PARTICLES=가까운 입자 줄이기
+option.REDUCE_CLOSE_PARTICLES.comment=카메라에 가까운 입자를 더 투명하게 해서 시야를 확보합니다.
+
+option.SNOWY_WORLD=눈 덮인 월드
+option.SNOWY_WORLD.comment=월드 전체를 눈으로 덮습니다.
+
+option.SHOW_LIGHT_LEVEL=밝기 레벨 표시
+option.SHOW_LIGHT_LEVEL.comment=오버월드: 노란색은 밤에 몹이 스폰될 수 있고, 빨간색은 언제든지 스폰될 수 있습니다. 네더나 엔드: 노란색은 일부 몹이, 빨간색은 모든 몹이 스폰될 수 있습니다. §e[*]§r 정확하게 보려면 부드러운 조명을 끄세요.
+value.SHOW_LIGHT_LEVEL.0=끔
+value.SHOW_LIGHT_LEVEL.1=거미 눈 들기
+value.SHOW_LIGHT_LEVEL.2=광원 들기
+value.SHOW_LIGHT_LEVEL.3=항상 켬
+
+option.COLOR_CODED_PROGRAMS=프로그램 색 표시 §c[-]§r
+option.COLOR_CODED_PROGRAMS.comment=지오메트리를 그리는 셰이더 프로그램을 색으로 보여 줍니다. §c[-]§r 개발용이라 플레이에는 쓰지 마세요. §e[*]§r 색 값은 셰이더 팩 파일 shaders/lib/misc/colorCodedPrograms.glsl 에 있습니다.
+
+option.GLOWING_COLORED_PARTICLES=입자 강제 발광 §c[-]§r
+option.GLOWING_COLORED_PARTICLES.comment=기술적으로 "색이 있는" 입자를 모두 발광하게 만듭니다. §c[-]§r 빛나면 안 되는 재질까지 빛나서, 보통 플레이에는 권장하지 않습니다.
+
+option.CAVE_LIGHTING=동굴 조명 배율
+option.CAVE_LIGHTING.comment=하늘 빛이 없는 곳에 조명을 더합니다. §e[*]§r 동굴 조명은 비디오 설정의 "밝기" 슬라이더에도 영향을 받습니다. §c[-]§r 이 값을 크게 바꾸면 조명 균형이 깨질 수 있습니다.
+
+option.AMBIENT_MULT=그림자 밝기 배율
+option.AMBIENT_MULT.comment=그림자에 보이는 주변광의 양을 정합니다. §c[-]§r 이 값을 크게 바꾸면 조명 균형이 깨질 수 있습니다.
+
+option.PLAYER_SHADOW=플레이어 그림자 §e[*]§r
+option.PLAYER_SHADOW.comment=플레이어가 그림자를 드리울지 정합니다. §e[*]§r Iris에서만 완전히 동작합니다. §e[*]§r "실시간 그림자"가 끔이면 이 설정도 꺼집니다.
+value.PLAYER_SHADOW.-1=끔
+value.PLAYER_SHADOW.1=켬
+
+option.LEAF_SHADOW_OPTIMISATION_DEFINE=§e나뭇잎 그림자 최적화§r
+option.LEAF_SHADOW_OPTIMISATION_DEFINE.comment=성능을 위해 어두운 곳의 나뭇잎과 덩굴 그림자를 끕니다. §c[-]§r 화려한 나뭇잎 리소스 팩에서는 조명이 어색해질 수 있습니다. §e[*]§r "디테일 따름"은 직접 바꾸기 전까지 성능 설정의 "디테일 품질"을 따른다는 뜻입니다.
+value.LEAF_SHADOW_OPTIMISATION_DEFINE.-1=§a디테일 따름
+value.LEAF_SHADOW_OPTIMISATION_DEFINE.0=§c끔
+value.LEAF_SHADOW_OPTIMISATION_DEFINE.1=§a켬
+
+option.SKY_EFFECT_REFLECTION_DEFINE=§e하늘 효과 반사§r
+option.SKY_EFFECT_REFLECTION_DEFINE.comment=반사에 구름, 별, 오로라 같은 하늘 효과가 보이게 합니다. "켬 - 물"은 물과 반투명 반사에, "켬 - 전체"는 블록 반사에도 하늘 효과를 켭니다. §e[*]§r "디테일 따름"은 직접 바꾸기 전까지 성능 설정의 "디테일 품질"을 따른다는 뜻입니다.
+value.SKY_EFFECT_REFLECTION_DEFINE.-1=§a디테일 따름
+value.SKY_EFFECT_REFLECTION_DEFINE.0=§a끔
+value.SKY_EFFECT_REFLECTION_DEFINE.1=§c켬 - 물
+value.SKY_EFFECT_REFLECTION_DEFINE.2=§4§l§n§o켬 - 전체
+
+option.GENERATED_NORMALS=생성 노멀
+option.GENERATED_NORMALS.comment=표면에 자동으로 만든 요철을 더합니다. §e[*]§r 리소스 팩 지원이 Integrated PBR+여야 합니다. §e[*]§r 해상도가 보통이 아닌 텍스처를 쓰는 리소스 팩이나 모드에서는 이상해 보일 수 있습니다.
+
+option.COATED_TEXTURES=코팅 텍스처
+option.COATED_TEXTURES.comment=텍스처에 자동으로 만든 먼지 같은 디테일을 더합니다. §e[*]§r 리소스 팩 지원이 Integrated PBR+여야 합니다. §e[*]§r 해상도가 보통이 아닌 텍스처를 쓰는 리소스 팩이나 모드에서는 이상해 보일 수 있습니다.
+
+option.ENTITY_GN_AND_CT=엔티티에 GN/CT
+option.ENTITY_GN_AND_CT.comment=생성 노멀(GN)과 코팅 텍스처(CT)를 엔티티에도 적용할지 정합니다. §e[*]§r 생성 노멀이나 코팅 텍스처 자체가 꺼져 있으면 엔티티에도 켜지지 않습니다.
+
+option.GENERATED_NORMAL_MULT=생성 노멀 강도
+option.GENERATED_NORMAL_MULT.comment=표면에 자동으로 만든 요철의 강도를 조절합니다.
+
+option.GENERATED_NORMAL_RES=생성 노멀 해상도
+option.GENERATED_NORMAL_RES.comment=표면에 자동으로 만든 요철의 해상도와 크기를 조절합니다. §e[*]§r 생성 노멀 해상도는 텍스처 자체의 해상도에도 좌우되므로, 리소스 팩이나 모드가 블록마다 해상도를 어긋나게 할 수 있습니다.
+
+option.COATED_TEXTURE_MULT=코팅 텍스처 강도
+option.COATED_TEXTURE_MULT.comment=텍스처에 자동으로 만든 먼지 디테일의 강도를 조절합니다.
+
+option.GLOWING_ORE_MASTER=§e발광 광석 켜기
+option.GLOWING_ORE_MASTER.comment=발광 광석을 켭니다. §e[*]§r "스타일 따름"을 고르면 "비주얼 스타일"이 "Unbound"일 때만 발광 광석이 켜집니다. §e[*]§r 이 옵션이 꺼져 있으면 아래 설정은 동작하지 않습니다.
+value.GLOWING_ORE_MASTER.0=끔
+value.GLOWING_ORE_MASTER.1=스타일 따름
+value.GLOWING_ORE_MASTER.2=§a켬
+
+option.GLOWING_ORE_MULT=광석 발광 강도
+option.GLOWING_ORE_MULT.comment=발광 광석이 얼마나 강하게 빛나는지 정합니다.
+
+option.GLOWING_ORE_IRON=발광 철 광석
+option.GLOWING_ORE_GOLD=발광 금 광석
+option.GLOWING_ORE_COPPER=발광 구리 광석
+option.GLOWING_ORE_REDSTONE=발광 레드스톤 광석 §e[*]§r
+option.GLOWING_ORE_REDSTONE.comment=§e[*]§r 이 설정과 상관없이, "활성화된" 레드스톤 광석은 모두 빛납니다.
+option.GLOWING_ORE_LAPIS=발광 청금석 광석
+option.GLOWING_ORE_EMERALD=발광 에메랄드 광석
+option.GLOWING_ORE_DIAMOND=발광 다이아몬드 광석
+option.GLOWING_ORE_NETHERQUARTZ=발광 네더 석영
+option.GLOWING_ORE_NETHERGOLD=발광 네더 금 광석
+option.GLOWING_ORE_GILDEDBLACKSTONE=발광 금 입힌 블랙스톤
+option.GLOWING_ORE_ANCIENTDEBRIS=발광 고대 잔해
+option.GLOWING_ORE_MODDED=발광 모드 광석 §e[*]§r
+option.GLOWING_ORE_MODDED.comment=§e[*]§r 모드 광석이 빛나게 하려면 "Complementary-->shaders-->block.properties"에 모드 광석 ID를 추가하세요. 메모장 같은 텍스트 편집기로 block.properties를 연 다음, "block.10024=" 옆에 모드 광석 블록 ID를 넣으면 됩니다.
+
+option.GLOWING_AMETHYST=발광 자수정
+value.GLOWING_AMETHYST.0=끔
+value.GLOWING_AMETHYST.1=결정
+value.GLOWING_AMETHYST.2=결정과 블록
+
+option.GLOWING_LICHEN=발광 이끼
+value.GLOWING_LICHEN.0=끔
+value.GLOWING_LICHEN.1=닫힌 곳
+value.GLOWING_LICHEN.2=항상
+
+option.EMISSIVE_REDSTONE_BLOCK=발광 레드스톤 블록
+
+option.EMISSIVE_LAPIS_BLOCK=발광 청금석 블록
+
+option.GLOWING_ARMOR_TRIM=발광 갑옷 장식 §e[*]§r
+option.GLOWING_ARMOR_TRIM.comment=갑옷 장식을 발광하게 만듭니다. §e[*]§r 갑옷 장식 감지를 지원하지 않는 OptiFine에서는 동작하지 않고, Iris에서만 동작합니다.
+
+option.NORMAL_MAP_STRENGTH=노멀 맵 강도
+option.NORMAL_MAP_STRENGTH.comment=표면 요철의 강도를 조절합니다. §e[*]§r 리소스 팩 지원이 labPBR/seuspbr이고, 호환되는 리소스 팩이 필요합니다.
+
+option.CUSTOM_EMISSION_INTENSITY=커스텀 발광 강도
+option.CUSTOM_EMISSION_INTENSITY.comment=빛나는 표면의 강도를 조절합니다. §e[*]§r 리소스 팩 지원이 labPBR/seuspbr이고, 호환되는 리소스 팩이 필요합니다.
+
+option.POM=§e패럴랙스 오클루전§r
+option.POM.comment=표면에 입체 효과를 켭니다. §c[-]§r 성능에 매우 큰 영향을 줄 수 있습니다. §e[*]§r 리소스 팩 지원이 labPBR/seuspbr이고, 호환되는 리소스 팩이 필요합니다.
+value.POM.false=끔
+value.POM.true=켬 §c[-]
+
+option.POM_DEPTH=POM 깊이
+option.POM_DEPTH.comment=패럴랙스 오클루전의 깊이를 조절합니다. §e[*]§r 리소스 팩 지원이 labPBR/seuspbr이고, 호환되는 리소스 팩이 필요합니다.
+
+option.POM_QUALITY=§ePOM 품질§r
+option.POM_QUALITY.comment=패럴랙스 오클루전이 얼마나 선명하고 정확한지 조절합니다. §c[-]§r 200보다 높으면 성능에 매우 큰 영향을 줄 수 있습니다. §e[*]§r 100 미만이면 "POM 조명 모드"가 "부드러움"으로 고정됩니다. §e[*]§r 리소스 팩 지원이 labPBR/seuspbr이고, 호환되는 리소스 팩이 필요합니다.
+value.POM_QUALITY.16=16 §e[*]
+value.POM_QUALITY.32=32 §e[*]
+value.POM_QUALITY.64=64 §e[*]
+value.POM_QUALITY.256=256 §c[-]
+value.POM_QUALITY.512=512 §c[-]
+
+option.POM_DISTANCE=§ePOM 거리§r
+option.POM_DISTANCE.comment=패럴랙스 오클루전을 얼마나 멀리까지 계산할지 조절합니다. §e[*]§r 성능을 조금 얻으려면 50 아래로 두는 것이 좋습니다. §e[*]§r 리소스 팩 지원이 labPBR/seuspbr이고, 호환되는 리소스 팩이 필요합니다.
+value.POM_DISTANCE.64=64 §e[*]
+value.POM_DISTANCE.128=128 §e[*]
+value.POM_DISTANCE.256=256 §e[*]
+value.POM_DISTANCE.512=512 §e[*]
+value.POM_DISTANCE.1024=1024 §e[*]
+
+option.POM_LIGHTING_MODE=POM 조명 모드
+option.POM_LIGHTING_MODE.comment=POM이 적용된 표면의 조명을 정합니다. 날카로움: 빛을 향하지 않은 POM 벽은 빛을 받지 않습니다. 부드러움: POM 벽도 벽이 아닌 것처럼 빛을 받습니다. §e[*]§r POM 품질이 100 미만이면 "부드러움"으로 고정됩니다.
+value.POM_LIGHTING_MODE.1=부드러움
+value.POM_LIGHTING_MODE.2=날카로움
+
+option.POM_ALLOW_CUTOUT=§e컷아웃에 POM §c[-]§r
+option.POM_ALLOW_CUTOUT.comment=나뭇잎 사이처럼 구멍이 있는 면도 POM이 적용되게 합니다. §c[-]§r 성능에 매우 큰 영향을 줄 수 있습니다.
+
+option.DIRECTIONAL_BLOCKLIGHT=§e방향성 블록 조명§r
+option.DIRECTIONAL_BLOCKLIGHT.comment=표면 노멀에 따라 블록 조명에 깊이를 더합니다. §c[-]§r 상황에 따라 화면이 어색해질 수 있습니다. §c[-]§r 성능에 영향을 줄 수 있습니다. §e[*]§r 리소스 팩 지원이 labPBR/seuspbr이고, 호환되는 리소스 팩이 필요합니다.
+value.DIRECTIONAL_BLOCKLIGHT.0=끔
+value.DIRECTIONAL_BLOCKLIGHT.3=약함 §c[-]
+value.DIRECTIONAL_BLOCKLIGHT.7=보통 §c[-]
+value.DIRECTIONAL_BLOCKLIGHT.11=강함 §c[-]
+
+option.HELD_LIGHTING_MODE=손에 든 조명
+option.HELD_LIGHTING_MODE.comment=손에 든 광원이 주변에 빛을 비추게 합니다.
+value.HELD_LIGHTING_MODE.0=끔
+value.HELD_LIGHTING_MODE.1=약함
+value.HELD_LIGHTING_MODE.2=보통
+
+option.BLOCKLIGHT_FLICKERING=블록 조명 깜빡임
+option.BLOCKLIGHT_FLICKERING.comment=블록이 내는 빛에 깜빡임을 더합니다.
+value.BLOCKLIGHT_FLICKERING.0=끔
+
+option.WAVING_SPEED=흔들림 속도
+option.WAVING_SPEED.comment=흔들림이 얼마나 빨리 일어나는지 조절합니다.
+
+option.WAVING_I=흔들림 강도
+option.WAVING_I.comment=흔들릴 때 블록이 얼마나 많이 움직이는지 조절합니다. §c[-]§r 너무 세면 흔들리는 블록이 다른 블록을 파고들거나 밖으로 튀어나올 수 있습니다.
+value.WAVING_I.1.25=1.25 §c[-]
+value.WAVING_I.1.50=1.50 §c[-]
+value.WAVING_I.1.75=1.75 §c[-]
+value.WAVING_I.2.00=2.00 §c[-]
+value.WAVING_I.50.0=§c극단
+
+option.NO_WAVING_INDOORS=닫힌 곳 흔들림 끄기
+option.NO_WAVING_INDOORS.comment=하늘 빛으로 판단해, 닫힌 곳에서는 블록이 흔들리지 않게 합니다. §c[-]§r 켜 두면 일부 리소스 팩이나 모드에서 문제가 생길 수 있습니다.
+
+option.WAVING_I_RAIN_MULT=§e비 올 때 흔들림 배율§r
+option.WAVING_I_RAIN_MULT.comment=비가 올 때 흔들림의 속도와 강도를 곱합니다. §c[-]§r 너무 세면 흔들리는 블록이 다른 블록을 파고들거나 밖으로 튀어나올 수 있습니다. §c[-]§r 100을 넘기면 성능에 영향을 줄 수 있습니다.
+value.WAVING_I.125=125 §c[-]
+value.WAVING_I.150=150 §c[-]
+value.WAVING_I.175=175 §c[-]
+value.WAVING_I.200=200 §c[-]
+
+option.WAVING_FOLIAGE=잔디 흔들림
+option.WAVING_FOLIAGE.comment=바람에 흔들리듯 잔디와 비슷한 식물에 움직임을 더합니다.
+
+option.WAVING_LEAVES=나뭇잎 흔들림
+option.WAVING_LEAVES.comment=바람에 흔들리듯 나뭇잎에 움직임을 더합니다.
+
+option.WAVING_LAVA=용암 텍스처 흔들림
+option.WAVING_LAVA.comment=용암 텍스처가 계속 움직이게 합니다. §e[*]§r 용암 흔들림은 "닫힌 곳 흔들림 끄기"의 영향을 받지 않습니다.
+
+option.WAVING_LILY_PAD=수련잎 흔들림 §c[-]§r
+option.WAVING_LILY_PAD.comment=물결에 흔들리듯 수련잎과 개구리 알에 움직임을 더합니다. §c[-]§r 물에 잠긴 블록 위의 수련잎이 보이지 않게 됩니다.
+
+option.WAVING_WATER_VERTEX=물 높이 흔들림
+option.WAVING_WATER_VERTEX.comment=바람에 흔들리듯 물의 위치 자체에 움직임을 더합니다. §e[*]§r "물결 강도"와는 별개입니다.
+
+option.WATER_NOISE_COLORING=물 밝기 흔들림
+option.WATER_NOISE_COLORING.comment=바다에 약간의 색 차이를 줘서 물결이 더 져 보이게 합니다. §e[*]§r "디테일 따름"은 직접 바꾸기 전까지 성능 설정의 "디테일 품질"을 따른다는 뜻입니다.
+value.WATER_NOISE_COLORING.-1=§a디테일 따름
+value.WATER_NOISE_COLORING.0=§a끔
+value.WATER_NOISE_COLORING.1=§c켬
+
+option.WAVING_RAIN=비/눈 텍스처 흔들림
+option.WAVING_RAIN.comment=내리는 비와 눈 텍스처에 움직임을 더해 더 살아 보이게 합니다.
+
+option.SPECIAL_PORTAL_EFFECT=특수 차원문 효과
+option.SPECIAL_PORTAL_EFFECT.comment=네더 차원문, 엔드 차원문, 엔드 관문에 특별한 애니메이션과 발광을 더합니다.
+value.SPECIAL_PORTAL_EFFECT.0=끔
+value.SPECIAL_PORTAL_EFFECT.1=엔드 차원문
+value.SPECIAL_PORTAL_EFFECT.2=네더 차원문
+value.SPECIAL_PORTAL_EFFECT.3=전체
+
+option.REFLECTION_RES=§e반사 해상도§r
+option.REFLECTION_RES.comment=성능을 위해 블록 PBR 반사의 해상도를 바꿉니다. 월드 스페이스 반사를 켜 두었다면 그 해상도도 같이 바뀝니다. §c[-]§r "전체" 해상도는 상황에 따라 예상보다 훨씬 성능을 잡아먹습니다. §e[*]§r OptiFine에서는 동작하지 않습니다.
+value.REFLECTION_RES.1.0=§4§l§n§o전체
+value.REFLECTION_RES.0.5=§a절반
+
+option.WORLD_OUTLINE=§e월드 윤곽선§r
+option.WORLD_OUTLINE.comment=블록 주위에 밝은 윤곽선을 더합니다. §c[-]§r 성능에 영향을 줄 수 있습니다.
+
+option.WORLD_OUTLINE_THICKNESS=§e월드 윤곽선 두께§r
+option.WORLD_OUTLINE_THICKNESS.comment=월드 윤곽선의 두께를 정합니다. §c[-]§r 값을 높이면 성능에 영향을 줄 수 있습니다.
+
+option.WORLD_OUTLINE_I=월드 윤곽선 밝기
+option.WORLD_OUTLINE_I.comment=월드 윤곽선이 얼마나 강한지 정합니다.
+
+option.WORLD_OUTLINE_ON_ENTITIES=엔티티 윤곽선
+option.WORLD_OUTLINE_ON_ENTITIES.comment=월드 윤곽선을 엔티티에도 적용할지 정합니다. §c[-]§r 일부 커스텀 PBR 리소스 팩에서는 완벽하게 동작하지 않을 수 있습니다.
+
+option.WORLD_OUTLINE_SCALED=거리에 따른 윤곽선
+option.WORLD_OUTLINE_SCALED.comment=거리에 따라 월드 윤곽선의 크기가 바뀌게 합니다.
+
+option.DARK_OUTLINE=§e어두운 윤곽선§r
+option.DARK_OUTLINE.comment=블록 주위에 어두운 윤곽선을 더합니다. §c[-]§r 성능에 영향을 줄 수 있습니다.
+
+option.DARK_OUTLINE_THICKNESS=§e어두운 윤곽선 두께§r
+option.DARK_OUTLINE_THICKNESS.comment=어두운 윤곽선의 두께를 정합니다. §c[-]§r 값을 높이면 성능에 영향을 줄 수 있습니다.
+
+option.RAIN_PUDDLES=빗물 웅덩이
+option.RAIN_PUDDLES.comment=비가 올 때 지형에 물웅덩이를 더합니다. §e[*]§r 동작하려면 "블록 반사 품질"이 켜져 있어야 합니다. §e[*]§r 지붕이 유리면 실내에도 웅덩이가 생길 수 있는데, "고급 색 추적"을 켜면 이 문제가 고쳐집니다.
+value.RAIN_PUDDLES.0=§a끔
+value.RAIN_PUDDLES.1=§c비 올 때 웅덩이
+value.RAIN_PUDDLES.2=§c비 올 때 전체
+value.RAIN_PUDDLES.3=§c항상 웅덩이
+value.RAIN_PUDDLES.4=§c항상 전체
+
+option.UNDERWATER_DISTORTION=수중 왜곡
+option.UNDERWATER_DISTORTION.comment=카메라가 물속에 있을 때 화면에 은은한 굴절을 더합니다.
+
+option.SELECT_OUTLINE=선택 윤곽선
+option.SELECT_OUTLINE.comment=바라보는 블록 윤곽선의 색을 정합니다.
+value.SELECT_OUTLINE.0=끔
+value.SELECT_OUTLINE.1=기본
+value.SELECT_OUTLINE.2=무지개
+value.SELECT_OUTLINE.3=색 지정
+value.SELECT_OUTLINE.4=자동 대비
+
+option.SELECT_OUTLINE_AUTO_HIDE=선택 윤곽선 자동 숨김
+option.SELECT_OUTLINE_AUTO_HIDE.comment=주로 쓰는 손에 아무것도 없으면 블록 선택 윤곽선을 숨깁니다.
+
+option.SELECT_OUTLINE_I=윤곽 밝기
+option.SELECT_OUTLINE_R=윤곽 빨강
+option.SELECT_OUTLINE_G=윤곽 초록
+option.SELECT_OUTLINE_B=윤곽 파랑
+
+option.MOON_PHASE_INF_LIGHT=달 위상 밤 조명
+option.MOON_PHASE_INF_LIGHT.comment=달의 위상에 따라 밤 조명의 밝기가 바뀌게 합니다.
+
+option.MOON_PHASE_INF_ATMOSPHERE=달 위상 밤 대기
+option.MOON_PHASE_INF_ATMOSPHERE.comment=달의 위상에 따라 밤 대기의 밝기가 바뀌게 합니다.
+
+option.MOON_PHASE_INF_REFLECTION=달 위상 달 반사
+option.MOON_PHASE_INF_REFLECTION.comment=달의 위상에 따라 달 반사의 밝기가 바뀌게 합니다.
+
+option.MOON_PHASE_FULL=보름달 강도
+option.MOON_PHASE_FULL.comment=보름달(가장 밝은 위상)일 때 영향력을 조절합니다.
+
+option.MOON_PHASE_PARTIAL=부분 달 강도
+option.MOON_PHASE_PARTIAL.comment=보름달과 그믐달 사이의 모든 위상일 때 영향력을 조절합니다. 마인크래프트에서 가장 오래 보게 되는 위상입니다.
+
+option.MOON_PHASE_DARK=그믐달 강도
+option.MOON_PHASE_DARK.comment=그믐달(가장 어두운 위상)일 때 영향력을 조절합니다.
+
+option.CONNECTED_GLASS_EFFECT=연결된 유리
+option.CONNECTED_GLASS_EFFECT.comment=모든 종류의 유리가 서로 이어지게 합니다. §e[*]§r 성능 설정에서 고급 색 추적이 켜져 있고, 시스템이 지원할 때만 동작합니다. §e[*]§r "Continuity" 모드가 설치되어 있으면 이 기능은 자동으로 꺼집니다.
+
+option.PORTAL_EDGE_EFFECT=빛나는 차원문 테두리
+option.PORTAL_EDGE_EFFECT.comment=엔드 차원문과 네더 차원문에 빛나는 테두리를 더합니다. §e[*]§r 성능 설정에서 고급 색 추적이 켜져 있고, 시스템이 지원할 때만 동작합니다.
+
+option.PUDDLE_VOXELIZATION=유리 밑 웅덩이 수정
+option.PUDDLE_VOXELIZATION.comment=빗물 웅덩이가 켜져 있을 때, 유리 지붕인 닫힌 곳에는 웅덩이가 생기지 않게 합니다. §e[*]§r 고급 색 추적이 켜져 있고 디테일 품질이 High 이상일 때만 동작합니다.
+
+option.COLORED_CANDLE_LIGHT=양초 색 조명
+option.COLORED_CANDLE_LIGHT.comment=양초가 내는 빛을 양초 색깔과 같게 합니다. §e[*]§r 채도가 낮은 양초 색은 계속 평범한 불 색을 사용합니다.
+
+option.COLORED_LIGHT_SATURATION=색 조명 채도
+option.COLORED_LIGHT_SATURATION.comment=횃불을 포함해 고급 색 추적이 만드는 색이 얼마나 화려한지 조절합니다. §e[*]§r 기본 채도에서 가장 균형이 맞게 만들어져 있으므로, 바꾸지 않는 것이 좋습니다.
+
+option.ACT_FIRE_COLOR_WARMNESS=횃불/불 따뜻함
+option.ACT_FIRE_COLOR_WARMNESS.comment=고급 색 추적이 켜져 있을 때 횃불, 불, 랜턴 빛 색의 따뜻함을 조절합니다. 색은 "색 조명 채도"에도 영향을 받습니다. §e[*]§r 기본값에서 가장 균형이 맞게 만들어져 있으므로, 아주 조금만 바꾸는 것이 좋습니다.
+value.ACT_FIRE_COLOR_WARMNESS.100=보통
+
+option.COLORED_LIGHT_FOG=§e색 조명 안개§r
+option.COLORED_LIGHT_FOG.comment=블록 조명이 안개처럼 번지게 합니다. 밤이나 지하에서 가장 잘 보입니다. §e[*]§r 성능 설정에서 고급 색 추적이 켜져 있고, 시스템이 지원할 때만 동작합니다. §c[-]§r 성능에 매우 큰 영향을 줄 수 있습니다.
+
+option.COLORED_LIGHT_FOG_I=조명 안개 강도
+option.COLORED_LIGHT_FOG_I.comment=색 조명 안개의 밝기를 정합니다.
+
+option.COLORED_DYNAMIC_LIGHTING=§e색 동적 조명 [*]§r
+option.COLORED_DYNAMIC_LIGHTING.comment=바닥에 떨어진 횃불 같은 움직이는 광원이 색이 있는 조명을 비추게 합니다. §e[*]§r 성능 설정에서 "고급 색 추적"과 "엔티티 그림자"(일반 엔티티)가 켜져 있어야 동작합니다. §c[-]§r 성능에 영향을 줄 수 있습니다.
+
+option.LIGHT_COLOR_MULTS=§e조명 색 배율
+option.LIGHT_COLOR_MULTS.comment=모든 표면에 보이는 조명 색을 직접 고를 수 있습니다.
+
+option.ATM_COLOR_MULTS=§e대기 색 배율
+option.ATM_COLOR_MULTS.comment=하늘과 안개에서 주로 보이는 대기 색을 직접 고를 수 있습니다.
+
+option.LIGHT_MORNING_R=조명 빨강 배율
+option.LIGHT_MORNING_G=조명 초록 배율
+option.LIGHT_MORNING_B=조명 파랑 배율
+option.LIGHT_MORNING_I=조명 강도 배율
+option.ATM_MORNING_R=대기 빨강 배율
+option.ATM_MORNING_G=대기 초록 배율
+option.ATM_MORNING_B=대기 파랑 배율
+option.ATM_MORNING_I=대기 강도 배율
+option.LIGHT_NOON_R=조명 빨강 배율
+option.LIGHT_NOON_G=조명 초록 배율
+option.LIGHT_NOON_B=조명 파랑 배율
+option.LIGHT_NOON_I=조명 강도 배율
+option.ATM_NOON_R=대기 빨강 배율
+option.ATM_NOON_G=대기 초록 배율
+option.ATM_NOON_B=대기 파랑 배율
+option.ATM_NOON_I=대기 강도 배율
+option.LIGHT_NIGHT_R=조명 빨강 배율
+option.LIGHT_NIGHT_G=조명 초록 배율
+option.LIGHT_NIGHT_B=조명 파랑 배율
+option.LIGHT_NIGHT_I=조명 강도 배율
+option.ATM_NIGHT_R=대기 빨강 배율
+option.ATM_NIGHT_G=대기 초록 배율
+option.ATM_NIGHT_B=대기 파랑 배율
+option.ATM_NIGHT_I=대기 강도 배율
+option.LIGHT_RAIN_R=조명 빨강 배율
+option.LIGHT_RAIN_G=조명 초록 배율
+option.LIGHT_RAIN_B=조명 파랑 배율
+option.LIGHT_RAIN_I=조명 강도 배율
+option.ATM_RAIN_R=대기 빨강 배율
+option.ATM_RAIN_G=대기 초록 배율
+option.ATM_RAIN_B=대기 파랑 배율
+option.ATM_RAIN_I=대기 강도 배율
+option.LIGHT_NETHER_R=조명 빨강 배율
+option.LIGHT_NETHER_G=조명 초록 배율
+option.LIGHT_NETHER_B=조명 파랑 배율
+option.LIGHT_NETHER_I=조명 강도 배율
+option.ATM_NETHER_R=대기 빨강 배율
+option.ATM_NETHER_G=대기 초록 배율
+option.ATM_NETHER_B=대기 파랑 배율
+option.ATM_NETHER_I=대기 강도 배율
+option.LIGHT_END_R=조명 빨강 배율
+option.LIGHT_END_G=조명 초록 배율
+option.LIGHT_END_B=조명 파랑 배율
+option.LIGHT_END_I=조명 강도 배율
+option.ATM_END_R=대기 빨강 배율
+option.ATM_END_G=대기 초록 배율
+option.ATM_END_B=대기 파랑 배율
+option.ATM_END_I=대기 강도 배율
+
+option.XLIGHT_R=블록 조명 빨강 배율
+option.XLIGHT_G=블록 조명 초록 배율
+option.XLIGHT_B=블록 조명 파랑 배율
+option.XLIGHT_I=블록 조명 강도
+
+option.XLIGHT_CURVE=블록 조명 대비
+option.XLIGHT_CURVE.comment=광원에서 멀어질수록 블록 조명 밝기가 얼마나 빨리 줄어드는지 조절합니다.
